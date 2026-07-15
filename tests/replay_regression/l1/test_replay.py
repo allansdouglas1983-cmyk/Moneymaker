@@ -106,3 +106,62 @@ _GOLDEN_HASH = "c20a3c8205ca191a4be359771e0e5b451c7ef80427a22e173c5aad3c00ec8a59
 
 def test_golden_canonical_hash_is_stable() -> None:
     assert reduce(_EVENTS, REDUCER_VERSION).canonical_hash == _GOLDEN_HASH
+
+
+# A second golden fixture exercising EVERY declared-scope field (batb, batl, atb, atl, ltp,
+# tv, adjustmentFactor, removalDate, sortPriority, numberOfActiveRunners, betDelay) plus
+# level and price removals, so a regression anywhere in the reducer's in-scope surface fails
+# the SPEC-012 version-bump guard (advisory review F2).
+_FULL_FIXTURE: list[dict[str, object]] = [
+    {
+        "op": "mcm",
+        "pt": 5000,
+        "mc": [
+            {
+                "id": "1.202",
+                "img": True,
+                "marketDefinition": {
+                    "status": "OPEN",
+                    "inPlay": False,
+                    "version": 1,
+                    "betDelay": 5,
+                    "numberOfActiveRunners": 2,
+                    "runners": [
+                        {"id": 111, "status": "ACTIVE", "sortPriority": 1},
+                        {"id": 222, "status": "REMOVED", "adjustmentFactor": 12.5, "removalDate": "2026-07-15T13:00:00.000Z", "sortPriority": 2},
+                        {"id": 333, "status": "ACTIVE", "sortPriority": 3},
+                    ],
+                },
+                "rc": [
+                    {
+                        "id": 111,
+                        "batb": [[0, 3.45, 10.5], [1, 3.5, 20]],
+                        "batl": [[0, 3.6, 8]],
+                        "atb": [[3.45, 10.5], [3.4, 5]],
+                        "atl": [[3.6, 8]],
+                        "ltp": 3.45,
+                        "tv": 100.5,
+                    },
+                    {"id": 333, "batb": [[0, 6.0, 4]], "ltp": 6.0},
+                ],
+            }
+        ],
+    },
+    {
+        "op": "mcm",
+        "pt": 5500,
+        "mc": [
+            {
+                "id": "1.202",
+                "rc": [{"id": 111, "batb": [[1, 3.5, 0]], "atb": [[3.4, 0]], "ltp": 3.4, "tv": 120.0}],
+            }
+        ],
+    },
+    {"op": "mcm", "pt": 6000, "mc": [{"id": "1.202", "marketDefinition": {"status": "SUSPENDED", "version": 2, "runners": [{"id": 111, "status": "ACTIVE", "sortPriority": 1}, {"id": 333, "status": "ACTIVE", "sortPriority": 3}]}}]},
+]
+_FULL_EVENTS: list[bytes] = [json.dumps(m).encode("utf-8") for m in _FULL_FIXTURE]
+_FULL_GOLDEN_HASH = "3c4c7a69649fa7979f99bef29ca7d3b95f6b99d3c48b84c8026d562e60a1c773"
+
+
+def test_full_scope_golden_canonical_hash_is_stable() -> None:
+    assert reduce(_FULL_EVENTS, REDUCER_VERSION).canonical_hash == _FULL_GOLDEN_HASH

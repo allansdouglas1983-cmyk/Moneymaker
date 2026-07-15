@@ -61,6 +61,8 @@ def _apply_definition(defn: MarketDefinitionState, md: dict[str, Any]) -> None:
     if "numberOfActiveRunners" in md:
         defn.number_of_active_runners = int(md["numberOfActiveRunners"])
     if "runners" in md:
+        # marketDefinition is always a complete snapshot (never a runner-delta), so the
+        # runner set is fully replaced here, not merged.
         defn.runners = {}
         for rd in md["runners"]:
             selection_id = int(rd["id"])

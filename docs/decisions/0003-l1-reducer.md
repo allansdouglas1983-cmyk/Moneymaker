@@ -57,3 +57,28 @@ enforced framework properties.
 - The reducer is pure — no wall clock, no randomness, no I/O — so determinism holds by
   construction, and `replay.py` can reconstruct L2 from the L0 append-only log.
 - `make verify` remains red until the remaining active IDs (L3, L5, L7, governance) land.
+
+## Amendment (advisory review, 2026-07-15)
+
+An advisory verifier (SPECIFICATION.md §16.4) independently recomputed the golden hash
+(matches) and confirmed `reduce` is pure/deterministic, nothing is stubbed, and no test was
+weakened. Findings addressed:
+
+- **Canonical hash is representation-canonical, not value-canonical (documented).** The hash
+  is deterministic over the exact reduced numeric *representation* (`format(d, "f")` preserves
+  scale, so `3.5` and `3.50` differ). This does **not** affect SPEC-010/011: L0 stores the raw
+  bytes exactly, so the same capture always reduces to the same representation and replay is
+  byte-identical. The property is intentional — L2 preserves the reduced wire representation
+  rather than normalising it. There is exactly one encode path (`reduce → canonical`), so no
+  second re-encoding can diverge. (Normalising values is a possible future, human-approved
+  refinement, not required for the SPEC.)
+- **Golden fixture surface widened (F2).** A second golden fixture
+  (`test_full_scope_golden_canonical_hash_is_stable`) exercises every declared-scope field —
+  `batb`, `batl`, `atb`, `atl`, `ltp`, `tv`, `adjustmentFactor`, `removalDate`, `sortPriority`,
+  `numberOfActiveRunners`, `betDelay` — plus a level removal and a price removal, so a
+  regression anywhere in the reducer's in-scope surface fails the version-bump guard.
+- **Determinism property strengthened (F3).** An added property test generates multiple
+  markets, every ladder, `tv`, and `marketDefinition`.
+- **marketDefinition full-replace commented (F4).** The runner set is a complete snapshot,
+  never a delta; the code now says so.
+
