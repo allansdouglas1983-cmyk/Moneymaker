@@ -9,4 +9,11 @@ forbidden). Immutable trial ledger with multiplicity accounting. Lockbox inspect
 at Gate 1 only. CLV is a diagnostic family, never a training target. Anytime-valid
 monitoring only. The deterministic gate evaluator lives in `gates/` (see its README).
 
-> **Status: not yet implemented.** Scaffold marker.
+## Present
+- `reconciled_bsp.py` — the **grading-only** reconciled-BSP taint marker, built as part of the
+  L3 BSP-leakage guard (SPEC-021). It is deliberately never imported by `l3_features` (enforced
+  by `tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features`).
+
+> **Status:** the L8 layer proper (trial ledger, gate evaluator `gates/`, calibration/CLV
+> diagnostics — SPEC-090…097) is **Phase 2/5 `planned`**, not yet implemented. Only the
+> BSP taint marker above exists so far.

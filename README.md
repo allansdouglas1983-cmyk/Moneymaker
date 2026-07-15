@@ -46,9 +46,10 @@ Layered `l0_raw` → `l8_evidence` (see each directory's `README.md` and SPECIFI
 - **L7 market-level settlement** (`l7_settle/`, SPEC-080/082, money) — commission on the net
   market result, reduction factors, dead heats, idempotent versioned ledger (ADR 0007).
 
-Further code work requires **activating the next phase** (a human-controlled manifest change) —
-the planned tranches are L4 pricing / L8 evidence (Phase 2), risk / broker (Phase 3), fill (Phase 5).
-(The CI workflow only runs on pull requests and pushes to `main`.)
+Work now progresses autonomously into **Phase 2 (offline, pre-approved)** — freeze the price/gate
+pre-registration specs, then build L4 pricing and L8 evidence with synthetic-fixture tests, activating
+each ID once it is implemented and covered. Phase 3+ (risk, broker, live execution) stay HALTED by the
+approval posture until their gates are met. See `docs/PROGRESS.md`.
 
 Build per the session discipline in `CLAUDE.md`: **one spec slice per session, failing tests
 first (committed separately), then implementation, then `make verify`.** Status comes from

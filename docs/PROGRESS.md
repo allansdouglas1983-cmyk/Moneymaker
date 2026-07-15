@@ -138,24 +138,39 @@ task — it is how the next tranche of work is authorised.
 
 ---
 
-## Next — the active surface is complete
+## Next — autonomous progression into Phase 2 (offline)
 
-**All 23 active SPEC-IDs are implemented and `make verify` is green.** There is no remaining active
-slice. Further code work requires **activating the next phase**, which is a human-controlled
-specification change (manifest `enforcement_state: planned → active`), not an agent decision. The
-planned tranches, in build order:
+The active Phase-1 surface is complete and `make verify` is green. The project is **founder-hands-off**:
+implementation, verification, docs, and progression are the agent's job, not the founder's. The
+approval posture (`docs/HALT-CHECKLIST.md`) **pre-approves offline implementation through Phase 2**,
+so the next work proceeds autonomously on this feature branch:
 
-- **Phase 2 pricing/evidence** — L4 pricing (SPEC-030–035), L8 evidence (SPEC-090–097). Needs the
-  frozen `specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` first (human pre-registration, §4/§10).
-- **Phase 3 execution/risk** — L5b risk (SPEC-060–065), L6 broker (SPEC-070–074), L7 SPEC-081/083
-  (reconciliation), SPEC-104. `l8_evidence/gates` (SPEC-093) is the first `--require-kill-non-equivalent`
-  mutation target — classify its survivors in `specs/mutation-survivors.yaml` as it is built.
-- **Phase 5** — L4b fill (SPEC-040–043), SPEC-096.
+- **Phase 2 build order (offline):**
+  1. Pre-register + freeze `specs/prices/*-v1.yaml` (§4) — a design/pre-registration act done **before**
+     any performance is examined (no data has been read; freezing now is legitimate). Document as an ADR.
+  2. `specs/gates/v1.yaml` (§10) + L8 gate evaluator `l8_evidence/gates/` (SPEC-093, money — first
+     `--require-kill-non-equivalent` mutation target; classify survivors in `specs/mutation-survivors.yaml`).
+  3. L4 pricing framework (SPEC-030–035): conditional logit, time-respecting cross-fitting, stage-two
+     combination, edge **distribution** (not point estimate), no-LambdaRank. Built + tested on synthetic
+     fixtures; real fitting/Gate-1/2 evaluation needs licensed historical data (not in-repo) and is
+     data-gated, not code-gated.
+  4. L8 evidence (SPEC-090–097): trial ledger, race-level paired inference, calibration/CLV diagnostics.
+- Activate each Phase-2 ID (`planned → active` in the manifest) **only once it is implemented and
+  covered**, so `make verify` stays honest/green. Record the activation rationale in the ADR.
+- Later: Phase 3 (L5b risk, L6 broker, reconciliation SPEC-081/083, SPEC-104) and Phase 5 (L4b fill,
+  SPEC-096) — but those cross toward live execution and stay HALTED by the approval posture until their
+  gates are met.
 
-**Human / platform actions now that the active surface is done:**
-- Open a PR (not yet requested) — CI `verify` should pass; `mutants-critical` passes (gates empty).
-- Commit signing, branch protection, real CODEOWNERS reviewer (see *Operational notes*).
-- Freeze `specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` before Phase 2.
+**What is genuinely not an agent action (and is NOT blocking offline work):**
+- **Deciding a gate** — SPEC-093/CLAUDE.md: an LLM may explain a gate result, never decide one. The
+  evaluator is deterministic; Gate 1/2/… PASS/FAIL are read from evidence, not authored by the agent.
+- **The live trust boundary** — protected `main`, PR review, a second CODEOWNERS reviewer, signed
+  images. By design these are not the agent's to self-configure (self-attestation would defeat them),
+  and they only matter at the **live** boundary (Phase 3+), which is halted regardless. Offline research
+  does not need them; work continues on the feature branch without a PR.
+- **Commit signing** — the environment's SSH signing key is a 0-byte placeholder, so every commit is
+  *Unverified*. This is an environment fact, fixable by neither the founder nor the agent here; it is a
+  live-boundary prerequisite, not a current blocker.
 
 ---
 
@@ -209,22 +224,23 @@ planned tranches, in build order:
 
 ---
 
-## Operational notes / open items (need a human or the platform)
+## Operational notes / constraints
 
-- **Commit signing is impossible in this environment.** `commit.gpgsign=true`, `gpg.format=ssh`,
-  but `/home/claude/.ssh/commit_signing_key.pub` is a 0-byte placeholder and there is no
-  `allowedSignersFile`; even `-S` yields "No signature". All commits are therefore *Unverified*
-  on GitHub (committer identity is correct). CIANDTRUST §2 requires signed commits on protected
-  `main` — real signing infrastructure is a **platform action** before any merge.
-- **Branch protection not verifiable from here** — required checks (`verify`, `mutants-critical`),
-  required review, "do not allow bypassing (include administrators)", bypass list verified empty
-  (SPECIFICATION §12.2). Human/platform action.
-- **CODEOWNERS owner is a default** (`@allansdouglas1983-cmyk`) — replace with a dedicated
-  reviewer/team before any live phase.
-- **`make verify` is now green** (all active IDs covered). `make mutants`/CI `mutants-critical` runs
-  the live `tools/run_mutation.py` (ADR 0008): `l8_evidence/gates` is `--require-kill-non-equivalent`
-  but still `planned`/empty (vacuous pass), `l7_settle` is report-only. When gates are built, classify
-  their surviving mutants in `specs/mutation-survivors.yaml` (human-owned) or kill them with tests.
-- **`specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` are intentionally unwritten** — frozen
-  human pre-registration decisions (§4, §10), not agent-fabricated.
-- **No PR opened yet** (not requested).
+The project is founder-hands-off; the agent progresses the work. The items below are facts and
+constraints, not chores routed to the founder.
+
+- **`make verify` is green** (all active IDs covered). `make mutants`/CI `mutants-critical` runs the
+  live `tools/run_mutation.py` (ADR 0008): `l8_evidence/gates` is `--require-kill-non-equivalent` but
+  still `planned`/empty (vacuous pass); `l7_settle` is report-only. When gates are built, classify their
+  surviving mutants in `specs/mutation-survivors.yaml` or kill them with tests — an agent task.
+- **`specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` are still unwritten** — these are
+  pre-registration decisions (§4, §10) to be made and frozen (as an ADR) **before** any performance is
+  examined. That freezing is the first Phase-2 step (above); it is a design act the agent does now,
+  while no data has been read.
+- **Commit signing** — the environment's SSH signing key is a 0-byte placeholder, so every commit is
+  *Unverified* (committer identity is correct). Neither founder nor agent can fix this here; it is a
+  live-boundary prerequisite, not a current blocker. Work continues on the feature branch.
+- **Live trust boundary** (protected `main`, PR review, second CODEOWNERS reviewer, signed images):
+  by design not the agent's to self-configure, and only relevant at the **live** boundary (Phase 3+,
+  halted). CODEOWNERS currently points at `@allansdouglas1983-cmyk` by default. No PR is open (offline
+  research does not need one).
