@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import textwrap
 from pathlib import Path
+from typing import Any
 
 from tools import _spec_lib
 from tools import check_spec_coverage as csc
@@ -273,3 +274,100 @@ def test_verification_loss_skips_without_base(tmp_path: Path) -> None:
         ]
     )
     assert rc == 0
+
+
+# --- Advisory-review hardening (ADR 0001 amendment): skipped tests and money downgrades ---
+
+
+def test_skipped_marker_not_counted() -> None:
+    src = """
+    import pytest
+
+    @pytest.mark.skip(reason="wip")
+    @pytest.mark.spec("SPEC-001")
+    def test_skipped() -> None:
+        assert False
+
+    @pytest.mark.spec("SPEC-002")
+    def test_real() -> None: ...
+    """
+    assert _spec_lib.find_spec_markers_in_source(textwrap.dedent(src)) == {"SPEC-002"}
+
+
+def test_module_skipped_marker_not_counted() -> None:
+    src = """
+    import pytest
+
+    pytestmark = [pytest.mark.skip, pytest.mark.spec("SPEC-003")]
+
+    @pytest.mark.spec("SPEC-004")
+    def test_x() -> None: ...
+    """
+    assert _spec_lib.find_spec_markers_in_source(textwrap.dedent(src)) == set()
+
+
+def test_skipped_active_id_fails_coverage(tmp_path: Path) -> None:
+    m = _manifest(
+        tmp_path,
+        """
+        - id: SPEC-050
+          component: l5_decision
+          criticality: money
+          enforcement_state: active
+          relevant_inputs: [p]
+          metamorphic_properties: [x]
+        """,
+    )
+    tests = tmp_path / "tests"
+    _write(
+        tests / "properties" / "test_ev.py",
+        """
+        import pytest
+
+        @pytest.mark.skip(reason="wip")
+        @pytest.mark.spec("SPEC-050")
+        def test_ev() -> None: ...
+        """,
+    )
+    rc = csc.main(["--manifest", str(m), "--enforce-states", "active", "--tests-dir", str(tests)])
+    assert rc == 1
+
+
+def test_verification_loss_active_money_downgrade() -> None:
+    base: list[dict[str, Any]] = [
+        {"id": "SPEC-050", "criticality": "money", "enforcement_state": "active"}
+    ]
+    index: dict[str, dict[str, Any]] = {
+        "SPEC-050": {"id": "SPEC-050", "criticality": "evidence", "enforcement_state": "active"}
+    }
+    errors = csc._verification_loss(base, index)
+    assert any("money -> evidence" in e for e in errors)
+
+
+def test_verification_loss_planned_money_downgrade() -> None:
+    base: list[dict[str, Any]] = [
+        {"id": "SPEC-060", "criticality": "money", "enforcement_state": "planned"}
+    ]
+    index: dict[str, dict[str, Any]] = {
+        "SPEC-060": {"id": "SPEC-060", "criticality": "evidence", "enforcement_state": "planned"}
+    }
+    errors = csc._verification_loss(base, index)
+    assert any("SPEC-060" in e and "money -> evidence" in e for e in errors)
+
+
+def test_verification_loss_active_deletion() -> None:
+    base: list[dict[str, Any]] = [
+        {"id": "SPEC-050", "criticality": "money", "enforcement_state": "active"}
+    ]
+    errors = csc._verification_loss(base, {})
+    assert any("SPEC-050" in e and "absent" in e for e in errors)
+
+
+def test_verification_loss_clean() -> None:
+    base: list[dict[str, Any]] = [
+        {"id": "SPEC-050", "criticality": "money", "enforcement_state": "active"}
+    ]
+    index: dict[str, dict[str, Any]] = {
+        "SPEC-050": {"id": "SPEC-050", "criticality": "money", "enforcement_state": "active"}
+    }
+    assert csc._verification_loss(base, index) == []

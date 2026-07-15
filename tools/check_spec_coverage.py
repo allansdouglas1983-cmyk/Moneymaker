@@ -56,21 +56,29 @@ def _verification_loss(
         bid = bentry.get("id")
         if not isinstance(bid, str):
             continue
-        if bentry.get("enforcement_state") not in _PROTECTED:
-            continue
+        b_state = bentry.get("enforcement_state")
+        b_money = bentry.get("criticality") == "money"
+        b_protected = b_state in _PROTECTED
         head = index.get(bid)
         if head is None:
-            errors.append(
-                f"verification loss: {bid} was {bentry.get('enforcement_state')} on base "
-                "but is now absent"
-            )
+            # A protected ID may not silently disappear; a money ID (any state) may not be
+            # deleted without rationale (manifest rule).
+            if b_protected:
+                errors.append(f"verification loss: {bid} ({b_state}) present on base but now absent")
+            elif b_money:
+                errors.append(
+                    f"criticality: money ID {bid} present on base but now absent "
+                    "(deletion needs rationale)"
+                )
             continue
-        if head.get("enforcement_state") not in _PROTECTED:
+        if b_protected and head.get("enforcement_state") not in _PROTECTED:
             errors.append(
-                f"verification loss: {bid} downgraded from "
-                f"{bentry.get('enforcement_state')} to {head.get('enforcement_state')}"
+                f"verification loss: {bid} downgraded from {b_state} to "
+                f"{head.get('enforcement_state')}"
             )
-        if bentry.get("criticality") == "money" and head.get("criticality") != "money":
+        # "An ID must not be downgraded from money in an ordinary PR" applies to ALL money
+        # IDs, including `planned` ones (a foreseeable way to pre-downgrade before activation).
+        if b_money and head.get("criticality") != "money":
             errors.append(f"criticality downgrade: {bid} money -> {head.get('criticality')}")
     return errors
 

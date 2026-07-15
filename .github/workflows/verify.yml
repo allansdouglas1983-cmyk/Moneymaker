@@ -18,7 +18,14 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 so `origin/main` resolves for the "No verification regressions" step
+      # (tools/check_spec_coverage.py --detect-verification-loss --base-ref origin/main).
+      # With the default shallow checkout that step silently skips and the downgrade gate
+      # cannot fire (advisory review finding, ADR 0001 amendment). Departs from the verbatim
+      # transcription in docs/CI-AND-TRUST.md §3 for this reason.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v3
       - run: uv sync
 

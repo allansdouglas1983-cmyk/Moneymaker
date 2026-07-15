@@ -43,26 +43,73 @@ def index_manifest(entries: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return index
 
 
-def find_spec_markers_in_source(source: str) -> set[str]:
-    """Return the SPEC-IDs referenced by ``@pytest.mark.spec(...)`` in ``source``."""
+_SKIP_MARKERS = {"skip", "skipif", "xfail"}
+
+
+def _mark_name(node: ast.AST) -> str | None:
+    """If ``node`` is a ``<...>.mark.NAME`` attribute or call, return NAME."""
+    target: ast.AST = node.func if isinstance(node, ast.Call) else node
+    if (
+        isinstance(target, ast.Attribute)
+        and isinstance(target.value, ast.Attribute)
+        and target.value.attr == "mark"
+    ):
+        return target.attr
+    return None
+
+
+def _spec_ids_of(node: ast.AST) -> set[str]:
+    """SPEC-IDs from a single ``pytest.mark.spec(...)`` call node."""
     ids: set[str] = set()
+    if isinstance(node, ast.Call) and _mark_name(node) == "spec":
+        for arg in node.args:
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                ids.add(arg.value)
+    return ids
+
+
+def _is_skip_decorator(decorator: ast.expr) -> bool:
+    return _mark_name(decorator) in _SKIP_MARKERS
+
+
+def _module_skipped(tree: ast.Module) -> bool:
+    """True if a module-level ``pytestmark`` applies skip/xfail to the whole module."""
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == "pytestmark" for t in node.targets
+        ):
+            for inner in ast.walk(node.value):
+                if _mark_name(inner) in _SKIP_MARKERS:
+                    return True
+    return False
+
+
+def _collect_spec_ids(node: ast.AST, ids: set[str]) -> None:
+    """Recurse into ``node``, pruning any function/class scope marked skip/xfail."""
+    for child in ast.iter_child_nodes(node):
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if any(_is_skip_decorator(d) for d in child.decorator_list):
+                continue
+            _collect_spec_ids(child, ids)
+        else:
+            for inner in ast.walk(child):
+                ids |= _spec_ids_of(inner)
+
+
+def find_spec_markers_in_source(source: str) -> set[str]:
+    """Return the SPEC-IDs referenced by ``@pytest.mark.spec(...)`` in ``source``.
+
+    Markers on tests that are also marked ``skip``/``skipif``/``xfail`` (function-, class-,
+    or module-level) are ignored: a skipped test verifies nothing (ADR 0001 amendment).
+    """
     try:
         tree = ast.parse(source)
     except SyntaxError:
-        return ids
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        func = node.func
-        if (
-            isinstance(func, ast.Attribute)
-            and func.attr == "spec"
-            and isinstance(func.value, ast.Attribute)
-            and func.value.attr == "mark"
-        ):
-            for arg in node.args:
-                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    ids.add(arg.value)
+        return set()
+    if _module_skipped(tree):
+        return set()
+    ids: set[str] = set()
+    _collect_spec_ids(tree, ids)
     return ids
 
 

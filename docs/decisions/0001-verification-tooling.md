@@ -74,3 +74,32 @@ SPECIFICATION.md §12.3–§12.4 and must be pinned down; this ADR records those
   clean under `ruff` and `mypy --strict`.
 - The marker convention (`@pytest.mark.spec`) is now the contract every later slice uses to
   declare which SPEC-IDs its tests cover.
+
+## Amendment (advisory review, 2026-07-15)
+
+An advisory verifier (SPECIFICATION.md §16.4) reviewed the slice. It confirmed the slice
+writes no money code, leaves the manifest untouched, and that the tools do what they claim.
+Three findings were acted on; two limitations are disclosed.
+
+- **Inert CI gate (fixed).** The "No verification regressions" step runs
+  `--detect-verification-loss --base-ref origin/main`, but the default shallow
+  `actions/checkout` never populates `origin/main`, so `_base_manifest` returned `None` and
+  the gate silently skipped. `.github/workflows/verify.yml` now checks out with
+  `fetch-depth: 0`. The tool still skips *gracefully* when there is genuinely no base (e.g.
+  before `main` exists) — that is correct, not a hole.
+- **Skipped tests no longer count as coverage (fixed).** `find_spec_markers_in_source`
+  ignores `spec` markers on tests also marked `skip`/`skipif`/`xfail` at function, class, or
+  module level. A skipped test verifies nothing.
+- **Money-downgrade detection widened (fixed).** `_verification_loss` now flags a
+  `money → non-money` criticality change or deletion for **all** money IDs, including
+  `planned` ones — closing a pre-downgrade-before-activation path. State downgrades
+  (`active`/`verified` → weaker) remain enforced for protected IDs.
+- **Disclosed limitation — non-vacuity.** Decision 2 guarantees a *referencing test exists
+  and passes*, not that it is non-vacuous (an assert-free test still counts). The intended
+  backstop is mutation testing, which is deferred (decision 7). There is therefore a
+  Phase-1 window in which money IDs have no anti-vacuous defence beyond review; `run_mutation.py`
+  closes it when the first money module lands.
+- **Disclosed limitation — static quarantine.** The import check is static (per SPEC-100)
+  and seeds `--from l5_decision l5b_risk l6_broker` (SPEC-100's literal roots). Dynamic
+  imports (`importlib.import_module`) and any future bet-placing package not added to the
+  root list are out of scope for the static check; broadening the roots is a SPEC-100 change.
