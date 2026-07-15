@@ -4,13 +4,16 @@ version = "0.0.0"
 description = "Betfair Racing Research Platform — a research and measurement platform, not a betting bot."
 requires-python = ">=3.11"
 # Runtime deps are intentionally minimal at bootstrap. Pydantic is used only at external
-# boundaries and for persisted contracts (SPECIFICATION.md §6.9) — not on the hot path.
+# boundaries and for persisted contracts (SPECIFICATION.md §6.9). PyYAML backs the manifest
+# and facts-registry tooling.
 dependencies = [
     "pydantic>=2",
+    "pyyaml>=6",
 ]
 
 # Dev/verification toolchain invoked by the Makefile and .github/workflows/verify.yml.
-# `uv sync` installs this group by default.
+# `uv sync` installs this group by default. cosmic-ray is added with tools/run_mutation.py
+# in the first slice that introduces a money module to mutate (see docs/decisions/0001).
 [dependency-groups]
 dev = [
     "pytest>=8",
@@ -18,7 +21,7 @@ dev = [
     "ruff>=0.5",
     "pylint>=3",
     "mypy>=1.10",
-    "cosmic-ray>=8.3",
+    "types-PyYAML>=6",
 ]
 
 [tool.uv]
@@ -29,6 +32,11 @@ package = false
 target-version = "py311"
 
 [tool.pytest.ini_options]
+addopts = "--strict-markers"
+pythonpath = ["."]
+markers = [
+    "spec: bind a test to one or more SPEC-IDs, e.g. @pytest.mark.spec('SPEC-050'); read by tools/check_spec_coverage.py",
+]
 testpaths = [
     "tests/unit",
     "tests/integration",
@@ -37,3 +45,10 @@ testpaths = [
     "tests/failure_injection",
     "tests/replay_regression",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+namespace_packages = true
+explicit_package_bases = true
+exclude = ['^\.venv/']
