@@ -35,7 +35,7 @@ class TestModeIsExplicit:
     def test_context_is_frozen(self) -> None:
         ctx = FeatureBuildContext(mode=BuildMode.LIVE, scheduled_start=SCHEDULED)
         with pytest.raises((ValueError, TypeError)):
-            ctx.mode = BuildMode.POST_HOC  # type: ignore[misc]
+            ctx.mode = BuildMode.POST_HOC
 
 
 class TestLiveMode:

@@ -113,9 +113,10 @@ class TestBuildGuards:
 
     def test_build_mode_enum_available(self) -> None:
         # POST_HOC vs LIVE both exist and are distinct (used by callers building features).
-        assert BuildMode.LIVE != BuildMode.POST_HOC
+        assert {BuildMode.LIVE, BuildMode.POST_HOC} <= set(BuildMode)
+        assert len({BuildMode.LIVE, BuildMode.POST_HOC}) == 2
 
     def test_feature_is_frozen(self) -> None:
         f = _feature("rating", Decimal("1"))
         with pytest.raises((ValueError, TypeError)):
-            f.name = "other"  # type: ignore[misc]
+            f.name = "other"

@@ -87,7 +87,7 @@ class TestStampValidation:
     def test_stamps_are_frozen(self) -> None:
         s = _stamps(_utc(-60))
         with pytest.raises((ValueError, TypeError)):
-            s.first_usable_time = _utc(-10)  # type: ignore[misc]
+            s.first_usable_time = _utc(-10)
 
 
 @pytest.mark.spec("SPEC-023")
