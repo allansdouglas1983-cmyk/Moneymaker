@@ -11,8 +11,13 @@ from pathlib import Path
 
 import pytest
 
-from l3_features.leakage import BSPLeakageError, assert_no_bsp, is_reconciled_bsp
-from l8_evidence.reconciled_bsp import ReconciledBSP
+from l3_features.leakage import (
+    _RECONCILED_BSP_TAINT,
+    BSPLeakageError,
+    assert_no_bsp,
+    is_reconciled_bsp,
+)
+from l8_evidence.reconciled_bsp import RECONCILED_BSP_TAINT, ReconciledBSP
 from tools.check_import_quarantine import find_violations
 
 pytestmark = pytest.mark.spec("SPEC-021")
@@ -56,3 +61,10 @@ class TestRuntimeAssertion:
 
     def test_assert_no_bsp_passes_clean_value(self) -> None:
         assert_no_bsp(Decimal("3.5"), field="ltp")  # no raise
+
+    def test_taint_marker_matches_grading_module(self) -> None:
+        # The runtime guard duplicates the taint string (it must NOT import the grading-only
+        # module — that is the forbidden edge). This test is the anti-drift net: if either
+        # literal is edited the guard would silently stop detecting real BSP. Importing both
+        # here is safe — a test module is not part of l3_features, so no forbidden edge.
+        assert _RECONCILED_BSP_TAINT == RECONCILED_BSP_TAINT

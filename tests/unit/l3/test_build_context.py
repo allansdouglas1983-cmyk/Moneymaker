@@ -43,12 +43,11 @@ class TestLiveMode:
         ctx = FeatureBuildContext(mode=BuildMode.LIVE, scheduled_start=SCHEDULED)
         assert ctx.seconds_to_scheduled_off(_utc(-60)) == pytest.approx(60.0)
 
-    def test_actual_off_seconds_unavailable_in_live_mode(self) -> None:
-        ctx = FeatureBuildContext(
-            mode=BuildMode.LIVE, scheduled_start=SCHEDULED, actual_off=ACTUAL
-        )
+    def test_live_context_cannot_carry_actual_off(self) -> None:
+        # The raw field is a leakage surface, not just the derived method: a live context must
+        # not even hold actual_off, so it cannot be read as a side-channel.
         with pytest.raises(LiveModeViolation):
-            ctx.seconds_to_actual_off(_utc(-60))
+            FeatureBuildContext(mode=BuildMode.LIVE, scheduled_start=SCHEDULED, actual_off=ACTUAL)
 
     def test_actual_off_seconds_unavailable_even_without_actual_off_set(self) -> None:
         ctx = FeatureBuildContext(mode=BuildMode.LIVE, scheduled_start=SCHEDULED)

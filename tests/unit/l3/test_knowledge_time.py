@@ -89,6 +89,28 @@ class TestStampValidation:
         with pytest.raises((ValueError, TypeError)):
             s.first_usable_time = _utc(-10)
 
+    def test_first_usable_before_ingestion_is_rejected(self) -> None:
+        # A value cannot be usable before it was received — that is an unprovable claim.
+        with pytest.raises(LeakageError):
+            KnowledgeStamps(
+                event_time=_utc(-120),
+                source_publication_time=_utc(-120),
+                provider_timestamp=_utc(-120),
+                ingestion_receive_time=_utc(-60),
+                first_usable_time=_utc(-90),  # earlier than ingestion
+            )
+
+    def test_first_usable_before_publication_is_rejected(self) -> None:
+        # A value cannot be knowable before its provider published it.
+        with pytest.raises(LeakageError):
+            KnowledgeStamps(
+                event_time=_utc(-120),
+                source_publication_time=_utc(-60),
+                provider_timestamp=_utc(-120),
+                ingestion_receive_time=_utc(-90),
+                first_usable_time=_utc(-90),  # earlier than publication (-60)
+            )
+
 
 @pytest.mark.spec("SPEC-023")
 class TestBackfillProvenance:

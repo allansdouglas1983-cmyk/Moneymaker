@@ -93,6 +93,20 @@ class TestReproducibility:
         fs2 = FeatureSet(features=(_feature("rating", Decimal("12.50")),))
         assert feature_set_hash(fs1) == feature_set_hash(fs2)
 
+    def test_signed_zero_hashes_identically(self) -> None:
+        fs_pos = FeatureSet(features=(_feature("bias", Decimal("0")),))
+        fs_neg = FeatureSet(features=(_feature("bias", Decimal("-0")),))
+        assert feature_set_hash(fs_pos) == feature_set_hash(fs_neg)
+
+    def test_hash_order_independent_with_duplicate_names(self) -> None:
+        # Two features share a name but differ in value; the total-order sort must make the set
+        # hash order-independent even then (the collision-handling path).
+        a = _feature("rating", Decimal("1"))
+        b = _feature("rating", Decimal("2"))
+        assert feature_set_hash(FeatureSet(features=(a, b))) == feature_set_hash(
+            FeatureSet(features=(b, a))
+        )
+
 
 class TestBuildGuards:
     def test_build_rejects_reconciled_bsp_value(self) -> None:
