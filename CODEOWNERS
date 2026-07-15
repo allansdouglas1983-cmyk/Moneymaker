@@ -23,6 +23,7 @@
 /docs/SPECIFICATION.md   @allansdouglas1983-cmyk
 /docs/spec-manifest.yaml @allansdouglas1983-cmyk
 /docs/facts.yaml         @allansdouglas1983-cmyk
+/docs/licensed-sources.yaml @allansdouglas1983-cmyk
 /specs/**                @allansdouglas1983-cmyk
 /tests/**                @allansdouglas1983-cmyk
 /l5_decision/**          @allansdouglas1983-cmyk
@@ -30,4 +31,5 @@
 /l6_broker/**            @allansdouglas1983-cmyk
 /l7_settle/**            @allansdouglas1983-cmyk
 /l8_evidence/gates/**    @allansdouglas1983-cmyk
+/governance/**           @allansdouglas1983-cmyk
 /CODEOWNERS              @allansdouglas1983-cmyk

@@ -1,0 +1,118 @@
+# Licensed-source registry — SPECIFICATION.md §13.2, SPEC-101.
+#
+# Until a human reviews a source it is `candidate` with unverified rights (null). Rights are a
+# LEGAL determination and are NEVER agent-populated. A source is `operational` only when it is
+# used in the deployable / betting pipeline; the gate (governance.licensed_sources) fails if an
+# operational source is not `permitted` with the required rights. Racing Post / rpscrape-style
+# sources MUST stay research-only (operational: false) and out of the deployable pipeline (§13.1).
+#
+# status:      candidate | permitted
+# operational: false until a source is wired into the deployable pipeline
+
+- source_id: betfair-bsp-promo
+  provider: Betfair
+  dataset: BSP / PPWAP / MORNINGWAP / PPMAX / PPMIN promo files (grading benchmarks)
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+
+- source_id: betfair-historical-basic
+  provider: Betfair
+  dataset: Historical BASIC (1-min, LTP only, no volume/ladder)
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+
+- source_id: betfair-historical-advanced
+  provider: Betfair
+  dataset: Historical ADVANCED (1-second, 3-level ladder + volume)
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+
+- source_id: betfair-historical-pro
+  provider: Betfair
+  dataset: Historical PRO (~50ms tick) — stratified sample only
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+
+- source_id: bha-data
+  provider: BHA
+  dataset: Form, entries
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+
+- source_id: licensed-form-feeds
+  provider: Timeform / Smartform / Proform (licensed feeds)
+  dataset: Form / ratings — required before live
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null

@@ -5,7 +5,7 @@
 # These targets are RED until tools/ and the test suites exist. That is expected.
 
 MANIFEST := docs/spec-manifest.yaml
-MONEY := l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence
+MONEY := l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance
 
 .PHONY: verify mutants replay build
 
