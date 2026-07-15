@@ -146,8 +146,8 @@ approval posture (`docs/HALT-CHECKLIST.md`) **pre-approves offline implementatio
 so the next work proceeds autonomously on this feature branch:
 
 - **Phase 2 build order (offline):**
-  1. Pre-register + freeze `specs/prices/*-v1.yaml` (§4) — a design/pre-registration act done **before**
-     any performance is examined (no data has been read; freezing now is legitimate). Document as an ADR.
+  1. ✅ **Done (ADR 0009)** — froze `specs/prices/{info,exec,close}-v1.yaml` before any data
+     was read (correct pre-registration). Continue at step 2.
   2. `specs/gates/v1.yaml` (§10) + L8 gate evaluator `l8_evidence/gates/` (SPEC-093, money — first
      `--require-kill-non-equivalent` mutation target; classify survivors in `specs/mutation-survivors.yaml`).
   3. L4 pricing framework (SPEC-030–035): conditional logit, time-respecting cross-fitting, stage-two
@@ -233,10 +233,9 @@ constraints, not chores routed to the founder.
   live `tools/run_mutation.py` (ADR 0008): `l8_evidence/gates` is `--require-kill-non-equivalent` but
   still `planned`/empty (vacuous pass); `l7_settle` is report-only. When gates are built, classify their
   surviving mutants in `specs/mutation-survivors.yaml` or kill them with tests — an agent task.
-- **`specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` are still unwritten** — these are
-  pre-registration decisions (§4, §10) to be made and frozen (as an ADR) **before** any performance is
-  examined. That freezing is the first Phase-2 step (above); it is a design act the agent does now,
-  while no data has been read.
+- **`specs/prices/*-v1.yaml` are frozen (v1, ADR 0009).** `specs/gates/v1.yaml` remains to be
+  authored with the L8 gate-evaluator slice — its pre-registered endpoints (§9/§10) are a
+  separate pre-registration, done before that slice examines any data.
 - **Commit signing** — the environment's SSH signing key is a 0-byte placeholder, so every commit is
   *Unverified* (committer identity is correct). Neither founder nor agent can fix this here; it is a
   live-boundary prerequisite, not a current blocker. Work continues on the feature branch.
