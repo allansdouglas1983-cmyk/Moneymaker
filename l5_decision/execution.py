@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from l5_decision.ladder import is_valid_index
 
@@ -47,14 +47,14 @@ class TakerV1Order(BaseModel):
     model_config = ConfigDict(frozen=True, strict=True)
 
     market_id: str
-    selection_id: int
+    selection_id: int = Field(gt=0)  # Betfair selection ids are positive
     side: Side
     stake_minor: int
     min_fill_size_minor: int
     worst_acceptable_tick: int
     time_in_force: TimeInForce
     persistence_type: PersistenceType
-    market_version: int
+    market_version: int = Field(ge=0)  # marketVersion is a non-negative counter
 
     @model_validator(mode="after")
     def _enforce_taker_v1(self) -> TakerV1Order:

@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SecondPositionError(RuntimeError):
@@ -28,7 +28,7 @@ class Candidate(BaseModel):
     model_config = ConfigDict(frozen=True, strict=True)
 
     market_id: str
-    selection_id: int
+    selection_id: int = Field(gt=0)  # Betfair selection ids are positive
     conservative_ev: Decimal
 
 
@@ -77,6 +77,8 @@ class MarketPositionLedger:
     def commit(self, market_id: str, selection_id: int) -> None:
         """Record a position. Raises :class:`SecondPositionError` if the market already has one —
         including a repeat of the identical selection (still a second placement attempt)."""
+        if selection_id <= 0:
+            raise ValueError(f"selection_id must be positive, got {selection_id}")
         if market_id in self._positions:
             raise SecondPositionError(
                 f"market {market_id} already holds a position on selection "

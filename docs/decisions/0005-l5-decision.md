@@ -67,3 +67,29 @@ as structural/guard IDs — still property-tested.
 - `WinProbabilityLowerBound` is a **consumption contract**, not the edge distribution (SPEC-034,
   `planned`). It guarantees the decision layer never consumes a bare probability/point estimate;
   it does not itself prove a value is a true lower bound — that is L4's responsibility.
+
+## Amendment (advisory review, 2026-07-15)
+
+An advisory verifier (SPECIFICATION.md §16.4) reviewed the slice adversarially: **no Critical or
+High findings**. It confirmed the ladder is exactly 350 ticks with correct band boundaries, the
+EV formula and both declared monotonicities hold across the whole domain (including `p∈{0,1}`,
+`c=0`, `O∈{1.01,1000}`), the three price types cannot be conflated, selection is deterministic
+and outcome-independent, taker-v1 is fully pinned with no reachable maker path, nothing is
+stubbed, no test was weakened, and no LLM produces a number. It also verified that a
+NaN/Infinity `conservative_ev` — which would make `min()` order-dependent and break selection
+determinism — is **rejected** by pydantic's strict `finite_number` constraint.
+
+Addressed (cheap money-critical hygiene; guards only tightened, never loosened):
+
+- **Identifier bounds.** `selection_id` now requires `> 0` (Betfair ids are positive) on
+  `Candidate`, `TakerV1Order`, and `MarketPositionLedger.commit`; `market_version` now requires
+  `>= 0` on `TakerV1Order` (a non-negative counter). Added tests for each.
+
+Noted, no change (correctly out of scope):
+
+- `WinProbabilityLowerBound` validates `[0,1]` but cannot prove a value is a genuine
+  distributional lower bound — that is L4/SPEC-034's job, and is documented as such.
+- `select_market_position` does not itself enforce a positive-EV threshold — that is a caller
+  precondition (the candidates are those that already cleared the decision threshold).
+- A caller passing `Decimal(0.1)` (float-derived, imprecise) is an upstream concern; no float
+  ever reaches the module, so the "never float" representation guarantee holds.
