@@ -1,0 +1,39 @@
+[project]
+name = "betfair-research"
+version = "0.0.0"
+description = "Betfair Racing Research Platform — a research and measurement platform, not a betting bot."
+requires-python = ">=3.11"
+# Runtime deps are intentionally minimal at bootstrap. Pydantic is used only at external
+# boundaries and for persisted contracts (SPECIFICATION.md §6.9) — not on the hot path.
+dependencies = [
+    "pydantic>=2",
+]
+
+# Dev/verification toolchain invoked by the Makefile and .github/workflows/verify.yml.
+# `uv sync` installs this group by default.
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "hypothesis>=6",
+    "ruff>=0.5",
+    "pylint>=3",
+    "mypy>=1.10",
+    "cosmic-ray>=8.3",
+]
+
+[tool.uv]
+# This is a workspace/virtual root, not an installable package — do not try to build it.
+package = false
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/unit",
+    "tests/integration",
+    "tests/properties",
+    "tests/stateful",
+    "tests/failure_injection",
+    "tests/replay_regression",
+]

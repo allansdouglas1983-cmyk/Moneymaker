@@ -1,0 +1,33 @@
+# CODEOWNERS — human ownership of the trust-critical surface.
+#
+# Rationale (docs/SPECIFICATION.md §12.2a, docs/CI-AND-TRUST.md §2a): if an agent could
+# modify BOTH the code under test AND the verification workflow, the workflow could certify
+# its own change. Required status checks do not help when the check is authored inside the
+# PR. These paths therefore require review from a human owner. CODEOWNERS reviews use the
+# BASE branch version of this file — helpful — but CODEOWNERS itself and the branch-protection
+# settings still require controlled ownership on the platform.
+#
+# This file is necessary but NOT sufficient. Pair it with, in preference order:
+#   1. an organisation-level required workflow, or
+#   2. a reusable verification workflow in a separate, more tightly protected repo
+#      (pinned by immutable commit SHA), or
+#   3. a protected CI app whose verification logic lives outside this PR's writable tree.
+# And on GitHub: protected `main`; required review + required status checks (`verify`,
+# `mutants-critical`); "do not allow bypassing the above settings (include administrators)"
+# ENABLED; and the bypass list VERIFIED EMPTY (not assumed — rulesets can contain bypass actors).
+#
+# The owner below is a sensible default (the repository owner). Replace or augment it with a
+# dedicated reviewer or a protected team before any live phase.
+
+/.github/workflows/**    @allansdouglas1983-cmyk
+/docs/SPECIFICATION.md   @allansdouglas1983-cmyk
+/docs/spec-manifest.yaml @allansdouglas1983-cmyk
+/docs/facts.yaml         @allansdouglas1983-cmyk
+/specs/**                @allansdouglas1983-cmyk
+/tests/**                @allansdouglas1983-cmyk
+/l5_decision/**          @allansdouglas1983-cmyk
+/l5b_risk/**             @allansdouglas1983-cmyk
+/l6_broker/**            @allansdouglas1983-cmyk
+/l7_settle/**            @allansdouglas1983-cmyk
+/l8_evidence/gates/**    @allansdouglas1983-cmyk
+/CODEOWNERS              @allansdouglas1983-cmyk

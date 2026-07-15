@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Environments / uv
+.venv/
+venv/
+.python-version
+# NOTE: uv.lock is intentionally NOT ignored — commit it for reproducible builds.
+
+# Test / lint / type caches
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.pylint.d/
+.coverage
+coverage.xml
+htmlcov/
+
+# Mutation testing (cosmic-ray)
+.cosmic-ray/
+*.sqlite
+session*.sqlite
+
+# CI-generated artifacts
+traceability.md
+
+# OS / editor
+.DS_Store
+*.swp

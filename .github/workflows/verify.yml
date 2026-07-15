@@ -1,0 +1,101 @@
+# Transcribed verbatim from docs/CI-AND-TRUST.md §3. This workflow is the real trust
+# boundary (a runner the agent cannot edit) — see docs/SPECIFICATION.md §12. It is
+# human-owned via CODEOWNERS. Steps that call tools/ scripts, pytest suites, or `make build`
+# WILL report red until those are implemented; that is expected and honest, not a defect.
+# Only `enforcement_state: active`/`verified` SPEC-IDs gate CI; `planned` IDs do not.
+name: verify
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync
+
+      # Spec coverage — ACTIVE ids only. `planned` must not block Phase 1.
+      - name: Spec traceability (active + verified)
+        run: uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified
+
+      # Money-critical ACTIVE IDs must declare causal inputs + have property tests
+      - name: Causal declarations + property coverage for active money IDs
+        run: uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified --require-causal-declarations --require-properties-for money
+
+      # An active ID must never silently lose a verification
+      - name: No verification regressions
+        run: uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --detect-verification-loss --base-ref origin/main
+
+      # Facts registry must not be stale
+      - name: Facts freshness
+        run: uv run python tools/check_facts_freshness.py --registry docs/facts.yaml
+
+      - name: Unit + integration
+        run: uv run pytest tests/unit tests/integration -q
+
+      - name: Property-based (Hypothesis)
+        run: uv run pytest tests/properties -q
+
+      - name: Stateful / model-based
+        run: uv run pytest tests/stateful -q
+
+      - name: Failure injection
+        run: uv run pytest tests/failure_injection -q
+
+      - name: Replay regression (bit-exact)
+        run: uv run pytest tests/replay_regression -q
+
+      # Static anti-stub
+      - name: Unused arguments
+        run: uv run ruff check --select ARG .
+      - name: Pylint unused-argument on money modules
+        run: uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence
+      - name: Ban escape hatches in money modules
+        run: |
+          ! grep -rnE '(NotImplementedError|TODO|FIXME|pass\s+#|raise\s+NotImplemented)' \
+            l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence \
+            --include='*.py'
+
+      # Licensing quarantine
+      - name: Scraping import-graph quarantine
+        run: uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker
+
+      - name: Typecheck
+        run: uv run mypy --strict .
+
+      - name: Traceability matrix artifact
+        run: uv run python tools/emit_traceability.py > traceability.md
+      - uses: actions/upload-artifact@v4
+        with: { name: traceability, path: traceability.md }
+
+  mutants-critical:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync
+      - name: Mutation — gates (100% of NON-EQUIVALENT mutants)
+        run: uv run python tools/run_mutation.py --target l8_evidence/gates --require-kill-non-equivalent --survivors-must-be-classified
+      - name: Mutation — risk & settlement (report survivors)
+        run: uv run python tools/run_mutation.py --target l5b_risk l7_settle --report
+
+  attest:
+    needs: [verify, mutants-critical]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, attestations: write, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build artefact
+        run: make build
+      - uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'dist/*'
