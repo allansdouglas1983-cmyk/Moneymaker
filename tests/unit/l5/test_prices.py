@@ -27,7 +27,11 @@ class TestDistinctTypes:
 
     def test_same_tick_different_type_are_not_equal(self) -> None:
         # OddsExec and ClosePrice can share a tick index but must never be interchangeable.
-        assert OddsExec(tick_index=100) != ClosePrice(tick_index=100)
+        # object-typed bindings: mypy already proves these types are non-overlapping (that IS
+        # the SPEC-051 guarantee), so the runtime inequality is asserted via `object`.
+        a: object = OddsExec(tick_index=100)
+        b: object = ClosePrice(tick_index=100)
+        assert a != b
 
 
 class TestOddsExec:
@@ -49,7 +53,7 @@ class TestOddsExec:
     def test_frozen(self) -> None:
         o = OddsExec(tick_index=10)
         with pytest.raises((ValueError, TypeError)):
-            o.tick_index = 11  # type: ignore[misc]
+            o.tick_index = 11
 
 
 class TestMarketInfoPrice:

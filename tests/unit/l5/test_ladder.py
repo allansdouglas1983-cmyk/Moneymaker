@@ -84,7 +84,7 @@ class TestPriceOf:
     def test_bool_index_rejected(self) -> None:
         # bool is an int subclass; a boolean is not a tick index.
         with pytest.raises(TypeError):
-            price_of(True)  # type: ignore[arg-type]
+            price_of(True)
 
 
 class TestIndexOf:
