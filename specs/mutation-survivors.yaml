@@ -1,0 +1,18 @@
+# Classified surviving mutants (SPECIFICATION.md §12.4). Human-owned (see CODEOWNERS).
+#
+# A surviving mutant is allowed ONLY if listed here with a classification of
+#   equivalent-mutant | unreachable-defensive | tooling-limitation
+# plus a rationale and human approval (`approved_by`). A `test-deficiency` classification, or an
+# unlisted survivor, fails `run_mutation.py --require-kill-non-equivalent`: kill it with a test.
+#
+# key = "<module_path>::<operator_name>::<occurrence>"
+# Example:
+#   - module_path: l8_evidence/gates/evaluator.py
+#     operator_name: core/ReplaceBinaryOperator_BitOr_Add
+#     occurrence: 0
+#     classification: tooling-limitation      # mutating a `|` in an unevaluated type annotation
+#     rationale: "from __future__ import annotations makes the annotation a string; no runtime effect"
+#     approved_by: <human>
+#
+# Empty until the first enforced target (l8_evidence/gates) exists.
+[]

@@ -12,7 +12,7 @@ a `main(argv) -> int` and testable pure functions; unit tests live in `tests/uni
 | `check_facts_freshness.py`   | reject any `docs/facts.yaml` entry past its `recheck_by` (unpopulated facts pass) | **implemented** |
 | `check_import_quarantine.py` | transitive static import-graph: forbid `research.scraping` from `l5_decision`/`l5b_risk`/`l6_broker` (SPEC-100) | **implemented** |
 | `emit_traceability.py`       | emit the SPEC-ID → tests traceability matrix (Markdown, CI artifact) | **implemented** |
-| `run_mutation.py`            | cosmic-ray on money modules; 100% non-equivalent gate mutants killed; classify survivors | **deferred** — built with the first money module to mutate (ADR 0001) |
+| `run_mutation.py`            | cosmic-ray on money modules; 100% non-equivalent gate mutants killed; classify survivors (`specs/mutation-survivors.yaml`) | **implemented** (ADR 0008) |
 
 ## Coverage convention
 A test declares which SPEC-IDs it verifies with `@pytest.mark.spec("SPEC-050")` (function,
