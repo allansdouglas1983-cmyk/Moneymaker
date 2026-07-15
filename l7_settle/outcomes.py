@@ -29,6 +29,10 @@ class RunnerResult(Enum):
 class RunnerOutcome:
     result: RunnerResult
     dead_heat_count: int = 1
+    # Informational only: the removed runner's own reduction factor. It does NOT reduce other
+    # runners' winnings here — reduction factors are APPLIED per position via
+    # MatchedPosition.applicable_reduction_factors (match/removal timing is decided upstream,
+    # ADR 0007). Setting this alone does not change any P&L.
     reduction_factor: Decimal | None = None
 
     def __post_init__(self) -> None:

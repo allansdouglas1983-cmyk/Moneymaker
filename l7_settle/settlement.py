@@ -7,7 +7,7 @@ settle every position to zero.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
 from l7_settle.outcomes import MarketOutcome, MarketStatus, MatchedPosition, RunnerOutcome, RunnerResult
@@ -23,7 +23,9 @@ class SettlementBlocked(Exception):
 @dataclass(frozen=True)
 class MarketSettlement:
     market_id: str
-    gross_pnl_by_selection_scenario: dict[str, int]
+    # hash=False: the diagnostic scenario dict is excluded from __hash__ (a dict is unhashable),
+    # so a settlement stays hashable while __eq__ still compares it (the ledger relies on ==).
+    gross_pnl_by_selection_scenario: dict[str, int] = field(hash=False)
     actual_net_market_pnl: int
     commission_rate_effective: Decimal
     actual_commission: int
@@ -50,10 +52,13 @@ def _commission_minor(rate: Decimal, net_minor: int) -> int:
 
 
 def _scenario_matrix(positions: Sequence[MatchedPosition], outcome: MarketOutcome) -> dict[str, int]:
-    runner_ids: set[int] = {p.runner_id for p in positions}
-    for runner_id, runner_outcome in outcome.runners.items():
-        if runner_outcome.result != RunnerResult.REMOVED:
-            runner_ids.add(runner_id)
+    # Only runners that actually competed (WINNER/LOSER) are hypothetical winners in the matrix;
+    # REMOVED/VOID/UNKNOWN runners are not scenario keys.
+    runner_ids: set[int] = {
+        runner_id
+        for runner_id, runner_outcome in outcome.runners.items()
+        if runner_outcome.result in (RunnerResult.WINNER, RunnerResult.LOSER)
+    }
     matrix: dict[str, int] = {}
     for winner in sorted(runner_ids):
         total = 0
@@ -94,7 +99,9 @@ def settle_market(
         net += position_pnl_minor(position, _runner_outcome(outcome, position.runner_id), outcome.market_status)
 
     commission = 0 if voided else _commission_minor(commission_rate_effective, net)
-    charges = 0 if voided else transaction_charges_minor
+    # Transaction charges are incurred at placement/cancel time (SPEC-073), independent of the
+    # market outcome, so they are NOT zeroed on a void — a voided market still cost its transactions.
+    charges = transaction_charges_minor
     scenarios: dict[str, int] = {} if voided else _scenario_matrix(positions, outcome)
 
     return MarketSettlement(

@@ -95,6 +95,22 @@ def test_unknown_runner_status_blocks_settlement() -> None:
         _settle([_pos(111, 200, "3.0")], outcome)
 
 
+def test_void_market_still_incurs_transaction_charges() -> None:
+    # Transaction charges are a placement cost, independent of the (void) outcome.
+    outcome = _outcome(MarketStatus.VOID, {111: RunnerOutcome(RunnerResult.VOID)})
+    s = _settle([_pos(111, 200, "3.0")], outcome, charges=5)
+    assert s.actual_net_market_pnl == 0
+    assert s.actual_commission == 0
+    assert s.transaction_charges == 5
+    assert s.final_net_pnl == -5
+
+
+def test_settlement_is_hashable() -> None:
+    outcome = _outcome(MarketStatus.SETTLED, {111: RunnerOutcome(RunnerResult.WINNER)})
+    s = _settle([_pos(111, 200, "3.0")], outcome)
+    assert hash(s) == hash(s)  # scenario dict excluded from __hash__; object is hashable
+
+
 def test_scenario_matrix_present() -> None:
     outcome = _outcome(
         MarketStatus.SETTLED,
