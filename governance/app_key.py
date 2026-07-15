@@ -38,6 +38,16 @@ class RealMoneyPlacementAuthorization:
 
     live_key: LiveAppKey
 
+    def __post_init__(self) -> None:
+        # Runtime backstop for the type barrier: no non-live key can inhabit this proof, even by
+        # direct construction or dataclasses.replace — the SPEC-102 guarantee then does not rest
+        # solely on the CI mypy step (defence in depth).
+        if not isinstance(self.live_key, LiveAppKey):
+            raise DelayedKeyRealMoneyError(
+                "RealMoneyPlacementAuthorization requires a LiveAppKey — real-money placement is "
+                "impossible on any other key"
+            )
+
     @property
     def live_key_id(self) -> str:
         return self.live_key.key_id

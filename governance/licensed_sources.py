@@ -39,9 +39,15 @@ def assert_operational_sources_licensed(
     checked: list[str] = []
     problems: list[str] = []
     for source in sources:
-        if not source.get("operational", False):
-            continue
         source_id = str(source.get("source_id", "<unknown>"))
+        operational = source.get("operational")
+        if not isinstance(operational, bool):
+            # Fail closed: the operational flag is the gate's trigger, so an absent/ambiguous
+            # value is an error, not "assume research-only".
+            problems.append(f"{source_id}: 'operational' must be an explicit boolean")
+            continue
+        if not operational:
+            continue
         checked.append(source_id)
         if source.get("status") != "permitted":
             problems.append(

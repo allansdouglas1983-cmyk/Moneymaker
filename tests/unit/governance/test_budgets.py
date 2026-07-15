@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from governance.budgets import BudgetError, BudgetKind, SeparatedBudgets
+from governance.budgets import BudgetAccount, BudgetError, BudgetKind, SeparatedBudgets
 
 pytestmark = pytest.mark.spec("SPEC-103")
 
@@ -32,3 +32,22 @@ def test_overdraw_is_refused() -> None:
 def test_non_positive_debit_is_refused() -> None:
     with pytest.raises(BudgetError):
         _budgets().debit(BudgetKind.RESEARCH_INFRASTRUCTURE, 0)
+
+
+def test_mismatched_account_kind_is_refused() -> None:
+    # Raw constructor still enforces field/kind consistency (not only via .of()).
+    with pytest.raises(BudgetError):
+        SeparatedBudgets(
+            research_infrastructure=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),  # wrong kind
+            betting_bankroll=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),
+            max_experiment_loss=BudgetAccount(BudgetKind.MAX_EXPERIMENT_LOSS, 1),
+        )
+
+
+def test_negative_balance_is_refused_by_raw_constructor() -> None:
+    with pytest.raises(BudgetError):
+        SeparatedBudgets(
+            research_infrastructure=BudgetAccount(BudgetKind.RESEARCH_INFRASTRUCTURE, -1),
+            betting_bankroll=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),
+            max_experiment_loss=BudgetAccount(BudgetKind.MAX_EXPERIMENT_LOSS, 1),
+        )

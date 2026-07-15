@@ -61,3 +61,20 @@ need real constructs. They are Phase-0/foundational and must be covered now.
   is not a `mutants-critical` target in CI-AND-TRUST §3).
 - The licensed-source *rights* stay unverified (`candidate`) — a human/legal action, tracked by
   `recheck_by` and the CODEOWNERS review requirement.
+
+## Amendment (advisory review, 2026-07-15)
+
+An advisory verifier confirmed the slice is solid (no funding hole, tests additive, nothing
+stubbed). Findings addressed by adding **runtime** defence-in-depth so the money guarantees do
+not rest solely on the CI mypy step:
+
+- **SPEC-102 (F1/F2):** `RealMoneyPlacementAuthorization.__post_init__` raises
+  `DelayedKeyRealMoneyError` unless `live_key` is a `LiveAppKey`, so direct construction and
+  `dataclasses.replace` from a delayed key are refused **at runtime**, not just by `mypy`. Tests
+  added for both paths.
+- **SPEC-103 (F3):** `SeparatedBudgets.__post_init__` enforces field/kind consistency and
+  non-negative balances even via the raw constructor (previously only `of()` validated). No
+  funding path existed either way; this closes a validation gap.
+- **SPEC-101 (F4):** the licensing check now **fails closed** on the `operational` trigger — an
+  absent or non-boolean `operational` flag is an error, not "assume research-only".
+- **SPEC-100:** confirmed correct (non-vacuous planted-violation test; CI roots match). No change.

@@ -33,6 +33,19 @@ class SeparatedBudgets:
     betting_bankroll: BudgetAccount
     max_experiment_loss: BudgetAccount
 
+    def __post_init__(self) -> None:
+        # Enforce field/kind consistency and non-negativity even via the raw constructor, so the
+        # invariants do not depend on callers using .of() (defence in depth).
+        for account, kind in (
+            (self.research_infrastructure, BudgetKind.RESEARCH_INFRASTRUCTURE),
+            (self.betting_bankroll, BudgetKind.BETTING_BANKROLL),
+            (self.max_experiment_loss, BudgetKind.MAX_EXPERIMENT_LOSS),
+        ):
+            if account.kind is not kind:
+                raise BudgetError(f"budget field for {kind.value} holds a {account.kind.value} account")
+            if account.balance_minor < 0:
+                raise BudgetError(f"{kind.value} balance must be non-negative, got {account.balance_minor}")
+
     @classmethod
     def of(cls, *, research: int, bankroll: int, experiment_loss: int) -> SeparatedBudgets:
         for name, amount in (("research", research), ("bankroll", bankroll), ("experiment_loss", experiment_loss)):

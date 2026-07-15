@@ -60,6 +60,15 @@ def test_fully_permitted_operational_source_passes() -> None:
     assert assert_operational_sources_licensed(sources) == ["feed"]
 
 
+def test_missing_operational_flag_is_refused() -> None:
+    # Fail closed: an entry omitting the operational trigger is an error, not "research-only".
+    sources: list[dict[str, Any]] = [
+        {"source_id": "feed", "status": "permitted", "permitted_uses": _permitted()}
+    ]
+    with pytest.raises(LicensingError):
+        assert_operational_sources_licensed(sources)
+
+
 def test_repo_registry_loads_and_is_clean() -> None:
     sources = load_registry(_REPO / "docs" / "licensed-sources.yaml")
     # Bootstrap: no source is operational yet, so the gate passes.
