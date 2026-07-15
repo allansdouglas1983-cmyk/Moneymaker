@@ -46,10 +46,10 @@ def test_selection_is_order_independent(candidates: list[Candidate], data: st.Da
     )
 
 
-@given(first=st.integers(min_value=1, max_value=40), second=st.integers(min_value=1, max_value=40), ev=_EV)
-def test_second_position_always_refused(first: int, second: int, ev: Decimal) -> None:
+@given(first=st.integers(min_value=1, max_value=40), second=st.integers(min_value=1, max_value=40))
+def test_second_position_always_refused(first: int, second: int) -> None:
     # The guard dominates: once a market has a position, a second is refused regardless of the
-    # second candidate's EV or selection id.
+    # second candidate's selection id (the ledger tracks positions, not EV).
     ledger = MarketPositionLedger()
     ledger.commit("1.100", first)
     with pytest.raises(SecondPositionError):
