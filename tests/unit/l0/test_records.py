@@ -5,11 +5,12 @@ from datetime import datetime, timezone
 
 import pytest
 
+from l0_raw import clock
 from l0_raw import records as r
 
 
-def _stamp() -> r.ClockStamp:
-    return r.ClockStamp(
+def _stamp() -> clock.ClockStamp:
+    return clock.ClockStamp(
         wall_utc=datetime(2026, 7, 15, tzinfo=timezone.utc), monotonic_ns=42, domain_fingerprint="h1:b1:1"
     )
 

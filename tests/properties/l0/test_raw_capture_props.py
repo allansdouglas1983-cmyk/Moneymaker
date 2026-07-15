@@ -45,7 +45,9 @@ def test_market_payload_stored_byte_exact(tmp_path_factory: pytest.TempPathFacto
     assert rec.checksum == r.sha256_hex(payload)
     ((meta, frame),) = list(cap.log.read())
     assert frame == payload
-    assert r.decode(meta, frame).payload_bytes == payload
+    decoded = r.decode(meta, frame)
+    assert isinstance(decoded, r.RawMarketRecord)
+    assert decoded.payload_bytes == payload
 
 
 @pytest.mark.spec("SPEC-002")

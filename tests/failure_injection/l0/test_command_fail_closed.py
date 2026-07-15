@@ -8,6 +8,7 @@ import pytest
 
 from l0_raw.clock import Clock, ClockDomain
 from l0_raw.commands import ApiCommandJournal, CommandGateway, CommandIntent, JournalWriteError
+from l0_raw.records import ApiCommandSendEvent
 from l0_raw.store import AppendOnlyLog
 
 pytestmark = pytest.mark.spec("SPEC-003")
@@ -31,14 +32,14 @@ class _CountingTransport:
 
     def send(self, payload: bytes) -> bytes:
         self.calls += 1
-        return b"ok"
+        return b"ok:" + payload
 
 
 class _FailingSendJournal(ApiCommandJournal):
     """A journal whose send-event persistence always fails."""
 
-    def record_send(self, event: object) -> None:  # type: ignore[override]
-        raise JournalWriteError("disk full")
+    def record_send(self, event: ApiCommandSendEvent) -> None:
+        raise JournalWriteError(f"disk full while persisting {event.command_id}")
 
 
 def _intent() -> CommandIntent:
