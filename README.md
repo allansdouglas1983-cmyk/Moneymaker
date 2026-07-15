@@ -25,13 +25,22 @@ Layered `l0_raw` → `l8_evidence` (see each directory's `README.md` and SPECIFI
 **Money-critical modules** — `l4b_fill`, `l5_decision`, `l5b_risk`, `l6_broker`, `l7_settle`,
 `l8_evidence/gates` — are never stubbed and require property-based + mutation tests.
 
-## Status — repository bootstrap
-Specification, governance, and directory scaffolding are in place. **There is no
-implementation yet.** In particular, the `tools/` CI-enforcement scripts and the test suites
-are not written, so `.github/workflows/verify.yml` will report **red** until they exist —
-that is expected and honest, not a green build that checks nothing. (The workflow only runs
-on pull requests and pushes to `main`, so simply pushing a feature branch does not trigger it.)
+## Status — Phase 1 in progress
+
+**Live progress and session handover: [`docs/PROGRESS.md`](docs/PROGRESS.md).**
+
+Implemented so far (**7 of 23 active SPEC-IDs**, 73 tests, `mypy --strict`/`ruff` clean):
+- **Verification harness** (`tools/`) — the CI enforcement backbone (ADR 0001).
+- **L0 raw truth layer** (`l0_raw/`, SPEC-001–004) — append-only capture, dual clock,
+  persist-before-send (ADR 0002).
+- **L1 deterministic reducer** (`l1_reduce/`, SPEC-010–012) — pure reduction, canonical
+  replay, reducer versioning (ADR 0003).
+
+`.github/workflows/verify.yml` reports **red** overall until the remaining active IDs (L3, L5,
+L7, governance) are implemented — that is expected and honest, not a green build that checks
+nothing. (The workflow only runs on pull requests and pushes to `main`.)
 
 Build per the session discipline in `CLAUDE.md`: **one spec slice per session, failing tests
 first (committed separately), then implementation, then `make verify`.** Status comes from
-CI, never from a prose claim of completion.
+CI, never from a prose claim of completion. To resume, follow the checklist in
+`docs/PROGRESS.md`.
