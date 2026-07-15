@@ -78,6 +78,15 @@ class TestTakerV1Invariants:
         with pytest.raises((ValueError, TypeError)):
             _order(worst_acceptable_tick=350)
 
+    def test_negative_market_version_rejected(self) -> None:
+        with pytest.raises((ValueError, TypeError)):
+            _order(market_version=-1)
+
+    @pytest.mark.parametrize("bad_id", [0, -3])
+    def test_non_positive_selection_id_rejected(self, bad_id: int) -> None:
+        with pytest.raises((ValueError, TypeError)):
+            _order(selection_id=bad_id)
+
     def test_market_version_required(self) -> None:
         with pytest.raises((ValueError, TypeError)):
             TakerV1Order(  # type: ignore[call-arg]

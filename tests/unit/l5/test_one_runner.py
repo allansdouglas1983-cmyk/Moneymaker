@@ -57,6 +57,11 @@ class TestSelection:
         with pytest.raises(ValueError):
             select_market_position([_c(11, "0.01"), _c(11, "0.02")])
 
+    @pytest.mark.parametrize("bad_id", [0, -1])
+    def test_non_positive_selection_id_rejected(self, bad_id: int) -> None:
+        with pytest.raises((ValueError, TypeError)):
+            Candidate(market_id="1.100", selection_id=bad_id, conservative_ev=Decimal("0.01"))
+
 
 class TestLedgerRefusesSecondPosition:
     def test_second_position_same_market_refused(self) -> None:
@@ -78,3 +83,9 @@ class TestLedgerRefusesSecondPosition:
         ledger.commit("1.100", 11)
         with pytest.raises(SecondPositionError):
             ledger.commit("1.100", 11)
+
+    @pytest.mark.parametrize("bad_id", [0, -1])
+    def test_commit_rejects_non_positive_selection_id(self, bad_id: int) -> None:
+        ledger = MarketPositionLedger()
+        with pytest.raises(ValueError):
+            ledger.commit("1.100", bad_id)
