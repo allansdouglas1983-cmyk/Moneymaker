@@ -1,0 +1,724 @@
+# AUTHORITATIVE requirement list. v1.1 — phase-aware.
+#
+# CI enforces IDs whose enforcement_state is `active` or `verified`.
+# `planned` IDs do NOT block CI — otherwise Phase 6 requirements would prevent
+# Phase 1 from ever going green.
+#
+# enforcement_state: planned | active | verified | retired
+#   planned  -> documented, not yet enforced. Does not block CI.
+#   active   -> enforced. Must have passing verification.
+#   verified -> active AND independently reviewed.
+#   retired  -> requires rationale + replacement/migration record.
+#
+# CI RULES:
+#   - all `active`/`verified` IDs must have passing verification
+#   - no active ID may LOSE a verification without explicit human approval
+#   - an ID must not be downgraded from `money` in an ordinary implementation PR
+#   - activating the next phase is a HUMAN-CONTROLLED specification change
+#   - deleting/retiring an ID requires rationale + migration record
+#
+# criticality:
+#   money    - pricing, staking, execution, settlement, gates. Never stubbed.
+#              Requires declared relevant_inputs + metamorphic_properties.
+#   evidence - affects validity of conclusions. Never stubbed.
+#   support  - plumbing. Stub only with explicit human approval.
+#
+# NOTE: "every output varies with every input" is REJECTED as invalid.
+# Guard branches legitimately dominate (exhausted budget -> always REJECT).
+# Declare relevant_inputs and metamorphic_properties per requirement instead.
+
+- id: SPEC-001
+  component: l0_raw
+  title: Raw market stream capture
+  requirement: 'Persist payload_bytes exactly as received, with publish_time, receive_time_utc, receive_time_monotonic,
+    stream_clock, connection_id, subscription_hash, conflation_settings, schema_version, checksum. Append-only.
+    MUST NOT transform or normalise before persisting.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-002
+  component: l0_raw
+  title: Raw order stream capture
+  requirement: 'As SPEC-001 for the order stream. MUST capture every update including duplicates and out-of-order
+    messages, unmodified.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-003
+  component: l0_raw
+  title: API command log
+  requirement: 'Every outbound command persisted with command_id, customer_ref, customer_order_ref, signal_id,
+    payload_hash, local_send_time, response_time, response_payload, retry_parent_id, process_version.
+    MUST persist before the command is sent, not after.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-004
+  component: l0_raw
+  title: Monotonic clock alongside wall clock
+  requirement: 'Every timestamped record carries both UTC wall clock and a monotonic process clock. Latency
+    computations MUST use monotonic. Wall clock can jump backwards under NTP adjustment.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-010
+  component: l1_reduce
+  title: Reducer determinism
+  requirement: 'reduce(raw_events, reducer_version) is a pure function. Same inputs MUST produce byte-identical
+    output. Property test asserts determinism over generated event sequences.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-011
+  component: l1_reduce
+  title: Bit-exact replay
+  requirement: 'Derived state at L2 MUST be reconstructible from L0 + reducer version with byte-identical
+    results. Replay regression test in CI.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-012
+  component: l1_reduce
+  title: Reducer versioning
+  requirement: 'Reducer version is an immutable string recorded with every derived artefact. Changing
+    reducer logic REQUIRES a version bump. Old versions remain runnable for replay of historical conclusions.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-020
+  component: l3_features
+  title: Knowledge-time semantics
+  requirement: 'Every feature carries: event time, source publication time, provider timestamp, ingestion
+    receive time, first usable time, decision time, correction time. A feature whose first-usable-time
+    is not provably before market off MUST be rejected at build time with an error, not a warning.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-021
+  component: l3_features
+  title: BSP leakage guard
+  requirement: 'Reconciled BSP MUST NOT be reachable from any pre-off feature. Enforced by a static check
+    on the feature module import graph AND a runtime assertion. BSP joins only at grading time.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-022
+  component: l3_features
+  title: Actual-off time is not a live feature
+  requirement: 'Races are delayed. The live model knows scheduled start and current market state only.
+    "Seconds to actual off" MUST be unavailable to feature builders operating in live mode. Available
+    in post-hoc analysis mode only, and the mode MUST be explicit.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-023
+  component: l3_features
+  title: Backfill does not confer historical validity
+  requirement: 'A retrospective file (e.g. ratings published after the race) MUST NOT be treated as knowable
+    because first_seen_ts was populated during backfill. Feature registry records provenance mode (live-captured
+    vs backfilled) and backfilled sources MUST declare their true publication time.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-024
+  component: l3_features
+  title: Feature hash reproducibility
+  requirement: 'Feature builds are deterministic and identified by feature_set_hash. Same inputs + same
+    hash MUST produce identical features.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-030
+  component: l4_pricing
+  title: Conditional logit stage one
+  requirement: 'Race is one mutually exclusive choice set. Probabilities sum to 1 within race. Handles
+    varying field size natively. MLE on the winner. Non-runners dropped and renormalised.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-031
+  component: l4_pricing
+  title: Time-respecting cross-fitting
+  requirement: 'Stage-one fundamental probabilities fed to stage two MUST be strictly out-of-fold and
+    strictly time-respecting (trained only on earlier folds). A property test MUST fail if any stage-two
+    training row''s fundamental probability came from a model that saw that race.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-032
+  component: l4_pricing
+  title: Stage-two market combination
+  requirement: 'score_i = alpha*log(p_fundamental_i) + beta*log(p_market_info_i); c = softmax(score) within
+    race. alpha, beta by MLE on the winner. Output MUST vary with both alpha and beta. Output MUST sum
+    to 1 per race.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+  relevant_inputs:
+  - p_fundamental
+  - p_market_info
+  - alpha
+  - beta
+  metamorphic_properties:
+  - output must vary with both alpha and beta
+  - output must sum to 1 within each race
+  - increasing p_fundamental at fixed p_market_info and alpha>0 must not decrease c_i
+- id: SPEC-033
+  component: l4_pricing
+  title: Horizon-specific models
+  requirement: 'A model trained at one decision horizon MUST NOT be deployed at another without either
+    a horizon-specific model or explicit horizon as a feature. Deployment MUST refuse a horizon mismatch.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-034
+  component: l4_pricing
+  title: Edge distribution, not point estimate
+  requirement: 'Pricing outputs a DISTRIBUTION over edge (block bootstrap ensemble, Bayesian, or time-fold
+    ensemble). The point estimate MUST NOT be consumable by the decision layer. Type system enforces this.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-035
+  component: l4_pricing
+  title: No LambdaRank softmax
+  requirement: 'Ranking scores MUST NOT be softmaxed and called probabilities. Any boosting model MUST
+    use a grouped softmax/cross-entropy objective or Plackett-Luce training, validated on race-level proper
+    scores.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-040
+  component: l4b_fill
+  title: Fill probability model, not queue simulator
+  requirement: 'Outputs P(filled by tau | x, a) with uncertainty. MUST NOT claim or compute an exact queue
+    position. Competing terminal events: full fill, partial fill, voluntary cancel, suspension/lapse,
+    price moved away, timed fallback cross, runner removal.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 5
+  enforcement_state: planned
+- id: SPEC-041
+  component: l4b_fill
+  title: Three fill envelopes
+  requirement: 'Every replay computes pessimistic (queue advances only through observed traded volume),
+    optimistic (all unexplained depth reduction ahead of you), and calibrated posterior (from live canary
+    fills). All three MUST be returned together. A strategy profitable only under optimistic MUST be rejected
+    by the gate evaluator.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 5
+  enforcement_state: planned
+- id: SPEC-042
+  component: l4b_fill
+  title: Fill probability calibration metrics
+  requirement: 'Brier/log score of predicted fill probability; observed vs predicted fill rate by decile;
+    fill-time survival calibration; prediction interval coverage; partial-fill size error; stake-weighted
+    implementation shortfall; shortfall in implied-probability basis points; opportunity cost of unfilled
+    orders; adverse movement after fill; fill rate by price, time-to-off, liquidity stratum. Tick error
+    is diagnostic only, NOT the economic metric.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 5
+  enforcement_state: planned
+- id: SPEC-043
+  component: l4b_fill
+  title: Fill model output varies with inputs
+  requirement: 'Property test: two materially different order contexts MUST produce different fill probabilities.
+    A constant-returning implementation MUST fail this test.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 5
+  enforcement_state: planned
+  relevant_inputs:
+  - book_depth
+  - spread
+  - time_to_off
+  - order_size
+  - price_tick
+  - volatility
+  metamorphic_properties:
+  - two materially different order contexts must produce different fill probabilities
+  - increasing depth ahead at the same price must not increase fill probability
+  - a constant-returning implementation must fail
+- id: SPEC-050
+  component: l5_decision
+  title: EV at executable prices
+  requirement: 'EV = p*(O-1)*(1-c) - (1-p) per unit stake, valid ONLY for a single position in a market.
+    Uses odds_exec (actually transactable now, side-specific, size-dependent), NOT p_market_info and NOT
+    p_close. Uses the conservative lower bound of the edge distribution.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+  relevant_inputs:
+  - win_probability
+  - odds_exec
+  - commission_rate
+  metamorphic_properties:
+  - increasing win_probability at fixed odds must not decrease EV
+  - increasing commission_rate must not increase EV
+  - p_close must never reach this function
+- id: SPEC-051
+  component: l5_decision
+  title: Three prices are distinct types
+  requirement: 'p_market_info, odds_exec, p_close are distinct types. The type system MUST prevent passing
+    p_close or p_market_info where odds_exec is required.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-052
+  component: l5_decision
+  title: Crossing execution policy only in v1
+  requirement: 'Marketable limit orders. persistenceType LAPSE always. marketVersion guard on every order.
+    Passive posting MUST NOT be reachable until Gate 4.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-053
+  component: l5_decision
+  title: Tick index arithmetic
+  requirement: 'Price is an integer index into the canonical Betfair ladder (1.01-2 by .01; 2-3 by .02;
+    3-4 by .05; 4-6 by .1; 6-10 by .2; 10-20 by .5; 20-30 by 1; 30-50 by 2; 50-100 by 5; 100-1000 by 10).
+    Round-trip index->decimal->index MUST be exact. Floats MUST NOT represent price.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-054
+  component: l5_decision
+  title: One runner per market
+  requirement: 'v1 MUST refuse a second position in a market. Commission is charged on the net market
+    result; multi-position attribution is path-dependent.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-060
+  component: l5b_risk
+  title: Fixed minimum stake with absolute loss budget
+  requirement: 'v1 stake is a fixed minimum. NOT Kelly, NOT fractional Kelly. An absolute experiment-loss
+    budget (a hard number, separately funded) decrements on every settled loss. Placement MUST be refused
+    when the budget is exhausted.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+  relevant_inputs:
+  - estimated_edge
+  - permitted_risk
+  - experiment_budget_remaining
+  - exchange_minimum
+  metamorphic_properties:
+  - exhausted experiment budget must always produce REJECT
+  - reducing permitted_risk must not increase permitted stake
+  - changing informational metadata must not alter the decision
+- id: SPEC-061
+  component: l5b_risk
+  title: Reject when minimum stake exceeds permitted risk
+  requirement: 'If the exchange minimum stake exceeds the permitted risk for an opportunity, the opportunity
+    MUST be skipped. MUST NOT round up into a bet that breaches the risk limit.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+  relevant_inputs:
+  - exchange_minimum
+  - permitted_risk
+  metamorphic_properties:
+  - when exchange_minimum > permitted_risk the decision must be SKIP for all edges
+  - the function must never round up into a bet exceeding permitted_risk
+- id: SPEC-062
+  component: l5b_risk
+  title: Unknown order state blocks placement
+  requirement: 'If any order is in an unknown state, ALL further placement MUST be blocked until reconciled.
+    No exceptions, no timeout-based assumption of failure.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-063
+  component: l5b_risk
+  title: Kill switch completeness
+  requirement: 'MUST (1) atomically prevent new intents, (2) cancel all cancellable unmatched orders,
+    (3) repeatedly reconcile until state is known, (4) surface every remaining matched liability, (5)
+    disable auto-restart, (6) preserve an immutable incident snapshot, (7) require separate human restart.
+    MUST NOT auto-hedge.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-064
+  component: l5b_risk
+  title: Watchdog runs outside the trading process
+  requirement: 'The watchdog MUST be a separate process. A crashed executor MUST NOT be able to disable
+    its own safety monitor.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-065
+  component: l5b_risk
+  title: Budget monotonicity
+  requirement: 'Property test: the loss budget MUST be monotonically non-increasing. No code path may
+    increase it without an explicit, logged, human-approved top-up event.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+  relevant_inputs:
+  - settled_losses
+  - approved_topup_events
+  metamorphic_properties:
+  - budget is monotonically non-increasing absent an approved top-up
+  - no code path increases budget without a logged human-approved event
+- id: SPEC-070
+  component: l6_broker
+  title: Order state machine
+  requirement: 'CREATED -> SUBMITTED -> ACKNOWLEDGED -> EXECUTABLE -> PARTIALLY_MATCHED -> MATCHED|CANCELLED|LAPSED|VOIDED
+    -> SETTLED|RESETTLED. Illegal transitions MUST raise. Stateful model-based test required.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-071
+  component: l6_broker
+  title: Idempotent placement
+  requirement: 'Duplicate commands MUST NOT create duplicate economic exposure. Uses customerOrderRef.
+    Property test asserts exposure invariance under duplicated commands.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-072
+  component: l6_broker
+  title: marketVersion guard
+  requirement: 'Every order carries the current marketVersion. If the version has incremented (runner
+    removal, turn in-play), the order MUST lapse rather than match into a changed market. Resulting non-fills
+    are correct behaviour, not a bug to be tuned away.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-073
+  component: l6_broker
+  title: Transaction rate alarm
+  requirement: 'Transaction charges apply above 5,000 qualifying transactions per hour. Projected rate
+    MUST be monitored and alarmed well below the threshold. Quote/cancel churn is the risk.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-074
+  component: l6_broker
+  title: Stream API preferred over polling
+  requirement: 'Uses the Stream API. listMarketBook polling, where used at all, MUST NOT exceed 5 requests/second/market.
+    Request weighting: sum(weight) x market count <= 200 points.
+
+    '
+  criticality: support
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-080
+  component: l7_settle
+  title: Market-level settlement
+  requirement: 'market_settlement with gross_pnl_by_selection_scenario, actual_net_market_pnl, commission_rate_effective,
+    actual_commission, transaction_charges, final_net_pnl, statement_reference, settlement_version, resettlement_flag.
+    Per-order commission_est MUST NOT exist as an authoritative field.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-081
+  component: l7_settle
+  title: Account statement is truth
+  requirement: 'Local P&L calculation is a hypothesis reconciled against the account statement. On discrepancy,
+    the statement wins and placement is blocked until explained.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-082
+  component: l7_settle
+  title: Settlement edge cases
+  requirement: 'MUST handle: partial matches; multiple orders on one runner; multiple runners; dead heats;
+    reduction factors (Betfair semantics, not bookmaker "Rule 4" terminology); voided and abandoned races;
+    resettlements; rounding to currency minor units; duplicate acknowledgements; unknown status after
+    timeout.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 1
+  enforcement_state: active
+- id: SPEC-083
+  component: l7_settle
+  title: Differential reconciliation
+  requirement: 'Compare local reducer state, listCurrentOrders, order stream, and account statement. An
+    unresolved difference MUST block all further placement.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned
+- id: SPEC-090
+  component: l8_evidence
+  title: Race-level paired inference
+  requirement: 'Primary unit is the race. d_r = L_r(market) - L_r(combined) using -log p on the actual
+    winner. Block bootstrap clustered by meeting-day. Runner-level independence assumptions MUST NOT appear
+    anywhere.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-091
+  component: l8_evidence
+  title: Trial ledger
+  requirement: 'Immutable record per experiment with all fields in SPECIFICATION.md 9.7, including number_of_prior_trials
+    and alpha_budget. Append-only. Gate evaluation MUST read it and MUST account for multiplicity.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-092
+  component: l8_evidence
+  title: Lockbox integrity
+  requirement: 'One holdout period is never inspected during development. Any access is logged and burns
+    the lockbox, requiring a new one. Gate 1 evaluation is the only permitted read.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-093
+  component: l8_evidence
+  title: Deterministic gate evaluator
+  requirement: '`gate evaluate --spec specs/gates/v1.yaml --experiment <id> --data-manifest sha256:...
+    --model-manifest sha256:...` returns pass/fail from a versioned spec bound to data and model hashes.
+    An LLM MUST NOT decide a gate. Property test: a gate MUST return fail on constructed insufficient-evidence
+    inputs.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+  relevant_inputs:
+  - evidence_sample
+  - pre_registered_boundaries
+  - trial_count
+  metamorphic_properties:
+  - constructed insufficient evidence must return CONTINUE or FAIL, never PASS
+  - evaluator must return one of PASS|CONTINUE|FAIL_HARM|FAIL_FUTILITY, never a boolean
+  - stale facts (past recheck_by) must fail the gate
+- id: SPEC-094
+  component: l8_evidence
+  title: Pre-registered endpoints
+  requirement: 'Every experiment declares minimum economically meaningful effect, power assumptions, primary
+    endpoint, and stopping rule BEFORE observation. Sample size derived from N ~ (z_a + z_b)^2 * sigma_d^2
+    / delta^2. Borrowed constants (dR2>=0.01, t>=3, ECE<=0.02, "2000 bets") MUST NOT appear as gates.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-095
+  component: l8_evidence
+  title: CLV diagnostic family
+  requirement: 'Four distinct quantities: signal CLV, intended-order CLV, realised-fill CLV, execution-policy
+    value. Realised-fill CLV MUST NOT exist for unfilled orders — assigning hypothetical taken prices
+    is forbidden. Two closing benchmarks retained: BSP and a defined pre-suspension WAP/microprice window.
+    CLV MUST NOT be a training target.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-096
+  component: l8_evidence
+  title: Anytime-valid monitoring
+  requirement: 'Continuous monitoring uses anytime-valid confidence sequences, e-processes, calibrated
+    CUSUM, or Bayesian posterior of deterioration. Rolling fixed-window threshold alarms MUST NOT be used
+    for statistical halts. Operational breakers remain immediate and non-statistical.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 5
+  enforcement_state: planned
+- id: SPEC-097
+  component: l8_evidence
+  title: Race-level calibration metrics
+  requirement: 'Race-level log score; race-level multiclass Brier; calibration-in-the-large; calibration
+    slope on race-normalised logits; reliability curves by band with CIs; adaptive bins with counts; calibration
+    by odds band, track, field size, period. Any post-hoc calibration MUST renormalise across each race.
+    ECE is diagnostic only.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-100
+  component: governance
+  title: Scraping quarantine
+  requirement: 'research/scraping/ MUST have no import path into any module reachable from l5_decision,
+    l5b_risk, or l6_broker. Enforced by a static import-graph check in CI, not by convention.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 0
+  enforcement_state: active
+- id: SPEC-101
+  component: governance
+  title: Licensed data before live
+  requirement: 'Gate -1 MUST fail if any operational data source lacks rights for this use. A model depending
+    on data that cannot lawfully continue to be used has not passed a gate.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 0
+  enforcement_state: active
+- id: SPEC-102
+  component: governance
+  title: No Delayed-key real money
+  requirement: 'The Delayed App Key is for authentication, schemas, connection handling, integration tests,
+    and non-economic plumbing ONLY. Real-money placement on a delayed key MUST be impossible by construction,
+    not by policy.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 0
+  enforcement_state: active
+- id: SPEC-103
+  component: governance
+  title: Budget separation
+  requirement: 'Research/infrastructure capital, betting bankroll, and maximum live experimentation loss
+    are three separate, separately tracked budgets. Code MUST NOT allow one to fund another.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 0
+  enforcement_state: active
+- id: SPEC-104
+  component: governance
+  title: Production loads no writable config
+  requirement: 'The live process MUST NOT dynamically load models or configuration from a writable path.
+    Artefacts are immutable and attested to a commit hash.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 3
+  enforcement_state: planned

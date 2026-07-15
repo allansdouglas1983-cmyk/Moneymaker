@@ -1,0 +1,59 @@
+# Volatile facts registry. NOT normative architecture.
+# The gate evaluator MUST reject any fact past its recheck_by date.
+# Every value here MUST be re-verified before Gate -1B.
+
+- fact_id: BETFAIR-LIVE-KEY-FEE
+  value: null            # populate at Phase 0. Do not hard-code elsewhere.
+  currency: GBP
+  effective_from: null
+  verified_at: null
+  source: null
+  recheck_by: null
+  used_by: [GATE--1B, SPEC-103]
+
+- fact_id: BETFAIR-COMMISSION-RATE
+  value: null            # depends on My Betfair Rewards package
+  effective_from: null
+  verified_at: null
+  source: null
+  recheck_by: null
+  used_by: [SPEC-050, SPEC-080, GATE-2, GATE-5]
+
+- fact_id: BETFAIR-MIN-STAKE-GENERAL
+  value: null
+  currency: GBP
+  verified_at: null
+  recheck_by: null
+  used_by: [SPEC-061]
+
+- fact_id: BETFAIR-MIN-STAKE-BSP-BACK
+  value: null
+  currency: GBP
+  verified_at: null
+  recheck_by: null
+  used_by: [SPEC-061]
+
+- fact_id: BETFAIR-TXN-CHARGE-THRESHOLD
+  value: null            # qualifying transactions per hour
+  verified_at: null
+  recheck_by: null
+  used_by: [SPEC-073]
+
+- fact_id: BETFAIR-API-RATE-LIMIT
+  value: null
+  verified_at: null
+  recheck_by: null
+  used_by: [SPEC-074]
+
+- fact_id: UKGC-VULNERABILITY-CHECK-THRESHOLD
+  value: null            # net deposits per rolling window
+  currency: GBP
+  verified_at: null
+  recheck_by: null
+  used_by: [GATE--1A]
+
+- fact_id: UKGC-FRA-STATUS
+  value: null            # staged implementation announced Jul 2026; no complete timetable
+  verified_at: null
+  recheck_by: null
+  used_by: [GATE--1A]
