@@ -96,3 +96,13 @@ def test_replay_from_log_matches_direct_reduce(tmp_path: Path) -> None:
     # L2 derived state is reconstructible from L0 + reducer version, byte-identical (SPEC-011).
     assert replayed.canonical_bytes == direct.canonical_bytes
     assert replayed.canonical_hash == direct.canonical_hash
+
+
+# Golden canonical hash for reducer-mcm-v1 over the fixture. Any change to the reduction
+# logic changes this hash and fails here, forcing a version bump or a reviewed golden update
+# (SPEC-012 enforcement via the SPEC-011 replay regression).
+_GOLDEN_HASH = "c20a3c8205ca191a4be359771e0e5b451c7ef80427a22e173c5aad3c00ec8a59"
+
+
+def test_golden_canonical_hash_is_stable() -> None:
+    assert reduce(_EVENTS, REDUCER_VERSION).canonical_hash == _GOLDEN_HASH
