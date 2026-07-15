@@ -18,6 +18,7 @@ verify:
 	uv run pylint --disable=all --enable=W0613 $(MONEY)
 	! grep -rnE '(NotImplementedError|TODO|FIXME|pass\s+#|raise\s+NotImplemented)' $(MONEY) --include='*.py'
 	uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker
+	uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features
 	uv run mypy --strict .
 
 mutants:

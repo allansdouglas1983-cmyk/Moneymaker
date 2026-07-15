@@ -75,6 +75,10 @@ jobs:
       - name: Scraping import-graph quarantine
         run: uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker
 
+      # BSP-leakage quarantine — reconciled BSP joins at grading only (SPEC-021, static half)
+      - name: BSP import-graph quarantine
+        run: uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features
+
       - name: Typecheck
         run: uv run mypy --strict .
 
