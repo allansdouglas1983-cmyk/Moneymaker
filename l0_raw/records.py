@@ -76,7 +76,7 @@ class ApiCommandSendEvent(BaseModel):
     customer_order_ref: str
     signal_id: str
     payload_hash: str
-    send_time: ClockStamp
+    local_send_time: ClockStamp
     retry_parent_id: str | None
     process_version: str
 

@@ -17,6 +17,15 @@ _MAGIC = b"L0RAW1\n"
 _HEADER = struct.Struct(">II")
 
 
+def _fsync_dir(directory: Path) -> None:
+    """fsync a directory so a newly-created file's directory entry is durable."""
+    fd = os.open(str(directory), os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 class AppendOnlyLog:
     def __init__(self, path: Path) -> None:
         self._path = path
@@ -24,6 +33,11 @@ class AppendOnlyLog:
             path.parent.mkdir(parents=True, exist_ok=True)
             with path.open("xb") as handle:
                 handle.write(_MAGIC)
+                handle.flush()
+                os.fsync(handle.fileno())
+            # Make the new file's directory entry durable, so a crash cannot lose a
+            # freshly-created journal (and a just-persisted send event) — SPEC-003 durability.
+            _fsync_dir(path.parent)
 
     @property
     def path(self) -> Path:

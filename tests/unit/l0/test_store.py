@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+from l0_raw import store as store_mod
 from l0_raw.store import AppendOnlyLog
 
 pytestmark = [pytest.mark.spec("SPEC-001"), pytest.mark.spec("SPEC-002")]
@@ -68,3 +69,12 @@ def test_len_counts_records(tmp_path: Path) -> None:
     for _ in range(4):
         log.append(meta, b"")
     assert len(log) == 4
+
+
+def test_creation_fsyncs_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A new journal's directory entry must be made durable (SPEC-003 durability hardening).
+    seen: list[Path] = []
+    monkeypatch.setattr(store_mod, "_fsync_dir", seen.append)
+    path = tmp_path / "sub" / "log.l0"
+    AppendOnlyLog(path)
+    assert seen == [path.parent]

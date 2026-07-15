@@ -79,7 +79,7 @@ class CommandGateway:
             customer_order_ref=intent.customer_order_ref,
             signal_id=intent.signal_id,
             payload_hash=sha256_hex(intent.payload),
-            send_time=self._clock.now(),
+            local_send_time=self._clock.now(),
             retry_parent_id=intent.retry_parent_id,
             process_version=intent.process_version,
         )

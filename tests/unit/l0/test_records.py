@@ -93,7 +93,7 @@ def test_api_send_frame_roundtrip() -> None:
         customer_order_ref="coref",
         signal_id="sig-1",
         payload_hash=r.sha256_hex(b"payload"),
-        send_time=_stamp(),
+        local_send_time=_stamp(),
         retry_parent_id=None,
         process_version="proc-v1",
     )

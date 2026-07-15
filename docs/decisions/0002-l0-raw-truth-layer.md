@@ -49,8 +49,8 @@ implementation choices are not fully pinned by the spec and are recorded here.
    This also reconciles the §6.1 single-record listing (which mixes pre-send fields with the
    post-send `response_*`) with append-only immutability: the send event is written first and
    never mutated; the response event is a second append linked by `command_id`. The send event
-   carries `payload_hash` (not the payload — §6.1 lists only the hash) and `send_time`; the
-   response event carries `response_time` and `response_payload`.
+   carries `payload_hash` (not the payload — §6.1 lists only the hash) and `local_send_time`
+   (§6.1's field name); the response event carries `response_time` and `response_payload`.
 
 7. **Persist-before-send is enforced by construction** (`CommandGateway.send`, SPEC-003).
    The gateway (a) builds the send event and calls `journal.record_send()`, then — **only
@@ -69,3 +69,26 @@ implementation choices are not fully pinned by the spec and are recorded here.
   are implemented — this slice covers L0 only.
 - L0 is deliberately read-back capable (`AppendOnlyLog.read`, `records.decode`) so the L1
   reducer (SPEC-010/011, a later slice) can replay from raw bytes.
+
+## Amendment (advisory review, 2026-07-15)
+
+An advisory verifier (SPECIFICATION.md §16.4) confirmed the money-critical SPEC-003 path is
+correct and non-vacuously tested (it proved the fail-closed test by running it against a
+reversed-order gateway). Three findings were acted on:
+
+- **Directory durability (money path, fixed).** `AppendOnlyLog` now fsyncs the parent
+  directory when it creates a new journal file (`_fsync_dir`), so a crash cannot lose a
+  freshly-created journal — and a just-persisted send event — before its directory entry is
+  durable. Per-record `os.fsync(fileno())` already covered subsequent appends.
+- **Field name (fixed).** The send-event timestamp is `local_send_time`, matching §6.1's
+  field name (it was `send_time`). It still holds a dual-clock `ClockStamp`
+  (`send_time_utc`/`send_time_monotonic` per §6.2).
+- **"Verified on read" clarified.** Checksum verification happens on the **typed** read path
+  (`records.decode` / `*_from_frame`), which raises on a payload/checksum mismatch. The
+  low-level `AppendOnlyLog.read` returns uninterpreted frames and does not itself checksum;
+  consumers that need integrity use the decode path (as the reducer will).
+
+Process note: the SPEC-004 Hypothesis property test was added with the implementation rather
+than in the tests-first commit. SPEC-004 already had failing unit tests first, so this is
+additive coverage and weakens nothing; future slices should still land property tests in the
+tests-first checkpoint.
