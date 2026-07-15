@@ -1,0 +1,13 @@
+# p_close — the closing benchmark. DIAGNOSTIC ONLY (never a model input, never a training target).
+# FROZEN pre-registration (SPECIFICATION.md §4.3, §8, ADR 0009).
+closing_benchmark:
+  version: close-v1
+
+  # Betfair Starting Price. A strong benchmark, not an oracle.
+  primary: BSP
+
+  secondary:
+    # Weighted-average price over the pre-suspension window (in-play updates excluded).
+    type: pre_suspension_wap
+    window_seconds: 60
+    inplay_updates_excluded: true

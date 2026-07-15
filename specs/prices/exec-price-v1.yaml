@@ -1,0 +1,25 @@
+# odds_exec — the price actually transactable now. FROZEN pre-registration (SPECIFICATION.md §4.2, ADR 0009).
+# BACK only, taker-v1 (FILL_OR_KILL, minFillSize = full stake). The price is a WORST ACCEPTABLE bound.
+execution_price:
+  version: exec-price-v1
+  side: BACK
+
+  # Fixed canary/minimum stake (the actual amount comes from the risk config / facts registry, not
+  # hard-coded here).
+  size: fixed_canary_stake
+
+  # Consider available-to-back depth from the best price down to worst_acceptable_tick; the full size
+  # must be available within that band or the order is rejected.
+  ladder_depth_policy: require_full_size_within_acceptable_band
+
+  # The worst acceptable price is the decision-time best-back tick with ZERO adverse slippage tolerance
+  # in v1 (strict). The order will never match worse than this.
+  worst_acceptable_tick: decision_time_best_back_index
+  adverse_slippage_ticks: 0
+
+  # Conservative decision -> arrival latency assumption; feeds Gate-2 latency-adjusted, size-aware
+  # scenarios. Validated only against live semantics at Gate 3.
+  latency_assumption_ms: 250
+
+  # Insufficient depth for the full size -> REJECT (no fill). Never partially fill (taker-v1).
+  insufficient_depth_policy: reject_no_partial_fill

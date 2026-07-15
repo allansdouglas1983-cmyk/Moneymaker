@@ -1,0 +1,49 @@
+# p_market_info — the model input price. FROZEN pre-registration (SPECIFICATION.md §4.1, ADR 0009).
+# Committed before any historical data was ingested or examined. Changing any value here is a new
+# version (info-price-v2) and a new pre-registered experiment, never an in-place edit.
+information_price:
+  version: info-price-v1
+
+  # Source book state: the latest fully reduced L2 book_state (reducer-mcm-v1) with a publish/receive
+  # time strictly before decision_time.
+  source_state: latest_reduced_book_before_decision_time
+
+  # Stale-data threshold (REQUIRED): reject a book older than this at decision time.
+  max_age_ms: 5000
+
+  # When several stream updates share a publish_time, the last-applied update wins (highest
+  # capture_sequence) — deterministic per the reducer's append order.
+  tie_break_policy: last_applied_by_capture_sequence
+
+  # Only marketDefinition status == ACTIVE runners are priced.
+  active_runner_policy: active_only
+
+  # One-sided book (only a back or only a lay at best): use the available side's implied probability
+  # as that runner's raw value (no midpoint); flagged one_sided for diagnostics.
+  one_sided_book_policy: use_available_side
+
+  # Crossed book (best back price > best lay price): invalid instant — skip this snapshot, do not price.
+  crossed_book_policy: skip_snapshot
+
+  # Probability space is explicit.
+  probability_space: implied_probability
+
+  # Per-runner raw value = midpoint of best-back and best-lay implied probabilities, taken in
+  # implied-probability space: raw_p = (1/best_back_odds + 1/best_lay_odds) / 2.
+  midpoint_formula: implied_prob_midpoint_of_best_back_lay
+
+  # Normalise active-runner raw values to sum to 1 (removes the book overround):
+  # p_market_info_i = raw_p_i / sum_j(raw_p_j).
+  normalization_formula: normalise_to_unit_sum_over_active_runners
+
+  # v1 applies NO size/spread weighting: spread and available size are diagnostics/features only and
+  # do NOT adjust p_market_info. Size-weighting is a future v2 experiment.
+  spread_adjustment: none_in_v1_diagnostics_only
+
+  # A runner with no usable price (no back and no lay) is excluded with a knowledge-time and the field
+  # renormalised. A race is priceable only if >= 2 active runners have a usable price.
+  missing_runner_policy: exclude_runner_with_knowledge_time; race_requires_min_2_priceable_runners
+
+  # REMOVED (non-runner) runners are dropped before normalisation. Reduction factors are handled at
+  # settlement (l7_settle), never in p_market_info.
+  non_runner_policy: drop_removed_before_normalisation
