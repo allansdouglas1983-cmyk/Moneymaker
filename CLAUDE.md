@@ -88,6 +88,34 @@ activating a phase is a human-controlled specification change.
 Status comes from CI, never from your own prose claim. The `spec-verifier` subagent is
 **advisory evidence only** — useful fresh eyes, never a gate.
 
+## Model orchestration
+
+The lead model (Opus 4.8 or Fable) is the **brain**: it plans the slice, chooses the design,
+writes the ADR, reasons about spec fidelity and money-critical invariants, and decides what
+is correct. It **orchestrates**; it does not personally spend tokens on work a cheaper model
+does just as well.
+
+Delegate to **Sonnet subagents** (via the Agent tool) the high-volume, low-judgement work —
+bulk file reads and codebase sweeps, mechanical edits across many files, running the test/lint
+suite and collecting output, drafting boilerplate, searching for usages. Spawn them in parallel
+when the work is independent. The lead keeps the conclusion, not the file dumps.
+
+This division **never lowers the bar**:
+
+- **The three rules bind every worker.** A subagent may not stub a money module, weaken a test,
+  or let an LLM price/size/estimate — the lead is accountable for the whole slice regardless of
+  who typed it.
+- **Money-critical design and review stay with the lead.** Authoring `l4b_fill/`, `l5_decision/`,
+  `l5b_risk/`, `l6_broker/`, `l7_settle/`, `l8_evidence/gates/`, deciding metamorphic properties,
+  and judging correctness are brain work, not worker work. A worker may draft; the lead verifies
+  line by line before it counts.
+- **CI is still the only status.** Worker output is trusted exactly as far as `make verify` /
+  `make mutants` / `make replay` confirm it — same as anything the lead writes. Delegation changes
+  who drafts, never what gates.
+
+Match the model to the task: reserve the lead's judgement for the thinking, push the token-heavy
+grind down to Sonnet.
+
 ## Session discipline
 
 One spec slice per session. Write failing tests first, **commit them separately**, then
