@@ -29,15 +29,22 @@ Layered `l0_raw` → `l8_evidence` (see each directory's `README.md` and SPECIFI
 
 **Live progress and session handover: [`docs/PROGRESS.md`](docs/PROGRESS.md).**
 
-Implemented so far (**7 of 23 active SPEC-IDs**, 73 tests, `mypy --strict`/`ruff` clean):
+Implemented so far (**21 of 23 active SPEC-IDs**, 231 tests, `mypy --strict`/`ruff`/`pylint W0613`
+clean):
 - **Verification harness** (`tools/`) — the CI enforcement backbone (ADR 0001).
 - **L0 raw truth layer** (`l0_raw/`, SPEC-001–004) — append-only capture, dual clock,
   persist-before-send (ADR 0002).
 - **L1 deterministic reducer** (`l1_reduce/`, SPEC-010–012) — pure reduction, canonical
   replay, reducer versioning (ADR 0003).
+- **L3 knowledge-time & leakage** (`l3_features/`, SPEC-020–024) — knowledge-time semantics,
+  two-mechanism BSP-leakage guard, feature-hash reproducibility (ADR 0004).
+- **L5 decision layer** (`l5_decision/`, SPEC-050–054, first money module) — tick ladder, three
+  price types, EV at odds_exec, one-runner, taker-v1 (ADR 0005).
+- **Governance** (`governance/`, SPEC-100–103) — scraping quarantine, licensed-source gate,
+  no-delayed-key real money, budget separation (ADR 0006).
 
-`.github/workflows/verify.yml` reports **red** overall until the remaining active IDs (L3, L5,
-L7, governance) are implemented — that is expected and honest, not a green build that checks
+`.github/workflows/verify.yml` reports **red** overall until the last active IDs (**SPEC-080/082,
+L7 settlement**) are implemented — that is expected and honest, not a green build that checks
 nothing. (The workflow only runs on pull requests and pushes to `main`.)
 
 Build per the session discipline in `CLAUDE.md`: **one spec slice per session, failing tests

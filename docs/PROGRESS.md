@@ -11,12 +11,12 @@ not the conversation. This is that file. Update it at the end of every slice.
 
 | | |
 |---|---|
-| Active SPEC-IDs covered | **17 of 23** (SPEC-001–004, 010–012, 020–024, 050–054) |
-| Tests | **210 passing** (unit + property + failure-injection + replay-regression) |
-| Static checks | `mypy --strict` clean (78 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
-| Commits on branch | 32 |
+| Active SPEC-IDs covered | **21 of 23** (SPEC-001–004, 010–012, 020–024, 050–054, 100–103) |
+| Tests | **231 passing** (unit + property + failure-injection + replay-regression) |
+| Static checks | `mypy --strict` clean (91 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
+| Commits on branch | 39 |
 | Phase | 1 (walking vertical slice), offline only |
-| `make verify` overall | **RED** by design — 6 active IDs not yet implemented |
+| `make verify` overall | **RED** by design — 2 active IDs (SPEC-080/082, L7) not yet implemented |
 
 The whole platform is a **research/measurement platform, not a betting bot**, conditionally
 approved for **offline work through Phase 2 only** (no live credentials, no real money, no
@@ -90,51 +90,61 @@ money ID has a spec-marked **and** a property test.
   units. SPEC-052.
 - Tests: `tests/unit/l5/`, `tests/properties/l5/`.
 
+### Governance — `governance/` (SPEC-100–103) · ADR 0006
+Cross-cutting guarantees; `governance/` is under money-module CI enforcement (pylint W0613 +
+escape-hatch grep + `MONEY`). SPEC-102/103 are money.
+- `app_key.py` (SPEC-102) `LiveAppKey`/`DelayedAppKey`; `RealMoneyPlacementAuthorization`
+  constructable only from a `LiveAppKey` — enforced by mypy **and** a runtime `__post_init__`;
+  factory refuses delayed keys. Real money impossible on a delayed key by construction.
+- `budgets.py` (SPEC-103) three independent `BudgetAccount`s (exact integer minor units); **no**
+  transfer/credit API, only per-account `debit`; `__post_init__` enforces field/kind + non-negativity.
+- `licensed_sources.py` + `docs/licensed-sources.yaml` (SPEC-101) Gate-−1 check fails (fail-closed)
+  if any `operational` source lacks verified rights; sources seeded `candidate`, rights unverified.
+- SPEC-100 verified via the existing `tools/check_import_quarantine` mechanism (test only).
+- Tests: `tests/unit/governance/`, `tests/properties/governance/`.
+
 ---
 
 ## Coverage map
 
-**Covered (17):** SPEC-001–004 (L0) · SPEC-010–012 (L1) · SPEC-020–024 (L3) · SPEC-050–054 (L5).
+**Covered (21):** SPEC-001–004 (L0) · SPEC-010–012 (L1) · SPEC-020–024 (L3) · SPEC-050–054 (L5) ·
+SPEC-100–103 (governance).
 
-**Remaining active (6):**
+**Remaining active (2):**
 | IDs | Component | Notes |
 |---|---|---|
 | SPEC-080, 082 | `l7_settle` (money) | market-level settlement, settlement edge cases |
-| SPEC-100–103 | governance (evidence/money) | scraping quarantine, licensed data, no-delayed-key, budget separation |
 
 `planned` IDs (L4 pricing, L4b fill, L5b risk, L6 broker, L8 evidence, SPEC-104) are not yet
 CI-enforced; activating a phase is a human-controlled change.
 
 ---
 
-## Next slice (recommended)
+## Next slice (recommended) — the LAST active cluster
 
-Two active clusters remain. Recommended: **governance SPEC-100–103** (Phase-0, foundational, no
-new heavy machinery), then **L7 settlement SPEC-080/082**.
+**L7 settlement — SPEC-080, 082** (`money`), the only remaining active IDs. Path-scoped rule
+`.claude/rules/moneycritical.md` loads when you touch `l7_settle/`.
+- **SPEC-080 market-level settlement.** `market_settlement` with `gross_pnl_by_selection_scenario`,
+  `actual_net_market_pnl`, `commission_rate_effective`, `actual_commission`, `transaction_charges`,
+  `final_net_pnl`, `statement_reference`, `settlement_version`, `resettlement_flag`. Commission is on
+  the **net market result** — a per-order `commission_est` MUST NOT exist as an authoritative field.
+- **SPEC-082 settlement edge cases.** Partial matches; multiple orders on one runner; multiple
+  runners; dead heats; reduction factors (Betfair semantics, not bookmaker "Rule 4"); voided/abandoned
+  races; resettlements; rounding to currency minor units; duplicate acks; unknown status after timeout.
+- Both need property tests. Exact `Decimal`/integer minor units, never float.
 
-**Governance — SPEC-100–103.** These are the "no live / lawful / budget-separated" guarantees.
-- SPEC-100 (`evidence`) scraping quarantine — the import-graph **mechanism already exists**
-  (`tools/check_import_quarantine.py`, CI-wired). It needs a `@pytest.mark.spec("SPEC-100")` test
-  (assert `find_violations(...)==[]` from a test, plus a vacuity/would-catch check) to count as
-  covered. Cheapest win.
-- SPEC-101 (`evidence`) licensed data — Gate -1 fails if any operational source lacks rights.
-- SPEC-102 (`money`) no Delayed-key real money — real-money placement on the Delayed App Key must
-  be **impossible by construction**, not policy. Needs a property test.
-- SPEC-103 (`money`) budget separation — research / bankroll / max-experiment-loss are three
-  separate budgets; code must not let one fund another. Needs a property test.
+**The mutation harness lands with this slice.** ADR 0001's `run_mutation.py` (and `make mutants` /
+the CI `mutants-critical` job) targets `l8_evidence/gates`, `l5b_risk`, `l7_settle` — L7 is its first
+real target. Build `tools/run_mutation.py` here (cosmic-ray wrapper: 100% of non-equivalent mutants
+killed on gates; survivors classified) and add `cosmic-ray` to the dev deps. `l8_evidence/gates` and
+`l5b_risk` are still `planned`, so mutation runs against `l7_settle` for now.
 
-**L7 settlement — SPEC-080, 082** (`money`). Market-level settlement (`market_settlement` with
-net-market P&L, effective commission, transaction charges; **per-order `commission_est` must not
-exist as authoritative**) and settlement edge cases (partial matches, multiple runners, dead
-heats, reduction factors, voids/abandonments, resettlements, rounding to minor units, duplicate
-acks, unknown-after-timeout). Both need property tests. Commission is on the **net market result**.
+**After L7 all 23 active IDs are covered** — `make verify` should then go green (subject to the CI
+still being red only where planned phases haven't been activated). At that point consider opening a PR
+(not yet requested) and the human/platform actions in *Operational notes*.
 
-**Notes carried forward:**
-- **Mutation harness still deferred.** ADR 0001's `run_mutation.py`/`make mutants` targets
-  `l8_evidence/gates`, `l5b_risk`, `l7_settle` — none built yet. It should land **with the L7
-  settlement slice** (its first real target), not before. L5 was NOT a mutation target.
-- `specs/prices/info-price-v1.yaml` and `specs/gates/v1.yaml` remain unwritten frozen human
-  decisions (§4, §10) — none of the remaining active IDs need them.
+**Still unwritten (deliberately):** `specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` are frozen human
+pre-registration decisions (§4, §10) — L7 does not need them.
 
 ---
 
@@ -167,6 +177,9 @@ acks, unknown-after-timeout). Both need property tests. Commission is on the **n
   skipped/xfail tests do not count. Money IDs need a property test under `tests/properties/`.
 - Golden/replay fixtures pin canonical hashes; a logic change must bump the reducer/artifact
   version or the regression fails.
+- Hypothesis' wall-clock deadline is disabled suite-wide (`tests/conftest.py`) because the
+  fsync-bound L0 property tests would otherwise flake under load. Keep new I/O-bound property
+  tests aware of this; it is not a licence to write slow tests.
 
 ---
 
@@ -179,6 +192,7 @@ acks, unknown-after-timeout). Both need property tests. Commission is on the **n
 | `docs/decisions/0003-l1-reducer.md` | Decimal-not-float; canonical hash; reducer registry/versioning; MCM-v1 scope |
 | `docs/decisions/0004-l3-knowledge-time.md` | knowledge-time stamps; LeakageError-not-ValueError; two-mechanism BSP guard; live actual-off exclusion; no-float feature hash |
 | `docs/decisions/0005-l5-decision.md` | canonical tick ladder; three distinct price types; exact-Decimal EV; conservative-lower-bound typing; one-runner selection+ledger; taker-v1 pinned order; mutation harness deferred to L7 |
+| `docs/decisions/0006-governance.md` | governance/ package + money-lint; SPEC-100 via existing quarantine; licensed-source registry; no-delayed-key by type + runtime backstop; budget separation by absence of transfer |
 
 ---
 
