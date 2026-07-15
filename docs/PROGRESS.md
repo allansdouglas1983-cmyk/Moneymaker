@@ -11,12 +11,12 @@ not the conversation. This is that file. Update it at the end of every slice.
 
 | | |
 |---|---|
-| Active SPEC-IDs covered | **12 of 23** (SPEC-001–004, 010–012, 020–024) |
-| Tests | **116 passing** (unit + property + failure-injection + replay-regression) |
-| Static checks | `mypy --strict` clean (60 files), `ruff` + `ruff --select ARG` clean |
-| Commits on branch | 20 |
+| Active SPEC-IDs covered | **17 of 23** (SPEC-001–004, 010–012, 020–024, 050–054) |
+| Tests | **210 passing** (unit + property + failure-injection + replay-regression) |
+| Static checks | `mypy --strict` clean (78 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
+| Commits on branch | 32 |
 | Phase | 1 (walking vertical slice), offline only |
-| `make verify` overall | **RED** by design — 11 active IDs not yet implemented |
+| `make verify` overall | **RED** by design — 6 active IDs not yet implemented |
 
 The whole platform is a **research/measurement platform, not a betting bot**, conditionally
 approved for **offline work through Phase 2 only** (no live credentials, no real money, no
@@ -70,17 +70,35 @@ the frozen `specs/prices/info-price-v1.yaml` and are intentionally not built.
   is the single guarded construction path. SPEC-024.
 - Tests: `tests/unit/l3/`, `tests/properties/l3/`.
 
+### L5 decision layer — `l5_decision/` (SPEC-050–054, all money) · ADR 0005 · **first money module**
+The three rules in force: nothing stubbed, no test weakened, no LLM in any numeric path; every
+money ID has a spec-marked **and** a property test.
+- `ladder.py` canonical 350-tick Betfair ladder (exact `Decimal`); `price_of`/`index_of` exact
+  inverses via value-keyed lookup; floats/bools rejected as indices, floats rejected as prices;
+  off-ladder prices raise. **No float ever represents a price.** SPEC-053.
+- `prices.py` `OddsExec` / `MarketInfoPrice` / `ClosePrice` — **unrelated** frozen strict types,
+  so the type system prevents conflation; consumers also guard at runtime. SPEC-051.
+- `ev.py` `expected_value = p·(O−1)·(1−c) − (1−p)` (exact `Decimal`); consumes a
+  `WinProbabilityLowerBound` (conservative bound, never a point estimate — anticipates SPEC-034),
+  `OddsExec`, `CommissionRate`; runtime guards reject `p_close`/`p_market_info`/bare probability.
+  Declared monotonicities property-tested. SPEC-050.
+- `one_runner.py` `select_market_position` (highest conservative net EV, lowest-id tie-break,
+  rejected recorded, order-independent) + `MarketPositionLedger` refusing any second position.
+  Identifiers bounded (`selection_id > 0`). SPEC-054.
+- `execution.py` `TakerV1Order`/`taker_v1` pinned to FOK + LAPSE + minFill==full stake +
+  `market_version` (`>= 0`), back-only; passive posting unreachable; stakes are integer minor
+  units. SPEC-052.
+- Tests: `tests/unit/l5/`, `tests/properties/l5/`.
+
 ---
 
 ## Coverage map
 
-**Covered (12):** SPEC-001, 002, 003, 004 (L0) · SPEC-010, 011, 012 (L1) · SPEC-020, 021, 022,
-023, 024 (L3).
+**Covered (17):** SPEC-001–004 (L0) · SPEC-010–012 (L1) · SPEC-020–024 (L3) · SPEC-050–054 (L5).
 
-**Remaining active (11):**
+**Remaining active (6):**
 | IDs | Component | Notes |
 |---|---|---|
-| SPEC-050–054 | `l5_decision` (money) | EV at odds_exec, three-price types, taker-v1, tick index, one-runner |
 | SPEC-080, 082 | `l7_settle` (money) | market-level settlement, settlement edge cases |
 | SPEC-100–103 | governance (evidence/money) | scraping quarantine, licensed data, no-delayed-key, budget separation |
 
@@ -91,33 +109,32 @@ CI-enforced; activating a phase is a human-controlled change.
 
 ## Next slice (recommended)
 
-**L5 decision — SPEC-050–054** (all `money`), the next layer in the §11 vertical slice.
-This is the **first money module**, so it also stands up the mutation harness that ADR 0001
-deferred (`tools/run_mutation.py` + `make mutants`; CI already has the `mutants-critical` job).
-Path-scoped rule `.claude/rules/moneycritical.md` loads when you touch `l5_decision/`. Per the
-three rules: nothing stubbed, property tests + declared `relevant_inputs`/`metamorphic_properties`
-required (SPEC-050 already declares them), and no LLM in any numeric path.
-- SPEC-050 `EV = p*(O-1)*(1-c) - (1-p)`, using `odds_exec` (never `p_market_info`/`p_close`) and
-  the conservative lower bound of the edge distribution. Metamorphic: EV non-decreasing in `p`,
-  non-increasing in `c`; `p_close` must be unreachable.
-- SPEC-051 three price types (`p_market_info`, `odds_exec`, `p_close`) distinct in the type
-  system — passing the wrong one where `odds_exec` is required must not type-check.
-- SPEC-052 crossing-only execution (`taker-v1`), `persistenceType=LAPSE`, `marketVersion` guard;
-  passive posting unreachable until Gate 4.
-- SPEC-053 tick index is an **integer** into the canonical ladder; round-trip index↔decimal exact;
-  floats must not represent price.
-- SPEC-054 one runner per market (refuse a second position).
+Two active clusters remain. Recommended: **governance SPEC-100–103** (Phase-0, foundational, no
+new heavy machinery), then **L7 settlement SPEC-080/082**.
 
-**Dependency note (carried forward):** SPEC-050 uses `odds_exec` (transactable now), not the
-frozen `p_market_info` — so it does **not** need `specs/prices/info-price-v1.yaml`. The L3
-knowledge-time guards (SPEC-020–024, this slice) are done and provide the leakage framework the
-eventual `p_market_info` feature will build on. `specs/gates/v1.yaml` remains an unwritten frozen
-human decision (§10) and is not needed for SPEC-050–054.
+**Governance — SPEC-100–103.** These are the "no live / lawful / budget-separated" guarantees.
+- SPEC-100 (`evidence`) scraping quarantine — the import-graph **mechanism already exists**
+  (`tools/check_import_quarantine.py`, CI-wired). It needs a `@pytest.mark.spec("SPEC-100")` test
+  (assert `find_violations(...)==[]` from a test, plus a vacuity/would-catch check) to count as
+  covered. Cheapest win.
+- SPEC-101 (`evidence`) licensed data — Gate -1 fails if any operational source lacks rights.
+- SPEC-102 (`money`) no Delayed-key real money — real-money placement on the Delayed App Key must
+  be **impossible by construction**, not policy. Needs a property test.
+- SPEC-103 (`money`) budget separation — research / bankroll / max-experiment-loss are three
+  separate budgets; code must not let one fund another. Needs a property test.
 
-**Alternative slice:** governance SPEC-100–103 (Phase-0). SPEC-100 (scraping quarantine) and
-SPEC-101 (licensed data) are `evidence`; SPEC-102 (no delayed-key real money) and SPEC-103
-(budget separation) are `money`. The SPEC-100 mechanism (import-graph tool) already exists and is
-CI-wired — it needs a `@pytest.mark.spec("SPEC-100")` test to count as covered.
+**L7 settlement — SPEC-080, 082** (`money`). Market-level settlement (`market_settlement` with
+net-market P&L, effective commission, transaction charges; **per-order `commission_est` must not
+exist as authoritative**) and settlement edge cases (partial matches, multiple runners, dead
+heats, reduction factors, voids/abandonments, resettlements, rounding to minor units, duplicate
+acks, unknown-after-timeout). Both need property tests. Commission is on the **net market result**.
+
+**Notes carried forward:**
+- **Mutation harness still deferred.** ADR 0001's `run_mutation.py`/`make mutants` targets
+  `l8_evidence/gates`, `l5b_risk`, `l7_settle` — none built yet. It should land **with the L7
+  settlement slice** (its first real target), not before. L5 was NOT a mutation target.
+- `specs/prices/info-price-v1.yaml` and `specs/gates/v1.yaml` remain unwritten frozen human
+  decisions (§4, §10) — none of the remaining active IDs need them.
 
 ---
 
@@ -161,6 +178,7 @@ CI-wired — it needs a `@pytest.mark.spec("SPEC-100")` test to count as covered
 | `docs/decisions/0002-l0-raw-truth-layer.md` | dual clock; append-only framing; two-event API command; persist-before-send; dir fsync |
 | `docs/decisions/0003-l1-reducer.md` | Decimal-not-float; canonical hash; reducer registry/versioning; MCM-v1 scope |
 | `docs/decisions/0004-l3-knowledge-time.md` | knowledge-time stamps; LeakageError-not-ValueError; two-mechanism BSP guard; live actual-off exclusion; no-float feature hash |
+| `docs/decisions/0005-l5-decision.md` | canonical tick ladder; three distinct price types; exact-Decimal EV; conservative-lower-bound typing; one-runner selection+ledger; taker-v1 pinned order; mutation harness deferred to L7 |
 
 ---
 
@@ -177,7 +195,9 @@ CI-wired — it needs a `@pytest.mark.spec("SPEC-100")` test to count as covered
 - **CODEOWNERS owner is a default** (`@allansdouglas1983-cmyk`) — replace with a dedicated
   reviewer/team before any live phase.
 - **CI is red until the active surface is covered** — expected. `run_mutation.py`/`make mutants`
-  land with the first money module.
+  land with the **L7 settlement** slice — the first module the CI `mutants-critical` job actually
+  targets (`l8_evidence/gates`, `l5b_risk`, `l7_settle`). L5 decision, though the first money
+  module, is not a mutation target, so the harness was correctly not stood up for it (ADR 0005).
 - **`specs/prices/*-v1.yaml` and `specs/gates/v1.yaml` are intentionally unwritten** — frozen
   human pre-registration decisions (§4, §10), not agent-fabricated.
 - **No PR opened yet** (not requested).
