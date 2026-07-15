@@ -94,7 +94,7 @@ class TestTakerV1Invariants:
     def test_frozen(self) -> None:
         o = _order()
         with pytest.raises((ValueError, TypeError)):
-            o.stake_minor = 500  # type: ignore[misc]
+            o.stake_minor = 500
 
     def test_no_passive_persistence_is_ever_valid(self) -> None:
         # There is no reachable maker/passive order: every non-LAPSE persistence is refused.

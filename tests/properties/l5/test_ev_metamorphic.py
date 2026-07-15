@@ -15,7 +15,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from l5_decision.ev import CommissionRate, WinProbabilityLowerBound, expected_value
-from l5_decision.ladder import LADDER, index_of
+from l5_decision.ladder import LADDER
 from l5_decision.prices import ClosePrice, OddsExec
 
 pytestmark = pytest.mark.spec("SPEC-050")
