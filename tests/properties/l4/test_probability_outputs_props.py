@@ -116,8 +116,8 @@ _DIGEST = st.text(min_size=1, max_size=20).filter(lambda s: s.strip())
 
 
 @settings(max_examples=100)
-@given(probability=_P, digest=_DIGEST)
-def test_market_probability_never_typechecks_as_fundamental(probability: Decimal, digest: str) -> None:
+@given(probability=_P)
+def test_market_probability_never_typechecks_as_fundamental(probability: Decimal) -> None:
     market = MarketProbability(probability=probability, price_version="info-price-v1")
     with pytest.raises(ValidationError):
         RunnerProbabilities(
