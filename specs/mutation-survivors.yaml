@@ -13,8 +13,8 @@
 # governing SPEC-ID. That is deliberate: no classification can exist without approval.
 #
 # PROPOSED (2026-07-16 retrospective audit, ADR 0010 — awaiting founder approval; these are
-# comments, not entries). Eight l7_settle survivors are behaviourally unobservable by
-# construction; every other of the 329 mutants is killed by a test:
+# comments, not entries). Keys confirmed by the final green-baseline run: 329 mutants,
+# 322 killed; these SEVEN survivors are behaviourally unobservable by construction:
 #
 #   l7_settle/pnl.py::core/ReplaceComparisonOperator_Eq_Is::0        equivalent-mutant
 #       `result == RunnerResult.UNKNOWN` vs `is` — Enum members are singletons
@@ -30,6 +30,6 @@
 #       `result == RunnerResult.UNKNOWN` vs `is` — Enum singleton identity
 #   l7_settle/settlement.py::core/ReplaceComparisonOperator_LtE_Lt::0 equivalent-mutant
 #       `net <= 0` vs `< 0` differ only at net==0 where commission = round(rate*0) = 0
-#   l7_settle/settlement.py::core/NumberReplacer::3                  equivalent-mutant
+#   l7_settle/settlement.py::core/NumberReplacer::1                  equivalent-mutant
 #       the 0 in `net <= 0` -> -1: differs only at net==0, same x0 identity
 []

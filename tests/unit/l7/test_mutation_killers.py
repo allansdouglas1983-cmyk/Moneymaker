@@ -86,18 +86,20 @@ def test_duplicate_ack_returns_the_stored_object_itself() -> None:
         market_status=MarketStatus.SETTLED, runners={111: RunnerOutcome(RunnerResult.WINNER)}
     )
 
-    def _mint() -> MarketSettlement:
+    def _mint(version: int) -> MarketSettlement:
         return settle_market(
             market_id="1.1",
             positions=[MatchedPosition(runner_id=111, matched_stake_minor=200, matched_odds=Decimal("3.0"))],
             outcome=outcome,
             commission_rate_effective=Decimal("0.02"),
             statement_reference="stmt-1",
-            settlement_version=1000,
+            settlement_version=version,
         )
 
-    first = ledger.apply(_mint())
-    assert ledger.apply(_mint()) is first
+    # int("1000") defeats constant interning: the two version ints are equal but distinct
+    # objects, so an identity-based version comparison misbehaves here.
+    first = ledger.apply(_mint(1000))
+    assert ledger.apply(_mint(int("1000"))) is first
 
 
 def test_settle_market_default_flags() -> None:
