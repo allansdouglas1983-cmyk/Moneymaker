@@ -119,3 +119,8 @@ evaluator is the tool named in `docs/CI-AND-TRUST.md` §5's audit-subagent toolb
 - **Support fix that rode along:** `tools/run_mutation.py` derives the per-target test suite
   from the top-level package (`l8_evidence/gates → tests/{unit,properties}/l8`), otherwise
   cosmic-ray silently fell back to the whole suite per mutant.
+- **Forward dependency (advisory-verifier note, 2026-07-16):** gate-item attestations are
+  currently a bare `{item_id: bool}` mapping with no reviewer/provenance field. Attestation
+  provenance is the eventual mechanism by which a *human* certifies checklist items, so
+  SPEC-091's trial-ledger slice must add source-of-truth tracking (reviewer, timestamp)
+  to the record schema when it formalises it.
