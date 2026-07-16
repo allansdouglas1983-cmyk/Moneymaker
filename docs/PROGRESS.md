@@ -3,7 +3,7 @@
 **Living state for the build.** SPECIFICATION.md §16 requires durable state to live in files,
 not the conversation. This is that file. Update it at the end of every slice.
 
-**Branch:** `claude/project-files-followup-dif8al` · **Last updated:** 2026-07-15
+**Branch:** `claude/project-files-followup-dif8al` · **Last updated:** 2026-07-16
 
 ---
 
@@ -12,12 +12,12 @@ not the conversation. This is that file. Update it at the end of every slice.
 | | |
 |---|---|
 | Active SPEC-IDs covered | **23 of 23 — the entire active surface** (SPEC-001–004, 010–012, 020–024, 050–054, 080/082, 100–103) |
-| Tests | **269 passing** (unit + property + failure-injection + replay-regression) |
-| Static checks | `mypy --strict` clean (105 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
+| Tests | **350+ passing** (unit + property + failure-injection + replay-regression; grew in the 2026-07-16 audit-hardening pass) |
+| Static checks | `mypy --strict` clean (120 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
 | Commits on branch | 45 |
 | Phase | 1 (walking vertical slice), offline only |
 | `make verify` overall | **GREEN** ✅ — all active IDs covered and consistent |
-| `make mutants` | harness live (`tools/run_mutation.py`); enforced only on `l8_evidence/gates` (still `planned`), `l7_settle` report-only |
+| `make mutants` | harness live; enforced target `l8_evidence/gates` (still `planned`/empty); `l7_settle` report-only at ~zero NON-EQUIVALENT survivors — escalation to enforced waits ONLY on founder approval of the equivalent-mutant classifications in `specs/mutation-survivors.yaml` (ADR 0010 §7) |
 
 The whole platform is a **research/measurement platform, not a betting bot**, conditionally
 approved for **offline work through Phase 2 only** (no live credentials, no real money, no
@@ -135,6 +135,40 @@ SPEC-020–024 (L3) · SPEC-050–054 (L5) · SPEC-080/082 (L7) · SPEC-100–10
 `planned` IDs (L4 pricing, L4b fill, L5b risk, L6 broker, L8 evidence, SPEC-081/083/104) are not
 yet CI-enforced; **activating a phase is a human-controlled specification change**, not an agent
 task — it is how the next tranche of work is authorised.
+
+---
+
+## 2026-07-16 retrospective audit (founder-requested) — ADR 0010
+
+Six clause-by-clause component audits + git-history integrity scan + fresh CI-grade runs.
+**Verdict: no rule-2 violations, no stubs, no silent trims; spec/manifest/facts/rules
+untouched since bootstrap.** All findings were verification-net gaps or structural
+hardenings; every one is remediated on this branch (see ADR 0010 for the full table):
+
+- l3: leakage guards are now structural on the `Feature` type (context-required mint);
+  build mode wired into the single path; aware datetimes normalise to UTC so equal instants
+  hash identically.
+- l0/l1: `config_digest` + `container_digest` recorded (all four §6.2 digests now exist,
+  outside canonical bytes — golden hashes unmoved); reducer source pinned (SPEC-012 now
+  mechanical); `stream_clock` widened to the opaque string token Betfair actually sends;
+  order-corruption + per-append-fsync tests added.
+- l7: SPEC-082 holes closed (multi-runner, ABANDONED, multi-factor RF, dead-heat×RF,
+  rounding discriminators, pnl property suite, field whitelists, post-resettlement ledger
+  edges); two semantics-identical mutation-hostile restructures (pnl fast path removed,
+  ledger.apply reordered).
+- governance/tools: nominal budget account types (mypy layer + exact-type runtime backstop);
+  quarantine checker sees literal dynamic imports and fails closed on non-literal ones and
+  unparseable reachable files; standalone SPEC-101 licensing check in verify + CI;
+  escape-hatch grep broadened (case-insensitive, synonyms, bare `pass`) and extended to the
+  evidence layers; SPEC-080/082 causal declarations added to the manifest.
+- Recorded (no code): the mutation-harness slice violated tests-first ordering (support
+  tool, one commit, nothing weakened); SPEC-082's "unknown order status after timeout"
+  order-level half belongs to SPEC-070/l6_broker (phase 3); platform branch-protection
+  settings remain unverifiable from inside the repo.
+
+**Founder actions pending (small):** approve the equivalent-mutant classifications in
+`specs/mutation-survivors.yaml` (fill `approved_by`), after which the agent flips
+`l7_settle` to `--require-kill-non-equivalent` in Makefile + verify.yml (one line each).
 
 ---
 
