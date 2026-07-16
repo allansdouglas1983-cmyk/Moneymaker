@@ -79,3 +79,29 @@ attestation (already frozen); the Weatherbys/RDC and Timeform provider enquiries
 (form data is independent of Betfair account status); EXP-0001 drafting. All live,
 paid-Betfair-data, and order-placement work stays halted until the founder provides
 Betfair's written response.
+
+## Addendum (2026-07-16, later): GAMSTOP removal in progress — official process
+
+Founder status update: the original exclusion was a SIX-MONTH GAMSTOP exclusion that
+remained active only because removal was never requested. The founder has completed
+the OFFICIAL GAMSTOP removal process by telephone; the 24-hour cooling-off period is
+running. This is the sanctioned path — official removal of a lapsed exclusion through
+GAMSTOP's own process, followed by restoration of the founder's EXISTING Betfair
+account through Betfair's official process. It is not, and must never become, a
+bypass: the permanent no-other-account/no-workaround invariant above is unchanged.
+
+Updated operational state:
+1. GAMSTOP removal: PENDING COMPLETION for ~24 hours from the founder's call.
+2. During cooling-off: NO account creation, credentials, deposits, purchases, or live
+   API access of any kind. The agent performs none of these at any time regardless.
+3. After cooling-off: the founder personally attempts restoration of their existing
+   account via the official process. Outcome to be recorded here.
+4. Once lawful account access is CONFIRMED by the founder: the one-month ADVANCED
+   purchase may proceed, subject to the founder's final confirmation of the selected
+   month (January 2026 remains the documented default).
+5. The £499 Live App Key, live order transmission, and all real-money activity remain
+   halted pending Gates 1–2 and separate fresh approval — account restoration changes
+   nothing about that.
+6. The purchase runbook (specification, download, checksums, local-only ingestion) is
+   prepared in advance at docs/procurement/betfair-pilot-runbook.md so the pilot can
+   execute promptly once (3) and (4) resolve.
