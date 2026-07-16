@@ -446,7 +446,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-046
   component: governance
   title: Gate P1 — predictor product evidence

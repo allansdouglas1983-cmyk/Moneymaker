@@ -13,6 +13,8 @@ from decimal import Decimal
 
 import pytest
 
+from typing import Any
+
 from governance.output_rights import EligibilityResult, EligibilityStatus
 from l4_pricing.probability_outputs import (
     CombinedProbability,
@@ -23,6 +25,7 @@ from l4_pricing.probability_outputs import (
 )
 from l8_evidence.explanation_inputs import (
     AttributionUnavailable,
+    ExplanationInputs,
     FeatureContribution,
     build_explanation_inputs,
 )
@@ -125,7 +128,7 @@ def _explanation_unavailable(prediction_id: str = "pred-1") -> AttributionUnavai
     return AttributionUnavailable(prediction_id=prediction_id, reason="no approved method for this model")
 
 
-def _explanation_inputs(snapshot: PredictionSnapshot):
+def _explanation_inputs(snapshot: PredictionSnapshot) -> ExplanationInputs:
     return build_explanation_inputs(
         snapshot,
         method_id="linear-coefficient-contributions",
@@ -282,7 +285,7 @@ def test_exportable_prediction_constructor_has_no_recommendation_parameter_that_
     ExportablePrediction(**kwargs)  # sanity: the only legal value succeeds
 
 
-def _valid_export_kwargs() -> dict:
+def _valid_export_kwargs() -> dict[str, Any]:
     snapshot = _snapshot()
     runner_exports = tuple(
         RunnerProbabilityExport(
@@ -404,6 +407,9 @@ def test_export_probabilities_and_fair_odds_mirror_the_snapshot_exactly() -> Non
     by_runner = {r.runner_id: r for r in snapshot.probabilities.runners}
     for exported in export.runner_probabilities:
         source = by_runner[exported.runner_id]
+        assert source.p_fundamental is not None
+        assert source.p_market_info is not None
+        assert source.p_combined is not None
         assert exported.p_fundamental == source.p_fundamental.probability
         assert exported.p_market_info == source.p_market_info.probability
         assert exported.p_combined == source.p_combined.probability
@@ -450,7 +456,9 @@ def test_display_decimal_is_never_wired_into_build_export() -> None:
     by_runner = {r.runner_id: r for r in snapshot.probabilities.runners}
     for exported in export.runner_probabilities:
         # Stored values are full-precision snapshot Decimals, not display-rounded copies.
-        assert exported.p_combined == by_runner[exported.runner_id].p_combined.probability
+        source_combined = by_runner[exported.runner_id].p_combined
+        assert source_combined is not None
+        assert exported.p_combined == source_combined.probability
 
 
 # --- explanations: reference by digest or explicit AttributionUnavailable ------------------
