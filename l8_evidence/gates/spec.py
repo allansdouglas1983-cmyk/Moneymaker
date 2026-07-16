@@ -161,12 +161,12 @@ def load_gate_spec(path: Path) -> GateSpec:
     if not isinstance(gates_raw, list) or not gates_raw:
         raise GateSpecError(f"{path}: gates must be a non-empty list")
     gates = tuple(_parse_gate(gate) for gate in gates_raw)
+    # Flatten first, then walk: a continue/break inside the pair loop would be an
+    # equivalent-mutant surface (the alias is the pair's last element).
+    names = [name for gate in gates for name in (gate.gate_id, gate.alias) if name is not None]
     seen_names: set[str] = set()
-    for gate in gates:
-        for name in (gate.gate_id, gate.alias):
-            if name is None:
-                continue
-            if name in seen_names:
-                raise GateSpecError(f"{path}: duplicate gate_id or alias {name!r}")
-            seen_names.add(name)
+    for name in names:
+        if name in seen_names:
+            raise GateSpecError(f"{path}: duplicate gate_id or alias {name!r}")
+        seen_names.add(name)
     return GateSpec(version=version, digest=digest, gates=gates)

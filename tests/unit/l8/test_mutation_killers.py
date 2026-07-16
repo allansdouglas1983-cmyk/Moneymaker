@@ -562,3 +562,12 @@ def test_python_dash_m_entry_point_runs_the_cli(tmp_path: Path) -> None:
     )
     assert result.returncode == 0
     assert _json.loads(result.stdout)["outcome"] == "PASS"
+
+
+def test_empty_fact_id_is_refused(tmp_path: Path) -> None:
+    # Kills or->and on the fact_id guard (the facts.py sibling of the spec/experiment
+    # empty-string killers): an empty id would satisfy isinstance alone.
+    path = tmp_path / "facts.yaml"
+    path.write_text('- fact_id: ""\n  value: null\n  recheck_by: null\n', encoding="utf-8")
+    with pytest.raises(FactsRegistryError):
+        load_facts_registry(path)
