@@ -123,6 +123,9 @@ from enum import Enum
 from typing import Sequence
 
 __all__ = [
+    "CLVSign",
+    "CLV_SIGN_DEADBAND_BPS",
+    "classify_clv_bps",
     "ClvError",
     "ClosingPriceError",
     "ExecutionCaptureDeltaError",
@@ -199,16 +202,71 @@ def _require_nonempty(
         raise error_cls(f"{field_name} must be non-empty")
 
 
+def _clv_bps_raw(odds_taken: Decimal, odds_close: Decimal) -> Decimal:
+    """``(1/odds_close - 1/odds_taken) * 10000`` UNQUANTIZED, at ambient Decimal context.
+
+    The sign of this value is always exact (Decimal division preserves sign); its
+    magnitude carries context precision (28 significant digits by default). This is the
+    authoritative underlying quantity; :func:`_clv_bps` is its 2dp reporting
+    representation and :func:`classify_clv_bps` its explicit sign classification.
+    """
+    p_close = Decimal(1) / odds_close
+    p_taken = Decimal(1) / odds_taken
+    return (p_close - p_taken) * Decimal(10000)
+
+
 def _clv_bps(odds_taken: Decimal, odds_close: Decimal) -> Decimal:
     """``(1/odds_close - 1/odds_taken) * 10000``, quantized to 2dp (``ROUND_HALF_EVEN``).
 
     See the module docstring's "Sign convention" section for the worked fixture and the
-    ambiguity resolution over the brief's two conflicting formula statements.
+    ambiguity resolution over the brief's two conflicting formula statements. This is a
+    REPORTING representation: a true value smaller in magnitude than the half-quantum
+    (|raw| < 0.005 bps) quantizes to 0.00 — sign questions inside that band are answered
+    by :func:`classify_clv_bps` (explicit NEUTRAL_SUB_QUANTUM), never by this value.
     """
-    p_close = Decimal(1) / odds_close
-    p_taken = Decimal(1) / odds_taken
-    raw_bps = (p_close - p_taken) * Decimal(10000)
-    return raw_bps.quantize(_BPS_QUANTUM, rounding=ROUND_HALF_EVEN)
+    return _clv_bps_raw(odds_taken, odds_close).quantize(_BPS_QUANTUM, rounding=ROUND_HALF_EVEN)
+
+
+#: Half of the reporting quantum: the smallest magnitude whose sign survives 2dp
+#: quantization in every case. Derivation: _BPS_QUANTUM / 2, exactly. Absolute, in
+#: implied-probability basis points. This is a REPRESENTATION deadband, not an economic
+#: significance threshold — no gate may consume it as a boundary (SPEC-094: boundaries
+#: come from pre-registration, never from module constants).
+CLV_SIGN_DEADBAND_BPS = Decimal("0.005")
+
+
+class CLVSign(Enum):
+    """Explicit sign classification of a CLV value (test-correction 0002, SPEC-095).
+
+    ``NEUTRAL_SUB_QUANTUM`` means: the true value's magnitude is below the reporting
+    representation's half-quantum, so the 2dp ``clv_bps`` cannot express its sign —
+    it is classified as indeterminate-at-reporting-precision, NEVER silently coerced
+    to positive, negative, or exact zero. ``ZERO`` is reserved for exactly-equal odds.
+    """
+
+    POSITIVE = "POSITIVE"
+    NEGATIVE = "NEGATIVE"
+    ZERO = "ZERO"
+    NEUTRAL_SUB_QUANTUM = "NEUTRAL_SUB_QUANTUM"
+
+
+def classify_clv_bps(raw_bps: Decimal) -> CLVSign:
+    """Deterministic sign classification of an UNQUANTIZED CLV in basis points.
+
+    * ``raw == 0`` -> ``ZERO`` (odds exactly equal).
+    * ``0 < |raw| < CLV_SIGN_DEADBAND_BPS`` -> ``NEUTRAL_SUB_QUANTUM``.
+    * ``|raw| >= CLV_SIGN_DEADBAND_BPS`` -> ``POSITIVE`` / ``NEGATIVE`` by exact sign.
+
+    At exactly the boundary (|raw| == 0.005) the sign is definite and is returned;
+    note the 2dp reporting value at that single tie point is 0.00 under HALF_EVEN —
+    classification is defined off the RAW value precisely so it never depends on the
+    tie-breaking rule of the reporting representation.
+    """
+    if raw_bps == 0:
+        return CLVSign.ZERO
+    if abs(raw_bps) < CLV_SIGN_DEADBAND_BPS:
+        return CLVSign.NEUTRAL_SUB_QUANTUM
+    return CLVSign.POSITIVE if raw_bps > 0 else CLVSign.NEGATIVE
 
 
 def _odds_ratio(odds_taken: Decimal, odds_close: Decimal) -> Decimal:
@@ -311,6 +369,16 @@ class SignalCLV:
         return _clv_bps(self.odds_at_signal, self.closing.odds)
 
     @property
+    def clv_bps_raw(self) -> Decimal:
+        """The unquantized underlying CLV — sign always exact (test-correction 0002)."""
+        return _clv_bps_raw(self.odds_at_signal, self.closing.odds)
+
+    @property
+    def sign_classification(self) -> CLVSign:
+        """Explicit sign classification off the RAW value — never the 2dp report."""
+        return classify_clv_bps(self.clv_bps_raw)
+
+    @property
     def odds_ratio(self) -> Decimal:
         return _odds_ratio(self.odds_at_signal, self.closing.odds)
 
@@ -336,6 +404,16 @@ class IntendedOrderCLV:
     @property
     def clv_bps(self) -> Decimal:
         return _clv_bps(self.odds_intended, self.closing.odds)
+
+    @property
+    def clv_bps_raw(self) -> Decimal:
+        """The unquantized underlying CLV — sign always exact (test-correction 0002)."""
+        return _clv_bps_raw(self.odds_intended, self.closing.odds)
+
+    @property
+    def sign_classification(self) -> CLVSign:
+        """Explicit sign classification off the RAW value — never the 2dp report."""
+        return classify_clv_bps(self.clv_bps_raw)
 
     @property
     def odds_ratio(self) -> Decimal:
@@ -378,6 +456,16 @@ class RealisedFillCLV:
     @property
     def clv_bps(self) -> Decimal:
         return _clv_bps(self.odds_matched, self.closing.odds)
+
+    @property
+    def clv_bps_raw(self) -> Decimal:
+        """The unquantized underlying CLV — sign always exact (test-correction 0002)."""
+        return _clv_bps_raw(self.odds_matched, self.closing.odds)
+
+    @property
+    def sign_classification(self) -> CLVSign:
+        """Explicit sign classification off the RAW value — never the 2dp report."""
+        return classify_clv_bps(self.clv_bps_raw)
 
     @property
     def odds_ratio(self) -> Decimal:
