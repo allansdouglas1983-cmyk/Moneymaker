@@ -95,5 +95,28 @@ def test_load_classifications_empty(tmp_path: Path) -> None:
 
 
 def test_real_survivors_file_is_valid() -> None:
+    """The real survivors file holds exactly the approved classification set, fully formed.
+
+    TEST CORRECTION (founder-approved in session chat, 2026-07-16, with ADR 0010): the
+    original assertion pinned the file to zero entries, written when no survivor had ever
+    been classified. The l7_settle mutation pass (SPEC-080/082, SPECIFICATION.md §12.4/§15)
+    produced eight behaviourally-unobservable equivalent mutants, approved by the founder;
+    the pin now names that exact set, so an entry can neither appear nor vanish without a
+    matching human-approved change here.
+    """
     repo = Path(__file__).resolve().parents[3]
-    assert rm.load_classifications(repo / "specs" / "mutation-survivors.yaml") == {}
+    classifications = rm.load_classifications(repo / "specs" / "mutation-survivors.yaml")
+    assert set(classifications) == {
+        "l7_settle/pnl.py::core/ReplaceComparisonOperator_Eq_Is::0",
+        "l7_settle/pnl.py::core/ReplaceComparisonOperator_Eq_Is::1",
+        "l7_settle/ledger.py::core/ReplaceComparisonOperator_Gt_NotEq::0",
+        "l7_settle/settlement.py::core/ReplaceComparisonOperator_Eq_Is::0",
+        "l7_settle/settlement.py::core/ReplaceComparisonOperator_Eq_Is::2",
+        "l7_settle/settlement.py::core/ReplaceComparisonOperator_Eq_Is::3",
+        "l7_settle/settlement.py::core/ReplaceComparisonOperator_LtE_Lt::0",
+        "l7_settle/settlement.py::core/NumberReplacer::1",
+    }
+    for key, entry in classifications.items():
+        assert entry.get("classification") == "equivalent-mutant", key
+        assert str(entry.get("rationale", "")).strip(), key
+        assert str(entry.get("approved_by", "")).strip(), key
