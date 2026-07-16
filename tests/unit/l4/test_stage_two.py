@@ -16,7 +16,7 @@ import pytest
 
 from l4_pricing.crossfit import CrossFitViolation, OOFFundamental, StageOneProvenance
 from l4_pricing.horizon import HorizonLabel, HorizonMismatch
-from l4_pricing.races import FeatureSchema, Race, RaceValidationError, RunnerRow
+from l4_pricing.races import Race, RaceValidationError, RunnerRow
 from l4_pricing.stage_two import (
     CollinearInputsError,
     CombinedModel,
@@ -142,7 +142,7 @@ def test_training_reverifies_out_of_fold_at_consumption() -> None:
 def test_bare_floats_cannot_enter_training() -> None:
     races, oof, market = _fixture()
     tampered = list(oof)
-    tampered[0] = 0.75  # type: ignore[list-item]
+    tampered[0] = 0.75  # type: ignore[call-overload]
     with pytest.raises((TypeError, CrossFitViolation)):
         fit_stage_two(races, tampered, market, horizon=H)
 
