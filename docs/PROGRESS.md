@@ -11,13 +11,13 @@ not the conversation. This is that file. Update it at the end of every slice.
 
 | | |
 |---|---|
-| Active SPEC-IDs covered | **23 of 23 — the entire active surface** (SPEC-001–004, 010–012, 020–024, 050–054, 080/082, 100–103) |
-| Tests | **349 passing** (unit + property + failure-injection + replay-regression; 269 -> 349 in the 2026-07-16 audit-hardening pass) |
-| Static checks | `mypy --strict` clean (120 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
-| Commits on branch | 71 |
-| Phase | 1 (walking vertical slice), offline only |
+| Active SPEC-IDs covered | **24 of 24 — the entire active surface** (SPEC-001–004, 010–012, 020–024, 050–054, 080/082, **093**, 100–103) |
+| Tests | **525 passing** (unit + property + failure-injection + replay-regression; 349 -> 525 in the 2026-07-16 gate-evaluator slice) |
+| Static checks | `mypy --strict` clean (139 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
+| Commits on branch | 82 |
+| Phase | 2 (offline research), first Phase-2 money slice landed |
 | `make verify` overall | **GREEN** ✅ — all active IDs covered and consistent |
-| `make mutants` | **`l7_settle` ENFORCED** (`--require-kill-non-equivalent --survivors-must-be-classified`, alongside `l8_evidence/gates`): 329 mutants, 321 killed, 8 founder-approved equivalent-mutant classifications (ADR 0010). `l5b_risk` report-only. |
+| `make mutants` | **`l8_evidence/gates` ENFORCED and 100% clean: 617 mutants, 617 killed, 0 survivors, 0 classifications needed.** `l7_settle` ENFORCED: 329/321/8 founder-approved equivalents (ADR 0010). `l5b_risk` report-only. |
 
 The whole platform is a **research/measurement platform, not a betting bot**, conditionally
 approved for **offline work through Phase 2 only** (no live credentials, no real money, no
@@ -115,6 +115,34 @@ Commission on the **net market result**, never per-order; exact integer minor un
 - Advisory-verified P&L arithmetic; hardened (void charges, hashability, scenario keys).
 - Tests: `tests/unit/l7/`, `tests/properties/l7/`.
 
+### L8 gate evaluator — `l8_evidence/gates/` (SPEC-093, money) · ADR 0011 · **first Phase-2 money module**
+Deterministic four-valued promotion-gate verdicts; an LLM never decides a gate. Built in the
+ADR 0011 order: `specs/gates/v1.yaml` frozen FIRST (structure only — a test pins zero numeric
+leaves; boundaries live in each experiment's §9.7 record, economics in `docs/facts.yaml`),
+failing tests committed separately, then the implementation without touching them.
+- `outcomes.py` `GateOutcome`/`GateResult` — four-valued, frozen, `bool()` raises by
+  construction; canonical sorted-key JSON (byte-identical for identical inputs).
+- `spec.py` structure-only loader (numeric leaves refused), alias resolution (GATE-0B→GATE-3),
+  sha256-bound to the spec bytes; singleton-free validation (frozenset membership, dict
+  dispatch, seen-set duplicate walks — zero equivalent-mutant surface).
+- `experiment.py` §9.7 record loader — Decimal-from-string or int only, floats refused.
+- `facts.py` §13.5 join: any populated fact past/without `recheck_by` → FAIL_HARM
+  registry-wide; a gate-required unpopulated fact → CONTINUE.
+- `evaluator.py` pure `evaluate()` (no clock, no I/O): severity aggregation — harm (stale
+  facts, false-harm items, budget breach, upper<harm) dominates futility dominates continue;
+  PASS needs every item true, fresh facts, exact-multiplication multiplicity
+  `(1-confidence)x(trials+1) <= alpha`, and lower > minimum effect; max_n without efficacy →
+  FAIL_FUTILITY. `payback_v1` compares `c_fixed <= max_years x annual` (multiplication only).
+- `cli.py` + `__main__.py` — pinned contract via `uv run python -m l8_evidence.gates
+  evaluate …`; exit codes PASS 0 / CONTINUE 1 / FAIL_HARM 2 / FAIL_FUTILITY 3 / error 4
+  (an error is never a verdict). No console script: the workspace root is unpackaged
+  (deviation recorded in ADR 0011).
+- **Mutation: 617/617 killed, zero survivors, zero classifications** — annotation mutants
+  die via a `get_type_hints` sweep (the l7 pattern), plus ~40 targeted killers.
+- Advisory spec-verifier pass on the slice: clean; its forward-dependency note (attestation
+  provenance belongs to SPEC-091's ledger schema) is recorded in ADR 0011.
+- Tests: `tests/unit/l8/`, `tests/properties/l8/`.
+
 ### Mutation harness — `tools/run_mutation.py` (ADR 0008)
 Discharges ADR 0001's deferral. Drives `cosmic-ray` (init/exec/dump) per target; enforces a
 human-approved classification file `specs/mutation-survivors.yaml`. `--require-kill-non-equivalent`
@@ -127,14 +155,16 @@ cosmic-ray leaves a mutant applied if killed mid-test (`git checkout -- <module>
 
 ## Coverage map
 
-**Covered (23 — the entire active surface):** SPEC-001–004 (L0) · SPEC-010–012 (L1) ·
-SPEC-020–024 (L3) · SPEC-050–054 (L5) · SPEC-080/082 (L7) · SPEC-100–103 (governance).
+**Covered (24 — the entire active surface):** SPEC-001–004 (L0) · SPEC-010–012 (L1) ·
+SPEC-020–024 (L3) · SPEC-050–054 (L5) · SPEC-080/082 (L7) · SPEC-093 (L8 gates) ·
+SPEC-100–103 (governance).
 
 **Remaining active: none.** `make verify` is green.
 
-`planned` IDs (L4 pricing, L4b fill, L5b risk, L6 broker, L8 evidence, SPEC-081/083/104) are not
-yet CI-enforced; **activating a phase is a human-controlled specification change**, not an agent
-task — it is how the next tranche of work is authorised.
+`planned` IDs (L4 pricing, L4b fill, L5b risk, L6 broker, the rest of L8 evidence,
+SPEC-081/083/104) are not yet CI-enforced. Per the standing progression plan each Phase-2 ID is
+activated (`planned → active`, enforcement-increasing only) once implemented and covered —
+SPEC-093 was activated this way with its rationale in ADR 0011.
 
 ---
 
@@ -182,19 +212,16 @@ so the next work proceeds autonomously on this feature branch:
 
 - **Phase 2 build order (offline):**
   1. ✅ **Done (ADR 0009)** — froze `specs/prices/{info,exec,close}-v1.yaml` before any data
-     was read (correct pre-registration). Continue at step 2.
-  2. `specs/gates/v1.yaml` (§10) + L8 gate evaluator `l8_evidence/gates/` (SPEC-093, money).
-     **The complete design is ADR 0011 (DRAFT) — read it first; it encodes the §10 source
-     analysis, the yaml schema, verdict precedence, multiplicity arithmetic, facts join,
-     CLI/exit codes and the property list.** Discipline: freeze specs/gates/v1.yaml FIRST,
-     failing tests in their own commit, then implement; mutation for gates is already
-     enforced in CI, and mutation runs go in disposable git worktrees with a
-     proven-green baseline BEFORE mutating (both lessons of ADR 0010).
+     was read (correct pre-registration).
+  2. ✅ **Done (ADR 0011, this session)** — `specs/gates/v1.yaml` frozen + L8 gate evaluator
+     (SPEC-093, money, `active`, 617/617 mutation kill). Continue at step 3.
   3. L4 pricing framework (SPEC-030–035): conditional logit, time-respecting cross-fitting, stage-two
      combination, edge **distribution** (not point estimate), no-LambdaRank. Built + tested on synthetic
      fixtures; real fitting/Gate-1/2 evaluation needs licensed historical data (not in-repo) and is
-     data-gated, not code-gated.
-  4. L8 evidence (SPEC-090–097): trial ledger, race-level paired inference, calibration/CLV diagnostics.
+     data-gated, not code-gated. **Lead-model design work — start at Max/High effort.**
+  4. L8 evidence (SPEC-090–092, 094–097): trial ledger (add attestation provenance —
+     reviewer/timestamp — to the record schema per the ADR 0011 forward dependency),
+     race-level paired inference, calibration/CLV diagnostics.
 - Activate each Phase-2 ID (`planned → active` in the manifest) **only once it is implemented and
   covered**, so `make verify` stays honest/green. Record the activation rationale in the ADR.
 - Later: Phase 3 (L5b risk, L6 broker, reconciliation SPEC-081/083, SPEC-104) and Phase 5 (L4b fill,
@@ -261,6 +288,9 @@ so the next work proceeds autonomously on this feature branch:
 | `docs/decisions/0006-governance.md` | governance/ package + money-lint; SPEC-100 via existing quarantine; licensed-source registry; no-delayed-key by type + runtime backstop; budget separation by absence of transfer |
 | `docs/decisions/0007-l7-settlement.md` | commission on net market result; per-position P&L (RF, dead heat); per-bet ROUND_HALF_UP; unknown-blocks; idempotent versioned ledger |
 | `docs/decisions/0008-mutation-harness.md` | cosmic-ray driver; survivor identity + classification file; report vs enforce; empty targets skipped |
+| `docs/decisions/0009-price-preregistration.md` | specs/prices/{info,exec,close}-v1.yaml frozen before any data read |
+| `docs/decisions/0010-retrospective-audit.md` | 2026-07-16 clause-by-clause audit; equivalent-mutant classifications; worktree/green-baseline mutation lessons |
+| `docs/decisions/0011-gate-evaluator.md` | frozen structure-only gate spec; four-valued never-boolean verdicts; severity-aggregation precedence; exact-multiplication multiplicity; facts join; python -m CLI; SPEC-093 activation |
 
 ---
 
