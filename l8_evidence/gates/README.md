@@ -13,4 +13,12 @@ insufficient-evidence inputs must never return PASS.
 
 > ⚠️ **Money-critical. Never stub.** 100% of NON-EQUIVALENT mutants killed; every survivor
 > classified + human-approved. Property test on insufficient-evidence inputs.
-> **Status: not yet implemented** — Phase 2 IDs are `planned`.
+
+**Implemented** (ADR 0011): `outcomes.py` (four-valued enum + frozen result, both refuse
+`bool()`), `spec.py` (structure-only loader, numeric leaves refused, sha256-bound),
+`experiment.py` (§9.7 record, floats refused), `facts.py` (§13.5 freshness join),
+`evaluator.py` (pure, deterministic, safety-first precedence, exact-multiplication
+multiplicity), `cli.py` (exit codes PASS 0 / CONTINUE 1 / FAIL_HARM 2 / FAIL_FUTILITY 3 /
+error 4). The repo root is not a packaged project, so the `gate` entry point is invoked as
+`uv run python -m l8_evidence.gates.cli evaluate …` with exactly the pinned arguments;
+experiment records resolve from `--experiment-root` (default `ledger/experiments`).
