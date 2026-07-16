@@ -148,14 +148,17 @@ def test_bare_floats_cannot_enter_training() -> None:
 
 
 def test_races_missing_inputs_are_excluded_with_reasons() -> None:
+    # Drop one WINNER-1 race from each block (A0/B0), keeping each block at 2-of-3 so the
+    # remaining corpus still has finite MLE optima (dropping the sole runner-2 win would
+    # create complete separation, which the fit rightly refuses).
     races, oof, market = _fixture()
-    market.pop("A3")  # no market price for A3
-    oof = [r for r in oof if r.race_id != "B3"]  # no fundamentals for B3
+    market.pop("A0")  # no market price for A0
+    oof = [r for r in oof if r.race_id != "B0"]  # no fundamentals for B0
     result = fit_stage_two(races, oof, market, horizon=H)
     excluded = {e.race_id: e.reason for e in result.excluded}
-    assert set(excluded) == {"A3", "B3"}
-    assert "market" in excluded["A3"].lower()
-    assert "fundamental" in excluded["B3"].lower()
+    assert set(excluded) == {"A0", "B0"}
+    assert "market" in excluded["A0"].lower()
+    assert "fundamental" in excluded["B0"].lower()
     assert len(result.used_race_ids) + len(result.excluded) == len(races)
 
 

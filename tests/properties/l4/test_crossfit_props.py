@@ -15,6 +15,7 @@ import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
+from l4_pricing.conditional_logit import SeparationError
 from l4_pricing.crossfit import CrossFitViolation, assert_out_of_fold, cross_fit
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RunnerRow
@@ -55,7 +56,13 @@ def _corpus(draw: st.DrawFn) -> list[Race]:
 @settings(max_examples=40, deadline=None)
 @given(corpus=_corpus())
 def test_every_oof_row_is_strictly_out_of_fold(corpus: list[Race]) -> None:
-    result = cross_fit(corpus, SCHEMA, horizon=H)
+    # The full-window deployment fit can legitimately refuse a chance-separable corpus;
+    # such draws are outside this property's domain.
+    try:
+        result = cross_fit(corpus, SCHEMA, horizon=H)
+    except SeparationError:
+        assume(False)
+        return
     races = {r.race_id: r for r in corpus}
     for row in result.oof:
         race = races[row.race_id]
@@ -69,8 +76,12 @@ def test_every_oof_row_is_strictly_out_of_fold(corpus: list[Race]) -> None:
 @settings(max_examples=40, deadline=None)
 @given(corpus=_corpus())
 def test_cross_fit_is_deterministic(corpus: list[Race]) -> None:
-    a = cross_fit(corpus, SCHEMA, horizon=H)
-    b = cross_fit(list(reversed(corpus)), SCHEMA, horizon=H)
+    try:
+        a = cross_fit(corpus, SCHEMA, horizon=H)
+        b = cross_fit(list(reversed(corpus)), SCHEMA, horizon=H)
+    except SeparationError:
+        assume(False)
+        return
     assert [(r.race_id, r.runner_id, r.p_fundamental) for r in a.oof] == [
         (r.race_id, r.runner_id, r.p_fundamental) for r in b.oof
     ]
@@ -81,7 +92,11 @@ def test_cross_fit_is_deterministic(corpus: list[Race]) -> None:
 @settings(max_examples=40, deadline=None)
 @given(corpus=_corpus(), data=st.data())
 def test_any_contaminated_row_is_caught(corpus: list[Race], data: st.DataObject) -> None:
-    result = cross_fit(corpus, SCHEMA, horizon=H)
+    try:
+        result = cross_fit(corpus, SCHEMA, horizon=H)
+    except SeparationError:
+        assume(False)
+        return
     assume(result.oof)
     races = {r.race_id: r for r in corpus}
     index = data.draw(st.integers(min_value=0, max_value=len(result.oof) - 1))
