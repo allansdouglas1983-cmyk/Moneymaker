@@ -1,0 +1,254 @@
+# specs/gates/v1.yaml — versioned gate definitions. FROZEN (SPECIFICATION.md §10, ADR 0011).
+#
+# STRUCTURE ONLY. This document defines the decision structure of the nine promotion gates:
+# gate kinds, checklist items with their on-false flavours, evidence decision procedures, and
+# verdict precedence. It deliberately contains NO numeric leaves at all (§9.3 — no borrowed
+# thresholds): every boundary number comes from the experiment's pre-registration record
+# (§9.7), and every volatile economic value comes from docs/facts.yaml (§13.5). A unit test
+# pins the no-numerics property.
+#
+# Changing anything here is gates-v2 plus a new pre-registration, never an in-place edit.
+# A gate formula and the evidence evaluated by it never change together (§0 Rule 2).
+#
+# Item semantics (ADR 0011): PASS requires every item attested true; an item attested FALSE
+# produces its declared on_false outcome; a MISSING attestation is CONTINUE (premature
+# evaluation is not a demonstrated violation — §10.2's CONTINUE column).
+
+version: gates-v1
+evaluator: gate-evaluator-v1
+outcomes: [PASS, CONTINUE, FAIL_HARM, FAIL_FUTILITY]
+
+# Evidence decision procedure (§10.1, §9.8). Inputs come from the experiment record's
+# evidence block; boundaries come from its pre-registration block. Anytime-valid bounds
+# only — rolling-window threshold alarms are forbidden (SPEC-096).
+decisions:
+  anytime_valid_bounds_v1:
+    evidence_inputs:
+      - lower_bound            # anytime-valid lower confidence bound on the primary endpoint
+      - upper_bound            # anytime-valid upper confidence bound on the primary endpoint
+      - confidence_level       # the level the bounds were computed at (pre-registered)
+      - n                      # decision units observed (races / race-day blocks)
+      - loss_budget_breached   # operational fact: experiment loss budget breached
+    preregistered_boundaries:
+      - minimum_economic_effect   # smallest improvement of executable value (§9.2 delta)
+      - harm_threshold            # negative safety boundary on the same endpoint scale
+      - alpha_budget              # total type-I budget across the experiment family (§9.7)
+      - max_n                     # pre-registered maximum sample size (futility)
+    # Multiplicity (SPEC-091): PASS additionally requires
+    #   (1 - confidence_level) * (number_of_prior_trials + 1) <= alpha_budget
+    # evaluated by exact Decimal MULTIPLICATION only — no division, so the check is exact.
+    multiplicity_rule: alpha_times_trials_exact_multiplication
+    # Safety-first verdict precedence (property-tested; harm dominates efficacy):
+    precedence:
+      - stale_or_misconfigured_facts_fail_harm
+      - false_item_produces_declared_flavour
+      - loss_budget_breach_fail_harm
+      - upper_bound_below_harm_threshold_fail_harm
+      - pass_requires_preconditions_multiplicity_and_lower_above_minimum_effect
+      - max_n_reached_fail_futility
+      - otherwise_continue
+
+# Computed checklist item (§10.4, exact Decimal):
+#   annual = N_eligible * r_select * r_fill * mean_stake * ROI_lower - C_recurring
+#   annual <= 0            -> never amortises -> item false
+#   otherwise T = C_fixed / annual; item true iff T <= max_payback_years
+computed_items:
+  payback_v1:
+    inputs:
+      - n_eligible_per_year    # from the frozen universe ledger
+      - r_select               # measured selection rate
+      - r_fill                 # measured fill rate
+      - mean_stake             # average executable stake
+      - roi_lower              # Gate-2 policy-level lower bound on net executable ROI
+      - c_recurring_per_year   # recurring data/hosting costs
+      - c_fixed                # fixed cost to amortise (live key fee etc.)
+      - max_payback_years      # precommitted maximum payback horizon
+    facts_required:
+      - BETFAIR-LIVE-KEY-FEE
+
+gates:
+  - gate_id: GATE--1A
+    title: Research authorisation (before Phase 1)
+    spec_section: SPECIFICATION.md §10.3
+    kind: checklist
+    items:
+      - item_id: data_use_provisionally_lawful
+        requirement: source licences provisionally suitable for offline research (§13.1)
+        on_false: FAIL_HARM
+      - item_id: research_spend_capped
+        requirement: maximum research spend explicitly capped
+        on_false: FAIL_HARM
+      - item_id: sunk_cost_acceptable_at_zero_edge
+        requirement: maximum sunk cost acceptable even if the edge is zero
+        on_false: FAIL_FUTILITY
+      - item_id: no_live_capability_exists
+        requirement: no live credential, no order placement capability, no betting bankroll
+        on_false: FAIL_HARM
+      - item_id: scenario_analysis_recorded
+        requirement: scenario analysis of edge/opportunity/stake needed to justify live access
+        on_false: CONTINUE
+
+  - gate_id: GATE-0A
+    title: Offline measurement truth (before pricing research)
+    spec_section: SPECIFICATION.md §10.5
+    kind: checklist
+    items:
+      - item_id: raw_messages_retained
+        requirement: raw historical market messages retained
+        on_false: FAIL_HARM
+      - item_id: deterministic_reducer_implemented
+        requirement: deterministic reducer implemented
+        on_false: CONTINUE
+      - item_id: canonical_replay_reproducible
+        requirement: canonical replay reproducible (§6.2)
+        on_false: FAIL_HARM
+      - item_id: state_and_features_reproducible
+        requirement: historical market state and derived features reproducible
+        on_false: FAIL_HARM
+      - item_id: settlement_fixtures_cover_edge_cases
+        requirement: simulated settlement fixtures cover every case in §6.8
+        on_false: FAIL_HARM
+      - item_id: completeness_and_exclusion_ledgers_exist
+        requirement: data completeness and exclusion ledgers exist (§6.10)
+        on_false: FAIL_HARM
+      - item_id: failure_injection_and_replay_regression_pass
+        requirement: failure-injection and replay-regression tests pass
+        on_false: CONTINUE
+
+  - gate_id: GATE-1
+    title: Pricing information (one-time lockbox)
+    spec_section: SPECIFICATION.md §10.2
+    kind: evidence
+    decision: anytime_valid_bounds_v1
+    items:
+      - item_id: lockbox_uncontaminated
+        requirement: the lockbox period was never inspected during development (§9.7)
+        on_false: FAIL_HARM
+      - item_id: endpoint_preregistered
+        requirement: race-level primary endpoint and boundaries declared before observation
+        on_false: FAIL_HARM
+
+  - gate_id: GATE-2
+    title: Conservative taker value (offline, executable prices)
+    spec_section: SPECIFICATION.md §10.7
+    kind: evidence
+    decision: anytime_valid_bounds_v1
+    items:
+      - item_id: scenarios_cover_minimum_set
+        requirement: latency-adjusted, size-aware executable-price scenarios cover the §10.7 minimum set
+        on_false: CONTINUE
+      - item_id: conservative_scenarios_used
+        requirement: value bound holds under pessimistic scenarios, not only optimistic ones
+        on_false: FAIL_FUTILITY
+      - item_id: policy_value_is_primary_evidence
+        requirement: the bound is the race-day-block aggregate policy value including no-bets and failed executions
+        on_false: CONTINUE
+
+  - gate_id: GATE--1B
+    title: Pre-live economic viability (before paying the live key fee)
+    spec_section: SPECIFICATION.md §10.4
+    kind: checklist
+    items:
+      - item_id: gate2_policy_lower_bound_exists
+        requirement: Gate 2 produced a policy-level lower bound on net executable value
+        on_false: CONTINUE
+      - item_id: opportunity_frequency_from_frozen_universe
+        requirement: eligible opportunity frequency measured from the frozen universe ledger
+        on_false: CONTINUE
+      - item_id: payback_within_precommitted_horizon
+        requirement: conservative payback horizon fits the precommitted maximum (computed)
+        computed: payback_v1
+        on_false: FAIL_FUTILITY
+      - item_id: budgets_separately_tracked
+        requirement: research capital, bankroll and experiment-loss budgets separate (SPEC-103)
+        on_false: FAIL_HARM
+
+  - gate_id: GATE-3
+    alias: GATE-0B
+    title: Live operational canary / live accounting truth
+    spec_section: SPECIFICATION.md §10.6
+    kind: checklist
+    items:
+      - item_id: raw_live_order_stream_captured
+        requirement: raw live order stream captured
+        on_false: FAIL_HARM
+      - item_id: api_commands_reconciled
+        requirement: API commands reconciled
+        on_false: FAIL_HARM
+      - item_id: current_orders_reconciled
+        requirement: listCurrentOrders reconciled
+        on_false: FAIL_HARM
+      - item_id: statements_reconciled
+        requirement: cleared orders and account statements reconciled
+        on_false: FAIL_HARM
+      - item_id: unknown_state_blocks_placement
+        requirement: unknown order state blocks placement (SPEC-062)
+        on_false: FAIL_HARM
+      - item_id: commission_agrees_with_statement
+        requirement: actual commission and final settlement agree with the account statement
+        on_false: FAIL_HARM
+      - item_id: restart_and_reconnect_recovery_pass
+        requirement: process restart and reconnect recovery pass
+        on_false: CONTINUE
+
+  - gate_id: GATE-4
+    title: Randomised execution experiment (passive)
+    spec_section: SPECIFICATION.md §10.8
+    kind: evidence
+    decision: anytime_valid_bounds_v1
+    items:
+      - item_id: eligibility_frozen_before_randomisation
+        requirement: eligibility frozen before randomisation
+        on_false: FAIL_HARM
+      - item_id: randomised_before_future_book_movement
+        requirement: randomisation occurs before future book movement is observed
+        on_false: FAIL_HARM
+      - item_id: allocation_stratified
+        requirement: allocation stratified by predefined odds, liquidity and time-to-off bands
+        on_false: FAIL_HARM
+      - item_id: every_arm_has_nonzero_probability
+        requirement: every arm has a minimum non-zero assignment probability
+        on_false: FAIL_HARM
+      - item_id: seed_and_assignment_recorded
+        requirement: random seed and assignment algorithm recorded
+        on_false: FAIL_HARM
+      - item_id: per_arm_limits_applied
+        requirement: safety and experiment-loss limits apply per arm
+        on_false: FAIL_HARM
+      - item_id: primary_analysis_is_itt
+        requirement: primary analysis is intention-to-treat comparison of randomised arms
+        on_false: FAIL_HARM
+      - item_id: calibrated_fill_model_supports
+        requirement: calibrated fill model supports the improvement (SPEC-041 envelopes)
+        on_false: FAIL_FUTILITY
+
+  - gate_id: GATE-5
+    title: Economic proof
+    spec_section: SPECIFICATION.md §10.1
+    kind: evidence
+    decision: anytime_valid_bounds_v1
+    items:
+      - item_id: capacity_threshold_cleared
+        requirement: capacity threshold cleared at the pre-registered stake and frequency
+        on_false: FAIL_FUTILITY
+      - item_id: payback_feasible
+        requirement: payback remains feasible at observed live economics
+        on_false: FAIL_FUTILITY
+
+  - gate_id: GATE-6
+    title: Scale
+    spec_section: SPECIFICATION.md §10.2
+    kind: checklist
+    items:
+      - item_id: portfolio_risk_approved
+        requirement: approved portfolio risk for the next size step
+        on_false: CONTINUE
+      - item_id: staged_canary_scaling_plan
+        requirement: staged canary scaling plan exists for the next size step
+        on_false: CONTINUE
+      - item_id: no_model_drift_detected
+        requirement: no drift detected by anytime-valid monitoring (SPEC-096)
+        on_false: FAIL_HARM
+      - item_id: no_operational_breach
+        requirement: no operational breach outstanding
+        on_false: FAIL_HARM
