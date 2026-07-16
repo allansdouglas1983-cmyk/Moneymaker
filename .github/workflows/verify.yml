@@ -45,6 +45,10 @@ jobs:
       - name: Facts freshness
         run: uv run python tools/check_facts_freshness.py --registry docs/facts.yaml
 
+      # Gate -1 licensing check (SPEC-101) — operational sources need full rights
+      - name: Licensed sources
+        run: uv run python -m tools.check_licensed_sources --registry docs/licensed-sources.yaml
+
       - name: Unit + integration
         run: uv run pytest tests/unit tests/integration -q
 
@@ -67,8 +71,13 @@ jobs:
         run: uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance
       - name: Ban escape hatches in money modules
         run: |
-          ! grep -rnE '(NotImplementedError|TODO|FIXME|pass\s+#|raise\s+NotImplemented)' \
+          ! grep -rinE '(notimplementederror|\btodo\b|\bfixme\b|\bxxx\b|\bhack\b|\bplaceholder\b|\bstub\b|raise\s+notimplemented|\bpass\b\s*(#.*)?$)' \
             l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance \
+            --include='*.py'
+      - name: Ban escape hatches in evidence modules
+        run: |
+          ! grep -rinE '(notimplementederror|\btodo\b|\bfixme\b|\bxxx\b|\bhack\b|\bplaceholder\b|\bstub\b|raise\s+notimplemented|\bpass\b\s*(#.*)?$)' \
+            l0_raw l1_reduce l3_features \
             --include='*.py'
 
       # Licensing quarantine

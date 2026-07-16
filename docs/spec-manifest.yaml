@@ -526,6 +526,17 @@
   status_source: ci
   introduced_in_phase: 1
   enforcement_state: active
+  relevant_inputs:
+  - positions
+  - runner_outcomes
+  - market_status
+  - commission_rate_effective
+  - transaction_charges
+  metamorphic_properties:
+  - commission is charged once on the net market result, never per order
+  - commission is zero whenever the net market result is <= 0
+  - commission is monotone non-decreasing in commission_rate_effective
+  - final_net_pnl equals net minus commission minus transaction charges
 - id: SPEC-081
   component: l7_settle
   title: Account statement is truth
@@ -550,6 +561,22 @@
   status_source: ci
   introduced_in_phase: 1
   enforcement_state: active
+  relevant_inputs:
+  - matched_stake_minor
+  - matched_odds
+  - applicable_reduction_factors
+  - dead_heat_count
+  - market_status
+  - runner_result
+  - settlement_version
+  - resettlement_flag
+  metamorphic_properties:
+  - a loser's P&L is exactly the negative matched stake regardless of odds, reduction factors or dead-heat count
+  - adding a reduction factor never increases effective odds or a winner's P&L
+  - a deeper dead heat never pays more
+  - void and abandoned markets settle every position to zero while retaining transaction charges
+  - duplicate acknowledgements add no exposure; conflicting or stale settlement versions are refused
+  - unknown market or runner status blocks settlement
 - id: SPEC-083
   component: l7_settle
   title: Differential reconciliation
