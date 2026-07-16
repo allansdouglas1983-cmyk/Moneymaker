@@ -174,7 +174,16 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
+  relevant_inputs:
+  - runner_features
+  - winner_outcomes
+  - active_runner_set
+  metamorphic_properties:
+  - probabilities sum to 1 within each race across all field sizes
+  - non-runners are dropped and the remainder renormalised; a marked non-runner never perturbs the fit
+  - per-race feature translation leaves within-race probabilities unchanged
+  - separated or unidentified data is refused, never silently regularised
 - id: SPEC-031
   component: l4_pricing
   title: Time-respecting cross-fitting
@@ -186,7 +195,16 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
+  relevant_inputs:
+  - meeting_day_order
+  - training_race_ids
+  - trained_through_day
+  metamorphic_properties:
+  - every out-of-fold fundamental's model trained strictly before the priced race's meeting day
+  - no model ever prices a race contained in its own training set
+  - a contaminated row is refused at consumption, not only at production
+  - every input race is an out-of-fold race or an explicit exclusion with a reason
 - id: SPEC-032
   component: l4_pricing
   title: Stage-two market combination
@@ -198,7 +216,7 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
   relevant_inputs:
   - p_fundamental
   - p_market_info
@@ -218,7 +236,7 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-034
   component: l4_pricing
   title: Edge distribution, not point estimate
@@ -229,7 +247,14 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
+  relevant_inputs:
+  - ensemble_samples
+  - conservative_quantile
+  metamorphic_properties:
+  - the conservative lower bound is a member order statistic, monotone in the quantile
+  - the distribution cannot be truth-tested or float-coerced into a point estimate
+  - the only decision-layer exit returns the typed WinProbabilityLowerBound
 - id: SPEC-035
   component: l4_pricing
   title: No LambdaRank softmax
@@ -241,7 +266,7 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-040
   component: l4b_fill
   title: Fill probability model, not queue simulator

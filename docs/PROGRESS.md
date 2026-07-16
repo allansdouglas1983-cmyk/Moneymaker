@@ -215,11 +215,15 @@ so the next work proceeds autonomously on this feature branch:
      was read (correct pre-registration).
   2. ✅ **Done (ADR 0011, this session)** — `specs/gates/v1.yaml` frozen + L8 gate evaluator
      (SPEC-093, money, `active`, 617/617 mutation kill). Continue at step 3.
-  3. L4 pricing framework (SPEC-030–035): conditional logit, time-respecting cross-fitting, stage-two
-     combination, edge **distribution** (not point estimate), no-LambdaRank. Built + tested on synthetic
-     fixtures; real fitting/Gate-1/2 evaluation needs licensed historical data (not in-repo) and is
-     data-gated, not code-gated. **Lead-model design work — start at Max/High effort.**
-  4. L8 evidence (SPEC-090–092, 094–097): trial ledger (add attestation provenance —
+  3. ✅ **Done (ADR 0012, this session)** — L4 pricing framework (SPEC-030–035, all `active`):
+     pure-Python deterministic conditional logit, meeting-day cross-fit with typed OOF provenance
+     (verified at production AND consumption), stage two on OOFFundamental + MarketInfoPrice,
+     WinProbabilityDistribution -> l5 lower bound only, grouped-softmax-only objectives, §6.12
+     manifest. Synthetic closed-form fixtures; real fitting stays data-gated.
+  4. **NEXT: SPEC-036–042 analytics-consumer foundations + Amendment A** (founder-supplied spec,
+     recorded in the session task list; pre-implementation audit first; statuses land `planned` and
+     flip per implementing slice; SPEC-043/044 planned-only; £499 budget constraint — no paid deps).
+  5. L8 evidence (SPEC-090–092, 094–097): trial ledger (add attestation provenance —
      reviewer/timestamp — to the record schema per the ADR 0011 forward dependency),
      race-level paired inference, calibration/CLV diagnostics.
 - Activate each Phase-2 ID (`planned → active` in the manifest) **only once it is implemented and
