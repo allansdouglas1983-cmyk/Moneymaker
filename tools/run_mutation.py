@@ -137,7 +137,9 @@ def _has_python(target: Path) -> bool:
 
 
 def _test_command_for(target: str) -> str:
-    token = Path(target).name.split("_")[0]
+    # Layer token from the TOP-LEVEL package (l8_evidence/gates -> l8), so nested money
+    # modules still get their focused suite instead of the whole-repo fallback.
+    token = Path(target).parts[0].split("_")[0]
     dirs = [d for d in (f"tests/unit/{token}", f"tests/properties/{token}") if (_ROOT / d).exists()]
     if dirs:
         return "python -m pytest " + " ".join(dirs) + " -x -q"
