@@ -85,7 +85,3 @@ def main(argv: list[str] | None = None) -> int:
         return _EXIT_ERROR
     print(result.canonical_json())
     return _EXIT_CODES[result.outcome]
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

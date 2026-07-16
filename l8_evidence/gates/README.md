@@ -20,5 +20,5 @@ insufficient-evidence inputs must never return PASS.
 `evaluator.py` (pure, deterministic, safety-first precedence, exact-multiplication
 multiplicity), `cli.py` (exit codes PASS 0 / CONTINUE 1 / FAIL_HARM 2 / FAIL_FUTILITY 3 /
 error 4). The repo root is not a packaged project, so the `gate` entry point is invoked as
-`uv run python -m l8_evidence.gates.cli evaluate …` with exactly the pinned arguments;
+`uv run python -m l8_evidence.gates evaluate …` with exactly the pinned arguments;
 experiment records resolve from `--experiment-root` (default `ledger/experiments`).

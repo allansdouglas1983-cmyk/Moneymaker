@@ -111,7 +111,8 @@ evaluator is the tool named in `docs/CI-AND-TRUST.md` §5's audit-subagent toolb
 - **Decision 10 deviation — no console script.** The repo root is deliberately not a
   packaged project (`tool.uv.package = false`), so `[project.scripts]` entry points are
   skipped by `uv sync`. The pinned CLI contract is invoked as
-  `uv run python -m l8_evidence.gates.cli evaluate …` with exactly the documented arguments.
+  `uv run python -m l8_evidence.gates evaluate …` (a dedicated `__main__.py`, so no
+  dead-under-test `if __name__` guard) with exactly the documented arguments.
   If the workspace ever becomes packageable, `gate = "l8_evidence.gates.cli:main"` restores
   the short form without any code change.
 - **Computed items refuse hand-attestation.** An attestation naming a `computed:` item is an

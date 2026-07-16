@@ -19,6 +19,9 @@ from l8_evidence.gates.outcomes import GateEvaluationError, GateOutcome
 _REQUIRED_OUTCOMES = ("PASS", "CONTINUE", "FAIL_HARM", "FAIL_FUTILITY")
 _KNOWN_DECISIONS = frozenset({"anytime_valid_bounds_v1"})
 _KNOWN_COMPUTED = frozenset({"payback_v1"})
+_FALSE_FLAVOURS = frozenset(
+    {GateOutcome.CONTINUE, GateOutcome.FAIL_HARM, GateOutcome.FAIL_FUTILITY}
+)
 
 
 class GateSpecError(GateEvaluationError):
@@ -28,6 +31,11 @@ class GateSpecError(GateEvaluationError):
 class GateKind(Enum):
     CHECKLIST = "checklist"
     EVIDENCE = "evidence"
+
+
+# Whether each gate kind carries an evidence decision — dict dispatch on the enum member
+# instead of singleton identity comparisons (see the note in _parse_item).
+_KIND_REQUIRES_DECISION = {GateKind.CHECKLIST: False, GateKind.EVIDENCE: True}
 
 
 @dataclass(frozen=True)
@@ -83,7 +91,10 @@ def _parse_item(raw: Any, gate_id: str) -> GateItem:
         on_false = GateOutcome(on_false_raw)
     except ValueError as exc:
         raise GateSpecError(f"{gate_id}.{item_id}: unknown on_false {on_false_raw!r}") from exc
-    if on_false is GateOutcome.PASS:
+    # Membership rather than an enum-singleton identity comparison: `is` vs `==` on enum
+    # members is behaviourally indistinguishable (an approved-equivalent mutant class in
+    # l7_settle) — a frozenset test leaves no such surface.
+    if on_false not in _FALSE_FLAVOURS:
         raise GateSpecError(f"{gate_id}.{item_id}: a false item can never produce PASS")
     computed = raw.get("computed")
     if computed is not None and computed not in _KNOWN_COMPUTED:
@@ -103,17 +114,24 @@ def _parse_gate(raw: Any) -> GateDefinition:
     except ValueError as exc:
         raise GateSpecError(f"{gate_id}: unknown kind {kind_raw!r}") from exc
     decision = raw.get("decision")
-    if kind is GateKind.EVIDENCE and decision not in _KNOWN_DECISIONS:
-        raise GateSpecError(f"{gate_id}: evidence gate requires a known decision, got {decision!r}")
-    if kind is GateKind.CHECKLIST and decision is not None:
+    if _KIND_REQUIRES_DECISION[kind]:
+        if decision not in _KNOWN_DECISIONS:
+            raise GateSpecError(
+                f"{gate_id}: evidence gate requires a known decision, got {decision!r}"
+            )
+    elif decision is not None:
         raise GateSpecError(f"{gate_id}: checklist gate must not declare a decision")
     items_raw = raw.get("items")
     if not isinstance(items_raw, list) or not items_raw:
         raise GateSpecError(f"{gate_id}: gate requires a non-empty items list")
     items = tuple(_parse_item(item, gate_id) for item in items_raw)
-    item_ids = [item.item_id for item in items]
-    if len(set(item_ids)) != len(item_ids):
-        raise GateSpecError(f"{gate_id}: duplicate item_id")
+    # A seen-set walk, not a len(set) == len(list) comparison: the set can never be larger
+    # than the list, so every comparison operator there is an equivalent-mutant surface.
+    seen_items: set[str] = set()
+    for item in items:
+        if item.item_id in seen_items:
+            raise GateSpecError(f"{gate_id}: duplicate item_id {item.item_id!r}")
+        seen_items.add(item.item_id)
     alias = raw.get("alias")
     if alias is not None and not isinstance(alias, str):
         raise GateSpecError(f"{gate_id}: alias must be a string, got {alias!r}")
@@ -143,7 +161,12 @@ def load_gate_spec(path: Path) -> GateSpec:
     if not isinstance(gates_raw, list) or not gates_raw:
         raise GateSpecError(f"{path}: gates must be a non-empty list")
     gates = tuple(_parse_gate(gate) for gate in gates_raw)
-    names = [name for gate in gates for name in (gate.gate_id, gate.alias) if name is not None]
-    if len(set(names)) != len(names):
-        raise GateSpecError(f"{path}: duplicate gate_id or alias")
+    seen_names: set[str] = set()
+    for gate in gates:
+        for name in (gate.gate_id, gate.alias):
+            if name is None:
+                continue
+            if name in seen_names:
+                raise GateSpecError(f"{path}: duplicate gate_id or alias {name!r}")
+            seen_names.add(name)
     return GateSpec(version=version, digest=digest, gates=gates)

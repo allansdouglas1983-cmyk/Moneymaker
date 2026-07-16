@@ -134,7 +134,9 @@ def evaluate(
         state = _item_state(item, experiment)
         if state is None:
             keep_going.append(f"{item.item_id}: not yet attested or computed")
-        elif state is False:
+        elif not state:
+            # `not state` on the narrowed bool, not `state is False`: identity vs equality
+            # on the False singleton is an unobservable-mutant surface.
             by_flavour[item.on_false].append(f"{item.item_id}: attested or computed false")
 
     # Optional[...] rather than `| None`: local annotations are never runtime-evaluated,
