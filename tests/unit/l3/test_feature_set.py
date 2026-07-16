@@ -10,7 +10,7 @@ from decimal import Decimal
 
 import pytest
 
-from l3_features.build_context import BuildMode
+from l3_features.build_context import BuildMode, FeatureBuildContext
 from l3_features.feature_set import (
     Feature,
     FeatureSet,
@@ -35,6 +35,10 @@ def _utc(offset_s: int) -> datetime:
 
 OFF = _utc(0)
 
+# Mechanical migration for the structural-guard API (2026-07-16 audit): build_feature now takes
+# the explicit build context; the boundary (actual_off=OFF) is identical to the old market_off.
+CTX = FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
+
 
 def _stamps(first_usable: datetime) -> KnowledgeStamps:
     base = first_usable - timedelta(seconds=30)
@@ -57,7 +61,7 @@ def _feature(name: str, value: object) -> Feature:
         value=value,
         stamps=_stamps(_utc(-60)),
         source=_source(),
-        market_off=OFF,
+        context=CTX,
     )
 
 
@@ -81,8 +85,8 @@ class TestReproducibility:
         assert feature_set_hash(fs1) != feature_set_hash(fs2)
 
     def test_different_first_usable_time_changes_hash(self) -> None:
-        f1 = build_feature("rating", Decimal("1"), _stamps(_utc(-60)), _source(), OFF)
-        f2 = build_feature("rating", Decimal("1"), _stamps(_utc(-90)), _source(), OFF)
+        f1 = build_feature("rating", Decimal("1"), _stamps(_utc(-60)), _source(), CTX)
+        f2 = build_feature("rating", Decimal("1"), _stamps(_utc(-90)), _source(), CTX)
         assert feature_set_hash(FeatureSet(features=(f1,))) != feature_set_hash(
             FeatureSet(features=(f2,))
         )
@@ -116,14 +120,14 @@ class TestBuildGuards:
                 ReconciledBSP(selection_id=111, bsp=Decimal("4.2")),
                 _stamps(_utc(-60)),
                 _source(),
-                OFF,
+                CTX,
             )
 
     def test_build_rejects_unknowable_feature(self) -> None:
         from l3_features.knowledge_time import LeakageError
 
         with pytest.raises(LeakageError):
-            build_feature("late", Decimal("1"), _stamps(_utc(60)), _source(), OFF)
+            build_feature("late", Decimal("1"), _stamps(_utc(60)), _source(), CTX)
 
     def test_build_mode_enum_available(self) -> None:
         # POST_HOC vs LIVE both exist and are distinct (used by callers building features).

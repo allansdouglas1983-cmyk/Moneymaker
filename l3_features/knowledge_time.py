@@ -12,8 +12,9 @@ of the model. See ``.claude/rules/evidence.md``.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -41,6 +42,28 @@ def _require_aware(value: datetime, field: str) -> datetime:
     return value
 
 
+def normalize_aware_datetimes_to_utc(data: Any) -> Any:
+    """Rewrite every timezone-*aware* datetime in a construction mapping to UTC.
+
+    The type rule is "Timestamps: UTC": two representations of the same instant
+    (``13:00+00:00`` vs ``14:00+01:00``) must serialise — and therefore hash — identically
+    (SPEC-024). Naive datetimes are deliberately left untouched so the model validators still
+    reject them with a precise error rather than silently assuming a zone.
+    """
+    if not isinstance(data, dict):
+        return data
+    return {
+        key: (
+            value.astimezone(timezone.utc)
+            if isinstance(value, datetime)
+            and value.tzinfo is not None
+            and value.tzinfo.utcoffset(value) is not None
+            else value
+        )
+        for key, value in data.items()
+    }
+
+
 class SourceProvenance(BaseModel):
     """Provenance of a feature source (SPEC-023).
 
@@ -54,6 +77,11 @@ class SourceProvenance(BaseModel):
     source_id: str
     mode: ProvenanceMode
     true_publication_time: datetime | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _utc_normalise(cls, data: Any) -> Any:
+        return normalize_aware_datetimes_to_utc(data)
 
     @model_validator(mode="after")
     def _check_backfill_declares_publication(self) -> SourceProvenance:
@@ -84,6 +112,11 @@ class KnowledgeStamps(BaseModel):
     first_usable_time: datetime
     decision_time: datetime | None = None
     correction_time: datetime | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _utc_normalise(cls, data: Any) -> Any:
+        return normalize_aware_datetimes_to_utc(data)
 
     @model_validator(mode="after")
     def _all_aware(self) -> KnowledgeStamps:

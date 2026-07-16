@@ -13,6 +13,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from l3_features.build_context import BuildMode, FeatureBuildContext
 from l3_features.feature_set import Feature, FeatureSet, build_feature, feature_set_hash
 from l3_features.knowledge_time import (
     KnowledgeStamps,
@@ -23,6 +24,10 @@ from l3_features.knowledge_time import (
 pytestmark = pytest.mark.spec("SPEC-024")
 
 OFF = datetime(2026, 7, 15, 13, 0, 0, tzinfo=timezone.utc)
+
+# Mechanical migration for the structural-guard API (2026-07-16 audit): same boundary as the
+# old market_off=OFF argument.
+CTX = FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=OFF - timedelta(seconds=300), actual_off=OFF)
 
 
 def _stamps() -> KnowledgeStamps:
@@ -41,7 +46,7 @@ def _source() -> SourceProvenance:
 
 
 def _feat(name: str, cents: int) -> Feature:
-    return build_feature(name, Decimal(cents) / Decimal(100), _stamps(), _source(), OFF)
+    return build_feature(name, Decimal(cents) / Decimal(100), _stamps(), _source(), CTX)
 
 
 _NAMES = st.text(alphabet="abcdefghijklmnop", min_size=1, max_size=6)

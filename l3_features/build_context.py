@@ -9,8 +9,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, model_validator
+
+from l3_features.knowledge_time import normalize_aware_datetimes_to_utc
 
 
 class BuildMode(str, Enum):
@@ -43,6 +46,13 @@ class FeatureBuildContext(BaseModel):
     scheduled_start: datetime
     actual_off: datetime | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def _utc_normalise(cls, data: Any) -> Any:
+        # Same instant, same hash (SPEC-024): aware datetimes are stored as UTC. Naive values
+        # pass through so _validate still rejects them with the precise error below.
+        return normalize_aware_datetimes_to_utc(data)
+
     @model_validator(mode="after")
     def _validate(self) -> FeatureBuildContext:
         if self.scheduled_start.tzinfo is None:
@@ -59,6 +69,18 @@ class FeatureBuildContext(BaseModel):
                 "not knowable live (SPEC-022)"
             )
         return self
+
+    @property
+    def knowability_boundary(self) -> datetime:
+        """The market-off boundary a feature must be provably knowable before (SPEC-020/022).
+
+        Post-hoc: the actual off when known (the exact boundary), else the scheduled start.
+        Live: always the scheduled start — the only boundary a live builder may know (a live
+        context structurally cannot carry ``actual_off``; races are delayed, SPEC-022).
+        """
+        if self.mode is BuildMode.POST_HOC and self.actual_off is not None:
+            return self.actual_off
+        return self.scheduled_start
 
     def seconds_to_scheduled_off(self, at: datetime) -> float:
         """Seconds from ``at`` to the scheduled off. Always available (live-safe)."""
