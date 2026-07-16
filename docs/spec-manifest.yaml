@@ -634,7 +634,7 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
   relevant_inputs:
   - evidence_sample
   - pre_registered_boundaries

@@ -48,9 +48,13 @@ hardened the verification net; `l7_settle` mutation testing is **enforced** (329
   no-delayed-key real money, budget separation (ADR 0006).
 - **L7 market-level settlement** (`l7_settle/`, SPEC-080/082, money) — commission on the net
   market result, reduction factors, dead heats, idempotent versioned ledger (ADR 0007).
+- **L8 gate evaluator** (`l8_evidence/gates/`, SPEC-093, money) — the deterministic four-valued
+  promotion-gate verdict bound to data/model hashes; `specs/gates/v1.yaml` frozen structure-only;
+  an LLM never decides a gate (ADR 0011).
 
-Work now progresses autonomously into **Phase 2 (offline, pre-approved)** — freeze the price/gate
-pre-registration specs, then build L4 pricing and L8 evidence with synthetic-fixture tests, activating
+Work continues autonomously in **Phase 2 (offline, pre-approved)** — the price/gate
+pre-registration specs are frozen (ADRs 0009/0011); next are L4 pricing and the remaining L8
+evidence components with synthetic-fixture tests, activating
 each ID once it is implemented and covered. Phase 3+ (risk, broker, live execution) stay HALTED by the
 approval posture until their gates are met. See `docs/PROGRESS.md`.
 

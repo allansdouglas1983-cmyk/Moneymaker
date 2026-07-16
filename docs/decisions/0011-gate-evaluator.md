@@ -1,9 +1,10 @@
-# 0011 — Deterministic gate evaluator (SPEC-093) + specs/gates/v1.yaml — DRAFT
+# 0011 — Deterministic gate evaluator (SPEC-093) + specs/gates/v1.yaml — ACCEPTED
 
-**Status: design complete, implementation NOT started.** Designed 2026-07-16 from the §9/§10
-source text; the retrospective audit (ADR 0010) pre-empted the implementation. The next
-session implements this slice: freeze `specs/gates/v1.yaml` FIRST (pre-registration posture,
-as ADR 0009 did for prices), then failing tests in their own commit, then the implementation.
+**Status: implemented 2026-07-16** in the designed order: `specs/gates/v1.yaml` frozen first
+(pre-registration posture, as ADR 0009 did for prices), failing tests in their own commit,
+then the implementation without touching them. SPEC-093 activated `planned → active`
+(decision 14; enforcement-increasing only, per the standing progression plan). Deviations
+and refinements discovered during implementation are recorded at the end of this document.
 
 ## Context
 
@@ -88,3 +89,33 @@ The gates directory becomes the second real `--require-kill-non-equivalent` muta
 (design avoids redundant branches and singleton comparisons where an observable alternative
 exists — the ADR 0010 lessons). SPEC-091's ledger later reads the same record schema. The
 evaluator is the tool named in `docs/CI-AND-TRUST.md` §5's audit-subagent toolbox.
+
+## Implementation notes (2026-07-16)
+
+- **Decision 5 refined — severity aggregation, not sequential short-circuit.** The evaluator
+  collects every triggered signal and picks the verdict by severity: any harm signal
+  (stale/misconfigured fact, false FAIL_HARM item, loss-budget breach, upper bound below the
+  harm threshold) → FAIL_HARM; else any false FAIL_FUTILITY item → FAIL_FUTILITY; else PASS
+  only when nothing blocks it; else max-n-without-efficacy → FAIL_FUTILITY; else CONTINUE.
+  This is strictly safer than the drafted sequential order (a false CONTINUE-flavoured item
+  can no longer mask a harm signal in the evidence) and makes harm dominance a global,
+  property-tested invariant.
+- **Max-n futility is conditioned on the efficacy boundary.** `n ≥ max_n` produces
+  FAIL_FUTILITY only when the lower bound has not crossed the minimum effect — §10.1's "max
+  sample reached without a practically meaningful effect". Efficacy crossed at max_n still
+  PASSes; efficacy crossed but PASS blocked by a missing attestation stays CONTINUE.
+- **Missing evidence on an evidence gate is CONTINUE**, not an error: premature evaluation
+  is not a demonstrated violation (same semantics as a missing attestation). A missing
+  *pre-registration block* on an evidence gate IS an evaluator error — boundaries must be
+  declared before observation (§9.7), so there is nothing honest to evaluate against.
+- **Decision 10 deviation — no console script.** The repo root is deliberately not a
+  packaged project (`tool.uv.package = false`), so `[project.scripts]` entry points are
+  skipped by `uv sync`. The pinned CLI contract is invoked as
+  `uv run python -m l8_evidence.gates.cli evaluate …` with exactly the documented arguments.
+  If the workspace ever becomes packageable, `gate = "l8_evidence.gates.cli:main"` restores
+  the short form without any code change.
+- **Computed items refuse hand-attestation.** An attestation naming a `computed:` item is an
+  evaluator error, so `payback_v1` can never be short-circuited by a human "true".
+- **Support fix that rode along:** `tools/run_mutation.py` derives the per-target test suite
+  from the top-level package (`l8_evidence/gates → tests/{unit,properties}/l8`), otherwise
+  cosmic-ray silently fell back to the whole suite per mutant.
