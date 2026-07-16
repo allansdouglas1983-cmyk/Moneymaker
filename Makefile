@@ -26,8 +26,8 @@ verify:
 	uv run mypy --strict .
 
 mutants:
-	uv run python tools/run_mutation.py --target l8_evidence/gates --require-kill-non-equivalent --survivors-must-be-classified
-	uv run python tools/run_mutation.py --target l5b_risk l7_settle --report
+	uv run python tools/run_mutation.py --target l8_evidence/gates l7_settle --require-kill-non-equivalent --survivors-must-be-classified
+	uv run python tools/run_mutation.py --target l5b_risk --report
 
 replay:
 	uv run pytest tests/replay_regression -q

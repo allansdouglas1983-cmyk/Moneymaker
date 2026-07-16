@@ -102,10 +102,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv sync
-      - name: Mutation — gates (100% of NON-EQUIVALENT mutants)
-        run: uv run python tools/run_mutation.py --target l8_evidence/gates --require-kill-non-equivalent --survivors-must-be-classified
-      - name: Mutation — risk & settlement (report survivors)
-        run: uv run python tools/run_mutation.py --target l5b_risk l7_settle --report
+      - name: Mutation — gates & settlement (100% of NON-EQUIVALENT mutants)
+        run: uv run python tools/run_mutation.py --target l8_evidence/gates l7_settle --require-kill-non-equivalent --survivors-must-be-classified
+      - name: Mutation — risk (report survivors)
+        run: uv run python tools/run_mutation.py --target l5b_risk --report
 
   attest:
     needs: [verify, mutants-critical]

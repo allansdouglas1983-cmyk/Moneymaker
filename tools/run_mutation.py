@@ -1,8 +1,8 @@
 """Mutation testing harness (cosmic-ray) for the money modules (SPECIFICATION.md §12.4, §15).
 
 CI `mutants-critical` runs:
-  run_mutation.py --target l8_evidence/gates --require-kill-non-equivalent --survivors-must-be-classified
-  run_mutation.py --target l5b_risk l7_settle --report
+  run_mutation.py --target l8_evidence/gates l7_settle --require-kill-non-equivalent --survivors-must-be-classified
+  run_mutation.py --target l5b_risk --report
 
 A surviving mutant is allowed only if classified in the survivors file (default
 `specs/mutation-survivors.yaml`) as `equivalent-mutant` / `unreachable-defensive` /

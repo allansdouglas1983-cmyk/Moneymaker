@@ -17,7 +17,7 @@ not the conversation. This is that file. Update it at the end of every slice.
 | Commits on branch | 45 |
 | Phase | 1 (walking vertical slice), offline only |
 | `make verify` overall | **GREEN** ✅ — all active IDs covered and consistent |
-| `make mutants` | harness live; enforced target `l8_evidence/gates` (still `planned`/empty); `l7_settle` report-only at ~zero NON-EQUIVALENT survivors — escalation to enforced waits ONLY on founder approval of the equivalent-mutant classifications in `specs/mutation-survivors.yaml` (ADR 0010 §7) |
+| `make mutants` | **`l7_settle` ENFORCED** (`--require-kill-non-equivalent --survivors-must-be-classified`, alongside `l8_evidence/gates`): 329 mutants, 321 killed, 8 founder-approved equivalent-mutant classifications (ADR 0010). `l5b_risk` report-only. |
 
 The whole platform is a **research/measurement platform, not a betting bot**, conditionally
 approved for **offline work through Phase 2 only** (no live credentials, no real money, no
@@ -166,9 +166,10 @@ hardenings; every one is remediated on this branch (see ADR 0010 for the full ta
   order-level half belongs to SPEC-070/l6_broker (phase 3); platform branch-protection
   settings remain unverifiable from inside the repo.
 
-**Founder actions pending (small):** approve the equivalent-mutant classifications in
-`specs/mutation-survivors.yaml` (fill `approved_by`), after which the agent flips
-`l7_settle` to `--require-kill-non-equivalent` in Makefile + verify.yml (one line each).
+**Founder approval received (2026-07-16, session chat):** the eight equivalent-mutant
+classifications are live in `specs/mutation-survivors.yaml` with `approved_by`, the pin test
+was corrected in the same human-approved change, and `l7_settle` mutation is now ENFORCED in
+Makefile + CI. No founder actions pending.
 
 ---
 
