@@ -1,0 +1,109 @@
+# specs/gates/predictor-p1.yaml — Gate P1: predictor product evidence (SPEC-046, ADR 0013).
+#
+# STATUS: PLANNED, NOT ACTIVE. This gate exists so the decision structure is pre-registered
+# long before anyone is tempted to build a customer-facing product. Activation is a
+# human-controlled specification change permitted only AFTER Gate 1 results exist
+# (spec-manifest.yaml SPEC-046). No customer-facing product may be built merely because the
+# SPEC-036..045 contracts exist; until this gate is activated AND passed, recommendation
+# status is hard-pinned NOT_EVALUATED and publication eligibility cannot be granted.
+#
+# STRUCTURE ONLY, same discipline as specs/gates/v1.yaml: no numeric leaves (§9.3 — no
+# borrowed thresholds). Every boundary comes from the experiment's pre-registration record;
+# every volatile economic value comes from docs/facts.yaml. Evaluated by the SPEC-093
+# deterministic gate evaluator — an LLM never decides this gate.
+#
+# Changing anything here is predictor-p2 plus a new pre-registration, never an in-place edit.
+
+version: predictor-p1
+evaluator: gate-evaluator-v1
+outcomes: [PASS, CONTINUE, FAIL_HARM, FAIL_FUTILITY]
+
+# FAIL_FUTILITY here means "insufficient predictive value to support a product";
+# FAIL_HARM means "commercial, licensing or compliance infeasibility" (SPEC-046).
+
+decisions:
+  anytime_valid_bounds_v1:
+    evidence_inputs:
+      - lower_bound            # anytime-valid lower bound on held-out improvement over the approved baseline
+      - upper_bound
+      - confidence_level
+      - n                      # races (the unit of analysis), clustered by meeting-day
+      - loss_budget_breached   # not applicable to the predictor; retained for evaluator compatibility
+    preregistered_boundaries:
+      - minimum_economic_effect   # here: the minimum forecasting improvement declared product-meaningful
+      - harm_threshold
+      - alpha_budget
+      - max_n
+    multiplicity_rule: alpha_times_trials_exact_multiplication
+    precedence:
+      - stale_or_misconfigured_facts_fail_harm
+      - false_item_produces_declared_flavour
+      - loss_budget_breach_fail_harm
+      - upper_bound_below_harm_threshold_fail_harm
+      - pass_requires_preconditions_multiplicity_and_lower_above_minimum_effect
+      - max_n_reached_fail_futility
+      - otherwise_continue
+
+gates:
+  - gate_id: GATE-P1
+    title: Predictor product evidence (future analytics consumer)
+    spec_section: spec-manifest.yaml SPEC-046 / ADR 0013
+    kind: evidence
+    decision: anytime_valid_bounds_v1
+    items:
+      # --- predictive evidence -------------------------------------------------------------
+      - item_id: heldout_improvement_over_approved_baselines
+        requirement: held-out improvement over approved versioned baselines (SPEC-038 registry), race-level proper scores
+        on_false: FAIL_FUTILITY
+      - item_id: race_level_calibration_stable
+        requirement: race-level calibration (in-the-large and slope) stable across the evaluation period and cohorts
+        on_false: FAIL_FUTILITY
+      - item_id: coverage_meets_preregistered_policy
+        requirement: availability/coverage meets the benchmark's pre-registered coverage policy with missing races in the denominator
+        on_false: CONTINUE
+      - item_id: untouched_period_results_exist
+        requirement: results on an untouched (never-inspected) evaluation period exist
+        on_false: FAIL_HARM
+      - item_id: trial_ledger_current_and_multiplicity_accounted
+        requirement: trial ledger current; multiplicity accounted per SPEC-091
+        on_false: FAIL_HARM
+      # --- product usefulness --------------------------------------------------------------
+      - item_id: product_usefulness_defined_and_evidenced
+        requirement: a pre-registered definition of product usefulness exists and is evidenced, distinct from raw accuracy
+        on_false: FAIL_FUTILITY
+      # --- commercial licensing ------------------------------------------------------------
+      - item_id: displayed_outputs_fully_licensed
+        requirement: every displayed and derived output is publication-licensed in the SPEC-044 rights registry (fail-closed)
+        on_false: FAIL_HARM
+      - item_id: mixed_source_lineage_resolved
+        requirement: transitive source lineage resolved; no unapproved source reaches any customer-facing output
+        on_false: FAIL_HARM
+      # --- claims and compliance -----------------------------------------------------------
+      - item_id: no_guaranteed_profit_claims
+        requirement: no guaranteed-profit or assured-return claim exists in any product copy or plan
+        on_false: FAIL_HARM
+      - item_id: responsible_gambling_review_passed
+        requirement: responsible-gambling review completed and passed
+        on_false: FAIL_HARM
+      - item_id: legal_review_passed
+        requirement: legal/compliance review of the product jurisdiction(s) completed and passed
+        on_false: FAIL_HARM
+      - item_id: transparent_scorecard_requirements_met
+        requirement: SPEC-048 transparent scorecard requirements (immutable, denominator-honest, no cherry-picking) are met
+        on_false: FAIL_HARM
+      # --- technical readiness -------------------------------------------------------------
+      - item_id: export_contract_stable
+        requirement: SPEC-045 export contract stable and versioned with the three independent status dimensions
+        on_false: CONTINUE
+      - item_id: snapshots_immutable_and_reproducible
+        requirement: SPEC-037 prediction snapshots immutable, vintage-linked and reproducible from approved manifests
+        on_false: FAIL_HARM
+      - item_id: public_ledger_reproducible
+        requirement: the public evidence ledger is reproducible from immutable inputs
+        on_false: FAIL_HARM
+      - item_id: no_trading_secrets_exposed
+        requirement: no execution threshold, stake, risk budget, order or account state reaches any exported output (SPEC-045)
+        on_false: FAIL_HARM
+      - item_id: isolated_from_live_trading
+        requirement: analytics consumer isolated from live trading (CI import boundary green; read-only per ADR 0013)
+        on_false: FAIL_HARM
