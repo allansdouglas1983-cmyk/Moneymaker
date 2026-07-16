@@ -1,0 +1,28 @@
+# Research ledger — one entry per DR id (see docs/research/README.md).
+# status: REQUESTED | RETURNED | ASSESSED | SUPERSEDED
+- id: DR-0001
+  title: Betfair Historical Data packages (contents, prices, filtering, rights, minimum tier for Gates 1-2)
+  classification: BLOCKING
+  status: REQUESTED
+  requested: 2026-07-16
+  routed_to: chatgpt-deep-research (project owner)
+  request: docs/research/requests/DR-0001-betfair-historical-data.md
+  findings: null
+  blocks:
+  - historical data purchase / licence acceptance
+  - licensed-sources entry for Betfair Historical Data + Gate -1 evaluation
+  - data ingestion, lockbox definition, EXP-0001 registration
+  related: [SPEC-101, SPEC-103, SPEC-044, GATE-1, GATE-2, GATE--1B, EXP-0001]
+- id: DR-0002
+  title: Cheapest lawful GB all-weather form data with genuine knowledge-time support
+  classification: BLOCKING
+  status: REQUESTED
+  requested: 2026-07-16
+  routed_to: chatgpt-deep-research (project owner)
+  request: docs/research/requests/DR-0002-gb-allweather-form-data.md
+  findings: null
+  blocks:
+  - form-data source onboarding/purchase/scraping decisions
+  - fundamental-model feature ingestion (SPEC-030 features)
+  - EXP-0001 fundamental + combined arms
+  related: [SPEC-020, SPEC-023, SPEC-030, SPEC-044, SPEC-100, SPEC-101, EXP-0001]
