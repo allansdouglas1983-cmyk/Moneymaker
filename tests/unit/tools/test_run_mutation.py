@@ -120,3 +120,19 @@ def test_real_survivors_file_is_valid() -> None:
         assert entry.get("classification") == "equivalent-mutant", key
         assert str(entry.get("rationale", "")).strip(), key
         assert str(entry.get("approved_by", "")).strip(), key
+
+
+def test_test_command_targets_the_layer_suite_for_nested_targets() -> None:
+    # l8_evidence/gates tests live under tests/{unit,properties}/l8 — the layer token comes
+    # from the TOP-LEVEL package, not the leaf directory, or cosmic-ray falls back to the
+    # whole suite per mutant.
+    command = rm._test_command_for("l8_evidence/gates")
+    assert "tests/unit/l8" in command
+    assert "tests/properties/l8" in command
+    assert command.startswith("python -m pytest ")
+
+
+def test_test_command_is_unchanged_for_single_segment_targets() -> None:
+    command = rm._test_command_for("l7_settle")
+    assert "tests/unit/l7" in command
+    assert "tests/properties/l7" in command
