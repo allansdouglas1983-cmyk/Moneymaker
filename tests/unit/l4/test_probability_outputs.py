@@ -123,7 +123,9 @@ def test_coinciding_values_across_kinds_are_allowed_but_not_aliased() -> None:
         p_market_info_missing_reason="book_crossed_at_decision_time",
     )
     assert runner.fundamental().probability == runner.combined().probability
-    assert runner.fundamental() is not runner.combined()
+    # The deliberate cross-type identity check IS the assertion (distinct objects even when
+    # values coincide); mypy rightly notes the types never overlap.
+    assert runner.fundamental() is not runner.combined()  # type: ignore[comparison-overlap]
 
 
 # --- explicit missingness: never a silent fallback ----------------------------------------

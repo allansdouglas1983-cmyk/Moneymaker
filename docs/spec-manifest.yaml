@@ -286,13 +286,15 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-037
   component: l8_evidence
   title: Immutable prediction snapshots with forecast vintage lineage
   requirement: 'Append-only prediction snapshots recording what the platform believed at a specific
     time (full field set per the founder task + Amendment A: identifiers, dual-clock generation
-    times, horizon, market state, the three probabilities, fair odds, uncertainty summary, model/
+    times, horizon, market state, the three probabilities, fair odds, an uncertainty summary carrying method, lower,
+    central and upper values where available (the central estimate is distinct from the
+    trading conservative lower bound and is never consumable by the decision layer), model/
     feature/source lineage, active-runner-set hash, publication eligibility, schema versions,
     forecast_vintage_id/type INITIAL|UPDATED|FINAL_APPROVED_HORIZON|CORRECTION,
     supersedes_prediction_id revision chains with deterministic update reasons,
@@ -421,7 +423,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-045
   component: analytics_contracts
   title: Exportable prediction contract with independent status dimensions
