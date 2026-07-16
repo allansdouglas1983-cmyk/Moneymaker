@@ -120,4 +120,5 @@ def test_same_race_different_kind_never_merged(p1: Decimal) -> None:
     )
     assert result_combined.model_kind is ModelKind.COMBINED
     assert result_fundamental.model_kind is ModelKind.FUNDAMENTAL
-    assert result_combined.model_kind != result_fundamental.model_kind
+    # Deliberate cross-kind inequality: mypy narrows each side to a distinct literal.
+    assert result_combined.model_kind != result_fundamental.model_kind  # type: ignore[comparison-overlap]
