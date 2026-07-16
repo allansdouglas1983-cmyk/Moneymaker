@@ -100,6 +100,42 @@ def test_duplicate_ack_returns_the_stored_object_itself() -> None:
     assert ledger.apply(_mint()) is first
 
 
+def test_settle_market_default_flags() -> None:
+    # settlement_version defaults to 1 and resettlement_flag to False; a flipped default
+    # would let a first settlement masquerade as a resettlement or misnumber versioning.
+    outcome = MarketOutcome(
+        market_status=MarketStatus.SETTLED, runners={111: RunnerOutcome(RunnerResult.WINNER)}
+    )
+    s = settle_market(
+        market_id="1.1",
+        positions=[],
+        outcome=outcome,
+        commission_rate_effective=Decimal("0.02"),
+        statement_reference="stmt-1",
+    )
+    assert s.settlement_version == 1
+    assert s.resettlement_flag is False
+
+
+def test_scenario_matrix_compares_runner_ids_by_value() -> None:
+    # Runner ids arrive from JSON in production and are never small-int-cached; the matrix
+    # must compare them by value, not identity. int("...") defeats constant interning here.
+    rid = int("1000")
+    outcome = MarketOutcome(
+        market_status=MarketStatus.SETTLED,
+        runners={1000: RunnerOutcome(RunnerResult.WINNER), 2000: RunnerOutcome(RunnerResult.LOSER)},
+    )
+    s = settle_market(
+        market_id="1.1",
+        positions=[MatchedPosition(runner_id=rid, matched_stake_minor=200, matched_odds=Decimal("3.0"))],
+        outcome=outcome,
+        commission_rate_effective=Decimal("0.02"),
+        statement_reference="stmt-1",
+    )
+    assert s.gross_pnl_by_selection_scenario["1000"] == 400
+    assert s.gross_pnl_by_selection_scenario["2000"] == -200
+
+
 def test_commission_on_smallest_positive_net() -> None:
     # net = +1 minor unit at a 0.5 rate: commission = ROUND_HALF_UP(0.5) = 1. Kills the
     # guard-boundary mutant (`net_minor <= 0` -> `<= 1`, which would charge nothing) and

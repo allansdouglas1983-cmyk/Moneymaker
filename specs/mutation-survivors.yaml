@@ -6,13 +6,65 @@
 # unlisted survivor, fails `run_mutation.py --require-kill-non-equivalent`: kill it with a test.
 #
 # key = "<module_path>::<operator_name>::<occurrence>"
-# Example:
-#   - module_path: l8_evidence/gates/evaluator.py
-#     operator_name: core/ReplaceBinaryOperator_BitOr_Add
-#     occurrence: 0
-#     classification: tooling-limitation      # mutating a `|` in an unevaluated type annotation
-#     rationale: "from __future__ import annotations makes the annotation a string; no runtime effect"
-#     approved_by: <human>
 #
-# Empty until the first enforced target (l8_evidence/gates) exists.
-[]
+# l7_settle entries below: classified during the 2026-07-16 retrospective audit (ADR 0010).
+# Every OBSERVABLE mutant is killed by a test (450+ mutants, see the audit); these eight are
+# behaviourally unobservable by construction, with the mechanism stated in each rationale.
+# approved_by is deliberately EMPTY pending founder approval — until then l7_settle stays
+# report-only in CI; filling approved_by unlocks the --require-kill-non-equivalent escalation.
+
+- module_path: l7_settle/pnl.py
+  operator_name: core/ReplaceComparisonOperator_Eq_Is
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "`result == RunnerResult.UNKNOWN` vs `is`: Enum members are singletons, so == and identity are indistinguishable for every possible input"
+  approved_by:
+
+- module_path: l7_settle/pnl.py
+  operator_name: core/ReplaceComparisonOperator_Eq_Is
+  occurrence: 1
+  classification: equivalent-mutant
+  rationale: "`result == RunnerResult.LOSER` vs `is`: Enum singleton identity, as above"
+  approved_by:
+
+- module_path: l7_settle/ledger.py
+  operator_name: core/ReplaceComparisonOperator_Gt_NotEq
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "`v > e` vs `v != e` is reached only after `if v < e: raise` has removed the v<e domain; on v>=e the two comparisons coincide for all inputs"
+  approved_by:
+
+- module_path: l7_settle/settlement.py
+  operator_name: core/ReplaceComparisonOperator_Eq_Is
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "`actual.result == RunnerResult.REMOVED` vs `is`: Enum singleton identity"
+  approved_by:
+
+- module_path: l7_settle/settlement.py
+  operator_name: core/ReplaceComparisonOperator_Eq_Is
+  occurrence: 2
+  classification: equivalent-mutant
+  rationale: "`market_status == MarketStatus.UNKNOWN` vs `is`: Enum singleton identity"
+  approved_by:
+
+- module_path: l7_settle/settlement.py
+  operator_name: core/ReplaceComparisonOperator_Eq_Is
+  occurrence: 3
+  classification: equivalent-mutant
+  rationale: "`result == RunnerResult.UNKNOWN` vs `is`: Enum singleton identity"
+  approved_by:
+
+- module_path: l7_settle/settlement.py
+  operator_name: core/ReplaceComparisonOperator_LtE_Lt
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "`net_minor <= 0` vs `< 0` differ only at net==0, where the fall-through computes commission = round(rate * 0) = 0 — identical output (x0 identity)"
+  approved_by:
+
+- module_path: l7_settle/settlement.py
+  operator_name: core/NumberReplacer
+  occurrence: 3
+  classification: equivalent-mutant
+  rationale: "the 0 in `net_minor <= 0` replaced by -1: differs only at net==0, where commission = round(rate * 0) = 0 either way (x0 identity)"
+  approved_by:

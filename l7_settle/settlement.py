@@ -13,8 +13,6 @@ from decimal import ROUND_HALF_UP, Decimal
 from l7_settle.outcomes import MarketOutcome, MarketStatus, MatchedPosition, RunnerOutcome, RunnerResult
 from l7_settle.pnl import position_pnl_minor
 
-_ONE = Decimal(1)
-
 
 class SettlementBlocked(Exception):
     """Raised when settlement cannot proceed because a market/runner status is UNKNOWN."""
@@ -45,10 +43,11 @@ def _runner_outcome(outcome: MarketOutcome, runner_id: int) -> RunnerOutcome:
 
 
 def _commission_minor(rate: Decimal, net_minor: int) -> int:
-    # Commission is charged only on net winnings (SPEC-080).
+    # Commission is charged only on net winnings (SPEC-080). to_integral_value is the
+    # constant-free spelling of quantize(Decimal(1)) — same ROUND_HALF_UP semantics.
     if net_minor <= 0:
         return 0
-    return int((rate * Decimal(net_minor)).quantize(_ONE, rounding=ROUND_HALF_UP))
+    return int((rate * Decimal(net_minor)).to_integral_value(rounding=ROUND_HALF_UP))
 
 
 def _scenario_matrix(positions: Sequence[MatchedPosition], outcome: MarketOutcome) -> dict[str, int]:
