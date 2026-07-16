@@ -43,7 +43,8 @@ class RawMarketRecord(BaseModel):
     payload_bytes: bytes
     publish_time: datetime | None
     receive: ClockStamp
-    stream_clock: int | None
+    # Betfair's stream clock (clk/initialClk) is an opaque base64 token — never numeric.
+    stream_clock: str | None
     connection_id: str
     subscription_hash: str
     conflation_settings: str
@@ -60,7 +61,8 @@ class RawOrderRecord(BaseModel):
     payload_bytes: bytes
     publish_time: datetime | None
     receive: ClockStamp
-    stream_clock: int | None
+    # Same opaque token semantics as RawMarketRecord.stream_clock.
+    stream_clock: str | None
     connection_id: str
     checksum: str
     capture: CaptureMeta

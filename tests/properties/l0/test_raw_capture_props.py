@@ -34,7 +34,7 @@ def test_market_payload_stored_byte_exact(tmp_path_factory: pytest.TempPathFacto
     rec = cap.capture_market(
         payload,
         publish_time=None,
-        stream_clock=0,
+        stream_clock="0",
         connection_id="conn-1",
         subscription_hash="s",
         conflation_settings="none",

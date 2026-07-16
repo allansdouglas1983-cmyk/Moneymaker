@@ -33,7 +33,7 @@ def _market(payload: bytes) -> r.RawMarketRecord:
         payload_bytes=payload,
         publish_time=datetime(2026, 7, 15, tzinfo=timezone.utc),
         receive=_stamp(),
-        stream_clock=7,
+        stream_clock="7",
         connection_id="conn-1",
         subscription_hash="subhash",
         conflation_settings="none",

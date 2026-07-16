@@ -52,7 +52,7 @@ class RawStreamCapture:
         payload: bytes,
         *,
         publish_time: datetime | None,
-        stream_clock: int | None,
+        stream_clock: str | None,
         connection_id: str,
         subscription_hash: str,
         conflation_settings: str,
@@ -79,7 +79,7 @@ class RawStreamCapture:
         payload: bytes,
         *,
         publish_time: datetime | None,
-        stream_clock: int | None,
+        stream_clock: str | None,
         connection_id: str,
     ) -> RawOrderRecord:
         record = RawOrderRecord(
