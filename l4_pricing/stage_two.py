@@ -23,7 +23,7 @@ from l4_pricing.conditional_logit import race_ids_digest
 from l4_pricing.crossfit import CrossFitViolation, ExcludedRace, OOFFundamental, assert_out_of_fold
 from l4_pricing.horizon import HorizonLabel, require_horizon_match
 from l4_pricing.races import Race, RaceValidationError
-from l5_decision.prices import MarketInfoPrice
+from price_contracts.prices import MarketInfoPrice
 
 
 class CollinearInputsError(Exception):

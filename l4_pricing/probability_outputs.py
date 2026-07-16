@@ -35,7 +35,7 @@ from typing import Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from l5_decision.prices import MarketInfoPrice
+from price_contracts.prices import MarketInfoPrice
 
 _TOLERANCE = Decimal("1e-9")
 

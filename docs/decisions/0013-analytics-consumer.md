@@ -79,3 +79,36 @@ specs are renumbered onto free IDs; the founder's documents map as:
    coefficient contributions for the v1 linear model), versioned and reproducible.
 7. **Trading behaviour is untouched:** no file in l5_decision/l5b_risk/l6_broker/l7_settle
    changes in this task; the probability engine gains read-only output wrappers only.
+
+## Addendum (2026-07-16): founder confirmations before implementation continued
+
+The founder accepted the pre-implementation audit and directed four items be confirmed
+and recorded. All four are resolved; none revealed a genuine conflict.
+
+1. **Dependency direction — `MarketInfoPrice` relocated.** The three price types
+   (`OddsExec`, `MarketInfoPrice`, `ClosePrice`) and the canonical tick ladder were
+   historically placed in `l5_decision` because SPEC-051/053 were implemented there
+   first, but `MarketInfoPrice` is an *input* to L4 pricing and now to analytics
+   contracts — the dependency arrow pointed the wrong way. They now live in a new
+   shared neutral money-critical package, `price_contracts/` (`prices.py`, `ladder.py`),
+   moved with `git mv` so history is preserved. `l5_decision/prices.py` and
+   `l5_decision/ladder.py` remain as pure re-export shims (class identity preserved, so
+   SPEC-051's type separation and every existing import keep working). `price_contracts`
+   is added to the MONEY lint/escape-hatch lists in Makefile and CI. This is the sole,
+   founder-directed exception to design decision 7's "no file in l5_decision changes":
+   the change is a relocation shim only — zero behavioural change, verified green.
+2. **Uncertainty separation.** Immutable prediction snapshots (SPEC-037) preserve the
+   full approved forecast summary: uncertainty method, lower, central and upper values
+   where available. The central estimate is distinct from the trading conservative
+   lower bound and is never consumable by the decision layer (manifest text amended;
+   the snapshot summary type never converts into l5's `WinProbabilityLowerBound`).
+3. **SPEC remapping recorded.** The explicit old-ID → final-ID mapping (036–039
+   unchanged; 040→044 licensing, 041→045 export, 042→046 Gate P1, 043→047, 044→048)
+   is in this ADR's mapping table and will be repeated in the final report. No
+   l4b_fill requirement (SPEC-040–043) is renamed or overwritten.
+4. **Structural enforcement.** `tests/unit/governance/test_analytics_import_boundary.py`
+   runs the real transitive import-graph checker over the actual repository on every
+   test run, proving the analytics/prediction contract modules cannot reach
+   `l5_decision`, `l5b_risk`, `l6_broker` or `l7_settle` (directly or transitively),
+   with a non-vacuity check. It executes inside `make verify` and CI's pytest step,
+   so the boundary is continuously enforced, not a one-time observation.

@@ -68,11 +68,11 @@ jobs:
       - name: Unused arguments
         run: uv run ruff check --select ARG .
       - name: Pylint unused-argument on money modules
-        run: uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance
+        run: uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts
       - name: Ban escape hatches in money modules
         run: |
           ! grep -rinE '(notimplementederror|\btodo\b|\bfixme\b|\bxxx\b|\bhack\b|\bplaceholder\b|\bstub\b|raise\s+notimplemented|\bpass\b\s*(#.*)?$)' \
-            l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance \
+            l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts \
             --include='*.py'
       - name: Ban escape hatches in evidence modules
         run: |
