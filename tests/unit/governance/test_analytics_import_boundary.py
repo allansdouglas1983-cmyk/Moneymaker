@@ -29,6 +29,12 @@ _ANALYTICS_MODULES = (
     "l8_evidence.prediction_snapshots",
     "l8_evidence.predictor_metrics",
     "l8_evidence.explanation_inputs",
+    "l8_evidence.trial_ledger",
+    "l8_evidence.lockbox",
+    "l8_evidence.paired_inference",
+    "l8_evidence.sample_size",
+    "l8_evidence.clv",
+    "l8_evidence.calibration",
 )
 
 # Trading state the analytics consumer must never reach (directly or transitively).

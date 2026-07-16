@@ -859,7 +859,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-096
   component: l8_evidence
   title: Anytime-valid monitoring
@@ -884,7 +884,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-100
   component: governance
   title: Scraping quarantine

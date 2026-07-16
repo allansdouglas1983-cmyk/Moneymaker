@@ -238,9 +238,13 @@ so the next work proceeds autonomously on this feature branch:
      evaluator's multiplicity arithmetic), SPEC-092 lockbox (event-sourced, log-then-grant,
      Gate-1 read consumes, burns absorbing), SPEC-090 race-level paired inference (d_r,
      meeting-day block bootstrap, no runner-level surface), SPEC-094 derived sample size
-     (Acklam inverse CDF, borrowed-constant scanner over both gate specs). Remaining
-     planned: SPEC-095 CLV diagnostics + SPEC-097 race-level calibration metrics (Phase 2),
-     SPEC-096 anytime-valid monitoring (Phase 5).
+     (Acklam inverse CDF, borrowed-constant scanner over both gate specs), SPEC-095 CLV
+     diagnostic family (four structurally distinct types; realised-fill CLV unconstructable
+     without a fill; BSP/pre-suspension-WAP benchmarks never merged; not a training target
+     by import direction), SPEC-097 calibration extensions (Wilson-CI reliability curves,
+     adaptive equal-count bins, race-renormalised temperature scaling, non-comparable ECE
+     diagnostic). **Every Phase-2 evidence ID is now active.** Remaining planned in l8:
+     SPEC-096 anytime-valid monitoring (Phase 5, live-adjacent, stays planned).
 - Activate each Phase-2 ID (`planned → active` in the manifest) **only once it is implemented and
   covered**, so `make verify` stays honest/green. Record the activation rationale in the ADR.
 - Later: Phase 3 (L5b risk, L6 broker, reconciliation SPEC-081/083, SPEC-104) and Phase 5 (L4b fill,
