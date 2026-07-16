@@ -40,12 +40,12 @@ def position_pnl_minor(
     stake = Decimal(position.matched_stake_minor)
     if result == RunnerResult.LOSER:
         return _round_minor(-stake)
-    # WINNER, possibly part of a dead heat.
+    # WINNER, possibly part of a dead heat. The general dead-heat split is EXACT for
+    # dead_heat == 1 as well ((stake/1)*(E-1) - stake*0/1), so there is deliberately no
+    # single-winner fast path — a redundant branch is an equivalent-mutant factory under
+    # mutation testing and adds nothing.
     payout_odds = effective_odds(position.matched_odds, position.applicable_reduction_factors)
-    dead_heat = runner_outcome.dead_heat_count
-    if dead_heat == 1:
-        return _round_minor(stake * (payout_odds - _ONE))
-    divisor = Decimal(dead_heat)
+    divisor = Decimal(runner_outcome.dead_heat_count)
     winning_portion = (stake / divisor) * (payout_odds - _ONE)
     losing_portion = stake * (divisor - _ONE) / divisor
     return _round_minor(winning_portion - losing_portion)
