@@ -18,8 +18,8 @@ from l8_evidence.clv import (
     ClosingBenchmark,
     ClosingPrice,
     ClosingPriceError,
-    ExecutionPolicyValue,
-    ExecutionPolicyValueError,
+    ExecutionCaptureDelta,
+    ExecutionCaptureDeltaError,
     IntendedOrderCLV,
     RealisedFillCLV,
     SignalCLV,
@@ -91,7 +91,7 @@ def test_content_digest_is_deterministic(odds_taken: Decimal, odds_close: Decima
     assert fill_a.content_digest() == fill_b.content_digest()
 
 
-# --- ExecutionPolicyValue: value_bps is exactly realised - intended, whenever construction ---
+# --- ExecutionCaptureDelta: value_bps is exactly realised - intended, whenever construction ---
 # --- succeeds; construction never succeeds across differing closing observations ------------
 
 
@@ -105,7 +105,7 @@ def test_execution_policy_value_equals_difference_when_closings_match(
     realised = RealisedFillCLV(
         order_ref="o", closing=closing, odds_matched=odds_matched, matched_stake_minor=stake
     )
-    epv = ExecutionPolicyValue(intended=intended, realised=realised)
+    epv = ExecutionCaptureDelta(intended=intended, realised=realised)
     assert epv.value_bps == realised.clv_bps - intended.clv_bps
 
 
@@ -120,8 +120,8 @@ def test_execution_policy_value_refuses_differing_bsp_observations(
     realised = RealisedFillCLV(
         order_ref="o", closing=_bsp(odds_b), odds_matched=Decimal("2.0"), matched_stake_minor=stake
     )
-    with pytest.raises(ExecutionPolicyValueError):
-        ExecutionPolicyValue(intended=intended, realised=realised)
+    with pytest.raises(ExecutionCaptureDeltaError):
+        ExecutionCaptureDelta(intended=intended, realised=realised)
 
 
 # --- WAP window: valid iff start > 0 and end >= 0 and start > end ---------------------------

@@ -19,7 +19,7 @@ module computes four distinct, separately-typed quantities and nothing else:
   the honest artifact an unfilled order gets instead
   ("for unfilled orders, realised CLV does not exist... this is the difference between
   measurement and fiction", SPECIFICATION.md §8).
-* :class:`ExecutionPolicyValue` — realised-fill CLV minus intended-order CLV on the SAME
+* :class:`ExecutionCaptureDelta` — realised-fill CLV minus intended-order CLV on the SAME
   order. Measures what execution added or cost relative to what was intended.
 
 These are four DISTINCT types, not one type with a discriminating tag — a function that
@@ -33,7 +33,7 @@ diagnostics: BSP, and a defined final pre-suspension WAP/microprice window"):
 :class:`ClosingBenchmark` has exactly two members, ``BSP`` and ``PRE_SUSPENSION_WAP``. They
 are never averaged or merged into a third "blended" figure — every CLV value names which
 one it was computed against (:class:`ClosingPrice.benchmark`), and
-:class:`ExecutionPolicyValue` REFUSES to combine two components computed against different
+:class:`ExecutionCaptureDelta` REFUSES to combine two components computed against different
 benchmarks (or against the same benchmark kind but a different underlying observation).
 
 "A defined pre-suspension WAP/microprice window" is made STRUCTURAL, not prose:
@@ -101,13 +101,13 @@ full list):
   is keyed by a ``candidate_ref`` (an opaque identifier for the decision instant/runner
   being evaluated), NOT an ``order_ref`` — unlike the other three types, which all concern
   an order that WAS submitted (intended or realised) and are keyed by ``order_ref``.
-* :class:`ExecutionPolicyValue` is defined per this slice's brief as
+* :class:`ExecutionCaptureDelta` is defined per this slice's brief as
   ``realised.clv_bps - intended.clv_bps`` on the matching order — a narrower reading than
   SPECIFICATION.md §8's fuller "realised P&L + opportunity cost of non-fills and fallbacks"
   (that fuller net-counterfactual-policy-value figure belongs with the fill-probability
   model, SPEC-040/042, once it exists; it is out of scope here and not claimed by this
   module).
-* :class:`ExecutionPolicyValue` requires the two components' :class:`ClosingPrice` objects
+* :class:`ExecutionCaptureDelta` requires the two components' :class:`ClosingPrice` objects
   to be fully equal (same benchmark, same odds, same window where applicable), not merely
   the same benchmark KIND — two WAP observations with different windows are not "the same
   benchmark" for this purpose.
@@ -125,7 +125,7 @@ from typing import Sequence
 __all__ = [
     "ClvError",
     "ClosingPriceError",
-    "ExecutionPolicyValueError",
+    "ExecutionCaptureDeltaError",
     "CLVBatchError",
     "UnfilledOrderError",
     "ClosingBenchmark",
@@ -134,7 +134,7 @@ __all__ = [
     "SignalCLV",
     "IntendedOrderCLV",
     "RealisedFillCLV",
-    "ExecutionPolicyValue",
+    "ExecutionCaptureDelta",
     "UnfilledOrder",
     "CLVBatch",
     "realised_fill_clvs",
@@ -152,8 +152,8 @@ class ClosingPriceError(ClvError):
     """A :class:`ClosingPrice`'s own fields are internally inconsistent."""
 
 
-class ExecutionPolicyValueError(ClvError):
-    """The two components handed to :class:`ExecutionPolicyValue` do not reference the
+class ExecutionCaptureDeltaError(ClvError):
+    """The two components handed to :class:`ExecutionCaptureDelta` do not reference the
     same order, or were evaluated against different closing-price observations."""
 
 
@@ -388,8 +388,19 @@ class RealisedFillCLV:
 
 
 @dataclass(frozen=True)
-class ExecutionPolicyValue:
-    """Execution-policy value for one order (SPECIFICATION.md §8): ``realised.clv_bps -
+class ExecutionCaptureDelta:
+    """Execution capture: realised-fill CLV minus intended-order CLV on the SAME order.
+
+    GOVERNED CLARIFICATION (founder direction, 2026-07-16, SPEC-095): this quantity was
+    briefly named ``ExecutionPolicyValue`` in the red-test phase of this slice. It is
+    matched-order execution capture (realised minus intended), NOT a full outcome-based
+    execution-policy evaluation. The name ``ExecutionPolicyValue`` is RESERVED for a
+    future metric that evaluates a policy across fills, unfilled orders, no-actions and
+    timed fallbacks together (SPEC-040/042 territory); nothing may reuse that name for
+    anything narrower. This meaning is fixed BEFORE any real evidence exists and must not
+    be altered afterwards.
+
+    Execution-policy value for one order (SPECIFICATION.md §8): ``realised.clv_bps -
     intended.clv_bps`` — what execution added or cost relative to what the decision layer
     intended to cross at. Constructed ONLY from the two typed components; there is no way to
     build one from bare numbers, so it can never mix a realised fill from one order with an
@@ -404,19 +415,19 @@ class ExecutionPolicyValue:
 
     def __post_init__(self) -> None:
         if self.intended.order_ref != self.realised.order_ref:
-            raise ExecutionPolicyValueError(
+            raise ExecutionCaptureDeltaError(
                 f"order_ref mismatch: intended={self.intended.order_ref!r} "
                 f"realised={self.realised.order_ref!r} — execution-policy value requires "
                 "both components to reference the SAME order"
             )
         if self.intended.closing.benchmark is not self.realised.closing.benchmark:
-            raise ExecutionPolicyValueError(
+            raise ExecutionCaptureDeltaError(
                 f"benchmark mismatch: intended={self.intended.closing.benchmark.value} "
                 f"realised={self.realised.closing.benchmark.value} — the two closing "
                 "benchmarks (BSP, PRE_SUSPENSION_WAP) are never compared against each other"
             )
         if self.intended.closing != self.realised.closing:
-            raise ExecutionPolicyValueError(
+            raise ExecutionCaptureDeltaError(
                 "intended and realised must share the identical closing-price observation "
                 "(same odds and, for PRE_SUSPENSION_WAP, the same window) — not merely the "
                 "same benchmark kind"

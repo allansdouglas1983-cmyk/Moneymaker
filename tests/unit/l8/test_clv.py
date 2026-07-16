@@ -23,8 +23,8 @@ from l8_evidence.clv import (
     ClosingPrice,
     ClosingPriceError,
     ClvError,
-    ExecutionPolicyValue,
-    ExecutionPolicyValueError,
+    ExecutionCaptureDelta,
+    ExecutionCaptureDeltaError,
     IntendedOrderCLV,
     RealisedFillCLV,
     SignalCLV,
@@ -219,7 +219,7 @@ def test_realised_fill_clv_constructs_with_positive_stake() -> None:
     assert fill.matched_stake_minor == 500
 
 
-# --- ExecutionPolicyValue: same order_ref and same benchmark enforced ------------------------
+# --- ExecutionCaptureDelta: same order_ref and same benchmark enforced ------------------------
 
 
 def test_execution_policy_value_computes_realised_minus_intended() -> None:
@@ -228,7 +228,7 @@ def test_execution_policy_value_computes_realised_minus_intended() -> None:
     realised = RealisedFillCLV(
         order_ref="o-4", closing=closing, odds_matched=Decimal("3.2"), matched_stake_minor=500
     )
-    epv = ExecutionPolicyValue(intended=intended, realised=realised)
+    epv = ExecutionCaptureDelta(intended=intended, realised=realised)
     assert epv.value_bps == realised.clv_bps - intended.clv_bps
     assert epv.order_ref == "o-4"
 
@@ -239,8 +239,8 @@ def test_execution_policy_value_rejects_mismatched_order_ref() -> None:
     realised = RealisedFillCLV(
         order_ref="o-6", closing=closing, odds_matched=Decimal("3.2"), matched_stake_minor=500
     )
-    with pytest.raises(ExecutionPolicyValueError):
-        ExecutionPolicyValue(intended=intended, realised=realised)
+    with pytest.raises(ExecutionCaptureDeltaError):
+        ExecutionCaptureDelta(intended=intended, realised=realised)
 
 
 def test_execution_policy_value_rejects_mismatched_benchmark_kind() -> None:
@@ -255,8 +255,8 @@ def test_execution_policy_value_rejects_mismatched_benchmark_kind() -> None:
         odds_matched=Decimal("3.2"),
         matched_stake_minor=500,
     )
-    with pytest.raises(ExecutionPolicyValueError):
-        ExecutionPolicyValue(intended=intended, realised=realised)
+    with pytest.raises(ExecutionCaptureDeltaError):
+        ExecutionCaptureDelta(intended=intended, realised=realised)
 
 
 def test_execution_policy_value_rejects_same_benchmark_kind_different_observation() -> None:
@@ -271,8 +271,8 @@ def test_execution_policy_value_rejects_same_benchmark_kind_different_observatio
         odds_matched=Decimal("3.2"),
         matched_stake_minor=500,
     )
-    with pytest.raises(ExecutionPolicyValueError):
-        ExecutionPolicyValue(intended=intended, realised=realised)
+    with pytest.raises(ExecutionCaptureDeltaError):
+        ExecutionCaptureDelta(intended=intended, realised=realised)
 
 
 def test_execution_policy_value_rejects_different_wap_windows() -> None:
@@ -287,8 +287,8 @@ def test_execution_policy_value_rejects_different_wap_windows() -> None:
         odds_matched=Decimal("3.2"),
         matched_stake_minor=500,
     )
-    with pytest.raises(ExecutionPolicyValueError):
-        ExecutionPolicyValue(intended=intended, realised=realised)
+    with pytest.raises(ExecutionCaptureDeltaError):
+        ExecutionCaptureDelta(intended=intended, realised=realised)
 
 
 # --- UnfilledOrder: the honest artifact -------------------------------------------------------
