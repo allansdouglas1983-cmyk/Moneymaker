@@ -802,7 +802,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-092
   component: l8_evidence
   title: Lockbox integrity
@@ -813,7 +813,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-093
   component: l8_evidence
   title: Deterministic gate evaluator
