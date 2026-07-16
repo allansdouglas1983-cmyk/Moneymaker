@@ -345,7 +345,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-040
   component: l4b_fill
   title: Fill probability model, not queue simulator
