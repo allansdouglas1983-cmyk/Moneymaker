@@ -42,6 +42,14 @@ is the system working. **Treat every surprisingly good backtest as a suspected b
 - No import path from `research/scraping/` into anything that can place a bet.
 - No MCP connection to Betfair, account state, order state, or secrets.
 
+## Analytics consumer (ADR 0013)
+
+The probability platform may support both trading and future analytics consumers. Analytics
+code is **read-only** with respect to models and must never import live execution, account,
+stake, risk, or settlement-command state. Predictor publication is forbidden until Gate P1
+(SPEC-046) is activated and passed; recommendation status is `NOT_EVALUATED`. Detail:
+`.claude/rules/analytics.md`.
+
 ## Structural facts you must not "simplify" away
 
 - **Queue position is a latent variable.** Historical data cannot distinguish a

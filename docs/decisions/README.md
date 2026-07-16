@@ -19,6 +19,7 @@ An ADR for every non-obvious choice. One file per decision: `NNNN-short-title.md
 | [0010](0010-retrospective-audit.md) | 2026-07-16 retrospective audit: verdict, remediation design, equivalent-mutant policy |
 | [0011](0011-gate-evaluator.md) | Deterministic gate evaluator (SPEC-093) + frozen specs/gates/v1.yaml — accepted & implemented; severity-aggregated verdicts |
 | [0012](0012-l4-pricing.md) | L4 pricing: pure-Python deterministic two-stage model, cross-fit provenance, edge-distribution type boundary (SPEC-030–035) |
+| [0013](0013-analytics-consumer.md) | Prediction/analytics consumer foundations: SPEC-ID remapping, read-only boundary, Gate P1 (planned) |
 
 Note: ADRs are ordinary docs. Only the specific paths in `CODEOWNERS` are human-owned —
 `docs/SPECIFICATION.md`, `docs/spec-manifest.yaml`, and `docs/facts.yaml`, not all of `docs/`.

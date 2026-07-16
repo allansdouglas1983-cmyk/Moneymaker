@@ -23,6 +23,9 @@
 #   evidence - affects validity of conclusions. Never stubbed.
 #   support  - plumbing. Stub only with explicit human approval.
 #
+# Optional per-entry field: research_basis_ids (DR-XXXX references) — external research
+# informs a decision; it never proves a gate (ADR 0013 / Amendment A §4).
+#
 # NOTE: "every output varies with every input" is REJECTED as invalid.
 # Guard branches legitimately dominate (exhausted budget -> always REJECT).
 # Declare relevant_inputs and metamorphic_properties per requirement instead.
@@ -267,6 +270,78 @@
   status_source: ci
   introduced_in_phase: 2
   enforcement_state: active
+- id: SPEC-036
+  component: l4_pricing
+  title: Separate probability outputs
+  requirement: 'Every approved prediction run may persist three DISTINCT runner-level probabilities:
+    p_fundamental (independent model opinion, no market input), p_market_info (frozen versioned
+    information price), p_combined (stage-two market-aware opinion). Each in (0,1) where required,
+    summing to 1 across active runners within tolerance, each identifying its generating model or
+    price-definition version. A missing probability is explicit — NEVER silently substituted from
+    another; p_fundamental never populated from p_combined; p_market_info never labelled a model
+    prediction; p_combined never overwrites p_fundamental. No LLM may create, alter, smooth or
+    repair any probability.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-037
+  component: l8_evidence
+  title: Immutable prediction snapshots with forecast vintage lineage
+  requirement: 'Append-only prediction snapshots recording what the platform believed at a specific
+    time (full field set per the founder task + Amendment A: identifiers, dual-clock generation
+    times, horizon, market state, the three probabilities, fair odds, uncertainty summary, model/
+    feature/source lineage, active-runner-set hash, publication eligibility, schema versions,
+    forecast_vintage_id/type INITIAL|UPDATED|FINAL_APPROVED_HORIZON|CORRECTION,
+    supersedes_prediction_id revision chains with deterministic update reasons,
+    available_to_consumer_at_utc). A later prediction is a NEW prediction_id; earlier snapshots are
+    never updated; results/BSP/settlement/future prices never enter or revise a pre-off snapshot;
+    non-runner changes mint a new snapshot; latest is DERIVED from the chain, never stored by
+    mutation; snapshots are independent of any trading order and reproducible from approved
+    manifests; no consumer may select the best-performing vintage after the result.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-038
+  component: l8_evidence
+  title: Predictor performance ledger with versioned benchmark registry
+  requirement: 'A predictor-specific evidence ledger, separate from trading performance, evaluating
+    forecasting quality: race-level log score and multiclass Brier, calibration-in-the-large and
+    slope, reliability by approved bands, ranking diagnostics, availability/coverage rates, and
+    cohort breakdowns — distinguished for fundamental, market-baseline and combined models. The race
+    is the unit of analysis; results join AFTER settlement; missing predictions and exclusions stay
+    in the denominator; ROI only as a clearly secondary frozen-policy diagnostic; no ambiguous field
+    named performance. Amendment A: benchmark definitions and evaluation policy (universe version,
+    forecast-vintage policy, inclusion/exclusion hashes, coverage policy) are VERSIONED in a
+    registry; in-place benchmark changes are refused; horizon-mismatched comparisons are rejected;
+    no cherry-picked subgroup may be labelled overall performance.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-039
+  component: l8_evidence
+  title: Deterministic explanation inputs
+  requirement: 'Structured reason codes and contribution data from approved numerical attribution
+    methods only (signed/grouped coefficient contributions for the linear v1; versioned method
+    ids). Every reason traces to approved features; sign and magnitude from deterministic code; no
+    LLM-inferred reasons; no causal claims; explanations cannot exist without a valid prediction,
+    never alter probabilities, are reproducible from manifests, and carry source lineage so
+    restricted sources cannot leak into unpermitted outputs. If attribution is unsupported, mark it
+    unavailable rather than approximating.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
 - id: SPEC-040
   component: l4b_fill
   title: Fill probability model, not queue simulator
@@ -328,6 +403,94 @@
   - two materially different order contexts must produce different fill probabilities
   - increasing depth ahead at the same price must not increase fill probability
   - a constant-returning implementation must fail
+- id: SPEC-044
+  component: governance
+  title: Commercial-output licensing lineage
+  requirement: 'Extend the source-rights registry with explicit per-use permissions (offline
+    research, model training, private automated betting, derived probability/fair-odds publication,
+    display of source facts, commercial customer output, API redistribution, bulk export,
+    customer-facing explanations, cloud/third-party CI processing, retention, derived-model
+    retention). Public availability never implies publication rights; internal-use approval never
+    implies publication approval. Predictions and explanations carry transitive source_lineage_ids;
+    a mixed-source model inherits the most restrictive applicable condition; copying/transforming/
+    training does not erase lineage; a single unapproved source makes an output publication-
+    ineligible WITHOUT deleting internal research evidence; publication eligibility fails closed on
+    missing or stale rights; a customer-facing build rejects unpermitted models.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-045
+  component: analytics_contracts
+  title: Exportable prediction contract with independent status dimensions
+  requirement: 'A versioned, transport-independent, pure/deterministic domain contract for
+    analytics consumers (identifiers, times, horizon, the three probabilities, fair odds =
+    1/probability only where valid, uncertainty block, model/evidence lineage, explanations,
+    availability). It MUST NOT contain credentials, balances, order ids, stakes, risk budgets,
+    execution thresholds or any live-trading state. Amendment A: THREE independent status
+    dimensions — forecast_availability (AVAILABLE / UNAVAILABLE_* / WITHHELD_DATA_QUALITY),
+    publication eligibility (INTERNAL_ONLY / PUBLICATION_ELIGIBLE / INELIGIBLE_* /
+    REVIEW_REQUIRED with rights registry version), and recommendation status hard-pinned to
+    NOT_EVALUATED (no TIP/BET/selection states are authorised; never inferred from rank,
+    probability, fair odds or market disagreement; never LLM-assigned). Display rounding never
+    alters stored probabilities; unavailable/withheld states carry no fake defaults; ineligible
+    predictions remain internally storable and evaluable.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-046
+  component: governance
+  title: Gate P1 — predictor product evidence
+  requirement: 'A separate future product gate (specs/gates/predictor-p1.yaml, evaluated by the
+    SPEC-093 deterministic evaluator) requiring predictive evidence (held-out improvement over
+    approved baselines, stable race-level calibration, coverage, untouched-period results, current
+    trial ledger/multiplicity), product usefulness, full commercial licensing of displayed and
+    derived outputs, claims/compliance review (no guaranteed-profit claims, responsible-gambling
+    and legal review, transparent scorecard requirements), and technical readiness (stable export
+    contract, immutable snapshots, reproducible public ledger, no trading secrets exposed,
+    isolation from live trading). Outcomes: PASS | CONTINUE | FAIL_FUTILITY (insufficient
+    predictive value) | FAIL_HARM (commercial or licensing infeasibility). Remains planned;
+    activation only by explicit human approval after Gate 1 results exist; no customer-facing
+    product may be built merely because the SPEC-036..045 contracts exist.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-047
+  component: analytics_contracts
+  title: Forecast issuance, abstention and qualification policy
+  requirement: 'Deterministic policy for when a technically valid prediction is issued, withheld or
+    marked low-confidence: abstention rules from uncertainty, data quality and approved thresholds;
+    no pressure to produce a tip for every race; any future recommendation qualification defined
+    separately from probability generation; LLM selection of tips prohibited; requires its own
+    evidence gate before activation. MUST NOT be implemented as a tipping engine.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
+- id: SPEC-048
+  component: analytics_contracts
+  title: Transparent scorecard and claims governance
+  requirement: 'If a product is later approved: an immutable public scorecard with timestamp and
+    price disclosure; losing predictions can never be deleted; denominator, coverage and exclusion
+    reporting; permitted claims defined; prediction accuracy, calibration, hypothetical returns and
+    real returns distinguished; cherry-picked claims prohibited; commercial, licensing and
+    compliance approval required. Blocked until Gate P1 (SPEC-046) is active and passed.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 2
+  enforcement_state: planned
 - id: SPEC-050
   component: l5_decision
   title: EV at executable prices

@@ -1573,3 +1573,48 @@ exists to test:
    change → verification logic moved outside the PR's writable tree, workflows human-owned.
 
 If a future amendment reintroduces any of these, it is a regression, not a simplification.
+
+---
+
+## 21. Prediction and analytics consumer foundations (founder amendment, 2026-07-16)
+
+The platform is an **evidence and probability engine with multiple possible downstream
+consumers**. The private trading research system is the first consumer; a possible future
+prediction and racing-analytics product is a second, strictly **read-only** consumer of
+approved probability outputs and evidence. This is an architectural extension, not a pivot:
+nothing in the trading validation chain changes, and no product, UI, API, publication,
+tipping or monetisation is authorised by these foundations.
+
+Authoritative requirements: **SPEC-036–039 and SPEC-044–048** in `docs/spec-manifest.yaml`
+(the founder task numbered them 036–042 plus amendment 043/044; SPEC-040–043 were already
+the l4b_fill requirements, so the colliding IDs were remapped — table in
+`docs/decisions/0013-analytics-consumer.md`). In brief:
+
+- **SPEC-036** — three separated probability outputs (`p_fundamental`, `p_market_info`,
+  `p_combined`); never aliased, never silently substituted, no LLM touches any probability.
+- **SPEC-037** — append-only prediction snapshots with forecast **vintage/revision lineage**
+  (INITIAL/UPDATED/FINAL_APPROVED_HORIZON/CORRECTION); results never revise a pre-off
+  snapshot; "latest" is derived, never stored by mutation.
+- **SPEC-038** — predictor performance ledger (race-level proper scores, calibration,
+  coverage) with a **versioned benchmark and evaluation-policy registry**; horizon-mismatched
+  comparisons refused; exclusions stay in the denominator.
+- **SPEC-039** — deterministic explanation inputs (versioned numerical attribution over
+  approved features only; no LLM-inferred reasons; no causal claims).
+- **SPEC-044** — commercial-output licensing lineage: per-use permissions, transitive
+  source lineage, most-restrictive inheritance, publication fails closed.
+- **SPEC-045** — versioned exportable prediction contract with three INDEPENDENT status
+  dimensions (availability / publication eligibility / recommendation), recommendation
+  hard-pinned to `NOT_EVALUATED`, and no trading-secret fields.
+- **SPEC-046** — **Gate P1 (predictor product evidence)**: `planned`, activated only by
+  explicit human approval after Gate 1 results exist; four outcomes via the SPEC-093
+  evaluator.
+- **SPEC-047/048** — issuance/abstention policy and public scorecard/claims governance:
+  `planned`, blocked behind Gate P1.
+
+Constraints binding this whole section: the analytics consumer never imports broker, live
+execution, account, stake, risk or settlement-command state (CI-enforced import quarantine);
+the authorised external cash budget remains **£499**, reserved for the possible Live App Key
+— no paid dependency, service or infrastructure may be introduced; external deep research
+enters only through ADRs, specifications, experiments, source approvals or dated facts
+(`research_basis_ids`), and never substitutes for empirical gate evidence.
+
