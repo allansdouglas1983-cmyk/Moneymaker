@@ -41,6 +41,10 @@ is the system working. **Treat every surprisingly good backtest as a suspected b
   are delayed; live only knows *scheduled* start).
 - No import path from `research/scraping/` into anything that can place a bet.
 - No MCP connection to Betfair, account state, order state, or secrets.
+- **No other person's account and no alternate account may ever be used to bypass a
+  self-exclusion or account closure.** Exclusion status is a hard gate on ALL Betfair
+  account activity (data purchase included). No account creation, recovery, credential
+  use, or workaround while ADR 0015's block stands. Non-negotiable, permanent.
 
 ## Analytics consumer (ADR 0013)
 

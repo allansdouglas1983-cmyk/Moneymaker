@@ -27,8 +27,10 @@
   - raw-data retention terms
   - private automated betting under personal use (add to written questions)
   - free May-2015..Apr-2016 window (low-confidence snippet)
-  decision_required: 'founder: tier + budget authorisation (Option A GBP699 ADVANCED 12m recommended);
-    Betfair written clarifications first'
+  - founder Betfair account exclusion/closure status (ADR 0015 — blocks the purchase itself)
+  decision_required: 'BLOCKED by ADR 0015: founder account exclusion/closure status must be resolved by
+    Betfair in writing before any purchase; prior tier recommendation (Option A, ADVANCED) preserved for
+    if/when the block lifts'
 - id: DR-0002
   title: Cheapest lawful GB all-weather form data with genuine knowledge-time support
   classification: BLOCKING

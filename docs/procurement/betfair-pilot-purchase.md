@@ -1,5 +1,12 @@
 # Betfair ADVANCED pilot purchase — specification and rationale
 
+> **PAUSED (2026-07-16, ADR 0015):** the founder believes they self-excluded from or
+> permanently closed their Betfair account ~10 years ago. This purchase requires a
+> Betfair customer account and is PAUSED until Betfair's written response resolves the
+> account/exclusion status. No account creation, recovery, or workaround of any kind.
+> No other person's account and no alternate account may ever be used. The
+> specification below is preserved unchanged for if/when the block lifts.
+
 **Authorised:** 2026-07-16 by the founder — £69, separately authorised research
 expenditure (SPEC-103: distinct from the £499 Live App Key reserve, which remains a
 later conditional purchase requiring fresh approval after Gates 1–2).
