@@ -292,7 +292,7 @@ def _payback_record(inputs: Mapping[str, Decimal | int]) -> ExperimentRecord:
     )
 
 
-_VIABLE = {
+_VIABLE: dict[str, Decimal | int] = {
     "n_eligible_per_year": 2500,
     "r_select": Decimal("0.10"),
     "r_fill": Decimal("0.80"),

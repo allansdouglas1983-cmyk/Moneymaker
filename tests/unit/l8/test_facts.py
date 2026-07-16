@@ -63,7 +63,7 @@ def test_stale_and_misconfigured_facts_are_flagged_registry_wide(tmp_path: Path)
     assert "UNPOPULATED-FACT" not in joined
 
 
-def test_fresh_registry_passes(tmp_path: Path) -> None:
+def test_fresh_registry_passes() -> None:
     registry = FactsRegistry(
         facts=(Fact(fact_id="F", populated=True, recheck_by=date(2027, 1, 1), used_by=("GATE-1",)),),
         digest="sha256:" + "0" * 64,
