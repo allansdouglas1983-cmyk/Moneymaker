@@ -607,7 +607,7 @@ def test_uncertainty_summary_has_no_numeric_coercion() -> None:
     with pytest.raises(TypeError):
         float(summary)  # type: ignore[arg-type]
     with pytest.raises(TypeError):
-        int(summary)  # type: ignore[arg-type]
+        int(summary)  # type: ignore[call-overload]
 
 
 # --- convenience indexes are fully rebuildable ----------------------------------------------
