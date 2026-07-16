@@ -350,3 +350,33 @@ def test_calibration_error_is_a_value_error_subclass() -> None:
     assert issubclass(PosthocCalibrationError, CalibrationError)
     assert issubclass(EceError, CalibrationError)
     assert issubclass(CalibrationError, ValueError)
+
+
+# --- descriptive-only interval marker (governed clarification, founder 2026-07-16) -----------
+
+
+def test_interval_kind_is_a_single_member_descriptive_enum() -> None:
+    from l8_evidence.calibration import IntervalKind
+
+    assert [m.name for m in IntervalKind] == ["DESCRIPTIVE_WILSON"]
+
+
+def test_every_curve_point_is_marked_descriptive_wilson() -> None:
+    from l8_evidence.calibration import IntervalKind
+
+    races = [_race("r1", (Decimal("0.6"), Decimal("0.4")), winner_index=0)]
+    curve = reliability_curve(races, _bands(), confidence_level=Decimal("0.95"))
+    assert curve, "fixture must produce at least one curve point"
+    for point in curve:
+        assert point.interval_kind is IntervalKind.DESCRIPTIVE_WILSON
+
+
+def test_interval_kind_is_a_mandatory_field() -> None:
+    import dataclasses as _dc
+
+    from l8_evidence.calibration import ReliabilityCurvePoint
+
+    field_names = [f.name for f in _dc.fields(ReliabilityCurvePoint)]
+    assert "interval_kind" in field_names
+    kind_field = next(f for f in _dc.fields(ReliabilityCurvePoint) if f.name == "interval_kind")
+    assert kind_field.default is _dc.MISSING, "interval_kind must have no default"

@@ -140,6 +140,7 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from decimal import Decimal, localcontext
+from enum import Enum
 from typing import Mapping, Sequence
 
 from l8_evidence.paired_inference import empirical_percentile
@@ -157,6 +158,7 @@ __all__ = [
     "CohortCalibrationError",
     "PosthocCalibrationError",
     "EceError",
+    "IntervalKind",
     "ReliabilityCurvePoint",
     "PosthocCalibrator",
     "EceDiagnostic",
@@ -244,13 +246,32 @@ def wilson_score_interval(
     return lower, upper
 
 
+class IntervalKind(Enum):
+    """GOVERNED CLARIFICATION (founder direction, 2026-07-16, SPEC-097).
+
+    Wilson reliability intervals are DESCRIPTIVE ONLY: they treat runner-outcome pairs as
+    independent binomial draws, which understates uncertainty under within-race and
+    within-meeting-day clustering. They MUST NOT support Gate 1, Gate 5 or any external
+    confidence claim. Inferential calibration uncertainty must come from race/meeting-day
+    block resampling (the SPEC-090 machinery). This enum has exactly one member so a
+    descriptive interval can never be re-labelled as cluster-adjusted inference — an
+    inferential curve point would be a DIFFERENT type produced by a block-resampling
+    module, not another member here.
+    """
+
+    DESCRIPTIVE_WILSON = "DESCRIPTIVE_WILSON"
+
+
 @dataclass(frozen=True)
 class ReliabilityCurvePoint:
-    """One band's reliability-curve point, WITH a confidence interval (SPEC-097).
+    """One band's reliability-curve point, WITH a DESCRIPTIVE confidence interval (SPEC-097).
 
     Extends ``predictor_metrics.reliability_by_band``'s point estimates with ``ci_lower``/
     ``ci_upper`` (a Wilson interval, see the module docstring). A band with zero members
-    never becomes an instance of this type — see :func:`reliability_curve`.
+    never becomes an instance of this type — see :func:`reliability_curve`. The mandatory
+    ``interval_kind`` marker pins the interval as descriptive-only (see
+    :class:`IntervalKind`): never Gate 1/Gate 5 evidence, never an external confidence
+    claim.
     """
 
     label: str
@@ -261,6 +282,7 @@ class ReliabilityCurvePoint:
     count: int
     ci_lower: float
     ci_upper: float
+    interval_kind: IntervalKind
 
     def __post_init__(self) -> None:
         if not self.label or not self.label.strip():
@@ -316,6 +338,7 @@ def reliability_curve(
                 count=count,
                 ci_lower=ci_lower,
                 ci_upper=ci_upper,
+                interval_kind=IntervalKind.DESCRIPTIVE_WILSON,
             )
         )
     return tuple(points)
@@ -532,6 +555,8 @@ def expected_calibration_error(curve: Sequence[ReliabilityCurvePoint]) -> EceDia
 def _jsonable(value: object) -> object:
     if isinstance(value, Decimal):
         return str(value)
+    if isinstance(value, Enum):
+        return value.value
     if isinstance(value, Mapping):
         return {str(k): _jsonable(v) for k, v in sorted(value.items(), key=lambda kv: str(kv[0]))}
     if isinstance(value, (list, tuple)):
