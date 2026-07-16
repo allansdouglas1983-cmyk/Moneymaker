@@ -3,7 +3,14 @@ from __future__ import annotations
 
 import pytest
 
-from governance.budgets import BudgetAccount, BudgetError, BudgetKind, SeparatedBudgets
+from governance.budgets import (
+    BettingBankrollAccount,
+    BudgetError,
+    BudgetKind,
+    MaxExperimentLossAccount,
+    ResearchInfrastructureAccount,
+    SeparatedBudgets,
+)
 
 pytestmark = pytest.mark.spec("SPEC-103")
 
@@ -35,19 +42,21 @@ def test_non_positive_debit_is_refused() -> None:
 
 
 def test_mismatched_account_kind_is_refused() -> None:
-    # Raw constructor still enforces field/kind consistency (not only via .of()).
+    # Raw constructor still enforces field/account consistency (not only via .of()). The
+    # ignore is load-bearing: mypy --strict also rejects this line (2026-07-16 audit, nominal
+    # account types), and warn-unused-ignores fails CI if that ever stops being true.
     with pytest.raises(BudgetError):
         SeparatedBudgets(
-            research_infrastructure=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),  # wrong kind
-            betting_bankroll=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),
-            max_experiment_loss=BudgetAccount(BudgetKind.MAX_EXPERIMENT_LOSS, 1),
+            research_infrastructure=BettingBankrollAccount(balance_minor=1),  # type: ignore[arg-type]
+            betting_bankroll=BettingBankrollAccount(balance_minor=1),
+            max_experiment_loss=MaxExperimentLossAccount(balance_minor=1),
         )
 
 
 def test_negative_balance_is_refused_by_raw_constructor() -> None:
     with pytest.raises(BudgetError):
         SeparatedBudgets(
-            research_infrastructure=BudgetAccount(BudgetKind.RESEARCH_INFRASTRUCTURE, -1),
-            betting_bankroll=BudgetAccount(BudgetKind.BETTING_BANKROLL, 1),
-            max_experiment_loss=BudgetAccount(BudgetKind.MAX_EXPERIMENT_LOSS, 1),
+            research_infrastructure=ResearchInfrastructureAccount(balance_minor=-1),
+            betting_bankroll=BettingBankrollAccount(balance_minor=1),
+            max_experiment_loss=MaxExperimentLossAccount(balance_minor=1),
         )

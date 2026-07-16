@@ -41,18 +41,37 @@ def _iter_py(root: Path) -> list[Path]:
     return result
 
 
-def _imports_of(path: Path, module: str) -> set[str]:
-    """Dotted import targets referenced by ``path`` (best-effort static)."""
+def _imports_of(path: Path, module: str) -> tuple[set[str], list[str]]:
+    """Dotted import targets referenced by ``path``, plus fail-closed problems.
+
+    Static AST walk covering ``import``/``from`` statements AND literal dynamic imports
+    (``importlib.import_module("x")`` under any alias, ``__import__("x")``). A dynamic import
+    whose target is not a string literal cannot be resolved statically and is reported as a
+    problem — the quarantine fails closed rather than blessing what it cannot see. The same
+    applies to a file that cannot be read or parsed (2026-07-16 audit findings A1/A4).
+    Problems only fail the check for modules actually reachable from ``--from``.
+    """
     targets: set[str] = set()
+    problems: list[str] = []
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
-    except (OSError, SyntaxError):
-        return targets
+    except OSError as exc:
+        return targets, [f"unreadable file (fail-closed): {exc}"]
+    except SyntaxError as exc:
+        return targets, [f"cannot parse file (fail-closed): {exc.msg} at line {exc.lineno}"]
     pkg_parts = module.split(".")
+    importlib_names: set[str] = set()
+    import_module_names: set[str] = {"__import__"}
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 targets.add(alias.name)
+                if alias.asname is None and (
+                    alias.name == "importlib" or alias.name.startswith("importlib.")
+                ):
+                    importlib_names.add("importlib")
+                elif alias.asname is not None and alias.name == "importlib":
+                    importlib_names.add(alias.asname)
         elif isinstance(node, ast.ImportFrom):
             if node.level:
                 base = pkg_parts[: len(pkg_parts) - node.level]
@@ -64,7 +83,32 @@ def _imports_of(path: Path, module: str) -> set[str]:
                 targets.add(mod)
                 for alias in node.names:
                     targets.add(f"{mod}.{alias.name}")
-    return targets
+                if mod == "importlib":
+                    for alias in node.names:
+                        if alias.name == "import_module":
+                            import_module_names.add(alias.asname or "import_module")
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        is_dynamic_import = (
+            isinstance(func, ast.Name) and func.id in import_module_names
+        ) or (
+            isinstance(func, ast.Attribute)
+            and func.attr == "import_module"
+            and isinstance(func.value, ast.Name)
+            and func.value.id in importlib_names
+        )
+        if not is_dynamic_import:
+            continue
+        first_arg = node.args[0] if node.args else None
+        if isinstance(first_arg, ast.Constant) and isinstance(first_arg.value, str):
+            targets.add(first_arg.value)
+        else:
+            problems.append(
+                f"dynamic import with a non-literal target at line {node.lineno} (fail-closed)"
+            )
+    return targets, problems
 
 
 def _is_forbidden(target: str, forbid: str) -> bool:
@@ -75,7 +119,7 @@ def find_violations(root: Path, forbid: str, from_pkgs: list[str]) -> list[str]:
     """Return forbidden import chains reachable from ``from_pkgs`` (empty if clean)."""
     root = root.resolve()
     modules: dict[str, Path] = {_module_name(p, root): p for p in _iter_py(root)}
-    imports: dict[str, set[str]] = {
+    analysed: dict[str, tuple[set[str], list[str]]] = {
         name: _imports_of(path, name) for name, path in modules.items()
     }
 
@@ -93,7 +137,10 @@ def find_violations(root: Path, forbid: str, from_pkgs: list[str]) -> list[str]:
 
     while queue:
         name, chain = queue.popleft()
-        for target in sorted(imports.get(name, set())):
+        targets, problems = analysed.get(name, (set(), []))
+        for problem in problems:
+            violations.append(" -> ".join(chain) + f": {problem}")
+        for target in sorted(targets):
             if _is_forbidden(target, forbid):
                 violations.append(" -> ".join(chain) + f" -> {target}  (forbidden: {forbid})")
                 continue
