@@ -278,3 +278,35 @@ def test_invalid_use_for_internal_check_raises() -> None:
     registry = {"a": _fully_permitted("a")}
     with pytest.raises(OutputRightsError):
         internal_research_eligibility(("a",), registry, use="derived_probability_publication", as_of=_TODAY)
+
+
+# --- vocabulary tagging: internal approval never implies publication (verifier finding) ------
+
+
+def test_publication_eligibility_result_is_tagged_publication() -> None:
+    from governance.output_rights import EligibilityVocabulary
+
+    result = publication_eligibility(
+        ("src-full",), _registry(), use="derived_probability_publication", as_of=_AS_OF
+    )
+    assert result.vocabulary is EligibilityVocabulary.PUBLICATION
+
+
+def test_internal_research_eligibility_result_is_tagged_internal() -> None:
+    from governance.output_rights import EligibilityVocabulary
+
+    result = internal_research_eligibility(
+        ("src-full",), _registry(), use="model_training", as_of=_AS_OF
+    )
+    assert result.vocabulary is EligibilityVocabulary.INTERNAL_RESEARCH
+
+
+def test_default_constructed_result_is_internal_fail_closed() -> None:
+    # The default vocabulary is INTERNAL_RESEARCH — the safe kind that can never cross into
+    # publication; PUBLICATION must always be an explicit, deliberate tag.
+    from governance.output_rights import EligibilityVocabulary
+
+    result = EligibilityResult(
+        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version="sha256:" + "0" * 64
+    )
+    assert result.vocabulary is EligibilityVocabulary.INTERNAL_RESEARCH

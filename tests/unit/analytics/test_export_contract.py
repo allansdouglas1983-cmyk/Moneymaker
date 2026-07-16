@@ -506,3 +506,26 @@ def test_no_public_function_in_module_accepts_a_rank_or_disagreement_derived_rec
                 assert "recommend" not in pname.lower()
                 assert "tip" not in pname.lower()
                 assert "selection" not in pname.lower()
+
+
+# --- internal-vocabulary eligibility cannot cross into publication (verifier finding) --------
+
+
+def test_internal_vocabulary_eligibility_is_refused_by_the_publication_mapping() -> None:
+    from governance.output_rights import EligibilityVocabulary
+
+    internal = EligibilityResult(
+        status=EligibilityStatus.ELIGIBLE,
+        reasons=(),
+        rights_registry_version=_REGISTRY_VERSION,
+        vocabulary=EligibilityVocabulary.INTERNAL_RESEARCH,
+    )
+    with pytest.raises(ExportContractError):
+        map_eligibility_to_publication_status(internal, gate_p1_activated=True)
+    with pytest.raises(ExportContractError):
+        build_export(
+            _snapshot(),
+            internal,
+            gate_p1_activated=False,
+            explanations=_explanation_unavailable(),
+        )

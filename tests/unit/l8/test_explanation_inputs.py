@@ -358,3 +358,22 @@ def test_module_does_not_import_live_trading_modules() -> None:
             imported_roots.add(node.module.split(".")[0])
     forbidden = {"l5_decision", "l5b_risk", "l6_broker", "l7_settle"}
     assert not (imported_roots & forbidden), f"module imports forbidden package(s): {imported_roots & forbidden}"
+
+
+# --- contribution magnitudes must be finite (verifier finding, 2026-07-16) -------------------
+
+
+def test_nan_contribution_magnitude_is_refused() -> None:
+    import math as _math
+
+    with pytest.raises(Exception):
+        FeatureContribution(feature_name="speed_rating", magnitude=_math.nan)
+
+
+def test_infinite_contribution_magnitude_is_refused() -> None:
+    import math as _math
+
+    with pytest.raises(Exception):
+        FeatureContribution(feature_name="speed_rating", magnitude=_math.inf)
+    with pytest.raises(Exception):
+        FeatureContribution(feature_name="speed_rating", magnitude=-_math.inf)

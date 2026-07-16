@@ -634,3 +634,41 @@ def test_store_indexes_are_rebuildable_from_snapshots_alone() -> None:
     assert [s.prediction_id for s in rebuilt.all_vintages("pred-2")] == [
         s.prediction_id for s in store.all_vintages("pred-2")
     ]
+
+
+# --- snapshot publication_eligibility must carry the PUBLICATION vocabulary (verifier) -------
+
+
+def test_snapshot_refuses_internal_vocabulary_eligibility() -> None:
+    from governance.output_rights import EligibilityVocabulary
+
+    internal = EligibilityResult(
+        status=EligibilityStatus.ELIGIBLE,
+        reasons=(),
+        rights_registry_version=_REGISTRY_VERSION,
+        vocabulary=EligibilityVocabulary.INTERNAL_RESEARCH,
+    )
+    race = _race()
+    with pytest.raises(SnapshotValidationError):
+        PredictionSnapshot(
+            prediction_id="pred-v",
+            race_id="race-1",
+            market_id="market-1",
+            active_runner_set_hash=build_active_runner_set_hash([r.runner_id for r in race.runners]),
+            generated_at=_clock(),
+            decision_horizon="T-60m",
+            market_state=_market_state(),
+            probabilities=race,
+            fair_odds=build_fair_odds(race),
+            uncertainty=_uncertainty(),
+            model_lineage_digest=_MODEL_DIGEST,
+            feature_lineage_digest=_FEATURE_DIGEST,
+            source_lineage_digest=_SOURCE_DIGEST,
+            publication_eligibility=internal,
+            schema_version="prediction-snapshot-v1",
+            forecast_vintage_id="vintage-1",
+            vintage_type=VintageType.INITIAL,
+            supersedes_prediction_id=None,
+            update_reason=None,
+            available_to_consumer_at_utc=datetime(2026, 7, 16, 12, 0, 5, tzinfo=timezone.utc),
+        )

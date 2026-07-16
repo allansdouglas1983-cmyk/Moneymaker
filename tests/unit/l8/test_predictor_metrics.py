@@ -378,3 +378,42 @@ class TestInputDigest:
         result_a = evaluate_overall(races_a, _benchmark(), ModelKind.COMBINED, total_universe_races=1)
         result_b = evaluate_overall(races_b, _benchmark(), ModelKind.COMBINED, total_universe_races=1)
         assert result_a.input_digest != result_b.input_digest
+
+
+# --- forecast-vintage policy is ENFORCED at evaluation (verifier finding, 2026-07-16) --------
+
+
+class TestVintagePolicyEnforcement:
+    def test_vintage_mismatched_race_is_refused(self) -> None:
+        # The benchmark pins FINAL_APPROVED_HORIZON_ONLY; an INITIAL-vintage evaluation input
+        # must be refused — vintage selection is enforced in code, never by caller convention.
+        from l8_evidence.prediction_snapshots import VintageType
+
+        race = _race(vintage_type=VintageType.INITIAL)
+        with pytest.raises(RaceEvaluationError):
+            evaluate_race(race, _benchmark())
+
+    def test_vintage_matched_race_is_accepted(self) -> None:
+        from l8_evidence.prediction_snapshots import VintageType
+
+        race = _race(vintage_type=VintageType.FINAL_APPROVED_HORIZON)
+        result = evaluate_race(race, _benchmark())
+        assert result.race_id == race.race_id
+
+    def test_initial_only_policy_accepts_only_initial(self) -> None:
+        from l8_evidence.prediction_snapshots import VintageType
+
+        benchmark = BenchmarkDefinition(
+            benchmark_id="predictor-eval-initial",
+            version=1,
+            universe_version="universe-2026-07",
+            forecast_vintage_policy=ForecastVintagePolicy.INITIAL_ONLY,
+            inclusion_hash=_INCLUSION_HASH,
+            exclusion_hash=_EXCLUSION_HASH,
+            coverage_policy="all scheduled UK/IRE flat races",
+            decision_horizon=_HORIZON,
+            approved_reliability_bands=_bands(),
+        )
+        assert evaluate_race(_race(vintage_type=VintageType.INITIAL), benchmark).race_id
+        with pytest.raises(RaceEvaluationError):
+            evaluate_race(_race(vintage_type=VintageType.FINAL_APPROVED_HORIZON), benchmark)
