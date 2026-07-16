@@ -16,6 +16,7 @@ An ADR for every non-obvious choice. One file per decision: `NNNN-short-title.md
 | [0007](0007-l7-settlement.md) | L7 commission on net market result; reduction factors & dead heats; idempotent versioned ledger |
 | [0008](0008-mutation-harness.md) | cosmic-ray mutation harness; survivor classification file; report vs enforce |
 | [0009](0009-price-preregistration.md) | Frozen price pre-registration: p_market_info / odds_exec / p_close (info/exec/close v1) |
+| [0010](0010-retrospective-audit.md) | 2026-07-16 retrospective audit: verdict, remediation design, equivalent-mutant policy |
 
 Note: ADRs are ordinary docs. Only the specific paths in `CODEOWNERS` are human-owned —
 `docs/SPECIFICATION.md`, `docs/spec-manifest.yaml`, and `docs/facts.yaml`, not all of `docs/`.

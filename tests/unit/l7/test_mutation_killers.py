@@ -43,6 +43,13 @@ def test_matched_odds_of_exactly_one_is_rejected() -> None:
         MatchedPosition(runner_id=1, matched_stake_minor=1, matched_odds=Decimal("1"))
 
 
+def test_matched_odds_below_one_is_rejected() -> None:
+    # Sub-1 decimal odds are not a price (implied probability > 1); kills <= -> == at the
+    # guard, which would accept everything except exactly 1.
+    with pytest.raises(ValueError):
+        MatchedPosition(runner_id=1, matched_stake_minor=1, matched_odds=Decimal("0.5"))
+
+
 def test_zero_stake_is_permitted_and_negative_is_rejected() -> None:
     ok = MatchedPosition(runner_id=1, matched_stake_minor=0, matched_odds=Decimal("2.0"))
     assert ok.matched_stake_minor == 0
@@ -68,6 +75,29 @@ def test_unknown_runner_result_raises_at_pnl_level() -> None:
     pos = MatchedPosition(runner_id=1, matched_stake_minor=100, matched_odds=Decimal("2.0"))
     with pytest.raises(ValueError):
         pnl_mod.position_pnl_minor(pos, RunnerOutcome(RunnerResult.UNKNOWN), MarketStatus.SETTLED)
+
+
+def test_duplicate_ack_returns_the_stored_object_itself() -> None:
+    # Idempotency means no new object is stored: the ledger returns THE existing record, not
+    # an equal copy. Pinned by identity (kills an `is not` version-comparison mutant that
+    # only misbehaves for non-interned large version ints, where it silently re-stores).
+    ledger = ledger_mod.SettlementLedger()
+    outcome = MarketOutcome(
+        market_status=MarketStatus.SETTLED, runners={111: RunnerOutcome(RunnerResult.WINNER)}
+    )
+
+    def _mint() -> MarketSettlement:
+        return settle_market(
+            market_id="1.1",
+            positions=[MatchedPosition(runner_id=111, matched_stake_minor=200, matched_odds=Decimal("3.0"))],
+            outcome=outcome,
+            commission_rate_effective=Decimal("0.02"),
+            statement_reference="stmt-1",
+            settlement_version=1000,
+        )
+
+    first = ledger.apply(_mint())
+    assert ledger.apply(_mint()) is first
 
 
 def test_commission_on_smallest_positive_net() -> None:
