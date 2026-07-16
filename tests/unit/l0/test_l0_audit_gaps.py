@@ -7,6 +7,7 @@ the first live integration. No persisted data exists yet, so widening the type n
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,7 +15,6 @@ import pytest
 
 from l0_raw import clock
 from l0_raw import records as r
-from l0_raw import store as store_mod
 from l0_raw.store import AppendOnlyLog
 
 pytestmark = [pytest.mark.spec("SPEC-001"), pytest.mark.spec("SPEC-002")]
@@ -81,13 +81,13 @@ def test_every_append_fsyncs_the_file(tmp_path: Path, monkeypatch: pytest.Monkey
     # Durability is per append, not per log lifetime: each append must fsync. Previously only
     # the one-time directory fsync was spy-verified.
     calls: list[int] = []
-    real_fsync = store_mod.os.fsync
+    real_fsync = os.fsync
 
     def spy(fd: int) -> None:
         calls.append(fd)
         real_fsync(fd)
 
-    monkeypatch.setattr(store_mod.os, "fsync", spy)
+    monkeypatch.setattr(os, "fsync", spy)
     log = AppendOnlyLog(tmp_path / "log.l0")
     before = len(calls)
     log.append({"a": 1}, b"x")
