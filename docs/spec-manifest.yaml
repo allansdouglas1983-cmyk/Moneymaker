@@ -791,7 +791,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-091
   component: l8_evidence
   title: Trial ledger
@@ -846,7 +846,7 @@
   criticality: evidence
   status_source: ci
   introduced_in_phase: 2
-  enforcement_state: planned
+  enforcement_state: active
 - id: SPEC-095
   component: l8_evidence
   title: CLV diagnostic family

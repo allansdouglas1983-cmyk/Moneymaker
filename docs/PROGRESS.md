@@ -232,9 +232,15 @@ so the next work proceeds autonomously on this feature branch:
      price_contracts/ shared neutral package (MarketInfoPrice/OddsExec/ClosePrice + ladder
      relocated from l5_decision, pure re-export shims + purity test) and the continuously
      enforced analytics→trading import-boundary test. £499 constraint held — no paid deps.
-  5. L8 evidence (SPEC-090–092, 094–097): trial ledger (add attestation provenance —
-     reviewer/timestamp — to the record schema per the ADR 0011 forward dependency),
-     race-level paired inference, calibration/CLV diagnostics.
+  5. ✅ **Mostly done (this session)** — L8 evidence core, all `active`: SPEC-091 trial
+     ledger (ledger-derived prior-trial count, registration-digest tamper guard, attestation
+     provenance closing the ADR 0011 forward dependency, round-trip into the SPEC-093
+     evaluator's multiplicity arithmetic), SPEC-092 lockbox (event-sourced, log-then-grant,
+     Gate-1 read consumes, burns absorbing), SPEC-090 race-level paired inference (d_r,
+     meeting-day block bootstrap, no runner-level surface), SPEC-094 derived sample size
+     (Acklam inverse CDF, borrowed-constant scanner over both gate specs). Remaining
+     planned: SPEC-095 CLV diagnostics + SPEC-097 race-level calibration metrics (Phase 2),
+     SPEC-096 anytime-valid monitoring (Phase 5).
 - Activate each Phase-2 ID (`planned → active` in the manifest) **only once it is implemented and
   covered**, so `make verify` stays honest/green. Record the activation rationale in the ADR.
 - Later: Phase 3 (L5b risk, L6 broker, reconciliation SPEC-081/083, SPEC-104) and Phase 5 (L4b fill,
