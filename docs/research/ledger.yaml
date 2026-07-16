@@ -32,11 +32,11 @@
 - id: DR-0002
   title: Cheapest lawful GB all-weather form data with genuine knowledge-time support
   classification: BLOCKING
-  status: REQUESTED
+  status: ASSESSED
   requested: 2026-07-16
   routed_to: chatgpt-deep-research (project owner)
   request: docs/research/requests/DR-0002-gb-allweather-form-data.md
-  findings: null
+  findings: docs/research/findings/DR-0002-gb-allweather-form-data.md
   blocks:
   - form-data source onboarding/purchase/scraping decisions
   - fundamental-model feature ingestion (SPEC-030 features)
@@ -49,3 +49,12 @@
   - SPEC-100
   - SPEC-101
   - EXP-0001
+  returned: '2026-07-16'
+  assessed: '2026-07-16'
+  unresolved:
+  - no public price for any KT-capable form-data source (official chain, Timeform, Racing Post B2B)
+  - licence granularity for official chain / Timeform / Racing Post B2B (written terms needed)
+  - BASIC tier tv-field discrepancy between DR-0001 and DR-0002 reports (spot-check spec PDF)
+  - Betfair operative historical-data licence text (flagged by both reports)
+  decision_required: 'founder: contact Weatherbys/RDC + Timeform for quotes and knowledge-time evidence;
+    decide whether quarantined scraped-ratings research pilot is authorised meanwhile'
