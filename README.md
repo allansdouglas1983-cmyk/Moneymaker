@@ -30,7 +30,10 @@ Layered `l0_raw` → `l8_evidence` (see each directory's `README.md` and SPECIFI
 **Live progress and session handover: [`docs/PROGRESS.md`](docs/PROGRESS.md).**
 
 **The entire active Phase-1 surface is implemented — all 23 active SPEC-IDs, `make verify` green**
-(269 tests; `mypy --strict`/`ruff`/`pylint W0613` clean):
+(349 tests; `mypy --strict` over 120 files, `ruff`/`pylint W0613` clean). A founder-requested
+retrospective audit (2026-07-16, ADR 0010) confirmed no silent trims or weakened tests and
+hardened the verification net; `l7_settle` mutation testing is **enforced** (329 mutants,
+321 killed, 8 founder-approved equivalent survivors):
 - **Verification harness** (`tools/`) — the CI enforcement backbone incl. the mutation harness
   (ADR 0001, 0008).
 - **L0 raw truth layer** (`l0_raw/`, SPEC-001–004) — append-only capture, dual clock,

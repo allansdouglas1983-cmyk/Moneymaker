@@ -12,9 +12,9 @@ not the conversation. This is that file. Update it at the end of every slice.
 | | |
 |---|---|
 | Active SPEC-IDs covered | **23 of 23 — the entire active surface** (SPEC-001–004, 010–012, 020–024, 050–054, 080/082, 100–103) |
-| Tests | **350+ passing** (unit + property + failure-injection + replay-regression; grew in the 2026-07-16 audit-hardening pass) |
+| Tests | **349 passing** (unit + property + failure-injection + replay-regression; 269 -> 349 in the 2026-07-16 audit-hardening pass) |
 | Static checks | `mypy --strict` clean (120 files), `ruff` + `ruff --select ARG` clean, `pylint W0613` 10/10 |
-| Commits on branch | 45 |
+| Commits on branch | 71 |
 | Phase | 1 (walking vertical slice), offline only |
 | `make verify` overall | **GREEN** ✅ — all active IDs covered and consistent |
 | `make mutants` | **`l7_settle` ENFORCED** (`--require-kill-non-equivalent --survivors-must-be-classified`, alongside `l8_evidence/gates`): 329 mutants, 321 killed, 8 founder-approved equivalent-mutant classifications (ADR 0010). `l5b_risk` report-only. |
@@ -183,8 +183,13 @@ so the next work proceeds autonomously on this feature branch:
 - **Phase 2 build order (offline):**
   1. ✅ **Done (ADR 0009)** — froze `specs/prices/{info,exec,close}-v1.yaml` before any data
      was read (correct pre-registration). Continue at step 2.
-  2. `specs/gates/v1.yaml` (§10) + L8 gate evaluator `l8_evidence/gates/` (SPEC-093, money — first
-     `--require-kill-non-equivalent` mutation target; classify survivors in `specs/mutation-survivors.yaml`).
+  2. `specs/gates/v1.yaml` (§10) + L8 gate evaluator `l8_evidence/gates/` (SPEC-093, money).
+     **The complete design is ADR 0011 (DRAFT) — read it first; it encodes the §10 source
+     analysis, the yaml schema, verdict precedence, multiplicity arithmetic, facts join,
+     CLI/exit codes and the property list.** Discipline: freeze specs/gates/v1.yaml FIRST,
+     failing tests in their own commit, then implement; mutation for gates is already
+     enforced in CI, and mutation runs go in disposable git worktrees with a
+     proven-green baseline BEFORE mutating (both lessons of ADR 0010).
   3. L4 pricing framework (SPEC-030–035): conditional logit, time-respecting cross-fitting, stage-two
      combination, edge **distribution** (not point estimate), no-LambdaRank. Built + tested on synthetic
      fixtures; real fitting/Gate-1/2 evaluation needs licensed historical data (not in-repo) and is

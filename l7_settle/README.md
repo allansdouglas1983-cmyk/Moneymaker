@@ -15,6 +15,13 @@ exist as an authoritative field. Exact integer minor units / `Decimal`, never fl
 | `settlement.py` | `settle_market` → `MarketSettlement` (§6.8 schema); commission on net only; unknown-status blocks; void→0; scenario matrix | SPEC-080/082 |
 | `ledger.py`     | `SettlementLedger` — idempotent duplicate acks, versioned resettlements, conflict/stale refusal | SPEC-082 |
 
+## Mutation posture (ADR 0010)
+**Enforced**: CI runs `run_mutation.py --target l8_evidence/gates l7_settle
+--require-kill-non-equivalent --survivors-must-be-classified`. Standing: 329 mutants,
+321 killed; the 8 survivors are founder-approved equivalent mutants (enum singleton
+identity, ×0 identity at net==0, one dominated comparison domain) classified in
+`specs/mutation-survivors.yaml`, whose entry set is pinned by a test.
+
 ## Invariants under test
 - Commission is charged only on net winnings; `final = net − commission − charges`; commission
   monotone in the rate; a losing market is never charged (SPEC-080, property-tested).
