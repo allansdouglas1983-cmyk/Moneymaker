@@ -162,12 +162,14 @@ def _parse_attestations(raw: Any, where: str) -> dict[str, bool]:
     }
 
 
-def _parse_computed_inputs(raw: Any, where: str) -> dict[str, dict[str, Decimal | int]]:
+def _parse_computed_inputs(raw: Any, where: str) -> dict[str, dict[str, Decimal]]:
+    # Narrower than the record field (Decimal, not Decimal | int): _decimal always returns
+    # an exact Decimal, and Mapping is covariant in its value type.
     if raw is None:
         return {}
     if not isinstance(raw, dict):
         raise ExperimentError(f"{where}: computed_inputs must be a mapping, got {raw!r}")
-    parsed: dict[str, dict[str, Decimal | int]] = {}
+    parsed: dict[str, dict[str, Decimal]] = {}
     for procedure, inputs in raw.items():
         proc_name = _string(procedure, f"{where} key")
         if not isinstance(inputs, dict):

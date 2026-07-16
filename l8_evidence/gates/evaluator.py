@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from datetime import date
 from decimal import Decimal
-from typing import Mapping
+from typing import Mapping, Optional
 
 from l8_evidence.gates.experiment import ExperimentRecord
 from l8_evidence.gates.facts import FactsRegistry, assess_facts
@@ -137,7 +137,10 @@ def evaluate(
         elif state is False:
             by_flavour[item.on_false].append(f"{item.item_id}: attested or computed false")
 
-    max_n_futility: str | None = None
+    # Optional[...] rather than `| None`: local annotations are never runtime-evaluated,
+    # so a `|` here would be unobservable mutant surface (the get_type_hints killer test
+    # only reaches signatures and class bodies).
+    max_n_futility: Optional[str] = None
     if gate.decision is not None:
         prereg = experiment.preregistration
         if prereg is None:
