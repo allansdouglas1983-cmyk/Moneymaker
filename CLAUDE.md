@@ -135,6 +135,14 @@ line at the top.
 Match the model to the task: reserve the lead's judgement for the thinking, push the token-heavy
 grind down to Sonnet — but the spec standard travels with the work, never diluted on the way down.
 
+## Research routing (cost-aware)
+
+Broad external research (pricing, licensing, literature, provider comparisons) is
+handed off to the founder's ChatGPT Deep Research via a structured request in
+`docs/research/requests/` — never run Claude Code's large-agent research workflow
+without explicit founder authorisation. Protocol + ledger: `docs/research/README.md`.
+Research informs decisions; it never proves a gate, and never authorises spend.
+
 ## Session discipline
 
 One spec slice per session. Write failing tests first, **commit them separately**, then
