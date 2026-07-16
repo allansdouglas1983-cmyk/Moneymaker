@@ -1,18 +1,34 @@
-# Research ledger — one entry per DR id (see docs/research/README.md).
-# status: REQUESTED | RETURNED | ASSESSED | SUPERSEDED
 - id: DR-0001
-  title: Betfair Historical Data packages (contents, prices, filtering, rights, minimum tier for Gates 1-2)
+  title: Betfair Historical Data packages (contents, prices, filtering, rights, minimum tier for Gates
+    1-2)
   classification: BLOCKING
-  status: REQUESTED
+  status: ASSESSED
   requested: 2026-07-16
   routed_to: chatgpt-deep-research (project owner)
   request: docs/research/requests/DR-0001-betfair-historical-data.md
-  findings: null
+  findings: docs/research/findings/DR-0001-betfair-historical-data.md
   blocks:
   - historical data purchase / licence acceptance
   - licensed-sources entry for Betfair Historical Data + Gate -1 evaluation
   - data ingestion, lockbox definition, EXP-0001 registration
-  related: [SPEC-101, SPEC-103, SPEC-044, GATE-1, GATE-2, GATE--1B, EXP-0001]
+  related:
+  - SPEC-101
+  - SPEC-103
+  - SPEC-044
+  - GATE-1
+  - GATE-2
+  - GATE--1B
+  - EXP-0001
+  returned: '2026-07-16'
+  assessed: '2026-07-16'
+  unresolved:
+  - cloud/third-party-CI processing rights (written Betfair clarification needed)
+  - derived-output publication status (Gate P1-relevant only)
+  - raw-data retention terms
+  - private automated betting under personal use (add to written questions)
+  - free May-2015..Apr-2016 window (low-confidence snippet)
+  decision_required: 'founder: tier + budget authorisation (Option A GBP699 ADVANCED 12m recommended);
+    Betfair written clarifications first'
 - id: DR-0002
   title: Cheapest lawful GB all-weather form data with genuine knowledge-time support
   classification: BLOCKING
@@ -25,4 +41,11 @@
   - form-data source onboarding/purchase/scraping decisions
   - fundamental-model feature ingestion (SPEC-030 features)
   - EXP-0001 fundamental + combined arms
-  related: [SPEC-020, SPEC-023, SPEC-030, SPEC-044, SPEC-100, SPEC-101, EXP-0001]
+  related:
+  - SPEC-020
+  - SPEC-023
+  - SPEC-030
+  - SPEC-044
+  - SPEC-100
+  - SPEC-101
+  - EXP-0001
