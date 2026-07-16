@@ -8,7 +8,7 @@ from decimal import Decimal
 
 import pytest
 
-from governance.output_rights import EligibilityResult, EligibilityStatus
+from governance.output_rights import EligibilityResult, EligibilityStatus, EligibilityVocabulary
 from l4_pricing.probability_outputs import (
     CombinedProbability,
     RaceProbabilityOutputs,
@@ -81,7 +81,7 @@ def _uncertainty() -> UncertaintySummary:
 
 def _eligibility() -> EligibilityResult:
     return EligibilityResult(
-        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
+        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
 
 

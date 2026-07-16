@@ -76,7 +76,7 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from enum import Enum
 from typing import Mapping
 
-from governance.output_rights import EligibilityResult, EligibilityStatus
+from governance.output_rights import EligibilityResult, EligibilityStatus, EligibilityVocabulary
 from l4_pricing.probability_outputs import RunnerProbabilities
 from l8_evidence.explanation_inputs import AttributionUnavailable, ExplanationInputs
 from l8_evidence.prediction_snapshots import PredictionSnapshot, UncertaintySummary
@@ -176,6 +176,11 @@ def map_eligibility_to_publication_status(
     docstring) — it is reserved for a future explicit human rights-review flag, exactly as
     SPEC-037 reserves enum members without every branch reaching them.
     """
+    if eligibility.vocabulary is not EligibilityVocabulary.PUBLICATION:
+        raise ExportContractError(
+            "publication mapping requires an EligibilityResult computed over the PUBLICATION "
+            "vocabulary; internal-research approval never implies publication (SPEC-044)"
+        )
     if eligibility.status is EligibilityStatus.INELIGIBLE_STALE_RIGHTS:
         return PublicationEligibility.INELIGIBLE_STALE_RIGHTS
     if eligibility.status is EligibilityStatus.INELIGIBLE_LICENSING:

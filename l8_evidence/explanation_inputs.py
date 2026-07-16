@@ -57,6 +57,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import math
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
@@ -156,6 +157,11 @@ class FeatureContribution:
     def __post_init__(self) -> None:
         if not self.feature_name or not self.feature_name.strip():
             raise ExplanationInputsError("feature_name must be non-empty")
+        if not math.isfinite(self.magnitude):
+            raise ExplanationInputsError(
+                f"contribution magnitude for {self.feature_name!r} must be finite, "
+                f"got {self.magnitude!r}"
+            )
         if self.group_label is not None and not self.group_label.strip():
             raise ExplanationInputsError("group_label, if given, must be non-empty")
 

@@ -15,7 +15,7 @@ import pytest
 
 from typing import Any
 
-from governance.output_rights import EligibilityResult, EligibilityStatus
+from governance.output_rights import EligibilityResult, EligibilityStatus, EligibilityVocabulary
 from l4_pricing.probability_outputs import (
     CombinedProbability,
     FundamentalProbability,
@@ -113,8 +113,8 @@ def _snapshot(prediction_id: str = "pred-1", race_id: str = "race-1") -> Predict
         feature_lineage_digest=_FEATURE_DIGEST,
         source_lineage_digest=_SOURCE_DIGEST,
         publication_eligibility=EligibilityResult(
-            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
-        ),
+            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
+    ),
         schema_version="prediction-snapshot-v1",
         forecast_vintage_id="vintage-1",
         vintage_type=VintageType.INITIAL,
@@ -144,7 +144,7 @@ def _explanation_inputs(snapshot: PredictionSnapshot) -> ExplanationInputs:
 
 def _eligible() -> EligibilityResult:
     return EligibilityResult(
-        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
+        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
 
 
@@ -152,7 +152,7 @@ def _ineligible_licensing() -> EligibilityResult:
     return EligibilityResult(
         status=EligibilityStatus.INELIGIBLE_LICENSING,
         reasons=("source-x: derived_probability_publication not granted",),
-        rights_registry_version=_REGISTRY_VERSION,
+        rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
 
 
@@ -160,7 +160,7 @@ def _ineligible_stale() -> EligibilityResult:
     return EligibilityResult(
         status=EligibilityStatus.INELIGIBLE_STALE_RIGHTS,
         reasons=("source-x: rights review date has passed",),
-        rights_registry_version=_REGISTRY_VERSION,
+        rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
 
 

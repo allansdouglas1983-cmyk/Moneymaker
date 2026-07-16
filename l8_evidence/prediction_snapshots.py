@@ -48,7 +48,7 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from enum import Enum
 from typing import Any, Mapping, Sequence
 
-from governance.output_rights import EligibilityResult
+from governance.output_rights import EligibilityResult, EligibilityVocabulary
 from l4_pricing.probability_outputs import MissingProbabilityError, RaceProbabilityOutputs
 
 __all__ = [
@@ -298,6 +298,11 @@ class PredictionSnapshot:
             raise SnapshotValidationError("schema_version must be non-empty")
         if not self.forecast_vintage_id or not self.forecast_vintage_id.strip():
             raise SnapshotValidationError("forecast_vintage_id must be non-empty")
+        if self.publication_eligibility.vocabulary is not EligibilityVocabulary.PUBLICATION:
+            raise SnapshotValidationError(
+                "publication_eligibility must be computed over the PUBLICATION vocabulary; "
+                "an internal-research eligibility result never implies publication (SPEC-044)"
+            )
         if self.available_to_consumer_at_utc.tzinfo is None:
             raise SnapshotValidationError("available_to_consumer_at_utc must be timezone-aware (UTC)")
         if self.available_to_consumer_at_utc.utcoffset() != timezone.utc.utcoffset(None):

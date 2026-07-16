@@ -62,6 +62,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import Mapping, Sequence
 
+from l8_evidence.prediction_snapshots import VintageType
+
 __all__ = [
     "ModelKind",
     "ForecastVintagePolicy",
@@ -123,9 +125,13 @@ class ForecastVintagePolicy(Enum):
     FINAL_APPROVED_HORIZON_ONLY = "FINAL_APPROVED_HORIZON_ONLY"
 
 
+_POLICY_VINTAGES: dict["ForecastVintagePolicy", VintageType] = {
+    ForecastVintagePolicy.INITIAL_ONLY: VintageType.INITIAL,
+    ForecastVintagePolicy.FINAL_APPROVED_HORIZON_ONLY: VintageType.FINAL_APPROVED_HORIZON,
+}
+
+
 _HASH_PREFIX = "sha256:"
-
-
 def _is_sha256(value: str) -> bool:
     return value.startswith(_HASH_PREFIX) and len(value) == len(_HASH_PREFIX) + 64
 
@@ -277,6 +283,7 @@ class RaceEvaluationInput:
     model_kind: ModelKind
     decision_horizon: str
     settled: bool
+    vintage_type: VintageType
     runners: tuple[RunnerOutcome, ...]
 
     def __post_init__(self) -> None:
@@ -339,6 +346,14 @@ def evaluate_race(
         raise RaceEvaluationError(
             f"race {race.race_id!r}: decision_horizon {race.decision_horizon!r} does not match "
             f"benchmark {benchmark.benchmark_id!r} horizon {benchmark.decision_horizon!r}"
+        )
+    required_vintage = _POLICY_VINTAGES[benchmark.forecast_vintage_policy]
+    if race.vintage_type is not required_vintage:
+        raise RaceEvaluationError(
+            f"race {race.race_id!r}: vintage {race.vintage_type.value} does not satisfy "
+            f"benchmark {benchmark.benchmark_id!r} policy "
+            f"{benchmark.forecast_vintage_policy.value} — the evaluated vintage is pinned by "
+            "the benchmark, never selected by the caller"
         )
     winner = next(r for r in race.runners if r.is_winner)
     log_score = -math.log(float(winner.probability))

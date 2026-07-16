@@ -13,7 +13,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from governance.output_rights import EligibilityResult, EligibilityStatus
+from governance.output_rights import EligibilityResult, EligibilityStatus, EligibilityVocabulary
 from l4_pricing.probability_outputs import (
     CombinedProbability,
     FundamentalProbability,
@@ -94,8 +94,8 @@ def _snapshot(p1: Decimal, p2: Decimal, prediction_id: str = "pred-1") -> Predic
         feature_lineage_digest=_FEATURE_DIGEST,
         source_lineage_digest=_SOURCE_DIGEST,
         publication_eligibility=EligibilityResult(
-            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
-        ),
+            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
+    ),
         schema_version="prediction-snapshot-v1",
         forecast_vintage_id="vintage-1",
         vintage_type=VintageType.INITIAL,
@@ -119,7 +119,7 @@ def test_build_export_digest_is_deterministic(split: float, gate: bool) -> None:
     p2 = Decimal(1) - p1
     snapshot = _snapshot(p1, p2)
     eligibility = EligibilityResult(
-        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
+        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
     export_a = build_export(
         snapshot, eligibility, gate_p1_activated=gate, explanations=_unavailable_explanation("pred-1")
@@ -142,7 +142,7 @@ def test_build_export_digest_changes_when_a_probability_changes(split: float) ->
     q2 = Decimal(1) - q1
     snapshot_b = _snapshot(q1, q2)
     eligibility = EligibilityResult(
-        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
+        status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
     )
     export_a = build_export(
         snapshot_a, eligibility, gate_p1_activated=True, explanations=_unavailable_explanation("pred-1")
@@ -168,7 +168,8 @@ def test_build_export_digest_changes_when_a_probability_changes(split: float) ->
 def test_mapping_is_a_pure_deterministic_function_of_its_inputs(
     status: EligibilityStatus, gate: bool
 ) -> None:
-    eligibility = EligibilityResult(status=status, reasons=(), rights_registry_version=_REGISTRY_VERSION)
+    eligibility = EligibilityResult(status=status, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
+    )
     result_a = map_eligibility_to_publication_status(eligibility, gate_p1_activated=gate)
     result_b = map_eligibility_to_publication_status(eligibility, gate_p1_activated=gate)
     assert result_a is result_b
@@ -178,7 +179,8 @@ def test_mapping_is_a_pure_deterministic_function_of_its_inputs(
 @given(status=st.sampled_from([EligibilityStatus.INELIGIBLE_LICENSING, EligibilityStatus.INELIGIBLE_STALE_RIGHTS]))
 @settings(max_examples=20)
 def test_mapping_ineligible_statuses_are_gate_independent(status: EligibilityStatus) -> None:
-    eligibility = EligibilityResult(status=status, reasons=("x",), rights_registry_version=_REGISTRY_VERSION)
+    eligibility = EligibilityResult(status=status, reasons=("x",), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
+    )
     with_gate = map_eligibility_to_publication_status(eligibility, gate_p1_activated=True)
     without_gate = map_eligibility_to_publication_status(eligibility, gate_p1_activated=False)
     assert with_gate is without_gate

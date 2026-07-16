@@ -9,7 +9,7 @@ from decimal import Decimal
 
 import pytest
 
-from governance.output_rights import EligibilityResult, EligibilityStatus
+from governance.output_rights import EligibilityResult, EligibilityStatus, EligibilityVocabulary
 from l4_pricing.probability_outputs import (
     CombinedProbability,
     RaceProbabilityOutputs,
@@ -82,8 +82,8 @@ def _snapshot(prediction_id: str = "pred-1") -> PredictionSnapshot:
         feature_lineage_digest=_FEATURE_DIGEST,
         source_lineage_digest=_SOURCE_DIGEST,
         publication_eligibility=EligibilityResult(
-            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION
-        ),
+            status=EligibilityStatus.ELIGIBLE, reasons=(), rights_registry_version=_REGISTRY_VERSION, vocabulary=EligibilityVocabulary.PUBLICATION
+    ),
         schema_version="prediction-snapshot-v1",
         forecast_vintage_id="vintage-1",
         vintage_type=VintageType.INITIAL,

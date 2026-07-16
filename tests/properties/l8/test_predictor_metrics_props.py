@@ -7,6 +7,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from l8_evidence.prediction_snapshots import VintageType
 from l8_evidence.predictor_metrics import (
     BenchmarkDefinition,
     ForecastVintagePolicy,
@@ -57,6 +58,7 @@ def _race_for(p1: Decimal, race_id: str = "race-1", model_kind: ModelKind = Mode
         model_kind=model_kind,
         decision_horizon=_HORIZON,
         settled=True,
+        vintage_type=VintageType.FINAL_APPROVED_HORIZON,
         runners=(
             RunnerOutcome(runner_id=1, probability=p1, is_winner=True),
             RunnerOutcome(runner_id=2, probability=p2, is_winner=False),

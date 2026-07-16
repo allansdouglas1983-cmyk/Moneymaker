@@ -220,9 +220,18 @@ so the next work proceeds autonomously on this feature branch:
      (verified at production AND consumption), stage two on OOFFundamental + MarketInfoPrice,
      WinProbabilityDistribution -> l5 lower bound only, grouped-softmax-only objectives, §6.12
      manifest. Synthetic closed-form fixtures; real fitting stays data-gated.
-  4. **NEXT: SPEC-036–042 analytics-consumer foundations + Amendment A** (founder-supplied spec,
-     recorded in the session task list; pre-implementation audit first; statuses land `planned` and
-     flip per implementing slice; SPEC-043/044 planned-only; £499 budget constraint — no paid deps).
+  4. ✅ **Done (ADR 0013 + addendum, this session)** — analytics-consumer foundations
+     (founder's SPEC-036–042 remapped to 036–039 + 044–048; Amendment A folded in).
+     `active`: SPEC-036 probability outputs, SPEC-037 immutable snapshots with vintage
+     lineage + knowledge-time/backdating guards, SPEC-038 predictor metrics + versioned
+     benchmark registry, SPEC-039 deterministic explanation inputs (self-verifying digest),
+     SPEC-044 output-rights lineage (fail-closed), SPEC-045 export contract (three
+     independent statuses; recommendation hard-pinned NOT_EVALUATED). `planned`: SPEC-046
+     Gate P1 (structure pre-registered in specs/gates/predictor-p1.yaml + pin tests;
+     activation human-only after Gate 1 results), SPEC-047/048 manifest-only. Also:
+     price_contracts/ shared neutral package (MarketInfoPrice/OddsExec/ClosePrice + ladder
+     relocated from l5_decision, pure re-export shims + purity test) and the continuously
+     enforced analytics→trading import-boundary test. £499 constraint held — no paid deps.
   5. L8 evidence (SPEC-090–092, 094–097): trial ledger (add attestation provenance —
      reviewer/timestamp — to the record schema per the ADR 0011 forward dependency),
      race-level paired inference, calibration/CLV diagnostics.
@@ -295,6 +304,8 @@ so the next work proceeds autonomously on this feature branch:
 | `docs/decisions/0009-price-preregistration.md` | specs/prices/{info,exec,close}-v1.yaml frozen before any data read |
 | `docs/decisions/0010-retrospective-audit.md` | 2026-07-16 clause-by-clause audit; equivalent-mutant classifications; worktree/green-baseline mutation lessons |
 | `docs/decisions/0011-gate-evaluator.md` | frozen structure-only gate spec; four-valued never-boolean verdicts; severity-aggregation precedence; exact-multiplication multiplicity; facts join; python -m CLI; SPEC-093 activation |
+| `docs/decisions/0012-l4-pricing.md` | pure-Python deterministic two-stage pricing; typed OOF cross-fit provenance; edge-distribution type boundary; grouped-softmax-only objectives (SPEC-030–035) |
+| `docs/decisions/0013-analytics-consumer.md` | analytics consumer: SPEC-ID remapping (040–044→044–048); read-only import boundary; Amendment A vintage/status/benchmark rules; price_contracts relocation addendum; Gate P1 planned |
 
 ---
 

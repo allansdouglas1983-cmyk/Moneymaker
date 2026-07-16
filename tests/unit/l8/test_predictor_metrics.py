@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import pytest
 
+from l8_evidence.prediction_snapshots import VintageType
 from l8_evidence.predictor_metrics import (
     BenchmarkConflictError,
     BenchmarkDefinition,
@@ -63,12 +64,15 @@ def _race(
     model_kind: ModelKind = ModelKind.COMBINED,
     probs: tuple[Decimal, Decimal] = (Decimal("0.6"), Decimal("0.4")),
     winner_index: int = 0,
+    vintage_type: VintageType = VintageType.FINAL_APPROVED_HORIZON,
 ) -> RaceEvaluationInput:
+    # vintage_type default matches _benchmark()'s FINAL_APPROVED_HORIZON_ONLY policy.
     return RaceEvaluationInput(
         race_id=race_id,
         model_kind=model_kind,
         decision_horizon=horizon,
         settled=settled,
+        vintage_type=vintage_type,
         runners=(
             RunnerOutcome(runner_id=1, probability=probs[0], is_winner=winner_index == 0),
             RunnerOutcome(runner_id=2, probability=probs[1], is_winner=winner_index == 1),
@@ -199,6 +203,7 @@ class TestRaceEvaluationInput:
                 race_id="race-x",
                 model_kind=ModelKind.COMBINED,
                 decision_horizon=_HORIZON,
+                vintage_type=VintageType.FINAL_APPROVED_HORIZON,
                 settled=True,
                 runners=(
                     RunnerOutcome(runner_id=1, probability=Decimal("0.5"), is_winner=False),
@@ -212,6 +217,7 @@ class TestRaceEvaluationInput:
                 race_id="race-x",
                 model_kind=ModelKind.COMBINED,
                 decision_horizon=_HORIZON,
+                vintage_type=VintageType.FINAL_APPROVED_HORIZON,
                 settled=True,
                 runners=(
                     RunnerOutcome(runner_id=1, probability=Decimal("1.0"), is_winner=True),

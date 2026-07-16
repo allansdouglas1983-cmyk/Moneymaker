@@ -82,6 +82,20 @@ class EligibilityStatus(Enum):
     INELIGIBLE_STALE_RIGHTS = "ineligible_stale_rights"
 
 
+class EligibilityVocabulary(Enum):
+    """Which use vocabulary an :class:`EligibilityResult` was computed over.
+
+    SPEC-044: internal-use approval never implies publication approval. The two result kinds
+    were previously the same type, so an internal-research result could be wired where a
+    publication result was required; this tag makes the distinction structural. The DEFAULT is
+    ``INTERNAL_RESEARCH`` — the fail-closed kind that no publication path accepts — so
+    ``PUBLICATION`` is always an explicit, deliberate tag set by :func:`publication_eligibility`.
+    """
+
+    PUBLICATION = "publication"
+    INTERNAL_RESEARCH = "internal_research"
+
+
 @dataclass(frozen=True)
 class SourceRights:
     """One registry entry's rights lineage-relevant fields.
@@ -116,6 +130,7 @@ class EligibilityResult:
     status: EligibilityStatus
     reasons: tuple[str, ...]
     rights_registry_version: str
+    vocabulary: EligibilityVocabulary = EligibilityVocabulary.INTERNAL_RESEARCH
 
     @property
     def eligible(self) -> bool:
@@ -145,6 +160,7 @@ def _check_lineage(
     use: str,
     as_of: date,
     allowed_uses: frozenset[str],
+    vocabulary: EligibilityVocabulary,
 ) -> EligibilityResult:
     if use not in allowed_uses:
         raise OutputRightsError(f"{use!r} is not a valid use for this eligibility check")
@@ -159,6 +175,7 @@ def _check_lineage(
             status=EligibilityStatus.INELIGIBLE_LICENSING,
             reasons=("source_lineage_ids is empty: no lineage to evaluate",),
             rights_registry_version=version,
+            vocabulary=vocabulary,
         )
 
     for source_id in source_lineage_ids:
@@ -180,13 +197,16 @@ def _check_lineage(
             status=EligibilityStatus.ELIGIBLE,
             reasons=(),
             rights_registry_version=version,
+            vocabulary=vocabulary,
         )
 
     # Most-restrictive-wins: any failure at all makes the whole lineage ineligible. Staleness
     # is reported distinctly from a plain licensing gap whenever it is present, since it
     # requires re-review rather than a fresh grant.
     status = EligibilityStatus.INELIGIBLE_STALE_RIGHTS if stale else EligibilityStatus.INELIGIBLE_LICENSING
-    return EligibilityResult(status=status, reasons=tuple(reasons), rights_registry_version=version)
+    return EligibilityResult(
+        status=status, reasons=tuple(reasons), rights_registry_version=version, vocabulary=vocabulary
+    )
 
 
 def publication_eligibility(
@@ -203,7 +223,12 @@ def publication_eligibility(
     only an explicit ``True`` under the matching key in ``permitted_uses`` grants rights.
     """
     return _check_lineage(
-        source_lineage_ids, registry, use=use, as_of=as_of, allowed_uses=PUBLICATION_USES
+        source_lineage_ids,
+        registry,
+        use=use,
+        as_of=as_of,
+        allowed_uses=PUBLICATION_USES,
+        vocabulary=EligibilityVocabulary.PUBLICATION,
     )
 
 
@@ -221,5 +246,10 @@ def internal_research_eligibility(
     (or the reverse), and the two results are never merged into one another.
     """
     return _check_lineage(
-        source_lineage_ids, registry, use=use, as_of=as_of, allowed_uses=INTERNAL_USES
+        source_lineage_ids,
+        registry,
+        use=use,
+        as_of=as_of,
+        allowed_uses=INTERNAL_USES,
+        vocabulary=EligibilityVocabulary.INTERNAL_RESEARCH,
     )
