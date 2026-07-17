@@ -183,7 +183,15 @@ def test_vintage_reason_matrix_only_accepts_the_declared_mapping(
         PredictionSnapshot(**kwargs)  # type: ignore[arg-type]
         return
     allowed = {
-        VintageType.UPDATED: {UpdateReason.NON_RUNNER, UpdateReason.MARKET_STATE_REFRESH, UpdateReason.MODEL_REVISION},
+        # SELECTION_WITHDRAWN added by the governed A6 enum extension (audit F-10,
+        # founder-approved 2026-07-17): the generic pre-off withdrawal member joins
+        # racing's NON_RUNNER in the UPDATED vintage; every other cell is unchanged.
+        VintageType.UPDATED: {
+            UpdateReason.NON_RUNNER,
+            UpdateReason.SELECTION_WITHDRAWN,
+            UpdateReason.MARKET_STATE_REFRESH,
+            UpdateReason.MODEL_REVISION,
+        },
         VintageType.FINAL_APPROVED_HORIZON: {UpdateReason.HORIZON_FINALISED},
         VintageType.CORRECTION: {UpdateReason.DATA_CORRECTION},
     }[vintage_type]
