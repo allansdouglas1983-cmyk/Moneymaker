@@ -22,6 +22,12 @@ from l4_pricing.conditional_logit import (
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RaceValidationError, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-030")
 
 DAY = date(2026, 7, 1)
@@ -32,7 +38,7 @@ H = HorizonLabel("T-2m")
 def _two_runner_race(race_id: str, winner_id: int) -> Race:
     return Race(
         race_id=race_id,
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(
             RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
             RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
@@ -74,7 +80,7 @@ def test_probabilities_sum_to_one_across_field_sizes() -> None:
     for k in (2, 3, 5, 8):
         race = Race(
             race_id=f"f{k}",
-            meeting_day=DAY,
+            cluster=_ca(DAY),
             runners=tuple(
                 RunnerRow(runner_id=i + 1, features={"fav": Decimal(i) / Decimal(4)}) for i in range(k)
             ),
@@ -89,7 +95,7 @@ def test_non_runners_are_dropped_and_prediction_renormalises() -> None:
     model = fit_conditional_logit(_three_to_one_corpus(), SCHEMA, horizon=H)
     with_nr = Race(
         race_id="nr",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(
             RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
             RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
@@ -108,7 +114,7 @@ def test_fit_ignores_non_runner_rows_entirely() -> None:
     corpus_with_nr = [
         Race(
             race_id=r.race_id,
-            meeting_day=r.meeting_day,
+            cluster=_ca(r.cluster.chronology),
             runners=r.runners + (RunnerRow(runner_id=99, features={"fav": Decimal(50)}, non_runner=True),),
             winner_id=r.winner_id,
         )
@@ -154,7 +160,7 @@ def test_fit_requires_winners_on_every_race() -> None:
     races.append(
         Race(
             race_id="no-winner",
-            meeting_day=DAY,
+            cluster=_ca(DAY),
             runners=(
                 RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
                 RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
@@ -174,7 +180,7 @@ def test_fit_requires_nonempty_corpus() -> None:
 def test_features_must_match_schema_exactly() -> None:
     missing = Race(
         race_id="m",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(
             RunnerRow(runner_id=1, features={"other": Decimal(1)}),
             RunnerRow(runner_id=2, features={"other": Decimal(0)}),
@@ -185,7 +191,7 @@ def test_features_must_match_schema_exactly() -> None:
         fit_conditional_logit([missing], SCHEMA, horizon=H)
     extra = Race(
         race_id="x",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(
             RunnerRow(runner_id=1, features={"fav": Decimal(1), "spare": Decimal(2)}),
             RunnerRow(runner_id=2, features={"fav": Decimal(0), "spare": Decimal(1)}),

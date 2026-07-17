@@ -14,6 +14,12 @@ import pytest
 
 from l4_pricing.races import FeatureSchema, Race, RaceValidationError, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-030")
 
 DAY = date(2026, 7, 1)
@@ -44,11 +50,11 @@ def test_schema_hash_is_deterministic_and_name_sensitive() -> None:
 
 def test_race_requires_two_active_runners() -> None:
     with pytest.raises(RaceValidationError):
-        Race(race_id="r1", meeting_day=DAY, runners=(_runner(1, "1"),), winner_id=1)
+        Race(race_id="r1", cluster=_ca(DAY), runners=(_runner(1, "1"),), winner_id=1)
     with pytest.raises(RaceValidationError):
         Race(
             race_id="r1",
-            meeting_day=DAY,
+            cluster=_ca(DAY),
             runners=(_runner(1, "1"), _runner(2, "0", non_runner=True)),
             winner_id=1,
         )
@@ -56,23 +62,23 @@ def test_race_requires_two_active_runners() -> None:
 
 def test_race_refuses_duplicate_runner_ids() -> None:
     with pytest.raises(RaceValidationError):
-        Race(race_id="r1", meeting_day=DAY, runners=(_runner(1, "1"), _runner(1, "0")), winner_id=1)
+        Race(race_id="r1", cluster=_ca(DAY), runners=(_runner(1, "1"), _runner(1, "0")), winner_id=1)
 
 
 def test_winner_must_be_an_active_runner() -> None:
     with pytest.raises(RaceValidationError):
-        Race(race_id="r1", meeting_day=DAY, runners=(_runner(1, "1"), _runner(2, "0")), winner_id=9)
+        Race(race_id="r1", cluster=_ca(DAY), runners=(_runner(1, "1"), _runner(2, "0")), winner_id=9)
     with pytest.raises(RaceValidationError):
         Race(
             race_id="r1",
-            meeting_day=DAY,
+            cluster=_ca(DAY),
             runners=(_runner(1, "1"), _runner(2, "0"), _runner(3, "0", non_runner=True)),
             winner_id=3,  # a non-runner cannot be the winner
         )
 
 
 def test_winner_is_optional_for_scoring_races() -> None:
-    race = Race(race_id="r1", meeting_day=DAY, runners=(_runner(1, "1"), _runner(2, "0")), winner_id=None)
+    race = Race(race_id="r1", cluster=_ca(DAY), runners=(_runner(1, "1"), _runner(2, "0")), winner_id=None)
     assert race.winner_id is None
     assert [r.runner_id for r in race.active_runners] == [1, 2]
 
@@ -92,7 +98,7 @@ def test_non_finite_decimal_features_are_refused() -> None:
 def test_active_runners_excludes_non_runners() -> None:
     race = Race(
         race_id="r1",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(_runner(1, "1"), _runner(2, "0"), _runner(3, "2", non_runner=True)),
         winner_id=1,
     )

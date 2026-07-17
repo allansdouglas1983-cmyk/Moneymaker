@@ -24,6 +24,12 @@ from l4_pricing.crossfit import (
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-031")
 
 SCHEMA = FeatureSchema(names=("fav",))
@@ -33,7 +39,7 @@ H = HorizonLabel("T-2m")
 def _race(race_id: str, day: date, winner_id: int) -> Race:
     return Race(
         race_id=race_id,
-        meeting_day=day,
+        cluster=_ca(day),
         runners=(
             RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
             RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
@@ -73,7 +79,7 @@ def test_provenance_is_strictly_time_respecting() -> None:
     races = {r.race_id: r for r in _three_day_corpus()}
     for row in result.oof:
         race = races[row.race_id]
-        assert row.provenance.trained_through_day < race.meeting_day
+        assert row.provenance.trained_through < race.cluster.chronology
         assert row.race_id not in row.provenance.training_race_ids
 
 
@@ -144,7 +150,7 @@ def test_fit_failure_day_is_excluded_with_reason_but_still_trains_later_models()
 
 def test_oof_fundamental_requires_open_unit_interval() -> None:
     provenance = StageOneProvenance(
-        trained_through_day=date(2026, 7, 1),
+        trained_through=date(2026, 7, 1),
         training_race_ids=frozenset({"a1"}),
         training_race_ids_digest="d",
         horizon=H,
@@ -157,7 +163,7 @@ def test_oof_fundamental_requires_open_unit_interval() -> None:
 def test_assert_out_of_fold_catches_contaminated_rows() -> None:
     races = {r.race_id: r for r in _three_day_corpus()}
     saw_own_race = StageOneProvenance(
-        trained_through_day=date(2026, 7, 1),
+        trained_through=date(2026, 7, 1),
         training_race_ids=frozenset({"b1"}),  # the model saw the race it prices
         training_race_ids_digest="d",
         horizon=H,
@@ -167,7 +173,7 @@ def test_assert_out_of_fold_catches_contaminated_rows() -> None:
         assert_out_of_fold([row], races)
 
     same_day = StageOneProvenance(
-        trained_through_day=date(2026, 7, 2),  # not strictly earlier than b1's meeting day
+        trained_through=date(2026, 7, 2),  # not strictly earlier than b1's meeting day
         training_race_ids=frozenset({"a1"}),
         training_race_ids_digest="d",
         horizon=H,
@@ -181,3 +187,46 @@ def test_excluded_race_records_are_frozen_values() -> None:
     e = ExcludedRace(race_id="a1", reason="no earlier meeting day to train on")
     with pytest.raises(Exception):
         e.reason = "other"  # type: ignore[misc]
+
+
+class TestFoldOrderFollowsChronologyNotIdentity:
+    def test_lexicographically_reversed_cluster_ids_fold_by_chronology(self) -> None:
+        # Founder-required divergence pin (A4): cluster id "z-early" sorts lexicographically
+        # AFTER "a-late", but is chronologically EARLIER. Folds must follow ChronologyKey:
+        # the z-early cluster is the first fold (excluded, trains later folds) and every
+        # a-late race's fundamental is trained strictly before a-late's chronology.
+        early = ClusterAssignment(
+            cluster_id=ClusterId("z-early"), chronology=ChronologyKey(ordinal=100)
+        )
+        late = ClusterAssignment(
+            cluster_id=ClusterId("a-late"), chronology=ChronologyKey(ordinal=200)
+        )
+
+        def _r(race_id: str, cluster: ClusterAssignment, winner_id: int) -> Race:
+            return Race(
+                race_id=race_id,
+                cluster=cluster,
+                runners=(
+                    RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
+                    RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
+                ),
+                winner_id=winner_id,
+            )
+
+        corpus = [
+            _r("e1", early, 1),
+            _r("e2", early, 1),
+            _r("e3", early, 1),
+            _r("e4", early, 2),
+            _r("l1", late, 1),
+            _r("l2", late, 2),
+        ]
+        result = cross_fit(corpus, SCHEMA, horizon=H)
+        excluded_ids = {e.race_id for e in result.excluded}
+        oof_ids = {row.race_id for row in result.fundamentals}
+        # If identity strings were sorted as chronology, a-late would (wrongly) be the
+        # first fold. Chronology says z-early is first: its races are the exclusions.
+        assert {"e1", "e2", "e3", "e4"} <= excluded_ids
+        assert oof_ids <= {"l1", "l2"}
+        for row in result.fundamentals:
+            assert row.provenance.trained_through < late.chronology

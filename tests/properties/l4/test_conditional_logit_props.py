@@ -19,6 +19,12 @@ from l4_pricing.conditional_logit import SeparationError, StageOneModel, fit_con
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-030")
 
 DAY = date(2026, 7, 1)
@@ -39,14 +45,14 @@ def _model(coef: float) -> StageOneModel:
         iterations_used=0,
         training_race_ids=frozenset({"synthetic"}),
         training_race_ids_digest="d",
-        trained_through_day=DAY,
+        trained_through=DAY,
     )
 
 
 def _race(values: list[Decimal], winner_index: int | None = None) -> Race:
     return Race(
         race_id="p1",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=tuple(
             RunnerRow(runner_id=i + 1, features={"fav": v}) for i, v in enumerate(values)
         ),
@@ -68,7 +74,7 @@ def test_runner_permutation_invariance_is_exact(values: list[Decimal], coef: flo
     forward = predict_race(_model(coef), _race(values), horizon=H)
     reversed_race = Race(
         race_id="p1",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=tuple(
             RunnerRow(runner_id=i + 1, features={"fav": v}) for i, v in reversed(list(enumerate(values)))
         ),
@@ -108,7 +114,7 @@ def test_fit_is_invariant_to_race_order_and_deterministic(
         races.append(
             Race(
                 race_id=f"r{idx}",
-                meeting_day=DAY,
+                cluster=_ca(DAY),
                 runners=runners,
                 winner_id=(idx % k) + 1,  # round-robin winners avoid systematic separation
             )

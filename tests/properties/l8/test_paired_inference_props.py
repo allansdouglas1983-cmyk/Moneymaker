@@ -21,6 +21,12 @@ from l8_evidence.paired_inference import (
     paired_differences,
 )
 
+from sport_core.clustering import ClusterId
+
+
+def _cid(day):  # racing dependence-group identity for tests (A4); identity only, no order
+    return ClusterId(f"horse_racing:day:{day.isoformat()}")
+
 pytestmark = pytest.mark.spec("SPEC-090")
 
 _DAY1 = date(2026, 6, 1)
@@ -32,7 +38,7 @@ _PROB = st.decimals(min_value=Decimal("0.05"), max_value=Decimal("0.95"), places
 def _race(race_id: str, meeting_day: date, p_market: Decimal, p_combined: Decimal) -> PairedRace:
     return PairedRace(
         race_id=race_id,
-        meeting_day=meeting_day,
+        cluster_id=_cid(meeting_day),
         p_market_winner=p_market,
         p_combined_winner=p_combined,
     )

@@ -27,6 +27,12 @@ from l4_pricing.stage_two import (
 )
 from l5_decision.prices import MarketInfoPrice
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-032")
 
 H = HorizonLabel("T-2m")
@@ -36,7 +42,7 @@ RACE_DAY = date(2026, 7, 2)
 
 def _provenance() -> StageOneProvenance:
     return StageOneProvenance(
-        trained_through_day=TRAIN_DAY,
+        trained_through=TRAIN_DAY,
         training_race_ids=frozenset({"train-1"}),
         training_race_ids_digest="digest-1",
         horizon=H,
@@ -46,7 +52,7 @@ def _provenance() -> StageOneProvenance:
 def _race(race_id: str, winner_id: int) -> Race:
     return Race(
         race_id=race_id,
-        meeting_day=RACE_DAY,
+        cluster=_ca(RACE_DAY),
         runners=(
             RunnerRow(runner_id=1, features={"f": Decimal(0)}),
             RunnerRow(runner_id=2, features={"f": Decimal(0)}),
@@ -128,7 +134,7 @@ def test_collinear_inputs_are_refused() -> None:
 def test_training_reverifies_out_of_fold_at_consumption() -> None:
     races, oof, market = _fixture()
     contaminated = StageOneProvenance(
-        trained_through_day=RACE_DAY,  # not strictly earlier
+        trained_through=RACE_DAY,  # not strictly earlier
         training_race_ids=frozenset({"train-1"}),
         training_race_ids_digest="digest-1",
         horizon=H,
@@ -165,7 +171,7 @@ def test_races_missing_inputs_are_excluded_with_reasons() -> None:
 def test_fit_requires_winners() -> None:
     races, oof, market = _fixture()
     races[0] = Race(
-        race_id="A0", meeting_day=RACE_DAY, runners=races[0].runners, winner_id=None
+        race_id="A0", cluster=_ca(RACE_DAY), runners=races[0].runners, winner_id=None
     )
     with pytest.raises(RaceValidationError):
         fit_stage_two(races, oof, market, horizon=H)

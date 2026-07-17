@@ -28,6 +28,12 @@ from l8_evidence.paired_inference import (
     paired_differences,
 )
 
+from sport_core.clustering import ClusterId
+
+
+def _cid(day):  # racing dependence-group identity for tests (A4); identity only, no order
+    return ClusterId(f"horse_racing:day:{day.isoformat()}")
+
 pytestmark = pytest.mark.spec("SPEC-090")
 
 _DAY1 = date(2026, 6, 1)
@@ -42,7 +48,7 @@ def _race(
 ) -> PairedRace:
     return PairedRace(
         race_id=race_id,
-        meeting_day=meeting_day,
+        cluster_id=_cid(meeting_day),
         p_market_winner=p_market,
         p_combined_winner=p_combined,
     )
@@ -297,7 +303,7 @@ def test_block_bootstrap_ci_reports_expected_counts() -> None:
     races = _two_day_races(n_per_day=4)
     result = block_bootstrap_ci(races, n_resamples=64, confidence_level=Decimal("0.95"), seed=11)
     assert result.n_races == 8
-    assert result.n_meeting_days == 2
+    assert result.n_clusters == 2
     assert result.n_resamples == 64
     assert result.seed == 11
     assert result.confidence_level == Decimal("0.95")

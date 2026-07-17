@@ -20,6 +20,12 @@ from l4_pricing.crossfit import CrossFitViolation, assert_out_of_fold, cross_fit
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-031")
 
 SCHEMA = FeatureSchema(names=("fav",))
@@ -41,7 +47,7 @@ def _corpus(draw: st.DrawFn) -> list[Race]:
             races.append(
                 Race(
                     race_id=f"r{counter}",
-                    meeting_day=BASE_DAY + timedelta(days=day_index),
+                    cluster=_ca(BASE_DAY + timedelta(days=day_index)),
                     runners=tuple(
                         RunnerRow(runner_id=i + 1, features={"fav": v})
                         for i, v in enumerate(values)
@@ -66,7 +72,7 @@ def test_every_oof_row_is_strictly_out_of_fold(corpus: list[Race]) -> None:
     races = {r.race_id: r for r in corpus}
     for row in result.oof:
         race = races[row.race_id]
-        assert row.provenance.trained_through_day < race.meeting_day
+        assert row.provenance.trained_through < race.cluster.chronology
         assert row.race_id not in row.provenance.training_race_ids
         assert 0.0 < row.p_fundamental < 1.0
     assert_out_of_fold(result.oof, races)  # the consumption-side verifier agrees
@@ -110,7 +116,7 @@ def test_any_contaminated_row_is_caught(corpus: list[Race], data: st.DataObject)
     else:
         bad_provenance = replace(
             victim.provenance,
-            trained_through_day=races[victim.race_id].meeting_day,
+            trained_through=races[victim.race_id].cluster.chronology,
         )
     tampered = list(result.oof)
     tampered[index] = replace(victim, provenance=bad_provenance)

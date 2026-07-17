@@ -14,6 +14,12 @@ from l4_pricing.conditional_logit import fit_conditional_logit, predict_race
 from l4_pricing.horizon import HorizonLabel, HorizonMismatch, require_horizon_match
 from l4_pricing.races import FeatureSchema, Race, RaceValidationError, RunnerRow
 
+from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
+
+
+def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+    return calendar_day_assignment("horse_racing", day)
+
 pytestmark = pytest.mark.spec("SPEC-033")
 
 DAY = date(2026, 7, 1)
@@ -24,7 +30,7 @@ def _corpus() -> list[Race]:
     def race(race_id: str, winner_id: int) -> Race:
         return Race(
             race_id=race_id,
-            meeting_day=DAY,
+            cluster=_ca(DAY),
             runners=(
                 RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
                 RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
@@ -48,7 +54,7 @@ def test_scoring_refuses_a_horizon_mismatch() -> None:
     model = fit_conditional_logit(_corpus(), SCHEMA, horizon=HorizonLabel("T-2m"))
     race = Race(
         race_id="score-me",
-        meeting_day=DAY,
+        cluster=_ca(DAY),
         runners=(
             RunnerRow(runner_id=1, features={"fav": Decimal(1)}),
             RunnerRow(runner_id=2, features={"fav": Decimal(0)}),
