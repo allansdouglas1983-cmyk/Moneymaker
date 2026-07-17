@@ -31,7 +31,7 @@ _AT = _T0
 
 def _governor(tmp_path: Path) -> RetryGovernor:
     return RetryGovernor(
-        log=AppendOnlyLog(tmp_path / "retry.l0"), cooldown_seconds=60, attempt_budget=1
+        log=AppendOnlyLog(tmp_path / "retry.l0"), cooldown_seconds=60, max_retry_attempts=1
     )
 
 

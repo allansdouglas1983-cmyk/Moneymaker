@@ -8,8 +8,14 @@ A released reservation does not license a re-fire. Retry requires ALL of:
 2. **governed cooldown elapsed** — wall-clock UTC seconds since the market's last
    recorded attempt; never a prior process's monotonic clock (monotonic origins do not
    survive restarts). A wall clock observed to go backwards fails closed;
-3. **attempt budget remains** — per-market, counted from the immutable attempt log, so
-   budgets persist across process restarts;
+3. **retry-attempt budget remains** — per-market, counted from the immutable attempt
+   log, so budgets persist across process restarts. VOCABULARY (founder clarification,
+   2026-07-17): ``max_retry_attempts`` counts GOVERNED RETRY ATTEMPTS only — the
+   original placement goes through :class:`l6_broker.orders.OrderBook`, is never
+   governed here, and is never counted. ``max_retry_attempts=1`` therefore permits
+   exactly ONE retry after the original attempt — one is unambiguous. (There is no
+   field named ``max_attempts``: a total-attempt count including the original would be
+   a different, deliberately unimplemented policy.);
 4. **materially changed market/decision state** — enforced mechanically: the identical
    ``(decision_snapshot_digest, book_state_digest)`` pair may NEVER trigger twice,
    globally, ever, including across restarts. Time passage alone changes neither digest
@@ -27,8 +33,8 @@ transmitted (SPEC-003 discipline). A crash between record and act therefore burn
 digest pair and spends budget — the conservative side: a doubt costs a retry, never a
 double-fire.
 
-Governed constants (``cooldown_seconds``, ``attempt_budget``) are mandatory constructor
-arguments with no defaults — they come from the pre-registered experiment policy, never
+Governed constants (``cooldown_seconds``, ``max_retry_attempts``) are mandatory
+constructor arguments with no defaults — they come from the pre-registered experiment policy, never
 from this module.
 
 No live credentials, production networking, or real order transmission exist anywhere
@@ -84,20 +90,21 @@ def _require_aware(now_utc: datetime) -> None:
 class RetryGovernor:
     """Per-process retry governor over a persistent append-only attempt log."""
 
-    def __init__(self, log: AppendOnlyLog, *, cooldown_seconds: int, attempt_budget: int) -> None:
+    def __init__(self, log: AppendOnlyLog, *, cooldown_seconds: int, max_retry_attempts: int) -> None:
         if cooldown_seconds <= 0:
             raise ValueError(
                 f"cooldown_seconds must be positive, got {cooldown_seconds!r} — the "
                 "governed cooldown comes from the pre-registered policy"
             )
-        if attempt_budget <= 0:
+        if max_retry_attempts <= 0:
             raise ValueError(
-                f"attempt_budget must be positive, got {attempt_budget!r} — refusing all "
-                "retries is done by not constructing a governor, never by a zero budget"
+                f"max_retry_attempts must be positive, got {max_retry_attempts!r} — a "
+                "retry budget below one is structurally refused: refusing all retries is "
+                "done by not constructing a governor, never by a zero budget"
             )
         self._log = log
         self._cooldown = timedelta(seconds=cooldown_seconds)
-        self._budget = attempt_budget
+        self._budget = max_retry_attempts
         self._reconciled_this_epoch = False
         # Rebuilt from the immutable log: budgets and burned digests survive restarts.
         self._attempts_by_market: dict[str, int] = {}

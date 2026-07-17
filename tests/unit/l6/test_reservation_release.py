@@ -180,3 +180,52 @@ class TestDerivedNotStored:
         assert rebuilt_order.state is OrderState.CREATED
         rebuilt.update(surviving)
         assert rebuilt.is_market_reserved("1.777") == book.is_market_reserved("1.777") == False  # noqa: E712
+
+
+class TestMutationHardening:
+    """Kills for the F-13-region orders.py survivors found by the scoped cosmic-ray runs."""
+
+    def test_runtime_built_equal_market_id_is_still_reserved(self) -> None:
+        # Kills Eq_Is on the market-id comparison: compile-time interning of test
+        # literals masked it. A runtime-constructed equal string is a DIFFERENT object
+        # and must still match — identity semantics here would report a reserved market
+        # as free.
+        book = _book_with("ref-1", OrderState.SUBMITTED)
+        runtime_id = "".join(["1", ".", "7", "7", "7"])
+        assert runtime_id is not "1.777"  # noqa: F632  # the point of the test
+        assert book.is_market_reserved(runtime_id) is True
+        with pytest.raises(MarketReservedError):
+            book.place(_command("ref-2", market_id=runtime_id), at_utc=_AT, monotonic_ns=99)
+
+    def test_same_length_field_mutation_without_transition_is_refused(self) -> None:
+        # Kills Eq_Lt/Eq_LtE on the same-length branch guard: an order object whose
+        # history is identical but whose FIELDS changed without a transition record is
+        # conflicting stream state — refused, never absorbed.
+        from dataclasses import replace
+
+        from l6_broker.orders import StaleOrderUpdateError
+
+        book = _book_with("ref-1", OrderState.SUBMITTED)
+        stored = book.get("ref-1")
+        assert stored is not None
+        mutated = replace(stored, matched_stake_minor=stored.stake_minor)
+        with pytest.raises(StaleOrderUpdateError):
+            book.update(mutated)
+        refreshed = book.get("ref-1")
+        assert refreshed is not None and refreshed.matched_stake_minor == 0
+
+    def test_diverged_history_is_refused_with_the_typed_error(self) -> None:
+        # Kills NotEq_Lt/NotEq_Gt on the prefix check: a DIVERGED history (same or
+        # longer, different past) must raise the typed StaleOrderUpdateError — under an
+        # ordering mutant the unorderable TransitionRecord pair would raise TypeError
+        # instead, which is not a refusal, it is a crash.
+        from l6_broker.orders import StaleOrderUpdateError
+
+        book = OrderBook()
+        placed = book.place(_command("ref-1"), at_utc=_AT, monotonic_ns=1)
+        book.update(placed.transition(OrderState.SUBMITTED, at_utc=_AT, monotonic_ns=2, reason="a"))
+        diverged = placed.transition(OrderState.SUBMITTED, at_utc=_AT, monotonic_ns=3, reason="b")
+        with pytest.raises(StaleOrderUpdateError):
+            book.update(diverged)
+        refreshed = book.get("ref-1")
+        assert refreshed is not None and refreshed.history[-1].reason == "a"

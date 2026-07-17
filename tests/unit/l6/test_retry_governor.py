@@ -29,7 +29,7 @@ def _governor(tmp_path: Path, name: str = "retry.l0") -> RetryGovernor:
     return RetryGovernor(
         log=AppendOnlyLog(tmp_path / name),
         cooldown_seconds=_COOLDOWN_S,
-        attempt_budget=_BUDGET,
+        max_retry_attempts=_BUDGET,
     )
 
 
@@ -184,11 +184,11 @@ class TestGovernedConstants:
             RetryGovernor(log=AppendOnlyLog(tmp_path / "a.l0"))  # type: ignore[call-arg]
         with pytest.raises(ValueError):
             RetryGovernor(
-                log=AppendOnlyLog(tmp_path / "b.l0"), cooldown_seconds=0, attempt_budget=1
+                log=AppendOnlyLog(tmp_path / "b.l0"), cooldown_seconds=0, max_retry_attempts=1
             )
         with pytest.raises(ValueError):
             RetryGovernor(
-                log=AppendOnlyLog(tmp_path / "c.l0"), cooldown_seconds=1, attempt_budget=0
+                log=AppendOnlyLog(tmp_path / "c.l0"), cooldown_seconds=1, max_retry_attempts=0
             )
 
     def test_record_attempt_refuses_unreconciled_and_naive_time(self, tmp_path: Path) -> None:
@@ -233,11 +233,11 @@ class TestMutationHardening:
         # refused, not only zero.
         with pytest.raises(ValueError):
             RetryGovernor(
-                log=AppendOnlyLog(tmp_path / "n1.l0"), cooldown_seconds=bad, attempt_budget=1
+                log=AppendOnlyLog(tmp_path / "n1.l0"), cooldown_seconds=bad, max_retry_attempts=1
             )
         with pytest.raises(ValueError):
             RetryGovernor(
-                log=AppendOnlyLog(tmp_path / "n2.l0"), cooldown_seconds=1, attempt_budget=bad
+                log=AppendOnlyLog(tmp_path / "n2.l0"), cooldown_seconds=1, max_retry_attempts=bad
             )
 
     def test_attempts_beyond_budget_still_refuse(self, tmp_path: Path) -> None:
@@ -269,14 +269,14 @@ class TestMutationHardening:
         # cooldown anchor.
         # budget 3 so the cooldown branch (not the budget guard) decides.
         first = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         first.mark_reconciled()
         late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
         first.record_attempt("1.777", "dec-a", "book-a", now_utc=late)
         first.record_attempt("1.777", "dec-b", "book-b", now_utc=_T0)  # earlier, second
         rebuilt = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         rebuilt.mark_reconciled()
         inside_late_window = late + timedelta(seconds=_COOLDOWN_S - 1)
@@ -294,7 +294,7 @@ class TestMutationHardening:
         # region): recording an earlier-stamped attempt after a later one must not
         # move the cooldown anchor backwards.
         governor = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "anchor.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "anchor.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         governor.mark_reconciled()
         late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
@@ -317,13 +317,13 @@ class TestMutationHardening:
         # truncate it.
         log = AppendOnlyLog(tmp_path / "mixed.l0")
         log.append({"record_type": "unrelated"}, b'{"not": "an attempt"}')
-        first = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, attempt_budget=_BUDGET)
+        first = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, max_retry_attempts=_BUDGET)
         first.mark_reconciled()
         first.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
         rebuilt = RetryGovernor(
             log=AppendOnlyLog(tmp_path / "mixed.l0"),
             cooldown_seconds=_COOLDOWN_S,
-            attempt_budget=_BUDGET,
+            max_retry_attempts=_BUDGET,
         )
         rebuilt.mark_reconciled()
         decision = rebuilt.evaluate(
@@ -352,7 +352,7 @@ class TestMutationHardeningRoundTwo:
         # SMALLER than "retry_attempt" would be processed as an attempt and crash.
         log = AppendOnlyLog(tmp_path / "mixed2.l0")
         log.append({"record_type": "aaa_marker"}, b'{"not": "an attempt"}')
-        governor = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, attempt_budget=_BUDGET)
+        governor = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, max_retry_attempts=_BUDGET)
         governor.mark_reconciled()
         decision = governor.evaluate(
             "1.777", "dec-a", "book-a", now_utc=_T0, exposure_confirmed_zero=True
@@ -363,7 +363,7 @@ class TestMutationHardeningRoundTwo:
         # Kills Gt_Eq / Gt_Is on the in-process anchor update: after an EARLIER then a
         # LATER attempt, the cooldown must anchor on the later one.
         governor = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "adv.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "adv.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         governor.mark_reconciled()
         late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
@@ -383,14 +383,14 @@ class TestMutationHardeningRoundTwo:
     ) -> None:
         # Kills Gt_Eq / Gt_Is on the REBUILD anchor logic for in-order logs.
         first = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         first.mark_reconciled()
         late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
         first.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
         first.record_attempt("1.777", "dec-b", "book-b", now_utc=late)
         rebuilt = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, max_retry_attempts=3
         )
         rebuilt.mark_reconciled()
         decision = rebuilt.evaluate(
@@ -406,7 +406,7 @@ class TestMutationHardeningRoundTwo:
         # Kills NumberReplacer (0 -> 1) on the constructor guards: the smallest
         # legitimate governed values construct successfully.
         governor = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "min.l0"), cooldown_seconds=1, attempt_budget=1
+            log=AppendOnlyLog(tmp_path / "min.l0"), cooldown_seconds=1, max_retry_attempts=1
         )
         governor.mark_reconciled()
 
@@ -414,10 +414,39 @@ class TestMutationHardeningRoundTwo:
         # Kills NumberReplacer (0 -> 1) on the budget lookup default: a market with no
         # recorded attempts has count zero, not one.
         governor = RetryGovernor(
-            log=AppendOnlyLog(tmp_path / "fresh.l0"), cooldown_seconds=1, attempt_budget=1
+            log=AppendOnlyLog(tmp_path / "fresh.l0"), cooldown_seconds=1, max_retry_attempts=1
         )
         governor.mark_reconciled()
         decision = governor.evaluate(
             "1.999", "dec-a", "book-a", now_utc=_T0, exposure_confirmed_zero=True
         )
         assert decision.approved
+
+
+class TestLogRecordIdentity:
+    def test_log_record_key_order_is_irrelevant_to_rebuild(self, tmp_path: Path) -> None:
+        # Founder confirmation pin (sort_keys mutant classification): no digest,
+        # signature, idempotency key or immutable-record identity derives from the
+        # retry log's BYTE layout. A hand-appended record with reversed key order
+        # rebuilds identically — the log is parsed, never byte-compared.
+        import json
+
+        log = AppendOnlyLog(tmp_path / "keyorder.l0")
+        record = {
+            "market_id": "1.777",
+            "decision_snapshot_digest": "dec-a",
+            "book_state_digest": "book-a",
+            "attempt_utc": _T0.isoformat(),
+        }
+        reordered = dict(reversed(list(record.items())))
+        log.append({"record_type": "retry_attempt"}, json.dumps(reordered).encode("utf-8"))
+        governor = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "keyorder.l0"),
+            cooldown_seconds=_COOLDOWN_S,
+            max_retry_attempts=_BUDGET,
+        )
+        governor.mark_reconciled()
+        decision = governor.evaluate(
+            "1.777", "dec-a", "book-a", now_utc=_T0 + timedelta(hours=1), exposure_confirmed_zero=True
+        )
+        assert decision.refusal is RetryRefusal.DUPLICATE_DECISION_SNAPSHOT

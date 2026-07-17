@@ -9,7 +9,7 @@ MONEY := l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governanc
 EVIDENCE := l0_raw l1_reduce l3_features
 ESCAPE_HATCHES := (notimplementederror|\btodo\b|\bfixme\b|\bxxx\b|\bhack\b|\bplaceholder\b|\bstub\b|raise\s+notimplemented|\bpass\b\s*(\#.*)?$$)
 
-.PHONY: verify mutants replay build
+.PHONY: verify mutants mutants-f13 replay build
 
 verify:
 	uv run python tools/check_spec_coverage.py --manifest $(MANIFEST) --enforce-states active,verified
@@ -28,6 +28,15 @@ verify:
 mutants:
 	uv run python tools/run_mutation.py --target l8_evidence/gates l7_settle --require-kill-non-equivalent --survivors-must-be-classified
 	uv run python tools/run_mutation.py --target l5b_risk --report
+
+# F-13 permanent scoped gate (founder-directed, 2026-07-17): the retry governor may have
+# ZERO unexplained behavioural survivors — every survivor is killed or carries a
+# human-approved equivalence classification in specs/mutation-survivors.yaml. The
+# reservation/update code lives in l6_broker/orders.py, whose F-13-region mutants are
+# killed by tests/unit/l6; the file's pre-F-13 legacy survivors are recorded Gate-3
+# live-readiness debt (docs/architecture/adr-0017-findings.yaml), report-scope until then.
+mutants-f13:
+	uv run python tools/run_mutation.py --target l6_broker/retry.py --require-kill-non-equivalent --survivors-must-be-classified
 
 replay:
 	uv run pytest tests/replay_regression -q
