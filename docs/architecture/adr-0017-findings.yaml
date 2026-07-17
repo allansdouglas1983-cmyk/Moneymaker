@@ -123,3 +123,27 @@ findings:
       .claude/rules/moneycritical.md one-line wording edit was declined in session and
       remains unchanged (declined_edit); _newton diagnosis-message improvement rides
       with A5's crossfit slice.
+
+# Gate-3 / live-readiness debt (founder-directed record, 2026-07-17). These items do
+# NOT block the historical-data purchase; each must be killed or dispositioned before
+# real order transmission is ever enabled.
+live_readiness_debt:
+  - id: DEBT-MUT-L6-LEGACY
+    title: 74 pre-F-13 cosmic-ray survivors in l6_broker/orders.py (S0 code)
+    recorded: "2026-07-17"
+    evidence: docs/architecture/mutation-l6-2026-07-17.txt  # full round-2 report, 531 mutants / 442 killed
+    scope_note: >-
+      The F-13-region mutants of orders.py (reservation predicate, is_market_reserved,
+      the update() stale/conflict guards) are KILLED by tests/unit/l6 — including the
+      interning-masked market-id identity mutant, the same-history field-mutation
+      absorption, and the diverged-history ordering crash. The retry governor is
+      permanently gated by `make mutants-f13` (zero unexplained survivors). The
+      remaining orders.py survivors predate F-13: largely annotation-union mutants
+      postponed evaluation never executes, plus S0-era comparison/arithmetic sites.
+    condition: >-
+      Before real order transmission (Gate 3 / live readiness): every non-equivalent,
+      money-relevant survivor in l6_broker/orders.py is killed with a test or carries a
+      human-approved classification in specs/mutation-survivors.yaml; l6_broker joins
+      the gating `make mutants` list at that point (a human-controlled CI change).
+    blocks_historical_data_purchase: false
+    blocks_real_order_transmission: true

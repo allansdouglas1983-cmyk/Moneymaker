@@ -103,10 +103,23 @@ def test_real_survivors_file_is_valid() -> None:
     produced eight behaviourally-unobservable equivalent mutants, approved by the founder;
     the pin now names that exact set, so an entry can neither appear nor vanish without a
     matching human-approved change here.
+
+    TEST CORRECTION (founder-approved in session chat, 2026-07-17, with the F-13
+    scoped permanent mutation gate directive): the seven l6_broker/retry.py
+    equivalence classifications join the pinned set — the `make mutants-f13` gate
+    requires every retry.py survivor killed or classified, and this pin keeps the
+    classification set human-controlled exactly as before.
     """
     repo = Path(__file__).resolve().parents[3]
     classifications = rm.load_classifications(repo / "specs" / "mutation-survivors.yaml")
     assert set(classifications) == {
+        "l6_broker/retry.py::core/ReplaceBinaryOperator_Mul_Div::1",
+        "l6_broker/retry.py::core/ReplaceBinaryOperator_Mul_Div::2",
+        "l6_broker/retry.py::core/ReplaceComparisonOperator_Gt_GtE::0",
+        "l6_broker/retry.py::core/ReplaceComparisonOperator_Gt_GtE::1",
+        "l6_broker/retry.py::core/ReplaceTrueWithFalse::3",
+        "l6_broker/retry.py::core/NumberReplacer::9",
+        "l6_broker/retry.py::core/RemoveDecorator::0",
         "l7_settle/pnl.py::core/ReplaceComparisonOperator_Eq_Is::0",
         "l7_settle/pnl.py::core/ReplaceComparisonOperator_Eq_Is::1",
         "l7_settle/ledger.py::core/ReplaceComparisonOperator_Gt_NotEq::0",

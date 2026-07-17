@@ -106,3 +106,23 @@ No purchase, no download, no account action of any kind. Purchase proceeds only
 after: ADR 0015 resolves, ADR 0016 is approved, the price is confirmed, and the
 founder gives final month confirmation (this document's recommendation is a
 proposal, not a decision).
+
+---
+
+## Founder confirmation (2026-07-17, F-13 acceptance message)
+
+The next programme step is empirical data acquisition, still governed by ADR 0015 and
+explicit human approval. Parameters CONFIRMED as the standing proposal:
+
+- **one month only** — no bulk package, no multi-month assumption;
+- **proposed month: June 2026** (the earlier April-vs-June candidacy is resolved:
+  June 2026 is the proposed first pilot month);
+- **package: Tennis ADVANCED**;
+- **local immutable storage and checksums** (l0 append-only + SHA-256 per the
+  ingestion runbook; processed locally only, no third-party CI/cloud upload);
+- **additional months considered solely after the pilot identifies a specific,
+  measured evidence gap** — never speculatively.
+
+No live key, real order, or real-money activity is authorised by that acceptance.
+Purchase execution still requires: ADR 0015 resolution (lawful account access
+confirmed) + the founder's explicit final go.

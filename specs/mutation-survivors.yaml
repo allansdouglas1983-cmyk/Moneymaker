@@ -70,3 +70,60 @@
   classification: equivalent-mutant
   rationale: "the 0 in `net_minor <= 0` replaced by -1: differs only at net==0, where commission = round(rate * 0) = 0 either way (x0 identity)"
   approved_by: allansdouglas1983-cmyk (chat approval, 2026-07-16)
+
+# 2026-07-17 (F-13 scoped permanent gate `make mutants-f13`, founder-directed in session
+# chat: "requiring zero unexplained behavioural survivors in the retry/reservation
+# code"): l6_broker/retry.py at 177 mutants, 170 killed; the seven survivors below are
+# behaviourally unobservable by construction, each with its mechanism. The F-13-region
+# mutants of l6_broker/orders.py are killed by tests/unit/l6; that file's PRE-F-13
+# legacy survivors are recorded as Gate-3 live-readiness debt
+# (docs/architecture/adr-0017-findings.yaml), not classified here.
+
+- module_path: l6_broker/retry.py
+  operator_name: core/ReplaceBinaryOperator_Mul_Div
+  occurrence: 1
+  classification: equivalent-mutant
+  rationale: "line 136 is the bare `*` keyword-only marker in evaluate()'s signature, not a multiplication operator; no runtime arithmetic exists to mutate"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/ReplaceBinaryOperator_Mul_Div
+  occurrence: 2
+  classification: equivalent-mutant
+  rationale: "line 162 is the bare `*` keyword-only marker in record_attempt()'s signature, not a multiplication operator; no runtime arithmetic exists to mutate"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/ReplaceComparisonOperator_Gt_GtE
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "`attempt_utc > previous` vs `>=` on the rebuild anchor: the >= branch re-assigns an EQUAL datetime value when timestamps tie, leaving the anchor identical; strict-vs-inclusive is indistinguishable for every input (in-order, out-of-order and tied logs are all pinned by tests)"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/ReplaceComparisonOperator_Gt_GtE
+  occurrence: 1
+  classification: equivalent-mutant
+  rationale: "`now_utc > previous` vs `>=` on the in-process anchor update: same mechanism — a tie re-assigns an equal value; no observable difference exists"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/ReplaceTrueWithFalse
+  occurrence: 3
+  classification: equivalent-mutant
+  rationale: "`sort_keys=True` -> False changes only the retry log's JSON key BYTE ORDER. No digest, signature, idempotency key or immutable-record identity derives from those bytes anywhere: the decision/book digests are caller-supplied string VALUES, order identity is sha256(customer_order_ref), AppendOnlyLog computes no checksum, and rebuild parses records (test_log_record_key_order_is_irrelevant_to_rebuild pins a hand-reordered record rebuilding identically)"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/NumberReplacer
+  occurrence: 9
+  classification: equivalent-mutant
+  rationale: "the budget lookup default `.get(market_id, 0)` -> -1: retry budgets below one are STRUCTURALLY refused at construction (max_retry_attempts <= 0 raises, pinned incl. negatives), so budget >= 1 always; for a market with no attempts, -1 >= budget and 0 >= budget are both False for every constructible budget — identical decisions"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+- module_path: l6_broker/retry.py
+  operator_name: core/RemoveDecorator
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "@unique removal on RetryRefusal: every member value is distinct (pinned by the refusal-reason tests), so the decorator's duplicate-detection has nothing to detect; removing it changes no behaviour"
+  approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
