@@ -5,7 +5,7 @@
 # These targets are RED until tools/ and the test suites exist. That is expected.
 
 MANIFEST := docs/spec-manifest.yaml
-MONEY := l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts sport_core
+MONEY := l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts sport_core sport_tennis
 EVIDENCE := l0_raw l1_reduce l3_features
 ESCAPE_HATCHES := (notimplementederror|\btodo\b|\bfixme\b|\bxxx\b|\bhack\b|\bplaceholder\b|\bstub\b|raise\s+notimplemented|\bpass\b\s*(\#.*)?$$)
 
