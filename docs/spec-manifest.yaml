@@ -798,6 +798,25 @@
   status_source: ci
   introduced_in_phase: 3
   enforcement_state: planned
+- id: SPEC-084
+  component: l7_settle
+  title: Tennis settlement rules
+  requirement: 'Tennis settlement rules: retirement, walkover, and partial-completion outcomes settle
+    per Betfair tennis market rules — Match Odds void semantics encoded explicitly; a completed-match
+    result settles win/lose; an uncertain completion status blocks settlement (unknown blocks, SPEC-082
+    semantics). Never edits racing settlement. UNTIL the founder-approved outcome-to-settlement policy
+    matrix is verified against Betfair''s published Exchange tennis rules and pilot settlement data
+    (DR-TENNIS-SETTLEMENT-001), every tennis settlement request — including COMPLETED — MUST be refused
+    with a typed SettlementPolicyPendingError; the matrix activates whole, never partially. Full
+    relevant_inputs/metamorphic_properties declared at activation (ADR 0017 S7); this entry registers
+    the ID for the S4 domain-contract slice''s retirement/walkover/qualification status references
+    (ADR 0016 §4.2, ADR 0017 S4/S7).
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 8
+  enforcement_state: planned
 - id: SPEC-090
   component: l8_evidence
   title: Race-level paired inference
