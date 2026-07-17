@@ -4,7 +4,7 @@ Every class in this module is a ``typing.Protocol``. There is no implementation,
 estimate, no numeric default, and no model here — that is the point: Phase 4/5 of ADR
 0017 authorise the SHAPE of the seam, never an instance of it. Constructing a concrete
 provider or model without an implementation is a typed refusal by omission (there is
-nothing to construct), never a silent stub returning a placeholder number.
+nothing to construct), never a silent substitute returning an invented number.
 
 All protocols are ``@runtime_checkable`` so ``isinstance(obj, SomeProtocol)`` performs a
 structural check (method/property presence) against a candidate implementation supplied

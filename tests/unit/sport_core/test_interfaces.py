@@ -125,7 +125,7 @@ def test_uncertainty_bearing_seams_are_not_in_sport_core() -> None:
 
 def _make_conforming(members: tuple[str, ...]) -> object:
     """A minimal object exposing exactly the named attributes, nothing else load-bearing."""
-    namespace = {member: (lambda self, *a, **kw: None) for member in members}
+    namespace = {member: (lambda *_args, **_kwargs: None) for member in members}
     return type("Conforming", (), namespace)()
 
 
@@ -296,7 +296,7 @@ def test_reuses_existing_race_probability_and_distribution_types_not_new_ones() 
     combine_hints = get_type_hints(interfaces.CombinedProbabilityProvider.combine)
     assert combine_hints["return"] == typing.Mapping[int, CombinedProbability]
 
-    distribution_hints = get_type_hints(_protocol("UncertaintyProvider").distribution)
+    distribution_hints = get_type_hints(getattr(_protocol("UncertaintyProvider"), "distribution"))
     assert distribution_hints["return"] == typing.Mapping[int, WinProbabilityDistribution]
 
     generate_hints = get_type_hints(interfaces.FeatureGenerator.generate)

@@ -145,7 +145,7 @@ class _ConformingMethod:
     method_id = "final-midpoint"
     method_version = "v1"
 
-    def compute(self, window: PreCloseWindowSummary) -> object:
+    def compute(self, _window: PreCloseWindowSummary) -> object:
         return None
 
 
@@ -157,7 +157,7 @@ class _NonConformingMissingCompute:
 class _NonConformingMissingId:
     method_version = "v1"
 
-    def compute(self, window: PreCloseWindowSummary) -> object:
+    def compute(self, _window: PreCloseWindowSummary) -> object:
         return None
 
 

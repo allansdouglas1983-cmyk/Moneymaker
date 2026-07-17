@@ -60,6 +60,19 @@ _ESCAPE_HATCHES = re.compile(
 )
 
 
+def _by_name(outcome: TennisMatchOutcome) -> str:
+    return outcome.name
+
+
+# Enum-class iteration types as `object` under mypy strict; __members__ is properly typed.
+_ALL_OUTCOMES: tuple[TennisMatchOutcome, ...] = tuple(
+    sorted(TennisMatchOutcome.__members__.values(), key=_by_name)
+)
+_NON_COMPLETED_OUTCOMES: tuple[TennisMatchOutcome, ...] = tuple(
+    o for o in _ALL_OUTCOMES if o is not TennisMatchOutcome.COMPLETED
+)
+
+
 def _valid_case(outcome: TennisMatchOutcome) -> TennisSettlementCase:
     if outcome is TennisMatchOutcome.COMPLETED:
         return TennisSettlementCase(match_ref_id="m-1", outcome=outcome, winner_selection_id=123)
@@ -87,7 +100,7 @@ class TestWinnerMandatoryIffCompleted:
 
     @pytest.mark.parametrize(
         "outcome",
-        sorted((o for o in TennisMatchOutcome if o is not TennisMatchOutcome.COMPLETED), key=lambda o: o.name),
+        _NON_COMPLETED_OUTCOMES,
     )
     def test_non_completed_with_winner_is_refused(self, outcome: TennisMatchOutcome) -> None:
         with pytest.raises(ValueError):
@@ -95,7 +108,7 @@ class TestWinnerMandatoryIffCompleted:
 
     @pytest.mark.parametrize(
         "outcome",
-        sorted((o for o in TennisMatchOutcome if o is not TennisMatchOutcome.COMPLETED), key=lambda o: o.name),
+        _NON_COMPLETED_OUTCOMES,
     )
     def test_non_completed_without_winner_is_accepted(self, outcome: TennisMatchOutcome) -> None:
         case = TennisSettlementCase(match_ref_id="m-1", outcome=outcome)
@@ -110,7 +123,7 @@ class TestFrozen:
 
 
 class TestSettlementIsPolicyPending:
-    @pytest.mark.parametrize("outcome", sorted(TennisMatchOutcome, key=lambda o: o.name))
+    @pytest.mark.parametrize("outcome", _ALL_OUTCOMES)
     def test_every_outcome_raises_naming_itself(self, outcome: TennisMatchOutcome) -> None:
         case = _valid_case(outcome)
         with pytest.raises(SettlementPolicyPendingError) as excinfo:
