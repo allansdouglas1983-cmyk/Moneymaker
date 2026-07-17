@@ -7,14 +7,16 @@ property here ever assigns a hypothetical taken price to an unfilled order.
 """
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from l8_evidence.clv import (
+    CLV_SIGN_DEADBAND_BPS,
     CLVBatchError,
+    CLVSign,
     ClosingBenchmark,
     ClosingPrice,
     ClosingPriceError,
@@ -43,14 +45,32 @@ def _bsp(odds: Decimal) -> ClosingPrice:
 @given(odds_taken=_ODDS, odds_close=_ODDS)
 @settings(max_examples=200)
 def test_clv_bps_sign_matches_taken_vs_close(odds_taken: Decimal, odds_close: Decimal) -> None:
+    # Test-correction 0002 (founder-approved packet): the 2dp clv_bps is a REPORTING
+    # representation and must equal the exact documented quantization of the raw value;
+    # strict sign is asserted whenever the magnitude survives quantization
+    # (|raw| >= half-quantum). Sub-half-quantum sign questions are answered by the
+    # explicit classification, asserted here too — never silently coerced.
     closing = _bsp(odds_close)
     signal = SignalCLV(candidate_ref="c", closing=closing, odds_at_signal=odds_taken)
-    if odds_taken > odds_close:
-        assert signal.clv_bps > 0
-    elif odds_taken < odds_close:
-        assert signal.clv_bps < 0
-    else:
+    raw = signal.clv_bps_raw
+    # Exact-contract assertion (stronger than the old property outside the deadband):
+    assert signal.clv_bps == raw.quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+    if odds_taken == odds_close:
+        assert raw == 0
         assert signal.clv_bps == Decimal("0.00")
+        assert signal.sign_classification is CLVSign.ZERO
+    elif abs(raw) >= CLV_SIGN_DEADBAND_BPS:
+        if odds_taken > odds_close:
+            assert signal.clv_bps > 0 or abs(raw) == CLV_SIGN_DEADBAND_BPS
+            assert signal.sign_classification is CLVSign.POSITIVE
+        else:
+            assert signal.clv_bps < 0 or abs(raw) == CLV_SIGN_DEADBAND_BPS
+            assert signal.sign_classification is CLVSign.NEGATIVE
+    else:
+        assert signal.sign_classification is CLVSign.NEUTRAL_SUB_QUANTUM
+        assert signal.clv_bps == Decimal("0.00")
+        # the raw value still carries the true sign, unchanged:
+        assert (raw > 0) == (odds_taken > odds_close)
 
 
 @given(odds_taken=_ODDS, odds_close=_ODDS)

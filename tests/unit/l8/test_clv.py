@@ -474,3 +474,73 @@ def test_clv_module_never_reaches_trading_or_pricing_state(forbidden: str) -> No
         f"l8_evidence.clv must never reach {forbidden!r} — CLV is a diagnostic, never a "
         f"training target (SPEC-095):\n" + "\n".join(violations)
     )
+
+
+# --- test-correction 0002: sign-classification deadband boundaries (SPEC-095) ----------------
+
+
+class TestClvSignDeadbandBoundaries:
+    """The deadband is CLV_SIGN_DEADBAND_BPS = 0.005 bps (exactly half the 2dp reporting
+    quantum): the smallest magnitude whose sign survives quantization in every case.
+    Classification is defined off the RAW value; the 2dp report never answers sub-quantum
+    sign questions. The deadband is a representation fact, never an economic threshold."""
+
+    def test_deadband_constant_is_exactly_half_the_quantum(self) -> None:
+        from l8_evidence.clv import CLV_SIGN_DEADBAND_BPS
+
+        assert CLV_SIGN_DEADBAND_BPS == Decimal("0.005")
+        assert CLV_SIGN_DEADBAND_BPS * 2 == Decimal("0.01")
+
+    def test_just_below_negative_boundary_is_negative(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("-0.0051")) is CLVSign.NEGATIVE
+
+    def test_exactly_at_negative_boundary_is_negative(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("-0.005")) is CLVSign.NEGATIVE
+
+    def test_inside_deadband_is_neutral_never_coerced(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("-0.0049")) is CLVSign.NEUTRAL_SUB_QUANTUM
+        assert classify_clv_bps(Decimal("0.0049")) is CLVSign.NEUTRAL_SUB_QUANTUM
+        assert classify_clv_bps(Decimal("1E-20")) is CLVSign.NEUTRAL_SUB_QUANTUM
+
+    def test_exact_zero_is_zero(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("0")) is CLVSign.ZERO
+
+    def test_exactly_at_positive_boundary_is_positive(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("0.005")) is CLVSign.POSITIVE
+
+    def test_just_above_positive_boundary_is_positive(self) -> None:
+        from l8_evidence.clv import CLVSign, classify_clv_bps
+
+        assert classify_clv_bps(Decimal("0.0051")) is CLVSign.POSITIVE
+
+    def test_raw_value_is_stored_computation_unchanged_by_deadband(self) -> None:
+        # The founder's falsifying example: raw is unchanged, full precision, true sign;
+        # only the separately named classification and the 2dp report differ.
+        from l8_evidence.clv import CLVSign
+
+        signal = SignalCLV(
+            candidate_ref="c",
+            closing=_bsp(Decimal("141.42")),
+            odds_at_signal=Decimal("141.43"),
+        )
+        raw = signal.clv_bps_raw
+        assert raw > 0
+        assert Decimal("0.0049") < raw < Decimal("0.0051")
+        assert signal.clv_bps == Decimal("0.00")
+        assert signal.sign_classification is CLVSign.NEUTRAL_SUB_QUANTUM
+
+    def test_reporting_value_still_matches_documented_quantization(self) -> None:
+        signal = SignalCLV(
+            candidate_ref="c", closing=_bsp(Decimal("2.5")), odds_at_signal=Decimal("3.0")
+        )
+        assert signal.clv_bps == Decimal("666.67")
