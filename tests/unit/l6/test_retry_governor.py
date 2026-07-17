@@ -200,3 +200,142 @@ class TestGovernedConstants:
             governor.record_attempt(
                 "1.777", "dec-a", "book-a", now_utc=datetime(2026, 7, 17, 12, 0, 0)
             )
+
+
+class TestMutationHardening:
+    """Additive pins killing surviving comparison/guard mutants from the F-13 cosmic-ray
+    run (report: 33 retry.py survivors). Each test names the mutant class it kills."""
+
+    def test_well_after_cooldown_is_approved(self, tmp_path: Path) -> None:
+        # Kills Lt_NotEq on the cooldown comparison: much later than cooldown, fresh
+        # digests, budget remaining -> APPROVED (under `!=` this would refuse).
+        governor = _ready(_governor(tmp_path))
+        governor.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        much_later = _T0 + timedelta(seconds=_COOLDOWN_S * 7)
+        decision = governor.evaluate(
+            "1.777", "dec-b", "book-b", now_utc=much_later, exposure_confirmed_zero=True
+        )
+        assert decision.approved
+
+    def test_same_instant_retry_refuses_as_cooldown_not_clock(self, tmp_path: Path) -> None:
+        # Kills Lt_LtE on the backwards-clock guard: now == last is NOT a backwards
+        # clock; it is an unexpired cooldown, and the reason must say so.
+        governor = _ready(_governor(tmp_path))
+        governor.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        decision = governor.evaluate(
+            "1.777", "dec-b", "book-b", now_utc=_T0, exposure_confirmed_zero=True
+        )
+        assert decision.refusal is RetryRefusal.COOLDOWN_NOT_ELAPSED
+
+    @pytest.mark.parametrize("bad", [-1, -300])
+    def test_negative_governed_constants_refused(self, tmp_path: Path, bad: int) -> None:
+        # Kills LtE_Eq / NumberReplacer on the constructor guards: negative values are
+        # refused, not only zero.
+        with pytest.raises(ValueError):
+            RetryGovernor(
+                log=AppendOnlyLog(tmp_path / "n1.l0"), cooldown_seconds=bad, attempt_budget=1
+            )
+        with pytest.raises(ValueError):
+            RetryGovernor(
+                log=AppendOnlyLog(tmp_path / "n2.l0"), cooldown_seconds=1, attempt_budget=bad
+            )
+
+    def test_attempts_beyond_budget_still_refuse(self, tmp_path: Path) -> None:
+        # Kills GtE_Eq / NumberReplacer on the budget comparison: record_attempt does
+        # not itself enforce the budget, so the count can EXCEED it — evaluation must
+        # refuse at count > budget, not only at count == budget.
+        governor = _ready(_governor(tmp_path))
+        governor.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        governor.record_attempt(
+            "1.777", "dec-b", "book-b", now_utc=_T0 + timedelta(seconds=_COOLDOWN_S)
+        )
+        governor.record_attempt(
+            "1.777", "dec-c", "book-c", now_utc=_T0 + timedelta(seconds=_COOLDOWN_S * 2)
+        )
+        decision = governor.evaluate(
+            "1.777",
+            "dec-d",
+            "book-d",
+            now_utc=_T0 + timedelta(seconds=_COOLDOWN_S * 3),
+            exposure_confirmed_zero=True,
+        )
+        assert decision.refusal is RetryRefusal.ATTEMPT_BUDGET_EXHAUSTED
+
+    def test_rebuild_takes_the_latest_attempt_time_from_an_out_of_order_log(
+        self, tmp_path: Path
+    ) -> None:
+        # Kills the Gt_* family on the rebuild max-time logic: an out-of-order log
+        # (later attempt recorded first) must still yield the LATEST time as the
+        # cooldown anchor.
+        # budget 3 so the cooldown branch (not the budget guard) decides.
+        first = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        first.mark_reconciled()
+        late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
+        first.record_attempt("1.777", "dec-a", "book-a", now_utc=late)
+        first.record_attempt("1.777", "dec-b", "book-b", now_utc=_T0)  # earlier, second
+        rebuilt = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "ooo.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        rebuilt.mark_reconciled()
+        inside_late_window = late + timedelta(seconds=_COOLDOWN_S - 1)
+        decision = rebuilt.evaluate(
+            "1.777", "dec-c", "book-c", now_utc=inside_late_window, exposure_confirmed_zero=True
+        )
+        # Anchored on the LATE attempt this is inside the cooldown window; anchored on
+        # the earlier attempt (the mutant) the cooldown would long since have elapsed.
+        assert decision.refusal is RetryRefusal.COOLDOWN_NOT_ELAPSED
+
+    def test_in_process_earlier_record_does_not_regress_the_anchor(
+        self, tmp_path: Path
+    ) -> None:
+        # Kills the Gt_* family on the in-process last-attempt update (line 178
+        # region): recording an earlier-stamped attempt after a later one must not
+        # move the cooldown anchor backwards.
+        governor = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "anchor.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        governor.mark_reconciled()
+        late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
+        governor.record_attempt("1.777", "dec-a", "book-a", now_utc=late)
+        governor.record_attempt("1.777", "dec-b", "book-b", now_utc=_T0)
+        decision = governor.evaluate(
+            "1.777",
+            "dec-c",
+            "book-c",
+            now_utc=late + timedelta(seconds=_COOLDOWN_S - 1),
+            exposure_confirmed_zero=True,
+        )
+        assert decision.refusal is RetryRefusal.COOLDOWN_NOT_ELAPSED
+
+    def test_foreign_record_types_in_the_log_are_skipped_not_fatal(
+        self, tmp_path: Path
+    ) -> None:
+        # Kills NotEq_Is on the record-type filter and ContinueWithBreak on the scan
+        # loop: a foreign record BEFORE the attempts must neither crash the rebuild nor
+        # truncate it.
+        log = AppendOnlyLog(tmp_path / "mixed.l0")
+        log.append({"record_type": "unrelated"}, b'{"not": "an attempt"}')
+        first = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, attempt_budget=_BUDGET)
+        first.mark_reconciled()
+        first.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        rebuilt = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "mixed.l0"),
+            cooldown_seconds=_COOLDOWN_S,
+            attempt_budget=_BUDGET,
+        )
+        rebuilt.mark_reconciled()
+        decision = rebuilt.evaluate(
+            "1.777", "dec-a", "book-a", now_utc=_T0 + timedelta(hours=1), exposure_confirmed_zero=True
+        )
+        assert decision.refusal is RetryRefusal.DUPLICATE_DECISION_SNAPSHOT
+
+    def test_retry_decision_is_frozen(self, tmp_path: Path) -> None:
+        # Kills ReplaceTrueWithFalse on the dataclass frozen flag.
+        governor = _ready(_governor(tmp_path))
+        decision = governor.evaluate(
+            "1.777", "dec-a", "book-a", now_utc=_T0, exposure_confirmed_zero=True
+        )
+        with pytest.raises((AttributeError, TypeError)):
+            decision.approved = False  # type: ignore[misc]
