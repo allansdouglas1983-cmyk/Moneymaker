@@ -64,14 +64,15 @@
   title: Betfair tennis market desk research (package facts, secondary liquidity estimates, settlement
     rules)
   classification: ADVISORY
-  status: IN_PROGRESS
+  status: RETURNED_LARGELY_UNRESOLVED
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
-  findings: null
-  note: All external numeric market estimates labelled SECONDARY; not gate-eligible; not a substitute
-    for 002B
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: desk research came back essentially empty for this priority; wrong Betfair product (Sportsbook
+    not Exchange) reached; re-run needed as its own narrow call
   related:
   - ADR-0016
+  returned: '2026-07-16'
 - id: DR-TENNIS-MARKET-002B
   title: One-month Betfair Tennis ADVANCED empirical pilot (primary market-universe evidence)
   classification: BLOCKING
@@ -103,4 +104,69 @@
   - ADR-0015
   related:
   - ADR-0015
+  - ADR-0016
+- id: DR-TENNIS-DATA-002
+  title: Cheapest lawful tennis data source with explicit betting-model training rights
+  classification: BLOCKING
+  status: RETURNED_UNRESOLVED
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: no provider has a confirmed explicit grant; Sportradar prediction-market-use prohibition is a
+    second-hand lead requiring written confirmation; 3 of 7 named providers (Tennis Data Innovations,
+    Stats Perform, Tennis-Data.co.uk) unreached
+  related:
+  - ADR-0016
+- id: DR-TENNIS-MODEL-002
+  title: Which tennis features add residual predictive value beyond the market
+  classification: ADVISORY
+  status: RETURNED_PARTIAL
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: serve/Elo literature support confirmed (dated, directional only); remainder of the feature list
+    (rest days, workload, travel, altitude, surface transitions, etc.) unresearched
+  related:
+  - ADR-0016
+- id: DR-TENNIS-SETTLEMENT-001
+  title: Deterministic withdrawal/walkover/retirement settlement matrix for tennis
+  classification: BLOCKING
+  status: RETURNED_UNRESOLVED
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: zero matrix rows established; wrong Betfair product page reached (Sportsbook not Exchange); must
+    be re-run before any tennis settlement code is designed
+  related:
+  - ADR-0016
+- id: DR-TENNIS-BENCHMARK-001
+  title: Tennis closing-line/benchmark definition where BSP is unavailable
+  classification: BLOCKING
+  status: RETURNED_UNRESOLVED
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: no surviving claims at all; fully open, needs dedicated follow-up
+  related:
+  - ADR-0016
+- id: DR-TENNIS-FITNESS-001
+  title: Lawful pre-match injury/fitness signals for tennis (research track, not v1)
+  classification: ADVISORY
+  status: RETURNED_UNRESOLVED
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: no surviving claims; deferred by design, not urgent
+  related:
+  - ADR-0016
+- id: DR-TENNIS-CLV-001
+  title: Does beating the pre-match tennis close predict profit (exchange-specific)
+  classification: ADVISORY
+  status: RETURNED_PARTIAL
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow
+  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
+  note: one data-snooping caution confirmed (bookmaker-market, 2018, not exchange-specific); exchange-specific
+    CLV evidence remains thin/open as expected
+  related:
   - ADR-0016
