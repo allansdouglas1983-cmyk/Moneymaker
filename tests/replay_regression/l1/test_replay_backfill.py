@@ -128,3 +128,29 @@ def test_zero_market_frames_is_a_typed_refusal_never_an_empty_result(tmp_path: P
     orders_only.append({"record_type": "order"}, b'{"op":"ocm"}')
     with pytest.raises(EmptyReplayError):
         replay_from_log(orders_only, REDUCER_VERSION)
+
+
+def test_decoded_corpus_reconstructing_zero_markets_is_refused_with_diagnostics(
+    tmp_path: Path,
+) -> None:
+    # Founder-required pin (A3 completion): the zero-DECODED-frame test alone is
+    # insufficient. A NON-EMPTY, successfully decoded backfilled corpus whose frames are
+    # valid mcm lines but carry no market changes (heartbeat-only) reduces to an empty
+    # universe — that must be the same typed refusal, and the error must carry useful
+    # diagnostics (how many frames were read vs how many markets were reconstructed),
+    # so an operator can tell "wrong file" from "empty log".
+    heartbeats = [
+        json.dumps({"op": "mcm", "pt": 1000 * (i + 1), "ct": "HEARTBEAT"}).encode("utf-8")
+        for i in range(3)
+    ]
+    log = AppendOnlyLog(tmp_path / "heartbeats.l0")
+    for i, line in enumerate(heartbeats):
+        meta, payload = backfill_market_to_frame(_backfill_record(line, i + 1, 1000 * (i + 1)))
+        log.append(meta, payload)
+
+    with pytest.raises(EmptyReplayError) as excinfo:
+        replay_from_log(log, REDUCER_VERSION)
+    message = str(excinfo.value)
+    assert "3" in message  # frames read — the corpus was NOT empty
+    assert "0" in message or "zero" in message.lower()  # markets reconstructed
+    assert "market" in message.lower()
