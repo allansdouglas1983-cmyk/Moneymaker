@@ -43,7 +43,7 @@ findings:
     title: Replay silently drops backfill_market frames
     severity: DEFECT
     owner_slice: A3
-    status: done  # landed 2026-07-17; pre-purchase gate half 2 — purchase gate now CLEAR on the code side (ADR 0015 still blocks)
+    status: done  # landed 2026-07-17; founder completion pin added (decoded-but-zero-markets refusal with diagnostics) — pre-purchase code gate COMPLETE (ADR 0015 still blocks purchase)
     gate: blocks any historical-data purchase
   - id: F-05
     title: Cluster key hardcoded as date meeting_day; adapter declaration unconsumed
