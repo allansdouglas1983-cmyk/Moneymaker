@@ -77,8 +77,10 @@ import hashlib
 import json
 import math
 import random
-from dataclasses import asdict, dataclass
 from datetime import date
+
+from sport_core.clustering import ClusterId
+from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Mapping, Sequence
 
@@ -135,7 +137,10 @@ class PairedRace:
     """
 
     race_id: str
-    meeting_day: date
+    # A4 (audit F-05): the opaque adapter-owned dependence-group identity. Resampling
+    # consumes IDENTITY ONLY — no chronology enters SPEC-090's block bootstrap, and
+    # ClusterId is unorderable by design so id strings can never act as time order.
+    cluster_id: ClusterId
     p_market_winner: Decimal
     p_combined_winner: Decimal
 
@@ -170,7 +175,7 @@ class RaceDifference:
     """One race's materialised paired difference — the output unit of :func:`paired_differences`."""
 
     race_id: str
-    meeting_day: date
+    cluster_id: ClusterId
     d_r: float
 
 
@@ -190,7 +195,7 @@ def paired_differences(races: Sequence[PairedRace]) -> tuple[RaceDifference, ...
         duplicates = sorted({rid for rid in race_ids if race_ids.count(rid) > 1})
         raise PairedDifferencesError(f"duplicate race_id(s) in input: {duplicates}")
     return tuple(
-        RaceDifference(race_id=r.race_id, meeting_day=r.meeting_day, d_r=r.d_r) for r in races
+        RaceDifference(race_id=r.race_id, cluster_id=r.cluster_id, d_r=r.d_r) for r in races
     )
 
 
@@ -218,21 +223,29 @@ def empirical_percentile(sorted_values: Sequence[float], quantile: Decimal) -> f
     return sorted_values[lo] + frac * (sorted_values[hi] - sorted_values[lo])
 
 
-def _blocks_by_meeting_day(
+def _blocks_by_cluster(
     races: Sequence[PairedRace],
-) -> tuple[tuple[date, ...], Mapping[date, tuple[float, ...]], tuple[RaceDifference, ...]]:
-    """Group each race's ``d_r`` by ``meeting_day`` (the resampling block).
+) -> tuple[
+    tuple[ClusterId, ...], Mapping[ClusterId, tuple[float, ...]], tuple[RaceDifference, ...]
+]:
+    """Group each race's ``d_r`` by ``cluster_id`` (the resampling block).
 
-    Returns the sorted distinct day keys (sorted so day-index -> day assignment is
-    deterministic independent of input order), each day's tuple of ``d_r`` values in the
-    order their races appeared in ``races``, and the flat per-race differences.
+    Iteration order over blocks is made deterministic by sorting on the id's explicit
+    ``.value`` string — a DETERMINISM device for reproducible draws, never a time
+    order (A4: chronology never enters resampling).
+
+    Returns the deterministic distinct cluster keys, each cluster's tuple of ``d_r``
+    values in the order their races appeared in ``races``, and the flat per-race
+    differences.
     """
     differences = paired_differences(races)
-    by_day: dict[date, list[float]] = {}
+    by_day: dict[ClusterId, list[float]] = {}
     for diff in differences:
-        by_day.setdefault(diff.meeting_day, []).append(diff.d_r)
-    day_keys = tuple(sorted(by_day))
-    day_blocks: dict[date, tuple[float, ...]] = {day: tuple(values) for day, values in by_day.items()}
+        by_day.setdefault(diff.cluster_id, []).append(diff.d_r)
+    day_keys = tuple(sorted(by_day, key=lambda c: c.value))
+    day_blocks: dict[ClusterId, tuple[float, ...]] = {
+        day: tuple(values) for day, values in by_day.items()
+    }
     return day_keys, day_blocks, differences
 
 
@@ -242,28 +255,28 @@ def bootstrap_resample_means(
     n_resamples: int,
     seed: int,
 ) -> tuple[float, ...]:
-    """The raw block-bootstrap resample means, clustered by meeting-day (SPEC-090).
+    """The raw block-bootstrap resample means, clustered by the adapter-declared dependence group (SPEC-090; racing: meeting-day).
 
-    Each of ``n_resamples`` draws picks ``n_meeting_days`` days INDEPENDENTLY AND WITH
-    REPLACEMENT from the distinct meeting-days present in ``races``; every race that
-    occurred on a picked day travels with it into that resample — races are NEVER
+    Each of ``n_resamples`` draws picks ``n_clusters`` clusters INDEPENDENTLY AND WITH
+    REPLACEMENT from the distinct clusters present in ``races``; every race belonging
+    to a picked cluster travels with it into that resample — races are NEVER
     resampled individually across days. The mean of the resulting pooled ``d_r`` values is
     one element of the returned tuple, in resample order (index 0 is the first draw).
 
-    Refuses fewer than two distinct meeting-days (:class:`InsufficientMeetingDaysError`,
+    Refuses fewer than two distinct clusters (:class:`InsufficientMeetingDaysError`,
     see module docstring) and refuses ``n_resamples < 1``. Uses a private
     ``random.Random(seed)`` instance — never the global ``random`` module, never numpy —
     so the same ``seed`` over the same race set always yields byte-identical output.
     """
     if n_resamples < 1:
         raise BootstrapConfigError(f"n_resamples must be >= 1, got {n_resamples!r}")
-    day_keys, day_blocks, _differences = _blocks_by_meeting_day(races)
+    day_keys, day_blocks, _differences = _blocks_by_cluster(races)
     n_days = len(day_keys)
     if n_days < 2:
         raise InsufficientMeetingDaysError(
-            f"block bootstrap clustered by meeting-day needs >= 2 distinct meeting-days to "
-            f"estimate between-day variation; got {n_days}. Refusing rather than returning a "
-            "degenerate interval."
+            f"block bootstrap clustered by dependence group needs >= 2 distinct clusters to "
+            f"estimate between-cluster variation; got {n_days}. Refusing rather than "
+            "returning a degenerate interval."
         )
     rng = random.Random(seed)
     means: list[float] = []
@@ -292,7 +305,7 @@ class BootstrapResult:
     upper: float
     confidence_level: Decimal
     n_races: int
-    n_meeting_days: int
+    n_clusters: int
     n_resamples: int
     seed: int
     percentile_method: str
@@ -302,10 +315,10 @@ class BootstrapResult:
             raise PairedInferenceError(
                 f"lower bound {self.lower!r} must not exceed upper bound {self.upper!r}"
             )
-        if self.n_meeting_days < 2:
-            raise PairedInferenceError("a BootstrapResult must be backed by >= 2 meeting-days")
-        if self.n_races < self.n_meeting_days:
-            raise PairedInferenceError("n_races cannot be fewer than n_meeting_days")
+        if self.n_clusters < 2:
+            raise PairedInferenceError("a BootstrapResult must be backed by >= 2 clusters")
+        if self.n_races < self.n_clusters:
+            raise PairedInferenceError("n_races cannot be fewer than n_clusters")
         if self.n_resamples < 1:
             raise PairedInferenceError("n_resamples must be >= 1")
         if not (Decimal(0) < self.confidence_level < Decimal(1)):
@@ -347,7 +360,7 @@ def block_bootstrap_ci(
             f"confidence_level must be in the open interval (0, 1), got {confidence_level!r}"
         )
     resampled_means = bootstrap_resample_means(races, n_resamples=n_resamples, seed=seed)
-    day_keys, _day_blocks, differences = _blocks_by_meeting_day(races)
+    day_keys, _day_blocks, differences = _blocks_by_cluster(races)
     mean_d = math.fsum(d.d_r for d in differences) / len(differences)
     alpha = Decimal(1) - confidence_level
     lower_q = alpha / Decimal(2)
@@ -361,7 +374,7 @@ def block_bootstrap_ci(
         upper=upper,
         confidence_level=confidence_level,
         n_races=len(differences),
-        n_meeting_days=len(day_keys),
+        n_clusters=len(day_keys),
         n_resamples=n_resamples,
         seed=seed,
         percentile_method=_PERCENTILE_METHOD,

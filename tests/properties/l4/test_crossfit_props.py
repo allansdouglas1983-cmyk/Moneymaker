@@ -23,7 +23,8 @@ from l4_pricing.races import FeatureSchema, Race, RunnerRow
 from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
 
 
-def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+def _ca(day: date) -> ClusterAssignment:
+    # racing cluster assignment for tests (A4): meeting-day identity + chronology
     return calendar_day_assignment("horse_racing", day)
 
 pytestmark = pytest.mark.spec("SPEC-031")

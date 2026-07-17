@@ -24,7 +24,8 @@ from l8_evidence.paired_inference import (
 from sport_core.clustering import ClusterId
 
 
-def _cid(day):  # racing dependence-group identity for tests (A4); identity only, no order
+def _cid(day: date) -> ClusterId:
+    # racing dependence-group identity for tests (A4); identity only, no order
     return ClusterId(f"horse_racing:day:{day.isoformat()}")
 
 pytestmark = pytest.mark.spec("SPEC-090")

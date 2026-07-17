@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from sport_core.clustering import ChronologyKey, ClusterAssignment
 
 from l4_pricing.conditional_logit import (
     FitDidNotConverge,
@@ -38,7 +38,7 @@ class CrossFitViolation(Exception):
 class StageOneProvenance:
     """Which data produced an out-of-fold fundamental — the SPEC-031 audit trail."""
 
-    trained_through_day: date
+    trained_through: ChronologyKey
     training_race_ids: frozenset[str]
     training_race_ids_digest: str
     horizon: HorizonLabel
@@ -97,10 +97,11 @@ def assert_out_of_fold(rows: Iterable[object], races: Mapping[str, Race]) -> Non
             raise CrossFitViolation(
                 f"race {row.race_id!r}: its fundamental came from a model trained ON that race"
             )
-        if row.provenance.trained_through_day >= race.meeting_day:
+        if row.provenance.trained_through >= race.cluster.chronology:
             raise CrossFitViolation(
-                f"race {row.race_id!r} (meeting day {race.meeting_day}): model trained through "
-                f"{row.provenance.trained_through_day} is not strictly earlier"
+                f"race {row.race_id!r} (chronology {race.cluster.chronology.ordinal}): model "
+                f"trained through {row.provenance.trained_through.ordinal} is not strictly "
+                "earlier (SPEC-031, A4 — folds compare ChronologyKey, never cluster identity)"
             )
 
 
@@ -124,10 +125,15 @@ def cross_fit(
                 f"race {race.race_id!r} has no winner; cross-fitting is a training procedure"
             )
 
-    days = sorted({race.meeting_day for race in race_list})
-    by_day: dict[date, list[Race]] = {day: [] for day in days}
+    # A4: folds are ordered by the adapter's explicit ChronologyKey, grouped by opaque
+    # ClusterId. Sorting key: (chronology, cluster_id.value) — the id component is a
+    # DETERMINISM device for same-chronology clusters, never time order (ClusterId
+    # itself is unorderable by design).
+    assignments = {race.cluster for race in race_list}
+    days = sorted(assignments, key=lambda a: (a.chronology, a.cluster_id.value))
+    by_day: dict[ClusterAssignment, list[Race]] = {day: [] for day in days}
     for race in race_list:
-        by_day[race.meeting_day].append(race)
+        by_day[race.cluster].append(race)
 
     oof: list[OOFFundamental] = []
     excluded: list[ExcludedRace] = []
@@ -135,7 +141,7 @@ def cross_fit(
         day_races = by_day[day]
         if index == 0:
             excluded.extend(
-                ExcludedRace(race.race_id, "no earlier meeting day to train on")
+                ExcludedRace(race.race_id, "no earlier cluster chronology to train on")
                 for race in day_races
             )
             continue
@@ -149,7 +155,7 @@ def cross_fit(
             )
             continue
         provenance = StageOneProvenance(
-            trained_through_day=model.trained_through_day,
+            trained_through=model.trained_through,
             training_race_ids=model.training_race_ids,
             training_race_ids_digest=model.training_race_ids_digest,
             horizon=horizon,

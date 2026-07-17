@@ -27,7 +27,8 @@ from l4_pricing.races import FeatureSchema, Race, RunnerRow
 from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
 
 
-def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+def _ca(day: date) -> ClusterAssignment:
+    # racing cluster assignment for tests (A4): meeting-day identity + chronology
     return calendar_day_assignment("horse_racing", day)
 
 pytestmark = pytest.mark.spec("SPEC-031")
@@ -110,7 +111,7 @@ def test_deployment_model_uses_the_full_window() -> None:
     corpus = _three_day_corpus()
     result = cross_fit(corpus, SCHEMA, horizon=H)
     assert result.deployment_model.training_race_ids == frozenset(r.race_id for r in corpus)
-    assert result.deployment_model.trained_through_day == date(2026, 7, 3)
+    assert result.deployment_model.trained_through == ChronologyKey.from_date(date(2026, 7, 3))
     assert result.deployment_model.horizon == H
 
 
@@ -150,7 +151,7 @@ def test_fit_failure_day_is_excluded_with_reason_but_still_trains_later_models()
 
 def test_oof_fundamental_requires_open_unit_interval() -> None:
     provenance = StageOneProvenance(
-        trained_through=date(2026, 7, 1),
+        trained_through=ChronologyKey.from_date(date(2026, 7, 1)),
         training_race_ids=frozenset({"a1"}),
         training_race_ids_digest="d",
         horizon=H,
@@ -163,7 +164,7 @@ def test_oof_fundamental_requires_open_unit_interval() -> None:
 def test_assert_out_of_fold_catches_contaminated_rows() -> None:
     races = {r.race_id: r for r in _three_day_corpus()}
     saw_own_race = StageOneProvenance(
-        trained_through=date(2026, 7, 1),
+        trained_through=ChronologyKey.from_date(date(2026, 7, 1)),
         training_race_ids=frozenset({"b1"}),  # the model saw the race it prices
         training_race_ids_digest="d",
         horizon=H,
@@ -173,7 +174,7 @@ def test_assert_out_of_fold_catches_contaminated_rows() -> None:
         assert_out_of_fold([row], races)
 
     same_day = StageOneProvenance(
-        trained_through=date(2026, 7, 2),  # not strictly earlier than b1's meeting day
+        trained_through=ChronologyKey.from_date(date(2026, 7, 2)),  # not strictly earlier than b1's chronology
         training_race_ids=frozenset({"a1"}),
         training_race_ids_digest="d",
         horizon=H,
@@ -223,10 +224,10 @@ class TestFoldOrderFollowsChronologyNotIdentity:
         ]
         result = cross_fit(corpus, SCHEMA, horizon=H)
         excluded_ids = {e.race_id for e in result.excluded}
-        oof_ids = {row.race_id for row in result.fundamentals}
+        oof_ids = {row.race_id for row in result.oof}
         # If identity strings were sorted as chronology, a-late would (wrongly) be the
         # first fold. Chronology says z-early is first: its races are the exclusions.
         assert {"e1", "e2", "e3", "e4"} <= excluded_ids
         assert oof_ids <= {"l1", "l2"}
-        for row in result.fundamentals:
+        for row in result.oof:
             assert row.provenance.trained_through < late.chronology

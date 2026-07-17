@@ -211,11 +211,11 @@
   introduced_in_phase: 2
   enforcement_state: active
   relevant_inputs:
-  - meeting_day_order
+  - cluster_chronology_order
   - training_race_ids
-  - trained_through_day
+  - trained_through
   metamorphic_properties:
-  - every out-of-fold fundamental's model trained strictly before the priced race's meeting day
+  - every out-of-fold fundamental's model trained strictly before the priced choice set's cluster chronology
   - no model ever prices a race contained in its own training set
   - a contaminated row is refused at consumption, not only at production
   - every input race is an out-of-fold race or an explicit exclusion with a reason

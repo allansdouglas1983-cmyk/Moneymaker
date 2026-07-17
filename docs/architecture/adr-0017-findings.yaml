@@ -49,7 +49,7 @@ findings:
     title: Cluster key hardcoded as date meeting_day; adapter declaration unconsumed
     severity: DEGRADES-GENERALITY
     owner_slice: A4
-    status: scheduled
+    status: done  # landed 2026-07-17 — ClusterId (opaque, unorderable) + ChronologyKey (explicit order) govern crossfit folds and SPEC-090 resampling; divergence pins in place
   - id: F-06
     title: Out-of-fold production welded to conditional logit
     severity: DEGRADES-GENERALITY

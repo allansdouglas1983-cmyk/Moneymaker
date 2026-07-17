@@ -16,7 +16,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from sport_core.clustering import ChronologyKey
 
 from l4_pricing._newton import (
     FitDidNotConverge as FitDidNotConverge,
@@ -43,7 +43,7 @@ class StageOneModel:
     iterations_used: int
     training_race_ids: frozenset[str]
     training_race_ids_digest: str
-    trained_through_day: date
+    trained_through: ChronologyKey
 
 
 def _feature_vector(runner: RunnerRow, schema: FeatureSchema, race_id: str) -> list[float]:
@@ -100,7 +100,7 @@ def fit_conditional_logit(
         iterations_used=iterations_used,
         training_race_ids=frozenset(race_ids),
         training_race_ids_digest=race_ids_digest(race_ids),
-        trained_through_day=max(race.meeting_day for race in race_list),
+        trained_through=max(race.cluster.chronology for race in race_list),
     )
 
 

@@ -10,11 +10,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date
 from decimal import Decimal
 from typing import Any, Mapping
 
 from pydantic import BaseModel, ConfigDict, model_validator
+
+from sport_core.clustering import ClusterAssignment
 
 
 class RaceValidationError(Exception):
@@ -89,7 +90,10 @@ class Race(BaseModel):
     model_config = ConfigDict(frozen=True, strict=True)
 
     race_id: str
-    meeting_day: date
+    # A4 (audit F-05): the adapter-owned dependence-group identity + explicit chronology
+    # replaced the date-typed meeting_day — generic layers no longer reconstruct
+    # meeting-day semantics; racing's meeting day arrives as calendar_day_assignment.
+    cluster: ClusterAssignment
     runners: tuple[RunnerRow, ...]
     winner_id: int | None
 

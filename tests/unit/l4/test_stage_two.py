@@ -30,7 +30,8 @@ from l5_decision.prices import MarketInfoPrice
 from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
 
 
-def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+def _ca(day: date) -> ClusterAssignment:
+    # racing cluster assignment for tests (A4): meeting-day identity + chronology
     return calendar_day_assignment("horse_racing", day)
 
 pytestmark = pytest.mark.spec("SPEC-032")
@@ -42,7 +43,7 @@ RACE_DAY = date(2026, 7, 2)
 
 def _provenance() -> StageOneProvenance:
     return StageOneProvenance(
-        trained_through=TRAIN_DAY,
+        trained_through=ChronologyKey.from_date(TRAIN_DAY),
         training_race_ids=frozenset({"train-1"}),
         training_race_ids_digest="digest-1",
         horizon=H,
@@ -134,7 +135,7 @@ def test_collinear_inputs_are_refused() -> None:
 def test_training_reverifies_out_of_fold_at_consumption() -> None:
     races, oof, market = _fixture()
     contaminated = StageOneProvenance(
-        trained_through=RACE_DAY,  # not strictly earlier
+        trained_through=ChronologyKey.from_date(RACE_DAY),  # not strictly earlier
         training_race_ids=frozenset({"train-1"}),
         training_race_ids_digest="digest-1",
         horizon=H,
@@ -227,7 +228,7 @@ def test_model_records_lineage() -> None:
     races, oof, market = _fixture()
     model = fit_stage_two(races, oof, market, horizon=H).model
     assert model.training_race_ids == frozenset({f"A{i}" for i in range(4)} | {f"B{i}" for i in range(4)})
-    assert model.trained_through_day == RACE_DAY
+    assert model.trained_through == ChronologyKey.from_date(RACE_DAY)
     assert model.stage_one_provenance_digest
     assert model.horizon == H
     again = fit_stage_two(races, oof, market, horizon=H).model

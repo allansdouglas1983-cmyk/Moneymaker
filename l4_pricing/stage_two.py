@@ -16,7 +16,7 @@ import hashlib
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from sport_core.clustering import ChronologyKey
 
 from l4_pricing._newton import PreparedRace, SingularHessianError, newton_mle, softmax
 from l4_pricing.conditional_logit import race_ids_digest
@@ -42,7 +42,7 @@ class CombinedModel:
     iterations_used: int
     training_race_ids: frozenset[str]
     training_race_ids_digest: str
-    trained_through_day: date
+    trained_through: ChronologyKey
     stage_one_provenance_digest: str
 
 
@@ -186,7 +186,7 @@ def fit_stage_two(
         iterations_used=iterations_used,
         training_race_ids=frozenset(used_race_ids),
         training_race_ids_digest=race_ids_digest(used_race_ids),
-        trained_through_day=max(races_by_id[rid].meeting_day for rid in used_race_ids),
+        trained_through=max(races_by_id[rid].cluster.chronology for rid in used_race_ids),
         stage_one_provenance_digest=hashlib.sha256(
             "\n".join(sorted(provenance_digests)).encode("utf-8")
         ).hexdigest(),

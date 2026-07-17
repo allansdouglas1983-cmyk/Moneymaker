@@ -25,7 +25,8 @@ from l4_pricing.races import FeatureSchema, Race, RaceValidationError, RunnerRow
 from sport_core.clustering import ChronologyKey, ClusterAssignment, ClusterId, calendar_day_assignment
 
 
-def _ca(day):  # racing cluster assignment for tests (A4): meeting-day identity + chronology
+def _ca(day: date) -> ClusterAssignment:
+    # racing cluster assignment for tests (A4): meeting-day identity + chronology
     return calendar_day_assignment("horse_racing", day)
 
 pytestmark = pytest.mark.spec("SPEC-030")
@@ -114,7 +115,7 @@ def test_fit_ignores_non_runner_rows_entirely() -> None:
     corpus_with_nr = [
         Race(
             race_id=r.race_id,
-            cluster=_ca(r.cluster.chronology),
+            cluster=r.cluster,
             runners=r.runners + (RunnerRow(runner_id=99, features={"fav": Decimal(50)}, non_runner=True),),
             winner_id=r.winner_id,
         )
@@ -136,7 +137,7 @@ def test_fit_is_bit_deterministic() -> None:
 def test_model_records_training_provenance() -> None:
     model = fit_conditional_logit(_three_to_one_corpus(), SCHEMA, horizon=H)
     assert model.training_race_ids == frozenset({"r1", "r2", "r3", "r4"})
-    assert model.trained_through_day == DAY
+    assert model.trained_through == ChronologyKey.from_date(DAY)
     assert model.training_race_ids_digest
     assert model.horizon == H
     assert isinstance(model, StageOneModel)
