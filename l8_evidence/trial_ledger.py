@@ -107,7 +107,13 @@ _ZERO = Decimal(0)
 _ONE = Decimal(1)
 _SHA256_PREFIX = "sha256:"
 _SHA256_HEX_LEN = 64
-_DECISION_UNIT = "race"
+#: Governed correction 0003 (founder approved, 2026-07-17): the decision unit is the
+#: sport's mutually exclusive market choice set — a CLOSED, adapter-declared vocabulary,
+#: not a free string and not racing-only. "race" (horse racing) and "match" (tennis) are
+#: the two approved units; a future sport adds its unit HERE via a further governed
+#: change, never at runtime. The unit of analysis is always the choice-set/event, never
+#: the individual selection ("runner" is refused deliberately).
+PERMITTED_DECISION_UNITS: frozenset[str] = frozenset({"race", "match"})
 
 
 class TrialLedgerError(ValueError):
@@ -304,10 +310,11 @@ class TrialRegistration:
     def __post_init__(self) -> None:
         _require_nonempty(self.experiment_id, "experiment_id")
         _require_nonempty(self.hypothesis, "hypothesis")
-        if self.decision_unit != _DECISION_UNIT:
+        if self.decision_unit not in PERMITTED_DECISION_UNITS:
             raise TrialValidationError(
-                f"decision_unit must be {_DECISION_UNIT!r} (the race is the unit of analysis, "
-                f"not the runner); got {self.decision_unit!r}"
+                f"decision_unit must be one of {sorted(PERMITTED_DECISION_UNITS)} (the "
+                "market choice-set is the unit of analysis, never the individual "
+                f"selection); got {self.decision_unit!r}"
             )
         _require_nonempty(self.primary_endpoint, "primary_endpoint")
         for i, endpoint in enumerate(self.secondary_endpoints):

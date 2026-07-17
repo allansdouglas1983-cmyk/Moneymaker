@@ -144,6 +144,12 @@ def test_registration_accepts_a_well_formed_record() -> None:
     assert registration.decision_unit == "race"
 
 
+def test_match_decision_unit_is_accepted() -> None:
+    # Governed correction 0003 (founder approved 2026-07-17): "match" joins the closed set.
+    registration = _registration("exp-match", decision_unit="match", number_of_prior_trials=0)
+    assert registration.decision_unit == "match"
+
+
 def test_registration_refuses_non_race_decision_unit() -> None:
     with pytest.raises(TrialValidationError):
         _registration(decision_unit="runner")
