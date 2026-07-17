@@ -24,6 +24,7 @@ _REPO = Path(__file__).resolve().parents[3]
 # Read-only analytics/prediction consumer surface (extends as slices land).
 _ANALYTICS_MODULES = (
     "analytics_contracts",
+    "sport_core",
     "l4_pricing.probability_outputs",
     "governance.output_rights",
     "l8_evidence.prediction_snapshots",
