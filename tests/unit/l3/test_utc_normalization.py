@@ -85,6 +85,7 @@ def test_build_context_times_are_stored_in_utc() -> None:
         scheduled_start=_utc(-300).astimezone(_CET),
         actual_off=OFF.astimezone(_CET),
     )
+    assert ctx.scheduled_start is not None
     assert ctx.scheduled_start.utcoffset() == timedelta(0)
     assert ctx.actual_off is not None
     assert ctx.actual_off.utcoffset() == timedelta(0)

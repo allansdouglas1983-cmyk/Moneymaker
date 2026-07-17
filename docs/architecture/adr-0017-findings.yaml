@@ -26,13 +26,13 @@ findings:
     title: Knowability boundary assumes events are only ever delayed
     severity: BLOCKS-TENNIS
     owner_slice: A1
-    status: scheduled
+    status: done  # landed 2026-07-17 — tennis-feature gate CLEAR
     gate: blocks all tennis feature construction and activation
   - id: F-02
     title: FeatureBuildContext structurally requires scheduled_start
     severity: DEGRADES-GENERALITY
     owner_slice: A1
-    status: scheduled
+    status: done  # landed 2026-07-17 with F-01
   - id: F-03
     title: ClosePrice tick index cannot represent BSP / WAP benchmarks
     severity: DEFECT (racing too)

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from l3_features.build_context import LiveBoundaryPolicy
 from l8_evidence.trial_ledger import PERMITTED_DECISION_UNITS
 from sport_core.capabilities import SportCapabilities
 
@@ -43,6 +44,13 @@ class SportAdapter:
     (racing: reconciled BSP) — the l3 leakage-guard mechanism consumes these; an
     empty set means the sport has no settlement-time benchmark yet (tennis, until
     the benchmark research resolves).
+
+    ``events_can_start_early`` (A1, conceptual audit F-01) is the sport's event-timing
+    FACT: whether an event can begin before its scheduled start (racing: False — races
+    are only ever delayed; tennis: True — matches are routinely brought forward). The
+    knowability-boundary POLICY derives from this fact via :attr:`live_boundary_policy`
+    and is never declared separately, so an early-start sport can never obtain the
+    scheduled-start floor by construction.
     """
 
     sport_id: str
@@ -51,6 +59,14 @@ class SportAdapter:
     cluster_key_name: str
     event_start_name: str
     closing_diagnostic_taints: frozenset[str]
+    events_can_start_early: bool
+
+    @property
+    def live_boundary_policy(self) -> LiveBoundaryPolicy:
+        """The l3 knowability-boundary policy DERIVED from ``events_can_start_early``."""
+        if self.events_can_start_early:
+            return LiveBoundaryPolicy.OBSERVED_MARKET_STATE
+        return LiveBoundaryPolicy.SCHEDULED_START_FLOOR
 
     def __post_init__(self) -> None:
         if not self.sport_id or not self.sport_id.strip():

@@ -94,7 +94,7 @@ class TestScheduledStartFloorIsRacingExact:
             FeatureBuildContext(
                 mode=BuildMode.LIVE,
                 boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR,
-            )  # type: ignore[call-arg]
+            )
 
     def test_floor_refuses_observed_policy_fields(self) -> None:
         # A context declares exactly one boundary discipline; smuggling the other
@@ -165,7 +165,7 @@ class TestObservedMarketStatePostHoc:
             FeatureBuildContext(
                 mode=BuildMode.POST_HOC,
                 boundary_policy=LiveBoundaryPolicy.OBSERVED_MARKET_STATE,
-            )  # type: ignore[call-arg]
+            )
 
     def test_post_hoc_refuses_live_proof_fields(self) -> None:
         with pytest.raises(ValueError):

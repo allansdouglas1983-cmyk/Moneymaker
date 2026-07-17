@@ -43,6 +43,7 @@ TENNIS_ADAPTER = SportAdapter(
     cluster_key_name="calendar_day_utc",
     event_start_name="scheduled_start",
     closing_diagnostic_taints=frozenset(),
+    events_can_start_early=True,
 )
 """``closing_diagnostic_taints`` is deliberately empty: tennis has no settlement-time
 benchmark chosen yet (no BSP; final-midpoint/WAP/microprice are S8 future interfaces,
