@@ -19,14 +19,9 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from sport_core.clustering import ChronologyKey, ClusterAssignment
 
-from l4_pricing.conditional_logit import (
-    FitDidNotConverge,
-    SeparationError,
-    StageOneModel,
-    fit_conditional_logit,
-    predict_race,
-)
+from l4_pricing.conditional_logit import CONDITIONAL_LOGIT_FAMILY, race_ids_digest
 from l4_pricing.horizon import HorizonLabel
+from l4_pricing.stage_one import StageOneFamily, StageOneFitRefusal
 from l4_pricing.races import Race, RaceValidationError, FeatureSchema
 
 
@@ -74,7 +69,9 @@ class CrossFitResult:
     oof: tuple[OOFFundamental, ...]
     oof_race_ids: frozenset[str]
     excluded: tuple[ExcludedRace, ...]
-    deployment_model: StageOneModel  # §6.4 step 4: retrained on the full window
+    # §6.4 step 4: retrained on the full window by the SAME family. Opaque to the
+    # orchestrator (A5/F-06) — consumers narrow it to their family's model type.
+    deployment_model: object
     horizon: HorizonLabel
 
 
@@ -111,8 +108,23 @@ def cross_fit(
     *,
     horizon: HorizonLabel,
     max_iter: int = 100,
+    family: StageOneFamily = CONDITIONAL_LOGIT_FAMILY,
 ) -> CrossFitResult:
-    """Produce strictly out-of-fold fundamentals for every race that can honestly have one."""
+    """Produce strictly out-of-fold fundamentals for every race that can honestly have one.
+
+    A5 (audit F-06): this ORCHESTRATOR owns fold assignment, leakage discipline,
+    exclusions, provenance and OOF production; ``family`` (any
+    :class:`l4_pricing.stage_one.StageOneFamily`) only fits and predicts. Provenance is
+    minted from the orchestrator's OWN fold bookkeeping — a family cannot influence
+    ``trained_through`` or ``training_race_ids`` no matter what its fitted artefact
+    claims. Conditional logit is the default registered family, not the owner of this
+    path.
+    """
+    if not isinstance(family, StageOneFamily):
+        raise TypeError(
+            f"family must satisfy StageOneFamily (fit/predict/family_id), got "
+            f"{type(family).__name__}"
+        )
     race_list = sorted(races, key=lambda race: race.race_id)
     if not race_list:
         raise RaceValidationError("cannot cross-fit an empty corpus")
@@ -146,22 +158,26 @@ def cross_fit(
             )
             continue
         training = [race for earlier in days[:index] for race in by_day[earlier]]
+        # Orchestrator-owned provenance (A5/F-06): computed from THIS fold's training
+        # membership before the family sees the data — no fitted artefact can misreport
+        # what trained it.
+        training_ids = frozenset(race.race_id for race in training)
+        provenance = StageOneProvenance(
+            trained_through=max(race.cluster.chronology for race in training),
+            training_race_ids=training_ids,
+            training_race_ids_digest=race_ids_digest(sorted(training_ids)),
+            horizon=horizon,
+        )
         try:
-            model = fit_conditional_logit(training, schema, horizon=horizon, max_iter=max_iter)
-        except (SeparationError, FitDidNotConverge) as exc:
+            model = family.fit(training, schema, horizon=horizon, max_iter=max_iter)
+        except StageOneFitRefusal as exc:
             excluded.extend(
                 ExcludedRace(race.race_id, f"stage-one fit failed on earlier days: {exc}")
                 for race in day_races
             )
             continue
-        provenance = StageOneProvenance(
-            trained_through=model.trained_through,
-            training_race_ids=model.training_race_ids,
-            training_race_ids_digest=model.training_race_ids_digest,
-            horizon=horizon,
-        )
         for race in day_races:
-            probabilities = predict_race(model, race, horizon=horizon)
+            probabilities = family.predict(model, race, horizon=horizon)
             if not all(0.0 < p < 1.0 for p in probabilities.values()):
                 # A near-separated model can saturate a prediction to exactly 0.0/1.0 in
                 # float64. That is not a usable fundamental — exclude the race explicitly
@@ -187,7 +203,7 @@ def cross_fit(
         oof=tuple(oof),
         oof_race_ids=frozenset(row.race_id for row in oof),
         excluded=tuple(excluded),
-        deployment_model=fit_conditional_logit(
+        deployment_model=family.fit(
             race_list, schema, horizon=horizon, max_iter=max_iter
         ),
         horizon=horizon,

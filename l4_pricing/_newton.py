@@ -23,11 +23,14 @@ _COMPLETE_SEPARATION_LL = -1e-8
 PreparedRace = tuple[list[list[float]], int]
 
 
-class FitDidNotConverge(Exception):
+from l4_pricing.stage_one import StageOneFitRefusal
+
+
+class FitDidNotConverge(StageOneFitRefusal):
     """The Newton iteration budget was exhausted before the gradient tolerance was met."""
 
 
-class SeparationError(Exception):
+class SeparationError(StageOneFitRefusal):
     """The MLE is unbounded or unidentified; the fit refuses rather than truncating."""
 
 

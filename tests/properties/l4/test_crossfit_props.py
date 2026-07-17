@@ -16,6 +16,7 @@ from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from l4_pricing.conditional_logit import SeparationError
+from l4_pricing.conditional_logit import StageOneModel
 from l4_pricing.crossfit import CrossFitViolation, assert_out_of_fold, cross_fit
 from l4_pricing.horizon import HorizonLabel
 from l4_pricing.races import FeatureSchema, Race, RunnerRow
@@ -92,7 +93,9 @@ def test_cross_fit_is_deterministic(corpus: list[Race]) -> None:
     assert [(r.race_id, r.runner_id, r.p_fundamental) for r in a.oof] == [
         (r.race_id, r.runner_id, r.p_fundamental) for r in b.oof
     ]
-    assert a.deployment_model.coefficients == b.deployment_model.coefficients
+    model_a, model_b = a.deployment_model, b.deployment_model
+    assert isinstance(model_a, StageOneModel) and isinstance(model_b, StageOneModel)
+    assert model_a.coefficients == model_b.coefficients
     assert {e.race_id for e in a.excluded} == {e.race_id for e in b.excluded}
 
 

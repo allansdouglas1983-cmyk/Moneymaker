@@ -117,3 +117,32 @@ def predict_race(
     vectors = [_feature_vector(runner, model.schema, race.race_id) for runner in active]
     probabilities = softmax(utilities(vectors, model.coefficients))
     return {runner.runner_id: p for runner, p in zip(active, probabilities)}
+
+class _ConditionalLogitFamily:
+    """Conditional logit as ONE registered StageOneFamily implementation (A5/F-06).
+
+    The orchestrator owns folds, exclusions and provenance; this object only exposes
+    fit/predict. Frozen module-level singleton; identity is the family's version string.
+    """
+
+    family_id = "conditional-logit-v1"
+
+    def fit(
+        self,
+        races: Sequence[Race],
+        schema: FeatureSchema,
+        *,
+        horizon: HorizonLabel,
+        max_iter: int,
+    ) -> StageOneModel:
+        return fit_conditional_logit(races, schema, horizon=horizon, max_iter=max_iter)
+
+    def predict(self, model: object, race: Race, *, horizon: HorizonLabel) -> Mapping[int, float]:
+        if not isinstance(model, StageOneModel):
+            raise TypeError(
+                f"conditional-logit predict requires a StageOneModel, got {type(model).__name__}"
+            )
+        return predict_race(model, race, horizon=horizon)
+
+
+CONDITIONAL_LOGIT_FAMILY = _ConditionalLogitFamily()

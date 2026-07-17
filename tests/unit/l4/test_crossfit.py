@@ -12,6 +12,7 @@ from decimal import Decimal
 
 import pytest
 
+from l4_pricing.conditional_logit import StageOneModel
 from l4_pricing.crossfit import (
     CrossFitResult,
     CrossFitViolation,
@@ -110,9 +111,11 @@ def test_universe_accounting_is_exact() -> None:
 def test_deployment_model_uses_the_full_window() -> None:
     corpus = _three_day_corpus()
     result = cross_fit(corpus, SCHEMA, horizon=H)
-    assert result.deployment_model.training_race_ids == frozenset(r.race_id for r in corpus)
-    assert result.deployment_model.trained_through == ChronologyKey.from_date(date(2026, 7, 3))
-    assert result.deployment_model.horizon == H
+    deployment = result.deployment_model
+    assert isinstance(deployment, StageOneModel)  # default family is conditional logit
+    assert deployment.training_race_ids == frozenset(r.race_id for r in corpus)
+    assert deployment.trained_through == ChronologyKey.from_date(date(2026, 7, 3))
+    assert deployment.horizon == H
 
 
 def test_cross_fit_is_deterministic_and_input_order_invariant() -> None:
@@ -122,7 +125,9 @@ def test_cross_fit_is_deterministic_and_input_order_invariant() -> None:
     assert [(r.race_id, r.runner_id, r.p_fundamental) for r in a.oof] == [
         (r.race_id, r.runner_id, r.p_fundamental) for r in b.oof
     ]
-    assert a.deployment_model.coefficients == b.deployment_model.coefficients
+    model_a, model_b = a.deployment_model, b.deployment_model
+    assert isinstance(model_a, StageOneModel) and isinstance(model_b, StageOneModel)
+    assert model_a.coefficients == model_b.coefficients
 
 
 def test_fit_failure_day_is_excluded_with_reason_but_still_trains_later_models() -> None:

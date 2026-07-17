@@ -56,13 +56,11 @@ lower bound — the type reaches ``l5_decision`` by construction, and ``sport_co
 on the ADR 0013 read-only analytics boundary that must never reach ``l5_decision``.
 Seams that return distributions are pricing-layer contracts.
 
-Tennis-flavoured seams (``SurfaceRatingProvider``, ``FitnessSignalProvider``,
-``ServeStrengthProvider``, ``ReturnStrengthProvider``) are declared here because ADR 0017
-Phase 5 named them alongside the generic seam, but they are SPORT-ADAPTER-LEVEL concerns
-(no football, horse-racing or binary-market analogue) exposed through the generic
-:class:`FeatureGenerator` seam rather than first-class Core abstractions. Flagged in this
-slice's report for the ``sport_tennis`` owner to reconsider relocating them there — no
-file in ``sport_tennis/`` is touched by this slice.
+Tennis-flavoured seams (surface rating, fitness, serve/return strength, SurfaceElo)
+live in :mod:`sport_tennis.providers` (A5, audit F-07) — they are sport-adapter-level
+concerns exposed to the Core only through the generic :class:`FeatureGenerator` seam.
+Competitor identity everywhere is :class:`sport_core.competitors.CompetitorId` — the
+stable, namespaced, opaque STRING — never a Betfair selection integer.
 """
 from __future__ import annotations
 
@@ -71,6 +69,7 @@ from decimal import Decimal
 from typing import Mapping, Protocol, runtime_checkable
 
 from l3_features.feature_set import FeatureSet
+from sport_core.competitors import CompetitorId
 from l4_pricing.probability_outputs import (
     CombinedProbability,
     FundamentalProbability,
@@ -86,11 +85,6 @@ __all__ = [
     "CalibrationProvider",
     "FeatureGenerator",
     "RankingProvider",
-    "SurfaceRatingProvider",
-    "FitnessSignalProvider",
-    "ServeStrengthProvider",
-    "ReturnStrengthProvider",
-    "SurfaceEloModel",
     "WeightedEloModel",
     "BradleyTerryModel",
     "RegularisedLogisticModel",
@@ -250,116 +244,11 @@ class RankingProvider(Protocol):
 
 
 # --------------------------------------------------------------------------------------
-# Tennis-flavoured providers — declared per ADR 0017 Phase 5's brief, but these are
-# adapter-level: a football Match Odds market or a binary financial market has no serve,
-# no surface, no player fitness. They exist as instances of the generic FeatureGenerator
-# seam above, never as a Core abstraction a sport-agnostic caller depends on directly.
-# Report flag: the sport_tennis owner may prefer these declared in sport_tennis/ instead
-# of sport_core/ for exactly that reason — left here only because this slice's brief
-# places them in this file, not because sport_core should depend on tennis vocabulary.
-# --------------------------------------------------------------------------------------
-
-
-@runtime_checkable
-class SurfaceRatingProvider(Protocol):
-    """Sport-adapter-level: a player's surface-conditioned rating as of a decision time.
-
-    Not a generic Core seam — no football or binary-market analogue exists; concrete
-    implementations are exposed to the Core only through ``FeatureGenerator``. Deterministic
-    given the declared rating artefact. No LLM may implement or back this seam. Versioned
-    identity mandatory via ``model_id``/``model_version``. Knowledge-time discipline via the
-    mandatory ``as_of`` parameter — a concrete implementation must not read information
-    published after it.
-    """
-
-    @property
-    def model_id(self) -> str: ...
-
-    @property
-    def model_version(self) -> str: ...
-
-    def rating(self, player_id: int, surface: str, *, as_of: datetime) -> Decimal: ...
-
-
-@runtime_checkable
-class FitnessSignalProvider(Protocol):
-    """Sport-adapter-level: a player's fitness/fatigue/injury signal as of a decision time.
-
-    Not a generic Core seam. Deterministic given the declared signal artefact. No LLM may
-    implement or back this seam. Versioned identity mandatory via ``model_id``/
-    ``model_version``. Knowledge-time discipline via the mandatory ``as_of`` parameter.
-    """
-
-    @property
-    def model_id(self) -> str: ...
-
-    @property
-    def model_version(self) -> str: ...
-
-    def signal(self, player_id: int, *, as_of: datetime) -> Decimal: ...
-
-
-@runtime_checkable
-class ServeStrengthProvider(Protocol):
-    """Sport-adapter-level: a player's surface-conditioned serve-strength signal.
-
-    Not a generic Core seam — flagged for possible relocation to ``sport_tennis``.
-    Deterministic given the declared signal artefact. No LLM may implement or back this
-    seam. Versioned identity mandatory via ``model_id``/``model_version``. Knowledge-time
-    discipline via the mandatory ``as_of`` parameter.
-    """
-
-    @property
-    def model_id(self) -> str: ...
-
-    @property
-    def model_version(self) -> str: ...
-
-    def serve_strength(self, player_id: int, surface: str, *, as_of: datetime) -> Decimal: ...
-
-
-@runtime_checkable
-class ReturnStrengthProvider(Protocol):
-    """Sport-adapter-level: a player's surface-conditioned return-strength signal.
-
-    Not a generic Core seam — flagged for possible relocation to ``sport_tennis``.
-    Deterministic given the declared signal artefact. No LLM may implement or back this
-    seam. Versioned identity mandatory via ``model_id``/``model_version``. Knowledge-time
-    discipline via the mandatory ``as_of`` parameter.
-    """
-
-    @property
-    def model_id(self) -> str: ...
-
-    @property
-    def model_version(self) -> str: ...
-
-    def return_strength(self, player_id: int, surface: str, *, as_of: datetime) -> Decimal: ...
-
-
-# --------------------------------------------------------------------------------------
 # Named MODEL CONTRACTS (ADR 0017 Phase 5). Each names a future model family the founder's
 # program specifically called out; no model exists yet anywhere in the platform. Every
 # one requires a versioned model_id + model_version — the model-identity requirement the
 # platform's lineage fields (SPEC-024, SPEC-036, SPEC-037) key off.
 # --------------------------------------------------------------------------------------
-
-
-@runtime_checkable
-class SurfaceEloModel(Protocol):
-    """A future surface-conditioned Elo rating system. Deterministic given its declared
-    update rule and rating history. No LLM may implement or back this model. Versioned
-    identity mandatory via ``model_id``/``model_version``. Knowledge-time discipline via
-    the mandatory ``as_of`` parameter on every rating query.
-    """
-
-    @property
-    def model_id(self) -> str: ...
-
-    @property
-    def model_version(self) -> str: ...
-
-    def rating(self, player_id: int, surface: str, *, as_of: datetime) -> Decimal: ...
 
 
 @runtime_checkable
@@ -376,7 +265,7 @@ class WeightedEloModel(Protocol):
     @property
     def model_version(self) -> str: ...
 
-    def rating(self, player_id: int, *, as_of: datetime) -> Decimal: ...
+    def rating(self, competitor_id: CompetitorId, *, as_of: datetime) -> Decimal: ...
 
 
 @runtime_checkable

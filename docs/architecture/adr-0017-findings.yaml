@@ -54,7 +54,7 @@ findings:
     title: Out-of-fold production welded to conditional logit
     severity: DEGRADES-GENERALITY
     owner_slice: A5
-    status: scheduled
+    status: done  # landed 2026-07-17 — StageOneFamily seam; orchestrator owns folds/exclusions/provenance; CONDITIONAL_LOGIT_FAMILY is one implementation
     note: >-
       Founder directive: fold assignment and OOF production must be owned by a
       model-independent crossfit orchestrator; conditional logit must not remain the
@@ -63,7 +63,7 @@ findings:
     title: int player_id in sport_core protocols vs str identity in sport_tennis domain
     severity: BLOCKS-TENNIS (at first concrete provider)
     owner_slice: A5
-    status: scheduled
+    status: done  # landed 2026-07-17 — namespaced CompetitorId; five tennis protocols relocated to sport_tennis.providers; WeightedElo re-keyed
     note: opaque STRING competitor identity per founder directive; protocols relocate to sport_tennis
   - id: F-08
     title: CLV benchmark enum sealed to racing's two members
