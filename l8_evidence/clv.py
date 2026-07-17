@@ -297,9 +297,11 @@ def _content_digest(instance: object) -> str:
 class ClosingPrice:
     """One closing benchmark observation (SPEC-095).
 
-    ``odds`` is a plain ``Decimal`` price greater than 1 — NOT necessarily an on-ladder tick
-    index like :class:`price_contracts.prices.ClosePrice`, because a pre-suspension WAP is a
-    volume-weighted average that will generally fall between ticks.
+    ``odds`` is a plain ``Decimal`` price greater than 1 — not necessarily on-ladder, because
+    a pre-suspension WAP is a volume-weighted average that will generally fall between ticks.
+    (:class:`price_contracts.prices.ClosePrice` adopted the same exact-Decimal representation
+    in slice A2, audit F-03 — the two types remain distinct on purpose: this one is the
+    evidence-layer observation, that one the diagnostic price contract.)
 
     ``BSP`` carries no window: both window fields MUST be ``None``. ``PRE_SUSPENSION_WAP``
     carries a MANDATORY window: ``window_start_seconds_before_suspension`` (the more distant
