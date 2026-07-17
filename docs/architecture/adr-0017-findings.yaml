@@ -79,17 +79,17 @@ findings:
     title: UpdateReason.NON_RUNNER racing-only; no withdrawal member
     severity: DEGRADES-GENERALITY
     owner_slice: A6
-    status: scheduled
+    status: done  # landed 2026-07-17 — governed SELECTION_WITHDRAWN extension
   - id: F-11
     title: Predictor metrics cannot represent dead heats or voids
     severity: DEGRADES-GENERALITY
     owner_slice: A6
-    status: scheduled
+    status: done  # landed 2026-07-17 — ChoiceSetExclusion + coverage_with_exclusions
   - id: F-12
     title: Race.winner_id cannot distinguish pending from no-sporting-winner
     severity: DEGRADES-GENERALITY
     owner_slice: A6
-    status: scheduled
+    status: done  # landed 2026-07-17 — ChoiceSetOutcome vocabulary + canonical ExcludedRace reasons (fitting still refuses winnerless sets)
   - id: F-13
     title: Market reservation never releases on zero-matched lapse
     severity: DESIGN-REVIEW

@@ -58,11 +58,13 @@ import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Mapping, Sequence
 
 from l8_evidence.prediction_snapshots import VintageType
+from sport_core.outcomes import ChoiceSetOutcome, ChoiceSetResolution, exclusion_reason
 
 __all__ = [
     "ModelKind",
@@ -448,6 +450,62 @@ def coverage_rate(races_evaluated: int, total_universe_races: int) -> CoverageRe
         total_universe_races=total_universe_races,
         coverage_rate=races_evaluated / total_universe_races,
     )
+
+
+@dataclass(frozen=True)
+class ChoiceSetExclusion:
+    """One choice set explicitly excluded from evaluation, with its resolution and a
+    knowledge-time (A6, audit F-11).
+
+    ``evaluate_race`` correctly requires exactly one winner; a dead-heated race or a
+    voided market (the ordinary tennis walkover resolution) is therefore unevaluable —
+    and MUST leave the evaluated set THIS way: as a typed exclusion carrying the
+    canonical reason from :mod:`sport_core.outcomes`, staying in the coverage
+    denominator, never as a silent omission.
+    """
+
+    choice_set_id: str
+    outcome: ChoiceSetOutcome
+    knowledge_time_utc: datetime
+
+    def __post_init__(self) -> None:
+        if not self.choice_set_id or not self.choice_set_id.strip():
+            raise ValueError("choice_set_id must be non-empty")
+        if self.outcome.resolution is ChoiceSetResolution.WINNER_KNOWN:
+            raise ValueError(
+                "a WINNER_KNOWN choice set is evaluable, not excludable — evaluate it"
+            )
+        if self.knowledge_time_utc.tzinfo is None:
+            raise ValueError("knowledge_time_utc must be timezone-aware (UTC)")
+
+    @property
+    def reason(self) -> str:
+        return exclusion_reason(self.outcome)
+
+
+def coverage_with_exclusions(
+    *,
+    races_evaluated: int,
+    exclusions: Sequence[ChoiceSetExclusion],
+    total_universe_races: int,
+) -> CoverageResult:
+    """Coverage with the explicit-exclusion path enforced (A6, audit F-11).
+
+    Refuses duplicate exclusion ids and an accounting overflow
+    (evaluated + excluded > universe). Exclusions never leave the denominator: the
+    returned coverage is still ``evaluated / total_universe``.
+    """
+    ids = [e.choice_set_id for e in exclusions]
+    if len(set(ids)) != len(ids):
+        raise PredictorMetricsError(
+            f"duplicate choice_set_id in exclusions: {sorted(set(i for i in ids if ids.count(i) > 1))}"
+        )
+    if races_evaluated + len(exclusions) > total_universe_races:
+        raise PredictorMetricsError(
+            f"accounting overflow: {races_evaluated} evaluated + {len(exclusions)} "
+            f"excluded exceeds total_universe_races={total_universe_races}"
+        )
+    return coverage_rate(races_evaluated, total_universe_races)
 
 
 def _race_normalised_logit(race: RaceEvaluationInput) -> dict[int, float]:

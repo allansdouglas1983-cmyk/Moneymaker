@@ -99,6 +99,11 @@ class UpdateReason(Enum):
     """
 
     NON_RUNNER = "NON_RUNNER"
+    # A6 / audit F-10 (governed enum extension, founder-approved 2026-07-17): the
+    # generic member for sports whose selections withdraw pre-off without racing's
+    # non-runner mechanism (tennis pre-match withdrawal). Representational only — no
+    # settlement consequence; SPEC-084 remains refused.
+    SELECTION_WITHDRAWN = "SELECTION_WITHDRAWN"
     MARKET_STATE_REFRESH = "MARKET_STATE_REFRESH"
     MODEL_REVISION = "MODEL_REVISION"
     HORIZON_FINALISED = "HORIZON_FINALISED"
@@ -107,7 +112,12 @@ class UpdateReason(Enum):
 
 _ALLOWED_REASONS_FOR_VINTAGE: Mapping[VintageType, frozenset[UpdateReason]] = {
     VintageType.UPDATED: frozenset(
-        {UpdateReason.NON_RUNNER, UpdateReason.MARKET_STATE_REFRESH, UpdateReason.MODEL_REVISION}
+        {
+            UpdateReason.NON_RUNNER,
+            UpdateReason.SELECTION_WITHDRAWN,
+            UpdateReason.MARKET_STATE_REFRESH,
+            UpdateReason.MODEL_REVISION,
+        }
     ),
     VintageType.FINAL_APPROVED_HORIZON: frozenset({UpdateReason.HORIZON_FINALISED}),
     VintageType.CORRECTION: frozenset({UpdateReason.DATA_CORRECTION}),
