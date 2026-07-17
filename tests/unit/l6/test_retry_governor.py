@@ -339,3 +339,85 @@ class TestMutationHardening:
         )
         with pytest.raises((AttributeError, TypeError)):
             decision.approved = False  # type: ignore[misc]
+
+
+class TestMutationHardeningRoundTwo:
+    """Round-two kills. The mutation suite runs tests/unit/l6 + tests/properties/l6
+    only, so every pin lives here."""
+
+    def test_foreign_record_type_smaller_than_attempt_is_also_skipped(
+        self, tmp_path: Path
+    ) -> None:
+        # Kills NotEq_Gt on the record-type filter: under `>` a type lexicographically
+        # SMALLER than "retry_attempt" would be processed as an attempt and crash.
+        log = AppendOnlyLog(tmp_path / "mixed2.l0")
+        log.append({"record_type": "aaa_marker"}, b'{"not": "an attempt"}')
+        governor = RetryGovernor(log=log, cooldown_seconds=_COOLDOWN_S, attempt_budget=_BUDGET)
+        governor.mark_reconciled()
+        decision = governor.evaluate(
+            "1.777", "dec-a", "book-a", now_utc=_T0, exposure_confirmed_zero=True
+        )
+        assert decision.approved  # the foreign record neither crashed nor counted
+
+    def test_in_order_attempts_advance_the_anchor(self, tmp_path: Path) -> None:
+        # Kills Gt_Eq / Gt_Is on the in-process anchor update: after an EARLIER then a
+        # LATER attempt, the cooldown must anchor on the later one.
+        governor = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "adv.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        governor.mark_reconciled()
+        late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
+        governor.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        governor.record_attempt("1.777", "dec-b", "book-b", now_utc=late)
+        decision = governor.evaluate(
+            "1.777",
+            "dec-c",
+            "book-c",
+            now_utc=late + timedelta(seconds=_COOLDOWN_S - 1),
+            exposure_confirmed_zero=True,
+        )
+        assert decision.refusal is RetryRefusal.COOLDOWN_NOT_ELAPSED
+
+    def test_in_order_attempts_advance_the_anchor_across_restart(
+        self, tmp_path: Path
+    ) -> None:
+        # Kills Gt_Eq / Gt_Is on the REBUILD anchor logic for in-order logs.
+        first = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        first.mark_reconciled()
+        late = _T0 + timedelta(seconds=_COOLDOWN_S * 2)
+        first.record_attempt("1.777", "dec-a", "book-a", now_utc=_T0)
+        first.record_attempt("1.777", "dec-b", "book-b", now_utc=late)
+        rebuilt = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "adv2.l0"), cooldown_seconds=_COOLDOWN_S, attempt_budget=3
+        )
+        rebuilt.mark_reconciled()
+        decision = rebuilt.evaluate(
+            "1.777",
+            "dec-c",
+            "book-c",
+            now_utc=late + timedelta(seconds=_COOLDOWN_S - 1),
+            exposure_confirmed_zero=True,
+        )
+        assert decision.refusal is RetryRefusal.COOLDOWN_NOT_ELAPSED
+
+    def test_minimal_governed_constants_are_accepted(self, tmp_path: Path) -> None:
+        # Kills NumberReplacer (0 -> 1) on the constructor guards: the smallest
+        # legitimate governed values construct successfully.
+        governor = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "min.l0"), cooldown_seconds=1, attempt_budget=1
+        )
+        governor.mark_reconciled()
+
+    def test_fresh_market_with_budget_one_is_approved(self, tmp_path: Path) -> None:
+        # Kills NumberReplacer (0 -> 1) on the budget lookup default: a market with no
+        # recorded attempts has count zero, not one.
+        governor = RetryGovernor(
+            log=AppendOnlyLog(tmp_path / "fresh.l0"), cooldown_seconds=1, attempt_budget=1
+        )
+        governor.mark_reconciled()
+        decision = governor.evaluate(
+            "1.999", "dec-a", "book-a", now_utc=_T0, exposure_confirmed_zero=True
+        )
+        assert decision.approved
