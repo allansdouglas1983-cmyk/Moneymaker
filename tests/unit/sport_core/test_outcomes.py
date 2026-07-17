@@ -8,8 +8,15 @@ settlement stays SPEC-082 behind the racing policy; tennis settlement stays SPEC
 REFUSED. A tied outcome here is a structure ("more than one selection shares the
 result"), never a payout rule.
 
+FOUNDER SEMANTIC CORRECTION (A6 reopened narrowly, 2026-07-17): a genuine tie/dead heat
+is a RESOLVED outcome with a non-empty winner set — it must never be collapsed into
+NO_SPORTING_WINNER. Four distinct resolutions: one winner; multiple winners; no sporting
+winner; pending. Sporting resolution, model-training eligibility and exchange financial
+settlement remain separate concerns; payout logic stays outside sport_core.
+
 Pins:
-* coherence refusals both directions (winner iff WINNER_KNOWN; reason iff
+* coherence refusals both directions (winner iff WINNER_KNOWN; winner SET of >= 2 iff
+  MULTIPLE_WINNERS — a singleton is WINNER_KNOWN, never a one-element set; reason iff
   NO_SPORTING_WINNER);
 * canonical machine-stable exclusion-reason strings for crossfit's ExcludedRace and the
   metrics exclusion path — an unresolved/no-winner choice set is an EXPLICIT exclusion
@@ -31,6 +38,13 @@ from sport_core.outcomes import (
     exclusion_reason,
 )
 
+
+def _multi(*sels: int) -> ChoiceSetOutcome:
+    return ChoiceSetOutcome(
+        resolution=ChoiceSetResolution.MULTIPLE_WINNERS,
+        winner_selection_ids=frozenset(sels),
+    )
+
 pytestmark = pytest.mark.spec("SPEC-090")
 
 
@@ -50,15 +64,16 @@ class TestVocabularyClosure:
     def test_resolutions_exact(self) -> None:
         assert {m.name for m in ChoiceSetResolution} == {
             "WINNER_KNOWN",
+            "MULTIPLE_WINNERS",
             "NO_SPORTING_WINNER",
             "PENDING",
         }
 
     def test_no_winner_reasons_exact(self) -> None:
+        # TIED_OUTCOME deliberately does NOT exist here: a tie has winners.
         assert {m.name for m in NoWinnerReason} == {
             "MARKET_VOID",
             "EVENT_ABANDONED",
-            "TIED_OUTCOME",
         }
 
 
@@ -75,9 +90,29 @@ class TestCoherence:
                 no_winner_reason=NoWinnerReason.MARKET_VOID,
             )
 
+    def test_multiple_winners_requires_a_set_of_at_least_two(self) -> None:
+        outcome = _multi(4, 9)
+        assert outcome.winner_selection_ids == frozenset({4, 9})
+        with pytest.raises(ValueError):
+            _multi()  # empty set is not a resolution with winners
+        with pytest.raises(ValueError):
+            _multi(4)  # a singleton is WINNER_KNOWN, never MULTIPLE_WINNERS
+        with pytest.raises(ValueError):
+            ChoiceSetOutcome(
+                resolution=ChoiceSetResolution.MULTIPLE_WINNERS,
+                winner_selection_ids=frozenset({4, 9}),
+                no_winner_reason=NoWinnerReason.MARKET_VOID,
+            )
+        with pytest.raises(ValueError):
+            ChoiceSetOutcome(
+                resolution=ChoiceSetResolution.WINNER_KNOWN,
+                winner_selection_id=4,
+                winner_selection_ids=frozenset({4, 9}),
+            )
+
     def test_no_sporting_winner_requires_reason_and_no_winner(self) -> None:
-        outcome = _no_winner(NoWinnerReason.TIED_OUTCOME)
-        assert outcome.no_winner_reason is NoWinnerReason.TIED_OUTCOME
+        outcome = _no_winner(NoWinnerReason.EVENT_ABANDONED)
+        assert outcome.no_winner_reason is NoWinnerReason.EVENT_ABANDONED
         with pytest.raises(ValueError):
             ChoiceSetOutcome(resolution=ChoiceSetResolution.NO_SPORTING_WINNER)
         with pytest.raises(ValueError):
@@ -113,9 +148,7 @@ class TestExclusionReasons:
         assert exclusion_reason(_no_winner(NoWinnerReason.EVENT_ABANDONED)) == (
             "no_sporting_winner:event_abandoned"
         )
-        assert exclusion_reason(_no_winner(NoWinnerReason.TIED_OUTCOME)) == (
-            "no_sporting_winner:tied_outcome"
-        )
+        assert exclusion_reason(_multi(4, 9)) == "multiple_winners"
         assert exclusion_reason(
             ChoiceSetOutcome(resolution=ChoiceSetResolution.PENDING)
         ) == "outcome_pending"
@@ -138,10 +171,13 @@ class TestFounderDesignChecks:
             is ChoiceSetResolution.NO_SPORTING_WINNER
         )
 
-    def test_racing_dead_heat_expressible_as_structure_not_payout(self) -> None:
-        # TIED_OUTCOME names the structure; dead-heat PAYOUT stays in racing settlement
-        # (SPEC-082) and nothing here computes one.
-        tied = _no_winner(NoWinnerReason.TIED_OUTCOME)
+    def test_racing_dead_heat_is_resolved_with_multiple_winners_not_collapsed(self) -> None:
+        # Founder correction: a dead heat HAS sporting winners — a resolved, non-empty
+        # winner set — and must never be collapsed into NO_SPORTING_WINNER. The PAYOUT
+        # stays in racing settlement (SPEC-082); nothing here computes one.
+        tied = _multi(4, 9)
+        assert tied.resolution is ChoiceSetResolution.MULTIPLE_WINNERS
+        assert tied.no_winner_reason is None
         assert not hasattr(tied, "payout")
         assert not hasattr(tied, "dead_heat_divisor")
 
@@ -157,8 +193,11 @@ class TestMetricsExclusionPath:
                 knowledge_time_utc=datetime(2026, 7, 17, tzinfo=timezone.utc),
             ),
             ChoiceSetExclusion(
+                # Model-training eligibility is separate from sporting resolution: a
+                # dead-heated set is RESOLVED (winners exist) yet unevaluable by
+                # exactly-one-winner metrics, so it is excludable with its own reason.
                 choice_set_id="m-tied",
-                outcome=_no_winner(NoWinnerReason.TIED_OUTCOME),
+                outcome=_multi(4, 9),
                 knowledge_time_utc=datetime(2026, 7, 17, tzinfo=timezone.utc),
             ),
         )
