@@ -15,7 +15,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from l5_decision.ev import CommissionRate, WinProbabilityLowerBound, expected_value
-from l5_decision.ladder import LADDER
+from l5_decision.ladder import LADDER, price_of
 from l5_decision.prices import ClosePrice, OddsExec
 
 pytestmark = pytest.mark.spec("SPEC-050")
@@ -48,10 +48,15 @@ def test_ev_non_increasing_in_commission(prob: Decimal, tick: int, c1: Decimal, 
 
 @given(prob=_PROB, tick=_TICK, comm=_COMM)
 def test_p_close_never_reaches_ev(prob: Decimal, tick: int, comm: Decimal) -> None:
+    close = ClosePrice(
+        decimal_odds=price_of(tick),  # any venue-range price, on- or off-ladder
+        benchmark_method_id="bsp",
+        benchmark_method_version="close-v1",
+    )
     with pytest.raises(TypeError):
         expected_value(
             WinProbabilityLowerBound(value=prob),
-            ClosePrice(tick_index=tick),  # type: ignore[arg-type]
+            close,  # type: ignore[arg-type]
             CommissionRate(rate=comm),
         )
 

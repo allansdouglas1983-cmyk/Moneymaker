@@ -24,10 +24,12 @@ def test_odds_exec_preserves_ladder_price(i: int) -> None:
 
 @given(i=_INDEX)
 def test_odds_exec_and_close_price_never_equal(i: int) -> None:
-    # Same underlying tick, but distinct types must not compare equal — that is the whole
-    # point of keeping the three prices unconflated. object-typed so the runtime inequality is
-    # asserted even though mypy already proves the types are non-overlapping.
+    # Same underlying decimal price, but distinct types must not compare equal — that is the
+    # whole point of keeping the three prices unconflated. object-typed so the runtime
+    # inequality is asserted even though mypy already proves the types are non-overlapping.
     a: object = OddsExec(tick_index=i)
-    b: object = ClosePrice(tick_index=i)
+    b: object = ClosePrice(
+        decimal_odds=price_of(i), benchmark_method_id="bsp", benchmark_method_version="close-v1"
+    )
     assert a != b
     assert not isinstance(OddsExec(tick_index=i), ClosePrice)

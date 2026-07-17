@@ -10,7 +10,6 @@ from decimal import Decimal
 import pytest
 
 from l5_decision.ev import CommissionRate, WinProbabilityLowerBound, expected_value
-from l5_decision.ladder import index_of
 from l5_decision.prices import ClosePrice, MarketInfoPrice, OddsExec
 
 pytestmark = pytest.mark.spec("SPEC-050")
@@ -48,9 +47,13 @@ class TestFormula:
 
 class TestUsesOddsExecOnly:
     def test_close_price_rejected_as_odds(self) -> None:
-        # SPEC-050/051: p_close must never reach this function.
+        # SPEC-050/051: p_close must never reach this function (shape per A2/F-03:
+        # exact Decimal + benchmark identity — the refusal is type-based, not shape-based).
+        close = ClosePrice(
+            decimal_odds=Decimal("3"), benchmark_method_id="bsp", benchmark_method_version="close-v1"
+        )
         with pytest.raises(TypeError):
-            expected_value(_p("0.5"), ClosePrice(tick_index=index_of(Decimal("3"))), _c("0"))  # type: ignore[arg-type]
+            expected_value(_p("0.5"), close, _c("0"))  # type: ignore[arg-type]
 
     def test_market_info_price_rejected_as_odds(self) -> None:
         with pytest.raises(TypeError):
