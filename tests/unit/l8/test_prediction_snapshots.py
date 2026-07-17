@@ -672,3 +672,26 @@ def test_snapshot_refuses_internal_vocabulary_eligibility() -> None:
             update_reason=None,
             available_to_consumer_at_utc=datetime(2026, 7, 16, 12, 0, 5, tzinfo=timezone.utc),
         )
+
+class TestSelectionWithdrawnReason:
+    """A6 / audit F-10: a governed UpdateReason extension. NON_RUNNER is racing's
+    selection-removal vocabulary; SELECTION_WITHDRAWN is the generic member for sports
+    whose selections withdraw pre-off without racing's non-runner mechanism (tennis
+    pre-match withdrawal). Representational only — no settlement consequence."""
+
+    def test_selection_withdrawn_member_exists(self) -> None:
+        assert UpdateReason.SELECTION_WITHDRAWN.value == "SELECTION_WITHDRAWN"
+
+    def test_selection_withdrawn_is_valid_for_updated_vintage(self) -> None:
+        base = _snapshot()
+        superseding = _snapshot(
+            prediction_id="pred-2",
+            vintage_type=VintageType.UPDATED,
+            update_reason=UpdateReason.SELECTION_WITHDRAWN,
+            supersedes_prediction_id=base.prediction_id,
+        )
+        assert superseding.update_reason is UpdateReason.SELECTION_WITHDRAWN
+
+    def test_non_runner_member_unchanged(self) -> None:
+        assert UpdateReason.NON_RUNNER.value == "NON_RUNNER"
+
