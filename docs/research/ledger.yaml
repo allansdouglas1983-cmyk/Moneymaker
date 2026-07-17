@@ -60,3 +60,47 @@
   - Betfair operative historical-data licence text (flagged by both reports)
   decision_required: 'founder: contact Weatherbys/RDC + Timeform for quotes and knowledge-time evidence;
     decide whether quarantined scraped-ratings research pilot is authorised meanwhile'
+- id: DR-TENNIS-MARKET-002A
+  title: Betfair tennis market desk research (package facts, secondary liquidity estimates, settlement
+    rules)
+  classification: ADVISORY
+  status: IN_PROGRESS
+  requested: '2026-07-16'
+  routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
+  findings: null
+  note: All external numeric market estimates labelled SECONDARY; not gate-eligible; not a substitute
+    for 002B
+  related:
+  - ADR-0016
+- id: DR-TENNIS-MARKET-002B
+  title: One-month Betfair Tennis ADVANCED empirical pilot (primary market-universe evidence)
+  classification: BLOCKING
+  status: SPEC_PREPARED_NOT_PURCHASED
+  requested: '2026-07-16'
+  routed_to: internal procurement spec (not external research)
+  findings: null
+  spec: docs/procurement/tennis-pilot-purchase.md
+  runbook: docs/procurement/tennis-pilot-runbook.md
+  blocks:
+  - ADR-0015 (Betfair account exclusion/restoration)
+  - ADR-0016 approval
+  - founder month confirmation
+  - portal price confirmation
+  related:
+  - ADR-0015
+  - ADR-0016
+- id: DR-TENNIS-MARKET-002C
+  title: Future live execution validation (latency, real FOK fills, market impact)
+  classification: DEFERRED
+  status: BLOCKED
+  requested: '2026-07-16'
+  routed_to: n/a
+  findings: docs/research/requests/DR-TENNIS-MARKET-002C-live-execution.md
+  blocks:
+  - Gates 1-2
+  - live-canary approval
+  - Live App Key
+  - ADR-0015
+  related:
+  - ADR-0015
+  - ADR-0016
