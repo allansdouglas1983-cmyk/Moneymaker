@@ -53,11 +53,25 @@ pytestmark = pytest.mark.spec("SPEC-034")
 # would silently report green on a missing money/evidence-adjacent contract.
 import l4_pricing.interfaces as pricing_interfaces  # noqa: E402
 import sport_core.interfaces as interfaces  # noqa: E402
+import sport_tennis.providers as tennis_providers  # noqa: E402
 
 # Uncertainty-bearing seams return SPEC-034's WinProbabilityDistribution and are
 # therefore pricing-layer contracts (see module docstring) — resolved from
 # l4_pricing.interfaces, never from sport_core.
 _PRICING_LAYER_PROTOCOLS = {"UncertaintyProvider", "BayesianModel", "EnsembleModel"}
+
+# A5 (audit F-07, founder order): the tennis-flavoured seams live in sport_tennis and
+# key competitors by the namespaced opaque STRING CompetitorId — never a Betfair
+# selection int. SurfaceElo is tennis-flavoured (a surface is a tennis concept) and
+# relocates with them; WeightedElo is sport-agnostic and stays in sport_core, re-keyed
+# by CompetitorId.
+_TENNIS_MODULE_PROTOCOLS = {
+    "SurfaceRatingProvider",
+    "FitnessSignalProvider",
+    "ServeStrengthProvider",
+    "ReturnStrengthProvider",
+    "SurfaceEloModel",
+}
 
 # Every protocol this slice defines, mapped to the exact member names (methods + properties)
 # a conforming implementation must expose. Hand-enumerated (not derived from typing internals)
@@ -107,8 +121,40 @@ _MODEL_ID_IDENTITY_PROTOCOLS = {
 
 
 def _protocol(name: str) -> type:
-    module = pricing_interfaces if name in _PRICING_LAYER_PROTOCOLS else interfaces
+    if name in _PRICING_LAYER_PROTOCOLS:
+        module: object = pricing_interfaces
+    elif name in _TENNIS_MODULE_PROTOCOLS:
+        module = tennis_providers
+    else:
+        module = interfaces
     return typing.cast(type, getattr(module, name))
+
+
+def test_tennis_flavoured_protocols_are_not_in_sport_core() -> None:
+    # A5/F-07: the first concrete tennis provider must satisfy ONE identity contract.
+    for name in sorted(_TENNIS_MODULE_PROTOCOLS):
+        assert not hasattr(interfaces, name), (
+            f"{name} is tennis-flavoured and lives in sport_tennis.providers (A5/F-07)"
+        )
+        assert hasattr(tennis_providers, name)
+
+
+def test_competitor_identity_is_the_namespaced_opaque_string_type() -> None:
+    from sport_core.competitors import CompetitorId
+
+    for name, method in (
+        ("SurfaceRatingProvider", "rating"),
+        ("FitnessSignalProvider", "signal"),
+        ("ServeStrengthProvider", "serve_strength"),
+        ("ReturnStrengthProvider", "return_strength"),
+        ("SurfaceEloModel", "rating"),
+    ):
+        hints = get_type_hints(getattr(_protocol(name), method))
+        assert hints.get("competitor_id") is CompetitorId, (
+            f"{name}.{method} must key competitors by CompetitorId, never int"
+        )
+    weighted_hints = get_type_hints(getattr(_protocol("WeightedEloModel"), "rating"))
+    assert weighted_hints.get("competitor_id") is CompetitorId
 
 
 def test_uncertainty_bearing_seams_are_not_in_sport_core() -> None:
@@ -214,7 +260,7 @@ def _iter_function_defs(tree: ast.AST) -> typing.Iterator[ast.FunctionDef]:
             yield node
 
 
-_CONTRACT_MODULES = (interfaces, pricing_interfaces)
+_CONTRACT_MODULES = (interfaces, pricing_interfaces, tennis_providers)
 
 
 def _module_tree(module: object) -> ast.AST:
