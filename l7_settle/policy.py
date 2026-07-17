@@ -124,6 +124,10 @@ class TennisSettlementPolicy:
         settlement_version: int,
         resettlement_flag: bool,
     ) -> MarketSettlement:
+        # Guard dominance: the refusal legitimately ignores every input except the
+        # market being named — no field may influence a pending policy's behaviour.
+        del positions, outcome, commission_rate_effective, transaction_charges_minor
+        del statement_reference, settlement_version, resettlement_flag
         raise SettlementPolicyPendingError(
             f"{market_id}: tennis settlement is PENDING_EXCHANGE_RULES_VERIFICATION "
             "(SPEC-084, DR-TENNIS-SETTLEMENT-001 unresolved) — no deterministic "
