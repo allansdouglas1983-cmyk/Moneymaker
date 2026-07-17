@@ -37,13 +37,13 @@ findings:
     title: ClosePrice tick index cannot represent BSP / WAP benchmarks
     severity: DEFECT (racing too)
     owner_slice: A2
-    status: scheduled
+    status: done  # landed 2026-07-17 (governed test correction + impl); pre-purchase gate half 1
     gate: blocks any historical-data purchase
   - id: F-04
     title: Replay silently drops backfill_market frames
     severity: DEFECT
     owner_slice: A3
-    status: scheduled
+    status: done  # landed 2026-07-17; pre-purchase gate half 2 — purchase gate now CLEAR on the code side (ADR 0015 still blocks)
     gate: blocks any historical-data purchase
   - id: F-05
     title: Cluster key hardcoded as date meeting_day; adapter declaration unconsumed
