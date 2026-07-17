@@ -89,7 +89,7 @@ findings:
     title: Race.winner_id cannot distinguish pending from no-sporting-winner
     severity: DEGRADES-GENERALITY
     owner_slice: A6
-    status: done  # landed 2026-07-17 — ChoiceSetOutcome vocabulary + canonical ExcludedRace reasons (fitting still refuses winnerless sets)
+    status: done  # landed 2026-07-17; founder semantic correction applied (four-way resolution incl. MULTIPLE_WINNERS — a tie is resolved, never NO_SPORTING_WINNER)
   - id: F-13
     title: Market reservation never releases on zero-matched lapse
     severity: DESIGN-REVIEW
