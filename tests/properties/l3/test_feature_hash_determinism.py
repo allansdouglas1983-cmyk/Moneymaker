@@ -13,7 +13,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from l3_features.build_context import BuildMode, FeatureBuildContext
+from l3_features.build_context import LiveBoundaryPolicy, BuildMode, FeatureBuildContext
 from l3_features.feature_set import Feature, FeatureSet, build_feature, feature_set_hash
 from l3_features.knowledge_time import (
     KnowledgeStamps,
@@ -27,7 +27,7 @@ OFF = datetime(2026, 7, 15, 13, 0, 0, tzinfo=timezone.utc)
 
 # Mechanical migration for the structural-guard API (2026-07-16 audit): same boundary as the
 # old market_off=OFF argument.
-CTX = FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=OFF - timedelta(seconds=300), actual_off=OFF)
+CTX = FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=OFF - timedelta(seconds=300), actual_off=OFF)
 
 
 def _stamps() -> KnowledgeStamps:

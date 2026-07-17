@@ -12,7 +12,7 @@ from decimal import Decimal
 
 import pytest
 
-from l3_features.build_context import BuildMode, FeatureBuildContext
+from l3_features.build_context import LiveBoundaryPolicy, BuildMode, FeatureBuildContext
 from l3_features.feature_set import FeatureSet, build_feature, feature_set_hash
 from l3_features.knowledge_time import (
     KnowledgeStamps,
@@ -50,7 +50,7 @@ def _source() -> SourceProvenance:
 
 
 def _ctx() -> FeatureBuildContext:
-    return FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
+    return FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
 
 
 def test_equal_instants_hash_identically_across_offsets() -> None:
@@ -80,7 +80,7 @@ def test_source_publication_time_is_stored_in_utc() -> None:
 
 
 def test_build_context_times_are_stored_in_utc() -> None:
-    ctx = FeatureBuildContext(
+    ctx = FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, 
         mode=BuildMode.POST_HOC,
         scheduled_start=_utc(-300).astimezone(_CET),
         actual_off=OFF.astimezone(_CET),
@@ -101,4 +101,4 @@ def test_naive_datetimes_remain_rejected() -> None:
             first_usable_time=naive,
         )
     with pytest.raises(ValueError):
-        FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=naive)
+        FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=naive)

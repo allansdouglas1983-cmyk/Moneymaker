@@ -15,7 +15,7 @@ from decimal import Decimal
 
 import pytest
 
-from l3_features.build_context import BuildMode, FeatureBuildContext
+from l3_features.build_context import LiveBoundaryPolicy, BuildMode, FeatureBuildContext
 from l3_features.feature_set import Feature, build_feature
 from l3_features.knowledge_time import (
     KnowledgeStamps,
@@ -50,7 +50,7 @@ def _live_source() -> SourceProvenance:
 
 
 def _post_hoc_context() -> FeatureBuildContext:
-    return FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
+    return FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
 
 
 class TestConstructionIsSealed:
@@ -117,14 +117,14 @@ class TestBuildFeatureUsesTheContextBoundary:
             build_feature("late", Decimal("1"), _stamps(_utc(60)), _live_source(), ctx)
 
     def test_post_hoc_without_actual_off_falls_back_to_scheduled_start(self) -> None:
-        ctx = FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=OFF)
+        ctx = FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=OFF)
         with pytest.raises(LeakageError):
             build_feature("late", Decimal("1"), _stamps(_utc(60)), _live_source(), ctx)
 
     def test_live_boundary_is_scheduled_start(self) -> None:
         # SPEC-022: a live builder knows only the scheduled start; the mode is explicit and
         # the boundary follows from it.
-        ctx = FeatureBuildContext(mode=BuildMode.LIVE, scheduled_start=OFF)
+        ctx = FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.LIVE, scheduled_start=OFF)
         ok = build_feature("early", Decimal("1"), _stamps(_utc(-60)), _live_source(), ctx)
         assert ok.name == "early"
         with pytest.raises(LeakageError):

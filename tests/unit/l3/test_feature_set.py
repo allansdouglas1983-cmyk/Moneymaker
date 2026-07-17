@@ -10,7 +10,7 @@ from decimal import Decimal
 
 import pytest
 
-from l3_features.build_context import BuildMode, FeatureBuildContext
+from l3_features.build_context import LiveBoundaryPolicy, BuildMode, FeatureBuildContext
 from l3_features.feature_set import (
     Feature,
     FeatureSet,
@@ -37,7 +37,7 @@ OFF = _utc(0)
 
 # Mechanical migration for the structural-guard API (2026-07-16 audit): build_feature now takes
 # the explicit build context; the boundary (actual_off=OFF) is identical to the old market_off.
-CTX = FeatureBuildContext(mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
+CTX = FeatureBuildContext(boundary_policy=LiveBoundaryPolicy.SCHEDULED_START_FLOOR, mode=BuildMode.POST_HOC, scheduled_start=_utc(-300), actual_off=OFF)
 
 
 def _stamps(first_usable: datetime) -> KnowledgeStamps:

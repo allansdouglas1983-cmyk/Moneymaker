@@ -493,6 +493,7 @@ class TestAdapterDeclaration:
             cluster_key_name="meeting_day",
             event_start_name="off",
             closing_diagnostic_taints=frozenset({"l8_evidence.reconciled_bsp:RECONCILED_BSP"}),
+            events_can_start_early=False,
         )
         registry = SportAdapterRegistry()
         registry.register(racing_adapter)
