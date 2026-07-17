@@ -338,3 +338,26 @@ constraints, not chores routed to the founder.
   by design not the agent's to self-configure, and only relevant at the **live** boundary (Phase 3+,
   halted). CODEOWNERS currently points at `@allansdouglas1983-cmyk` by default. No PR is open (offline
   research does not need one).
+
+## ADR 0017 program record (2026-07-17)
+
+The sport-agnostic transition landed as slices S0–S9 on `claude/project-files-followup-dif8al`
+(head green: `make verify` 1,662 tests / 44 enforced IDs / mypy clean; `make replay` green):
+S0 baseline (correction 0002 merged; SPEC-070/071 broker core activated; historical ingestion),
+correction 0003 (decision units {race, match}), S1 `sport_core` (capability matrix + adapter
+registry), S4 `sport_tennis` domain contracts, S5 provider/model protocol seams (uncertainty
+seams pricing-side per the ADR 0013 boundary), S7 tennis settlement contracts (SPEC-084
+registered `planned`, whole-matrix typed refusal), S8 market-kind policy ({WIN, MATCH_ODDS}
+only) + benchmark interfaces (none selected), S3 settlement-policy seam (racing pure
+delegation, byte-identical), S6 feature-declaration registry + five numeric-free experiment
+templates, S9 founder-approved vocabulary batch (manifest texts, info-price-v2 reissue with
+scope block, SPECIFICATION §22, CLAUDE.md/rules; symbol renames deferred — no aesthetic churn).
+Cumulative S0–S8 code footprint: 39 files, +6,220/−19; the audit commit is reports-only.
+
+**Closing evidence:** `docs/architecture/conceptual-coupling-audit.md` (F-01..F-16, full-file
+clearances) + `adr-0017-phase1-report.md` (required outputs 1–8). **Ownership register:**
+`docs/architecture/adr-0017-findings.yaml`. **Founder-fixed follow-on order:** A2 ClosePrice →
+A3 backfill replay → A1 knowability boundary → A6 outcome vocabulary → A4 cluster key → A5
+provider seam/OOF orchestrator. Hard gates: A2+A3 before any data purchase; A1 before any
+tennis feature work. F-13 ruled (zero-fill FOK release; see ADR 0017 addendum). Standing
+blocks unchanged: ADR 0015, SPEC-084 refusal, no benchmark, no models, no live orders.

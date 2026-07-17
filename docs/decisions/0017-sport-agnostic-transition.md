@@ -65,3 +65,36 @@ govern those).
   racing; money/evidence requirement SEMANTICS are never diluted. Manifest changes
   remain enforcement-increasing or founder-directed.
 - Phase 3A (offline broker) continues in parallel — it is already sport-agnostic.
+
+---
+
+## Addendum (2026-07-17): founder approval as governing plan; implementation order; F-13 ruling
+
+ADR 0017 is **approved as the governing architecture-hardening plan** (founder,
+2026-07-17). S0–S9 are landed; the conceptual-coupling audit and phase report are the
+program's closing evidence (`docs/architecture/conceptual-coupling-audit.md`,
+`adr-0017-phase1-report.md`); machine-readable finding ownership lives in
+`docs/architecture/adr-0017-findings.yaml`.
+
+**Implementation order (founder-fixed):** A2 (ClosePrice) → A3 (backfilled-corpus
+replay) → A1 (true-start knowability) → A6 (generic outcome vocabulary) → A4
+(adapter-owned cluster key) → A5 (provider/model seam; opaque string competitor
+identity; **model-independent OOF orchestration** — fold assignment and OOF production
+owned by a crossfit orchestrator, conditional logit never the only leakage-safe
+family).
+
+**Hard gates:** A2 and A3 land before any historical-data purchase. A1 lands before
+any tennis feature construction or activation.
+
+**F-13 ruling (founder):** a confirmed terminal zero-fill FOK miss does not reserve
+the market until settlement — release the reservation when there is no exposure and no
+order-state ambiguity, with a governed cooldown/attempt budget if needed. The
+settlement-horizon reservation is retained for fills, partial fills, unknown states,
+acknowledgement gaps, cancel/replace ambiguity, and reconciliation uncertainty.
+Repeated firing from an identical decision snapshot is prevented; retries require a
+materially changed market state or an explicitly governed retry condition. Implemented
+in its own Phase-3A broker slice, red tests first.
+
+**Standing never-list (reaffirmed):** no tennis model activation, no tennis benchmark
+selection, no provider-specific production ingestion, SPEC-084 stays refused, no live
+orders.

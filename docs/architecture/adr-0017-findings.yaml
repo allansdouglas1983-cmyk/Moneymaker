@@ -1,0 +1,125 @@
+# MACHINE-READABLE ownership register for the ADR 0017 conceptual-coupling audit
+# (docs/architecture/conceptual-coupling-audit.md). Founder-approved 2026-07-17 as the
+# governing architecture-hardening plan, with the implementation order and gating
+# constraints recorded below. Statuses move only in the slice that does the work.
+#
+# status: open | decided | scheduled | deferred_by_design | wording_done | declined_edit
+# gate:   a hard precondition the finding imposes on other work (enforced by review;
+#         the founder's ordering directive is the authority).
+
+approval:
+  approved_by: founder
+  approved_on: "2026-07-17"
+  implementation_order: [A2, A3, A1, A6, A4, A5]
+  hard_gates:
+    - "A2 and A3 land BEFORE any historical-data purchase"
+    - "A1 lands BEFORE any tennis feature construction or activation"
+  never_in_this_program:
+    - no tennis model activation
+    - no tennis benchmark selection
+    - no provider-specific production ingestion
+    - SPEC-084 remains refused (policy matrix never passes here)
+    - no live orders
+
+findings:
+  - id: F-01
+    title: Knowability boundary assumes events are only ever delayed
+    severity: BLOCKS-TENNIS
+    owner_slice: A1
+    status: scheduled
+    gate: blocks all tennis feature construction and activation
+  - id: F-02
+    title: FeatureBuildContext structurally requires scheduled_start
+    severity: DEGRADES-GENERALITY
+    owner_slice: A1
+    status: scheduled
+  - id: F-03
+    title: ClosePrice tick index cannot represent BSP / WAP benchmarks
+    severity: DEFECT (racing too)
+    owner_slice: A2
+    status: scheduled
+    gate: blocks any historical-data purchase
+  - id: F-04
+    title: Replay silently drops backfill_market frames
+    severity: DEFECT
+    owner_slice: A3
+    status: scheduled
+    gate: blocks any historical-data purchase
+  - id: F-05
+    title: Cluster key hardcoded as date meeting_day; adapter declaration unconsumed
+    severity: DEGRADES-GENERALITY
+    owner_slice: A4
+    status: scheduled
+  - id: F-06
+    title: Out-of-fold production welded to conditional logit
+    severity: DEGRADES-GENERALITY
+    owner_slice: A5
+    status: scheduled
+    note: >-
+      Founder directive: fold assignment and OOF production must be owned by a
+      model-independent crossfit orchestrator; conditional logit must not remain the
+      only model capable of producing leakage-safe OOF predictions.
+  - id: F-07
+    title: int player_id in sport_core protocols vs str identity in sport_tennis domain
+    severity: BLOCKS-TENNIS (at first concrete provider)
+    owner_slice: A5
+    status: scheduled
+    note: opaque STRING competitor identity per founder directive; protocols relocate to sport_tennis
+  - id: F-08
+    title: CLV benchmark enum sealed to racing's two members
+    severity: BLOCKS-TENNIS (CLV diagnostics only)
+    owner_slice: benchmark-selection slice (post-pilot)
+    status: deferred_by_design
+  - id: F-09
+    title: Settlement seam carries racing-only fields without capability enforcement
+    severity: DEGRADES-GENERALITY
+    owner_slice: SPEC-084 activation slice
+    status: deferred_by_design
+  - id: F-10
+    title: UpdateReason.NON_RUNNER racing-only; no withdrawal member
+    severity: DEGRADES-GENERALITY
+    owner_slice: A6
+    status: scheduled
+  - id: F-11
+    title: Predictor metrics cannot represent dead heats or voids
+    severity: DEGRADES-GENERALITY
+    owner_slice: A6
+    status: scheduled
+  - id: F-12
+    title: Race.winner_id cannot distinguish pending from no-sporting-winner
+    severity: DEGRADES-GENERALITY
+    owner_slice: A6
+    status: scheduled
+  - id: F-13
+    title: Market reservation never releases on zero-matched lapse
+    severity: DESIGN-REVIEW
+    owner_slice: phase-3a broker slice (implements the founder ruling below)
+    status: decided
+    founder_ruling: >-
+      A confirmed terminal zero-fill FOK miss does not reserve the market until
+      settlement. Release the reservation when there is no exposure and no order-state
+      ambiguity. Apply a governed cooldown/attempt budget if needed. RETAIN the
+      settlement-horizon reservation for fills, partial fills, unknown states,
+      acknowledgement gaps, cancel/replace ambiguity or reconciliation uncertainty.
+      Prevent repeated firing from the identical decision snapshot; retries require a
+      materially changed market state or an explicitly governed retry condition.
+  - id: F-14
+    title: Reconciled-close taint guard is BSP-shaped, not concept-shaped
+    severity: DEGRADES-GENERALITY
+    owner_slice: benchmark-selection slice (taint family lands with first non-BSP benchmark)
+    status: deferred_by_design
+  - id: F-15
+    title: Frozen price specs carry no machine-readable scope
+    severity: DEGRADES-GENERALITY
+    owner_slice: S9
+    status: wording_done
+    note: scope block landed in info-price-v2.yaml; v1 specs stay frozen and untouched
+  - id: F-16
+    title: Cosmetics (ladder banner, trial_ledger stale docstring, _newton diagnosis wording, SPEC-040 removal-event conditioning)
+    severity: COSMETIC
+    owner_slice: S9 (done) / SPEC-040 note travels to the l4b_fill implementing slice
+    status: wording_done
+    note: >-
+      .claude/rules/moneycritical.md one-line wording edit was declined in session and
+      remains unchanged (declined_edit); _newton diagnosis-message improvement rides
+      with A5's crossfit slice.

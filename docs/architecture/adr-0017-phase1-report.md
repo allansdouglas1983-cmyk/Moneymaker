@@ -69,8 +69,9 @@ Full findings, severities, file:line anchors and clearances:
 
 ## Output 3 — Files changed (whole program, `c135ee5..HEAD`)
 
-39 files, **+6,220 / −19 lines**. The 19 deletions are the entire footprint on
-pre-existing code (CLV deadband correction 0002, correction 0003's decision-unit
+39 files, **+6,220 / −19 lines** — this is the CUMULATIVE S0–S8 implementation
+footprint; the ADR 0017 audit commit itself is reports-only (two documents, zero code).
+The 19 deletions are the entire footprint on pre-existing code (CLV deadband correction 0002, correction 0003's decision-unit
 widening, MONEY-list wiring) — racing behaviour was not otherwise touched, and the
 replay regression plus the untouched racing test suite pin that.
 
