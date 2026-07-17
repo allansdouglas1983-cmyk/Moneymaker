@@ -64,12 +64,12 @@
   title: Betfair tennis market desk research (package facts, secondary liquidity estimates, settlement
     rules)
   classification: ADVISORY
-  status: RETURNED_LARGELY_UNRESOLVED
+  status: ASSESSED
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
-  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
-  note: desk research came back essentially empty for this priority; wrong Betfair product (Sportsbook
-    not Exchange) reached; re-run needed as its own narrow call
+  findings: docs/research/findings/DR-TENNIS-CHATGPT-002-findings.md
+  note: 'Betfair tennis desk facts now established: ADVANCED GBP49/mo, GBP499/yr; Match Odds available,
+    Game betting excluded; M-files; 1s roll-up; retention wording to re-check at portal before purchase'
   related:
   - ADR-0016
   returned: '2026-07-16'
@@ -90,6 +90,8 @@
   related:
   - ADR-0015
   - ADR-0016
+  note: price now known (GBP49); month candidates April 2026 (repo spec) vs June 2026 (ChatGPT report)
+    - founder decides at purchase; still blocked on ADR 0015 + pivot approval
 - id: DR-TENNIS-MARKET-002C
   title: Future live execution validation (latency, real FOK fills, market impact)
   classification: DEFERRED
@@ -108,13 +110,13 @@
 - id: DR-TENNIS-DATA-002
   title: Cheapest lawful tennis data source with explicit betting-model training rights
   classification: BLOCKING
-  status: RETURNED_UNRESOLVED
+  status: RETURNED_PARTIAL
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
-  findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
-  note: no provider has a confirmed explicit grant; Sportradar prediction-market-use prohibition is a
-    second-hand lead requiring written confirmation; 3 of 7 named providers (Tennis Data Innovations,
-    Stats Perform, Tennis-Data.co.uk) unreached
+  findings: docs/research/findings/DR-TENNIS-CHATGPT-002-findings.md
+  note: ChatGPT report supersedes the Sportradar blanket-prohibition lead (authorised odds/trading licences
+    exist); TDI and Stats Perform public terms are restrictive-without-contract; Tennis-Data.co.uk permissive-but-informal;
+    written provider answers still required before any purchase
   related:
   - ADR-0016
 - id: DR-TENNIS-MODEL-002

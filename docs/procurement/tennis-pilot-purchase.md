@@ -45,10 +45,14 @@ May 2026 was also checked and rejected as a default: Madrid continues, Rome
 Open qualifying (from 18 May) and the main draw (24 May onward) — a Slam-heavy
 month, same concern as June.
 
-**Recommendation to the founder: April 2026**, with June 2026 available as the
-"most recent complete" alternative if recency is prioritised over representativeness
-— flagged here as the founder's call, not assumed. **Final month selection requires
-founder confirmation before any purchase**, per directive.
+**Two documented candidates now stand** (updated 2026-07-17): this spec's original
+recommendation of **April 2026** (full clay swing, no Slam transition, maximum
+"steady-state" representativeness) and the founder's ChatGPT report's recommendation
+of **June 2026** (most recent complete month past the 5-day availability lag;
+credible ATP/WTA sample across Stuttgart, 's-Hertogenbosch, Halle, Queen's, Mallorca,
+Eastbourne, Berlin, Bad Homburg, with Wimbledon starting 29 June — grass-swing +
+Slam-transition composition). Neither selection inspected model performance. **The
+founder decides between them at purchase time**; both rationales are preserved here.
 
 ## 3. Event/tour/surface composition (April 2026 candidate)
 
@@ -69,15 +73,13 @@ per DR-TENNIS-MARKET-002B's own measurement scope).
 
 ## 4. Current portal price
 
-**Not yet established.** Betfair's historical-data pricing page is JS-rendered and
-did not surface tennis-specific pricing via search (the same limitation DR-0001 hit
-for racing, resolved there only by ChatGPT Deep Research's page access). Also
-unresolved: whether Tennis is priced as its own per-sport package (like Horse
-Racing: Basic free/Advanced £69/Pro £230) or bundled into Betfair's "Other Sports"
-package at a different price point — a genuine open question found during this
-prep, folded into DR-TENNIS-MARKET-002A's desk research scope (in progress). **The
-exact price must be confirmed on the portal (or from 002A's findings) before
-purchase** — no purchase proceeds on an assumed price.
+**Established by the founder's ChatGPT Deep Research (2026-07-17, source claims
+pending portal confirmation at checkout):** Tennis is its own package — **ADVANCED
+£49.00/month** (£499/year bulk), PRO £150/month (£1,499/year). Also established:
+tennis "Game betting" markets are NOT included in historical data (Match Odds is);
+M-files are the correct file type; the retention/reuse licence wording is not
+publicly exposed and MUST be read on the portal acceptance text immediately before
+purchase. Candidate purchase: **Tennis ADVANCED, one month, £49.00.**
 
 ## 5. Known limitations (declared in advance, per the founder's methodology)
 

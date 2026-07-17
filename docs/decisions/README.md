@@ -25,3 +25,4 @@ Note: ADRs are ordinary docs. Only the specific paths in `CODEOWNERS` are human-
 `docs/SPECIFICATION.md`, `docs/spec-manifest.yaml`, and `docs/facts.yaml`, not all of `docs/`.
 | [0014](0014-phase-3a-offline-broker.md) | Phase 3A offline broker construction: founder-authorised scope ceiling (SPEC-070/071/062/063/064/083/102 offline halves; simulated adapters only) |
 | [0015](0015-betfair-account-exclusion-block.md) | BLOCKING: founder Betfair account exclusion/closure — purchase paused; no-bypass invariant (permanent); consequence map incl. analytics-only terminal state |
+| [0017](0017-sport-agnostic-transition.md) | Tennis-first sport-agnostic transition program (founder 12-phase directive); supersedes ADR 0016 scope; racing preserved as sport adapter |
