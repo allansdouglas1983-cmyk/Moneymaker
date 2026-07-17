@@ -1,7 +1,9 @@
-# Betfair Racing Research Platform
+# Betfair Exchange Research Platform (sport modules: racing, tennis contracts)
 
-Research and measurement platform. **Not a betting bot.** It may become one only if
-the evidence supports it. Full spec: `docs/SPECIFICATION.md`. Authoritative requirement
+Research and measurement platform for mutually exclusive Betfair markets. **Not a betting
+bot.** It may become one only if the evidence supports it. Sport-specific content lives
+behind `SportAdapter` declarations (`docs/SPECIFICATION.md` §22); racing behaviour is
+preserved byte-identical. Full spec: `docs/SPECIFICATION.md`. Authoritative requirement
 list: @docs/spec-manifest.yaml
 
 ## The three rules
@@ -27,9 +29,10 @@ is the system working. **Treat every surprisingly good backtest as a suspected b
 
 ## Hard prohibitions
 
-- No in-play. Pre-off only. `marketVersion` guard on every order.
+- No in-play. Pre-off only (every sport — `supports_in_play` is a data fact, never a
+  permission). `marketVersion` guard on every order.
 - No lay betting, no hedging, no green-up. Back only, hold to settlement.
-- One runner per market. Commission is charged on the **net market result**.
+- One selection per market. Commission is charged on the **net market result**.
 - No Kelly staking in v1. Fixed minimum stake + absolute loss budget.
 - No passive/maker execution until Gate 4. **`taker-v1` only: FILL_OR_KILL with
   minFillSize = full stake.** A plain marketable limit can leave a resting remainder —
@@ -37,8 +40,10 @@ is the system working. **Treat every surprisingly good backtest as a suspected b
 - **No automatic live learning.** No deployed model, threshold, calibration, feature,
   execution policy or risk parameter updates from live outcomes. Retraining produces a new
   immutable version + new gate evaluation + human approval.
-- No reconciled BSP in pre-off features. No post-race data. No actual-off time (races
-  are delayed; live only knows *scheduled* start).
+- No reconciled closing benchmark in pre-event features (racing: BSP; each adapter
+  declares its taints). No post-event data. No actual event-start time as a live feature
+  (live only knows *scheduled* start; "races are only ever delayed" is a racing-adapter
+  fact — NOT safe for sports whose events start early, see conceptual audit F-01).
 - No import path from `research/scraping/` into anything that can place a bet.
 - No MCP connection to Betfair, account state, order state, or secrets.
 - **No other person's account and no alternate account may ever be used to bypass a
@@ -61,8 +66,10 @@ stake, risk, or settlement-command state. Predictor publication is forbidden unt
 - **Shadow mode cannot produce actual fills.** flumine paper trading routes to
   simulated execution, not Betfair's matching engine. Any "simulated vs actual"
   comparison needs real orders.
-- **The race is the unit of analysis, not the runner.** Runners in a race are one
-  mutually exclusive choice set. Cluster by meeting-day.
+- **The market choice set is the unit of analysis, never the individual selection.**
+  A race's runners, a match's players: one mutually exclusive choice set (the decision
+  unit — `{race, match}`, governed). Cluster by the sport adapter's declared
+  correlation-cluster key (racing: meeting-day; tennis: UTC calendar day).
 - **Prove EV at crossable prices before crediting any passive fill.** If it only wins
   on simulated maker fills, you are modelling the simulator. Note: historical displayed
   prices are **not** actual executions — Gate 2 is latency-adjusted, size-aware scenarios.

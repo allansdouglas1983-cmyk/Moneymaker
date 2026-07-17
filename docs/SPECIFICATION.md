@@ -1618,3 +1618,46 @@ the authorised external cash budget remains **£499**, reserved for the possible
 enters only through ADRs, specifications, experiments, source approvals or dated facts
 (`research_basis_ids`), and never substitutes for empirical gate evidence.
 
+
+## 22. Sport profiles and the sport-agnostic core (founder amendment, 2026-07-17 · ADR 0016/0017)
+
+The platform is a **Betfair Exchange research platform with sport modules**. The core's
+philosophical boundary is **"any mutually exclusive Betfair market"**: one choice set whose
+outcome probabilities sum to 1. Horse racing WIN markets and tennis Match Odds are both
+instances; football Match Odds (three outcomes including a draw) and binary event markets are
+design tests every core abstraction must pass without modification.
+
+### 22.1 Sport adapters and the capability matrix
+
+Each sport is a frozen `SportAdapter` declaration (`sport_core/adapter.py`) naming its
+instantiation of the six audited seams: decision unit (validated against the governed closed
+set in the trial ledger — currently `{race, match}`; extending it is a governed change),
+correlation-cluster key (racing: meeting day; tennis: UTC calendar day), event-start
+vocabulary, settlement policy (`l7_settle/policy.py`), closing-diagnostic taints (racing:
+reconciled BSP; empty until a sport's benchmark is selected), and choice-set construction.
+
+Core code never branches on sport identity. It asks the adapter's `SportCapabilities`
+(`sport_core/capabilities.py`) — eleven explicit, no-default booleans (multi-runner, binary,
+BSP, dead heat, reduction factor, retirements, draw, partial settlement, void rules, in-play,
+pre-match-only) with structural coherence refusals. `supports_in_play` is a market-structure
+fact, never a permission: the pre-off-only prohibition binds every sport.
+
+### 22.2 What sport-scoped means
+
+Racing-adapter-scoped content (BSP, dead heats, reduction factors, non-runner machinery,
+"races are only ever delayed", SPEC-082) is reached only through the adapter's declared seams
+and is preserved byte-identical — the racing test suite, replay regression, and pinned
+mutation-survivor paths are the proof. Tennis content (SPEC-084) is registered as contracts
+whose every settlement request raises a typed refusal until the founder-approved policy
+matrix is verified against Betfair's published tennis rules; the matrix activates whole,
+never partially. Market kinds beyond {WIN, MATCH_ODDS} are declared-but-refused
+(`sport_core/markets.py`); enabling one is a governed constant edit, never a runtime value.
+
+### 22.3 What this section does not authorise
+
+No tennis model, dataset, probability, benchmark selection, stake, or live activity. Every
+data-dependent decision remains behind its research ticket (DR-TENNIS-*), its evidence gate,
+and founder approval — including the ADR 0015 account block, which this amendment does not
+touch. Known residual generality debts are tracked in
+`docs/architecture/conceptual-coupling-audit.md` (F-01..F-16) with their governed fix slices;
+none is authorised to be fixed silently as part of ordinary feature work.

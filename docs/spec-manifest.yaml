@@ -124,8 +124,11 @@
 - id: SPEC-021
   component: l3_features
   title: BSP leakage guard
-  requirement: 'Reconciled BSP MUST NOT be reachable from any pre-off feature. Enforced by a static check
-    on the feature module import graph AND a runtime assertion. BSP joins only at grading time.
+  requirement: 'A reconciled settlement-time closing benchmark MUST NOT be reachable from any
+    pre-event feature. For the racing adapter this benchmark is BSP; each sport adapter declares
+    its own closing-diagnostic taints (an empty set until a benchmark is selected). Enforced by a
+    static check on the feature module import graph AND a runtime assertion. The reconciled
+    benchmark joins only at grading time.
 
     '
   criticality: evidence
@@ -135,9 +138,13 @@
 - id: SPEC-022
   component: l3_features
   title: Actual-off time is not a live feature
-  requirement: 'Races are delayed. The live model knows scheduled start and current market state only.
-    "Seconds to actual off" MUST be unavailable to feature builders operating in live mode. Available
-    in post-hoc analysis mode only, and the mode MUST be explicit.
+  requirement: 'Actual event start is not a live feature. The live model knows the scheduled start
+    and current market state only. "Seconds to actual start" MUST be unavailable to feature builders
+    operating in live mode; available in post-hoc analysis mode only, and the mode MUST be explicit.
+    RACING-ADAPTER-SCOPED directional fact: races are only ever delayed, so scheduled start is a safe
+    live knowability floor for racing. That floor is NOT safe for sports whose events can start early
+    (tennis); a sport adapter using it as a live boundary outside racing is a defect (conceptual
+    audit F-01), and the generalised adapter-declared boundary is its own governed slice.
 
     '
   criticality: evidence
@@ -147,7 +154,7 @@
 - id: SPEC-023
   component: l3_features
   title: Backfill does not confer historical validity
-  requirement: 'A retrospective file (e.g. ratings published after the race) MUST NOT be treated as knowable
+  requirement: 'A retrospective file (e.g. ratings published after the event) MUST NOT be treated as knowable
     because first_seen_ts was populated during backfill. Feature registry records provenance mode (live-captured
     vs backfilled) and backfilled sources MUST declare their true publication time.
 
@@ -170,8 +177,10 @@
 - id: SPEC-030
   component: l4_pricing
   title: Conditional logit stage one
-  requirement: 'Race is one mutually exclusive choice set. Probabilities sum to 1 within race. Handles
-    varying field size natively. MLE on the winner. Non-runners dropped and renormalised.
+  requirement: 'The event''s market is one mutually exclusive choice set. Probabilities sum to 1
+    within the choice set. Handles varying field size natively, including binary (N=2) markets.
+    MLE on the winner. Selection-removal handling (racing non-runners) drops removed selections and
+    renormalises; this machinery is inert for sports whose capabilities preclude removals.
 
     '
   criticality: money
@@ -191,8 +200,10 @@
   component: l4_pricing
   title: Time-respecting cross-fitting
   requirement: 'Stage-one fundamental probabilities fed to stage two MUST be strictly out-of-fold and
-    strictly time-respecting (trained only on earlier folds). A property test MUST fail if any stage-two
-    training row''s fundamental probability came from a model that saw that race.
+    strictly time-respecting (trained only on earlier folds of the sport adapter''s declared
+    correlation-cluster key — racing: meeting day; tennis: UTC calendar day). A property test MUST
+    fail if any stage-two training row''s fundamental probability came from a model that saw that
+    event.
 
     '
   criticality: money
@@ -212,8 +223,8 @@
   component: l4_pricing
   title: Stage-two market combination
   requirement: 'score_i = alpha*log(p_fundamental_i) + beta*log(p_market_info_i); c = softmax(score) within
-    race. alpha, beta by MLE on the winner. Output MUST vary with both alpha and beta. Output MUST sum
-    to 1 per race.
+    the choice set. alpha, beta by MLE on the winner. Output MUST vary with both alpha and beta. Output
+    MUST sum to 1 per choice set.
 
     '
   criticality: money
@@ -262,8 +273,8 @@
   component: l4_pricing
   title: No LambdaRank softmax
   requirement: 'Ranking scores MUST NOT be softmaxed and called probabilities. Any boosting model MUST
-    use a grouped softmax/cross-entropy objective or Plackett-Luce training, validated on race-level proper
-    scores.
+    use a grouped softmax/cross-entropy objective or Plackett-Luce training, validated on
+    choice-set-level proper scores.
 
     '
   criticality: money
@@ -273,10 +284,10 @@
 - id: SPEC-036
   component: l4_pricing
   title: Separate probability outputs
-  requirement: 'Every approved prediction run may persist three DISTINCT runner-level probabilities:
+  requirement: 'Every approved prediction run may persist three DISTINCT selection-level probabilities:
     p_fundamental (independent model opinion, no market input), p_market_info (frozen versioned
     information price), p_combined (stage-two market-aware opinion). Each in (0,1) where required,
-    summing to 1 across active runners within tolerance, each identifying its generating model or
+    summing to 1 across active selections within tolerance, each identifying its generating model or
     price-definition version. A missing probability is explicit — NEVER silently substituted from
     another; p_fundamental never populated from p_combined; p_market_info never labelled a model
     prediction; p_combined never overwrites p_fundamental. No LLM may create, alter, smooth or
@@ -301,10 +312,12 @@
     forecast_vintage_id/type INITIAL|UPDATED|FINAL_APPROVED_HORIZON|CORRECTION,
     supersedes_prediction_id revision chains with deterministic update reasons,
     available_to_consumer_at_utc). A later prediction is a NEW prediction_id; earlier snapshots are
-    never updated; results/BSP/settlement/future prices never enter or revise a pre-off snapshot;
-    non-runner changes mint a new snapshot; latest is DERIVED from the chain, never stored by
-    mutation; snapshots are independent of any trading order and reproducible from approved
-    manifests; no consumer may select the best-performing vintage after the result.
+    never updated; results, reconciled closing benchmarks (racing: BSP), settlement and future
+    prices never enter or revise a pre-event snapshot; selection-removal changes (racing
+    non-runners; extending the update-reason vocabulary to other sports'' withdrawals is a governed
+    enum change) mint a new snapshot; latest is DERIVED from the chain, never stored by mutation;
+    snapshots are independent of any trading order and reproducible from approved manifests; no
+    consumer may select the best-performing vintage after the result.
 
     '
   criticality: evidence
@@ -315,12 +328,12 @@
   component: l8_evidence
   title: Predictor performance ledger with versioned benchmark registry
   requirement: 'A predictor-specific evidence ledger, separate from trading performance, evaluating
-    forecasting quality: race-level log score and multiclass Brier, calibration-in-the-large and
+    forecasting quality: choice-set-level log score and multiclass Brier, calibration-in-the-large and
     slope, reliability by approved bands, ranking diagnostics, availability/coverage rates, and
-    cohort breakdowns — distinguished for fundamental, market-baseline and combined models. The race
-    is the unit of analysis; results join AFTER settlement; missing predictions and exclusions stay
-    in the denominator; ROI only as a clearly secondary frozen-policy diagnostic; no ambiguous field
-    named performance. Amendment A: benchmark definitions and evaluation policy (universe version,
+    cohort breakdowns — distinguished for fundamental, market-baseline and combined models. The
+    decision unit (the market choice set — race, match) is the unit of analysis; results join AFTER
+    settlement; missing predictions and exclusions stay in the denominator; ROI only as a clearly
+    secondary frozen-policy diagnostic; no ambiguous field named performance. Amendment A: benchmark definitions and evaluation policy (universe version,
     forecast-vintage policy, inclusion/exclusion hashes, coverage policy) are VERSIONED in a
     registry; in-place benchmark changes are refused; horizon-mismatched comparisons are rejected;
     no cherry-picked subgroup may be labelled overall performance.
@@ -551,9 +564,9 @@
   enforcement_state: active
 - id: SPEC-054
   component: l5_decision
-  title: One runner per market
-  requirement: 'v1 MUST refuse a second position in a market. Commission is charged on the net market
-    result; multi-position attribution is path-dependent.
+  title: One selection per market
+  requirement: 'v1 MUST refuse a second position in a market (one selection per market, any sport).
+    Commission is charged on the net market result; multi-position attribution is path-dependent.
 
     '
   criticality: money
@@ -760,11 +773,12 @@
   enforcement_state: planned
 - id: SPEC-082
   component: l7_settle
-  title: Settlement edge cases
-  requirement: 'MUST handle: partial matches; multiple orders on one runner; multiple runners; dead heats;
-    reduction factors (Betfair semantics, not bookmaker "Rule 4" terminology); voided and abandoned races;
-    resettlements; rounding to currency minor units; duplicate acknowledgements; unknown status after
-    timeout.
+  title: Settlement edge cases (racing adapter)
+  requirement: 'RACING-ADAPTER-SCOPED settlement content, reached through the settlement-policy seam
+    (l7_settle.policy); tennis settlement is SPEC-084. MUST handle: partial matches; multiple orders
+    on one selection; multiple selections; dead heats; reduction factors (Betfair semantics, not
+    bookmaker "Rule 4" terminology); voided and abandoned events; resettlements; rounding to currency
+    minor units; duplicate acknowledgements; unknown status after timeout.
 
     '
   criticality: money
@@ -820,9 +834,10 @@
 - id: SPEC-090
   component: l8_evidence
   title: Race-level paired inference
-  requirement: 'Primary unit is the race. d_r = L_r(market) - L_r(combined) using -log p on the actual
-    winner. Block bootstrap clustered by meeting-day. Runner-level independence assumptions MUST NOT appear
-    anywhere.
+  requirement: 'Primary unit is the decision unit (the market choice set — race, match). d_r =
+    L_r(market) - L_r(combined) using -log p on the actual winner. Block bootstrap clustered by the
+    sport adapter''s declared correlation-cluster key (racing: meeting-day; tennis: UTC calendar
+    day). Selection-level independence assumptions MUST NOT appear anywhere.
 
     '
   criticality: evidence
@@ -889,8 +904,10 @@
   title: CLV diagnostic family
   requirement: 'Four distinct quantities: signal CLV, intended-order CLV, realised-fill CLV, execution-policy
     value. Realised-fill CLV MUST NOT exist for unfilled orders — assigning hypothetical taken prices
-    is forbidden. Two closing benchmarks retained: BSP and a defined pre-suspension WAP/microprice window.
-    CLV MUST NOT be a training target.
+    is forbidden. Closing benchmarks are adapter-declared: the racing adapter retains two (BSP and a
+    defined pre-suspension WAP/microprice window); no non-racing benchmark is selected
+    (sport_core.benchmarks refuses until an evidence-gated selection exists). CLV MUST NOT be a
+    training target.
 
     '
   criticality: evidence
@@ -912,9 +929,10 @@
 - id: SPEC-097
   component: l8_evidence
   title: Race-level calibration metrics
-  requirement: 'Race-level log score; race-level multiclass Brier; calibration-in-the-large; calibration
-    slope on race-normalised logits; reliability curves by band with CIs; adaptive bins with counts; calibration
-    by odds band, track, field size, period. Any post-hoc calibration MUST renormalise across each race.
+  requirement: 'Choice-set-level log score; choice-set-level multiclass Brier; calibration-in-the-large;
+    calibration slope on choice-set-normalised logits; reliability curves by band with CIs; adaptive bins
+    with counts; calibration by cohort (e.g. odds band, venue, field size, period — cohort labels are
+    caller-supplied, never hardcoded). Any post-hoc calibration MUST renormalise across each choice set.
     ECE is diagnostic only.
 
     '

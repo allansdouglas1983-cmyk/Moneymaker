@@ -9,6 +9,12 @@ The Betfair ladder (SPECIFICATION.md §6.6):
 1.01–2 by .01; 2–3 by .02; 3–4 by .05; 4–6 by .1; 6–10 by .2; 10–20 by .5; 20–30 by 1;
 30–50 by 2; 50–100 by 5; 100–1000 by 10.  Band tops belong to the next band (so 2.00 is the
 first tick of the .02 band, not the last of the .01 band); 1000 is the final tick. Total 350.
+
+BETFAIR-SCOPED BY DESIGN (conceptual audit F-16): this is THE Betfair exchange ladder, shared
+by every Betfair sport (racing, tennis, football alike) — but it is a venue fact, not a
+universal one. A non-Betfair venue (e.g. a cent-priced prediction market) is a different
+ladder and therefore a different, separately governed price-contract version; nothing in this
+module may be stretched to fit one.
 """
 from __future__ import annotations
 

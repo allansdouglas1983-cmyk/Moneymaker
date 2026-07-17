@@ -8,13 +8,15 @@ paths:
 
 You are editing code that determines whether conclusions are valid.
 
-## The race is the unit of analysis
-Runners in a race are one mutually exclusive choice set. Races at a meeting share
-going, weather, jockeys, liquidity, participants. Runner-level independence is wrong
-and produces standard errors that are far too small.
+## The market choice set is the unit of analysis
+A race's runners, a match's players: one mutually exclusive choice set (the decision
+unit — `{race, match}`, governed). Events sharing a correlation block share conditions
+(a meeting's going/weather/jockeys/liquidity; a tournament day's conditions).
+Selection-level independence is wrong and produces standard errors that are far too small.
 
-- Paired race-level log score: `d_r = L_r(market) - L_r(combined)`
-- Block bootstrap clustered by meeting-day
+- Paired choice-set-level log score: `d_r = L_r(market) - L_r(combined)`
+- Block bootstrap clustered by the sport adapter's declared cluster key
+  (racing: meeting-day; tennis: UTC calendar day)
 - Sample size DERIVED: `N ~ (z_a + z_b)^2 * sigma_d^2 / delta^2`
 
 ## No borrowed thresholds
@@ -23,8 +25,11 @@ These are explicitly rejected as gates: `dR2 >= 0.01`, `t >= 3`, `ECE <= 0.02`,
 effect, power assumption, primary endpoint, and stopping rule BEFORE observation.
 
 ## Leakage
-- Reconciled BSP: grading only, never a feature
-- Actual-off time: post-hoc only. Live knows scheduled start.
+- Reconciled closing benchmark (racing: BSP): grading only, never a feature. Each
+  adapter declares its taints.
+- Actual event-start time: post-hoc only. Live knows scheduled start. ("Only ever
+  delayed" is racing-adapter-scoped — tennis events can start early; see conceptual
+  audit F-01 before building any tennis feature.)
 - Backfill does not confer historical validity. Declare true publication time.
 - Cross-fitting must be time-respecting AND strictly out-of-fold, or alpha is
   spuriously inflated and the whole result is worthless.
@@ -37,7 +42,7 @@ taken prices.
 ## The universe is frozen before outcomes are known
 Every eligible market accounted for. Missing data -> explicit exclusion with a
 knowledge-time, never a disappearance. Exclusions rest on facts knowable at decision time.
-Every lockbox report includes the full exclusion funnel. No-bet races stay in policy
+Every lockbox report includes the full exclusion funnel. No-bet events stay in policy
 evaluation.
 
 Sporting result != contractual settlement. The model learns from the sporting result;

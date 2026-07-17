@@ -40,10 +40,12 @@ the same "who and when" discipline as every other dual-clock record in this code
 Ambiguity resolutions taken while drafting this slice (see the task's final report for
 the full list):
 
-* ``decision_unit`` is refused unless it is exactly ``"race"``. §9.7's own template shows
-  ``decision_unit: race`` with no alternative, and the evidence rules are unambiguous that
-  "the race is the unit of analysis, not the runner" — a runner-level trial ledger entry
-  would misrepresent the very thing the multiplicity/clustering discipline depends on.
+* ``decision_unit`` is validated against the governed closed set
+  ``PERMITTED_DECISION_UNITS`` (originally exactly ``"race"`` per §9.7's template;
+  widened to ``{"race", "match"}`` by founder-approved correction 0003, ADR 0017).
+  The market choice set is the unit of analysis, never the individual selection — a
+  selection-level trial ledger entry would misrepresent the very thing the
+  multiplicity/clustering discipline depends on.
 * ``ABANDONED`` has no ``l8_evidence.gates.outcomes.GateOutcome`` counterpart. It is a
   FIFTH :class:`TrialDecision` member (the other four share GateOutcome's exact string
   values, checked by a dedicated test, without literally reusing that sealed four-member
