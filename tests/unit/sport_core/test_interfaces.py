@@ -1,9 +1,22 @@
 """ADR 0017 S5 — probability + model interfaces: CONTRACTS ONLY (Phases 4-5).
 
-``sport_core/interfaces.py`` does not exist yet in the repository — these tests are
-RED by construction (module import failure) until a lead-reviewed implementation lands
-in its own governed slice. They pin the contract this worker's draft
-(``/tmp/.../scratchpad/s5/interfaces.py`` at draft time) must satisfy:
+``sport_core/interfaces.py`` and ``l4_pricing/interfaces.py`` do not exist yet in the
+repository — these tests are RED by construction (module import failure) until a
+lead-reviewed implementation lands in its own governed slice.
+
+Placement (lead correction to the original red draft of this file, which put every seam
+in ``sport_core``): the three uncertainty-bearing seams (``UncertaintyProvider``,
+``BayesianModel``, ``EnsembleModel``) return SPEC-034's ``WinProbabilityDistribution``,
+whose sole sanctioned exit is the DECISION-layer typed lower bound — the type reaches
+``l5_decision`` by construction. ``sport_core`` is on the ADR 0013 read-only analytics
+boundary (test_analytics_import_boundary.py) and must never reach ``l5_decision``, so
+those three seams are PRICING-layer contracts and live in ``l4_pricing/interfaces.py``.
+Every other seam stays in ``sport_core/interfaces.py``. This was a specification error
+in the never-green red draft, not a behavioural weakening: every assertion is retained
+and the boundary rationale is additionally pinned below
+(test_uncertainty_bearing_seams_are_not_in_sport_core).
+
+They pin the contract the S5 draft must satisfy:
 
 * every seam is a ``typing.Protocol`` decorated ``@runtime_checkable``;
 * no method body contains anything beyond an optional docstring + ``...``  — this is a
@@ -35,10 +48,16 @@ import pytest
 
 pytestmark = pytest.mark.spec("SPEC-034")
 
-# Deliberately a plain import, not importorskip: until a lead-reviewed implementation
-# lands in its own governed slice this MUST fail collection (RED), not skip — a skip
+# Deliberately plain imports, not importorskip: until a lead-reviewed implementation
+# lands in its own governed slice these MUST fail collection (RED), not skip — a skip
 # would silently report green on a missing money/evidence-adjacent contract.
+import l4_pricing.interfaces as pricing_interfaces  # noqa: E402
 import sport_core.interfaces as interfaces  # noqa: E402
+
+# Uncertainty-bearing seams return SPEC-034's WinProbabilityDistribution and are
+# therefore pricing-layer contracts (see module docstring) — resolved from
+# l4_pricing.interfaces, never from sport_core.
+_PRICING_LAYER_PROTOCOLS = {"UncertaintyProvider", "BayesianModel", "EnsembleModel"}
 
 # Every protocol this slice defines, mapped to the exact member names (methods + properties)
 # a conforming implementation must expose. Hand-enumerated (not derived from typing internals)
@@ -88,7 +107,20 @@ _MODEL_ID_IDENTITY_PROTOCOLS = {
 
 
 def _protocol(name: str) -> type:
-    return typing.cast(type, getattr(interfaces, name))
+    module = pricing_interfaces if name in _PRICING_LAYER_PROTOCOLS else interfaces
+    return typing.cast(type, getattr(module, name))
+
+
+def test_uncertainty_bearing_seams_are_not_in_sport_core() -> None:
+    # ADR 0013: sport_core is on the read-only analytics boundary and must never reach
+    # l5_decision. WinProbabilityDistribution's only exit returns the decision-layer
+    # typed lower bound, so any seam returning it belongs to the pricing layer.
+    for name in sorted(_PRICING_LAYER_PROTOCOLS):
+        assert not hasattr(interfaces, name), (
+            f"{name} returns WinProbabilityDistribution and must live in "
+            "l4_pricing.interfaces, never in sport_core (ADR 0013 boundary)"
+        )
+        assert hasattr(pricing_interfaces, name)
 
 
 def _make_conforming(members: tuple[str, ...]) -> object:
@@ -182,59 +214,59 @@ def _iter_function_defs(tree: ast.AST) -> typing.Iterator[ast.FunctionDef]:
             yield node
 
 
-def test_no_function_body_contains_anything_but_docstring_and_ellipsis() -> None:
-    source_path = inspect.getsourcefile(interfaces)
+_CONTRACT_MODULES = (interfaces, pricing_interfaces)
+
+
+def _module_tree(module: object) -> ast.AST:
+    source_path = inspect.getsourcefile(module)  # type: ignore[arg-type]
     assert source_path is not None
     with open(source_path, encoding="utf-8") as fh:
         source = fh.read()
-    tree = ast.parse(source, filename=source_path)
+    return ast.parse(source, filename=source_path)
+
+
+def test_no_function_body_contains_anything_but_docstring_and_ellipsis() -> None:
     checked = 0
-    for func in _iter_function_defs(tree):
-        checked += 1
-        body = list(func.body)
-        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
-                and isinstance(body[0].value.value, str):
-            body = body[1:]  # drop a leading docstring
-        assert len(body) == 1, (
-            f"{func.name}: a Protocol method body must be exactly one statement (Ellipsis) "
-            f"after an optional docstring, found {len(body)}"
-        )
-        stmt = body[0]
-        assert isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant) and stmt.value.value is Ellipsis, (
-            f"{func.name}: body must be `...` — any other statement is an implementation, "
-            "not a contract (ADR 0017 S5 forbids implementations in this slice)"
-        )
+    for module in _CONTRACT_MODULES:
+        tree = _module_tree(module)
+        for func in _iter_function_defs(tree):
+            checked += 1
+            body = list(func.body)
+            if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
+                    and isinstance(body[0].value.value, str):
+                body = body[1:]  # drop a leading docstring
+            assert len(body) == 1, (
+                f"{func.name}: a Protocol method body must be exactly one statement (Ellipsis) "
+                f"after an optional docstring, found {len(body)}"
+            )
+            stmt = body[0]
+            assert isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant) and stmt.value.value is Ellipsis, (
+                f"{func.name}: body must be `...` — any other statement is an implementation, "
+                "not a contract (ADR 0017 S5 forbids implementations in this slice)"
+            )
     assert checked > 0, "expected at least one Protocol method to scan"
 
 
 def test_zero_float_literals_in_module_source() -> None:
-    source_path = inspect.getsourcefile(interfaces)
-    assert source_path is not None
-    with open(source_path, encoding="utf-8") as fh:
-        source = fh.read()
-    tree = ast.parse(source, filename=source_path)
-    floats = [
-        node.value
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Constant) and isinstance(node.value, float)
-    ]
-    assert floats == [], f"a Protocol/contract file must contain zero float literals, found {floats}"
+    for module in _CONTRACT_MODULES:
+        floats = [
+            node.value
+            for node in ast.walk(_module_tree(module))
+            if isinstance(node, ast.Constant) and isinstance(node.value, float)
+        ]
+        assert floats == [], f"a Protocol/contract file must contain zero float literals, found {floats}"
 
 
 def test_zero_bare_numeric_constants_in_module_source() -> None:
     # No numeric literal of any kind belongs in a pure-contract file — a Protocol declares
     # shape, never a threshold, default, or probability value.
-    source_path = inspect.getsourcefile(interfaces)
-    assert source_path is not None
-    with open(source_path, encoding="utf-8") as fh:
-        source = fh.read()
-    tree = ast.parse(source, filename=source_path)
-    numbers = [
-        node.value
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool)
-    ]
-    assert numbers == [], f"a Protocol/contract file must contain zero numeric constants, found {numbers}"
+    for module in _CONTRACT_MODULES:
+        numbers = [
+            node.value
+            for node in ast.walk(_module_tree(module))
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool)
+        ]
+        assert numbers == [], f"a Protocol/contract file must contain zero numeric constants, found {numbers}"
 
 
 # --- reused platform types, not reinvented vocabulary ------------------------------------------
@@ -264,7 +296,7 @@ def test_reuses_existing_race_probability_and_distribution_types_not_new_ones() 
     combine_hints = get_type_hints(interfaces.CombinedProbabilityProvider.combine)
     assert combine_hints["return"] == typing.Mapping[int, CombinedProbability]
 
-    distribution_hints = get_type_hints(interfaces.UncertaintyProvider.distribution)
+    distribution_hints = get_type_hints(_protocol("UncertaintyProvider").distribution)
     assert distribution_hints["return"] == typing.Mapping[int, WinProbabilityDistribution]
 
     generate_hints = get_type_hints(interfaces.FeatureGenerator.generate)
