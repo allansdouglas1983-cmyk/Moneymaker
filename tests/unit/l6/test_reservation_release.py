@@ -25,7 +25,7 @@ from l6_broker.orders import (
     OrderBook,
     OrderState,
     PlaceCommand,
-    UnknownOrderStateError,
+    PlacementBlockedError,
 )
 
 pytestmark = [pytest.mark.spec("SPEC-054"), pytest.mark.spec("SPEC-071")]
@@ -145,7 +145,7 @@ class TestRetainRows:
         )
         book.update(order.marked_unknown())
         assert book.is_market_reserved("1.777") is True
-        with pytest.raises(UnknownOrderStateError):
+        with pytest.raises(PlacementBlockedError):
             book.place(_command("ref-2"), at_utc=_AT, monotonic_ns=99)
 
     def test_settlement_horizon_release_unchanged(self) -> None:

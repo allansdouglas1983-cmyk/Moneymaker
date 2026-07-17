@@ -80,9 +80,7 @@ def _command(ref: str) -> PlaceCommand:
     )
 
 
-def test_out_of_order_and_duplicate_broker_events_never_regress_the_book(
-    tmp_path: Path,
-) -> None:
+def test_out_of_order_and_duplicate_broker_events_never_regress_the_book() -> None:
     book = OrderBook()
     placed = book.place(_command("ref-1"), at_utc=_AT, monotonic_ns=1)
     submitted = placed.transition(

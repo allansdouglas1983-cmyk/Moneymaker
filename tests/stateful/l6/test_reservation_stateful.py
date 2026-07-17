@@ -24,7 +24,7 @@ from l6_broker.orders import (
     OrderState,
     PlaceCommand,
     StaleOrderUpdateError,
-    UnknownOrderStateError,
+    PlacementBlockedError,
 )
 
 pytestmark = [pytest.mark.spec("SPEC-054"), pytest.mark.spec("SPEC-071")]
@@ -76,7 +76,7 @@ class ReservationMachine(RuleBasedStateMachine):
             placed = self.book.place(self._command(ref), at_utc=_AT, monotonic_ns=self.counter)
             self.snapshots[ref] = [placed]
             assert not reserved and not any_unknown
-        except UnknownOrderStateError:
+        except PlacementBlockedError:
             assert any_unknown
         except MarketReservedError:
             assert reserved

@@ -94,7 +94,7 @@ findings:
     title: Market reservation never releases on zero-matched lapse
     severity: DESIGN-REVIEW
     owner_slice: phase-3a broker slice (implements the founder ruling below)
-    status: decided
+    status: done  # landed 2026-07-17 red-first: derived-reservation release predicate + RetryGovernor (persistent budgets, never-twice digests, reconcile-before-retry); mutation run queued per ADR 0008
     founder_ruling: >-
       A confirmed terminal zero-fill FOK miss does not reserve the market until
       settlement. Release the reservation when there is no exposure and no order-state

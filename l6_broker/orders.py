@@ -145,6 +145,12 @@ class MarketReservedError(Exception):
     """
 
 
+class StaleOrderUpdateError(ValueError):
+    """A stale or conflicting broker-event update — refused, the book never regresses
+    (F-13). Out-of-order deliveries carry shorter history; conflicting streams carry a
+    diverged one. Neither may overwrite the stored immutable record."""
+
+
 class PlacementBlockedError(Exception):
     """Raised when any order in the book is flagged unknown -- all further placement is
     blocked until reconciled (SPEC-062 forward dependency; full reconciliation lands in
@@ -197,12 +203,32 @@ _LIVE_UNMATCHED_RISK_STATES: frozenset[OrderState] = frozenset(
     }
 )
 
-# States that release a market reservation (SPEC-054 extension, ADR 0014). Everything
-# else -- including CANCELLED/LAPSED, which may still carry a matched portion awaiting
-# settlement -- keeps the market reserved to one logical intent.
-_RESERVATION_RELEASING_STATES: frozenset[OrderState] = frozenset(
+# Reservation semantics (SPEC-054 extension; F-13 founder ruling 2026-07-17). A market
+# reservation represents actual/potential exposure or unresolved order state. Two ways
+# an order stops holding it:
+#   * the settlement horizon (SETTLED / RESETTLED / VOIDED) — unchanged from ADR 0014;
+#   * a CONFIRMED TERMINAL zero-fill: LAPSED or CANCELLED with matched_stake_minor == 0
+#     and no reconciliation ambiguity (order not flagged unknown) — the ruled F-13
+#     release row. Any matched stake, partial fill, non-terminal or unknown state
+#     retains the reservation. The predicate below is DERIVED from the immutable order
+#     records on every query — release is atomic with terminal-event persistence by
+#     construction, never separately stored mutable state.
+_SETTLEMENT_RELEASING_STATES: frozenset[OrderState] = frozenset(
     {OrderState.SETTLED, OrderState.RESETTLED, OrderState.VOIDED}
 )
+_ZERO_FILL_TERMINAL_STATES: frozenset[OrderState] = frozenset(
+    {OrderState.LAPSED, OrderState.CANCELLED}
+)
+
+
+def _order_releases_reservation(order: "Order") -> bool:
+    if order.state in _SETTLEMENT_RELEASING_STATES:
+        return True
+    return (
+        order.state in _ZERO_FILL_TERMINAL_STATES
+        and order.matched_stake_minor == 0
+        and not order.unknown
+    )
 
 
 @dataclass(frozen=True)
@@ -493,9 +519,45 @@ class OrderBook:
         """Persist a transitioned ``Order`` back into the book, keyed by its existing
         ``customer_order_ref``. Raises ``KeyError`` if the reference is not on file --
         ``update`` records lifecycle progress for an order that already went through
-        :meth:`place`, it does not create new orders."""
+        :meth:`place`, it does not create new orders.
+
+        F-13: hostile broker-event orderings are refused, never absorbed. An update
+        whose history is SHORTER than the stored record is a stale (out-of-order)
+        delivery — :class:`StaleOrderUpdateError`; an update identical to the stored
+        record is an idempotent no-op; a same-length-but-different or diverged-history
+        update is conflicting stream state — also refused, and the caller's correct
+        move is :meth:`Order.marked_unknown` + reconciliation, which RETAINS the
+        reservation (the release predicate requires ``unknown == False``)."""
         if order.customer_order_ref not in self._by_ref:
             raise KeyError(f"no order on file for customer_order_ref {order.customer_order_ref!r}")
+        stored = self._by_ref[order.customer_order_ref]
+        if order == stored:
+            return  # duplicate delivery of the current snapshot: idempotent no-op
+        if len(order.history) < len(stored.history):
+            raise StaleOrderUpdateError(
+                f"stale update for {order.customer_order_ref!r}: incoming history has "
+                f"{len(order.history)} record(s), stored has {len(stored.history)} — "
+                "out-of-order broker events are refused, never absorbed (F-13)"
+            )
+        if order.history[: len(stored.history)] != stored.history:
+            raise StaleOrderUpdateError(
+                f"conflicting update for {order.customer_order_ref!r}: incoming history "
+                "is not an extension of the stored record — conflicting broker/order-"
+                "stream state; mark the order unknown and reconcile (F-13)"
+            )
+        if len(order.history) == len(stored.history):
+            # Same history length with an identical prefix means the histories are
+            # identical. The ONLY legitimate same-history change is the unknown flag
+            # (reconciliation marking/clearing); anything else differing is conflicting
+            # stream state — refused.
+            if replace(order, unknown=stored.unknown) != stored:
+                raise StaleOrderUpdateError(
+                    f"conflicting update for {order.customer_order_ref!r}: fields "
+                    "changed without a transition record — conflicting broker/order-"
+                    "stream state; mark the order unknown and reconcile (F-13)"
+                )
+            self._by_ref[order.customer_order_ref] = order
+            return
         self._by_ref[order.customer_order_ref] = order
 
     def get(self, customer_order_ref: str) -> Order | None:
@@ -521,9 +583,14 @@ class OrderBook:
                 matched += order.matched_stake_minor
         return Exposure(potential_exposure_minor=potential, matched_exposure_minor=matched)
 
+    def is_market_reserved(self, market_id: str) -> bool:
+        """Whether ``market_id`` is reserved — derived from the immutable order records
+        (F-13): reserved iff any order on the market has exposure or unresolved state."""
+        return self._reserving_order(market_id) is not None
+
     def _reserving_order(self, market_id: str) -> Order | None:
         for order in self._by_ref.values():
-            if order.market_id == market_id and order.state not in _RESERVATION_RELEASING_STATES:
+            if order.market_id == market_id and not _order_releases_reservation(order):
                 return order
         return None
 
