@@ -660,7 +660,17 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 3
-  enforcement_state: planned
+  enforcement_state: active
+  relevant_inputs:
+  - current_state
+  - requested_state
+  - matched_stake_minor
+  - stake_minor
+  metamorphic_properties:
+  - illegal transitions always raise regardless of other fields
+  - transition history is append-only, +1 per legal transition
+  - matched_stake_minor is monotone non-decreasing and never exceeds stake
+  - SETTLED and RESETTLED are absorbing except RESETTLED's self-loop
 - id: SPEC-071
   component: l6_broker
   title: Idempotent placement
@@ -671,7 +681,15 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 3
-  enforcement_state: planned
+  enforcement_state: active
+  relevant_inputs:
+  - customer_order_ref
+  - existing_orders
+  - command_fields
+  metamorphic_properties:
+  - a duplicate customerOrderRef adds zero exposure regardless of differing fields
+  - a distinct ref on a reserved market is refused, never silently merged
+  - an unknown-state order in the book blocks all placement including replays
 - id: SPEC-072
   component: l6_broker
   title: marketVersion guard
