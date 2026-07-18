@@ -1,0 +1,197 @@
+"""Stage 2E §5 — the one-time atomic June extraction + conditional Stage-B gating.
+
+Proves requirement A (durable-burn-before-read; recovery never re-reads raw) and requirement B
+(Stage B needs the exact use-policy digest + a genuine M1 PASS attestation bound to the artifact;
+any non-PASS / mismatch is structurally unreachable). All synthetic — no real June outcome.
+"""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+import pytest
+
+from l8_evidence.june_stage_a_extraction import (
+    JUNE_ARTIFACT_USE_POLICY_DIGEST,
+    M1PassAttestation,
+    MinimalOutcome,
+    StageAIncidentError,
+    StageBUnreachableError,
+    attest_m1_pass,
+    load_artifact,
+    open_stage_b_reader,
+    recover_stage_a,
+    run_stage_a_extraction,
+)
+from l8_evidence.lockbox import (
+    GATE_1_ID,
+    LockboxBurnedError,
+    LockboxDefinition,
+    LockboxRegistry,
+    LockboxState,
+)
+from l8_evidence.prediction_snapshots import DualClockTimestamp
+
+pytestmark = [pytest.mark.spec("SPEC-092")]
+
+_TS = DualClockTimestamp(wall_utc=datetime(2026, 7, 18, 12, 0, tzinfo=timezone.utc), monotonic_ns=1)
+_LB = "lockbox-june-2026-tennis-v1"
+_BUNDLE_IDS = frozenset({"1.1", "1.2", "1.3"})
+_BUNDLE_DIGEST = "sha256:" + "ab" * 32
+_AUTH_DIGEST = "sha256:" + "cd" * 32
+
+
+def _registry() -> LockboxRegistry:
+    reg = LockboxRegistry()
+    reg.define(LockboxDefinition(
+        lockbox_id=_LB, period_start=datetime(2026, 6, 1).date(),
+        period_end=datetime(2026, 6, 30).date(), defined_at=_TS, defined_by="founder",
+    ))
+    return reg
+
+
+def _outcomes() -> list[MinimalOutcome]:
+    return [MinimalOutcome("1.1", 11), MinimalOutcome("1.2", 44), MinimalOutcome("1.3", 55)]
+
+
+def _run(reg, tmp_path, *, reader=None, fault=None):
+    calls = {"n": 0}
+    def default_reader():
+        calls["n"] += 1
+        return _outcomes()
+    kwargs = dict(
+        registry=reg, lockbox_id=_LB, accessor="gate-1", at=_TS,
+        bundle_market_ids=_BUNDLE_IDS, bundle_digest=_BUNDLE_DIGEST,
+        authorisation_digest=_AUTH_DIGEST, read_outcomes=reader or default_reader,
+        burn_record_path=tmp_path / "burn.json", artifact_path=tmp_path / "artifact.json",
+    )
+    if fault is not None:
+        kwargs["_fault"] = fault
+    art = run_stage_a_extraction(**kwargs)
+    return art, calls
+
+
+class TestHappyPath:
+    def test_extraction_produces_verified_artifact_and_burns_registry(self, tmp_path) -> None:
+        reg = _registry()
+        art, calls = _run(reg, tmp_path)
+        assert calls["n"] == 1
+        assert reg.state(_LB) is LockboxState.BURNED
+        assert {o.market_id for o in art.outcomes} == {"1.1", "1.2", "1.3"}
+        # artifact on disk verifies against its own digest
+        loaded = load_artifact(tmp_path / "artifact.json")
+        assert loaded.content_digest() == art.content_digest()
+
+
+class TestRequirementA_DurableBurnBeforeRead:
+    def test_burn_is_durable_before_any_outcome_read(self, tmp_path) -> None:
+        # Fault immediately after the durable burn record, before the read: the raw reader must
+        # NOT have run, yet the burn record is already durable.
+        reg = _registry()
+        def fault(step: str) -> None:
+            if step == "after_burn_record":
+                raise RuntimeError("crash before read")
+        with pytest.raises(RuntimeError, match="crash before read"):
+            _run(reg, tmp_path, fault=fault)
+        assert (tmp_path / "burn.json").exists()          # durably opened
+        assert not (tmp_path / "artifact.json").exists()
+
+    def test_crash_after_read_before_artifact_is_incident_no_reread(self, tmp_path) -> None:
+        reg = _registry()
+        def fault(step: str) -> None:
+            if step == "after_raw_read":
+                raise RuntimeError("crash after read")
+        with pytest.raises(RuntimeError, match="crash after read"):
+            _run(reg, tmp_path, fault=fault)
+        # Recovery must NOT re-read raw; it declares an incident (burn record but no artifact).
+        with pytest.raises(StageAIncidentError):
+            recover_stage_a(burn_record_path=tmp_path / "burn.json",
+                            artifact_path=tmp_path / "artifact.json")
+
+    def test_crash_after_artifact_recovers_by_finalizing_no_reread(self, tmp_path) -> None:
+        reg = _registry()
+        def fault(step: str) -> None:
+            if step == "after_artifact":
+                raise RuntimeError("crash after artifact")
+        with pytest.raises(RuntimeError, match="crash after artifact"):
+            _run(reg, tmp_path, fault=fault)
+        # The complete artifact exists -> recovery finalizes it, never touching raw.
+        art = recover_stage_a(burn_record_path=tmp_path / "burn.json",
+                              artifact_path=tmp_path / "artifact.json")
+        assert {o.market_id for o in art.outcomes} == {"1.1", "1.2", "1.3"}
+
+    def test_a_second_fresh_run_is_refused(self, tmp_path) -> None:
+        reg = _registry()
+        _run(reg, tmp_path)
+        # burn record + artifact exist -> a fresh run refuses (must recover instead).
+        with pytest.raises(StageAIncidentError):
+            _run(_registry(), tmp_path)
+
+    def test_registry_refuses_a_second_gate1_access(self, tmp_path) -> None:
+        reg = _registry()
+        _run(reg, tmp_path)
+        with pytest.raises(LockboxBurnedError):
+            reg.access(_LB, accessor="again", purpose="x", gate_id=GATE_1_ID, at=_TS)
+
+    def test_outcomes_outside_bundle_refuse(self, tmp_path) -> None:
+        with pytest.raises(StageAIncidentError):
+            _run(_registry(), tmp_path, reader=lambda: [MinimalOutcome("1.999", 1)])
+
+    def test_duplicate_market_ids_refuse(self, tmp_path) -> None:
+        with pytest.raises(StageAIncidentError):
+            _run(_registry(), tmp_path,
+                 reader=lambda: [MinimalOutcome("1.1", 1), MinimalOutcome("1.1", 2)])
+
+
+class TestRequirementB_ConditionalStageB:
+    def _artifact(self, tmp_path):
+        art, _ = _run(_registry(), tmp_path)
+        return art
+
+    def test_pass_attestation_unlocks_stage_b(self, tmp_path) -> None:
+        art = self._artifact(tmp_path)
+        att = attest_m1_pass(verdict="PASS", artifact=art,
+                             use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                             m1_gate_version="probability-m1")
+        rows = open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                   m1_attestation=att)
+        assert {o.market_id for o in rows} == {"1.1", "1.2", "1.3"}
+
+    @pytest.mark.parametrize("verdict", ["CONTINUE", "FAIL_HARM", "FAIL_FUTILITY", "TECHNICAL_FAILURE"])
+    def test_non_pass_makes_stage_b_unreachable(self, tmp_path, verdict: str) -> None:
+        art = self._artifact(tmp_path)
+        with pytest.raises(StageBUnreachableError):
+            attest_m1_pass(verdict=verdict, artifact=art,
+                           use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                           m1_gate_version="probability-m1")
+
+    def test_wrong_use_policy_digest_blocks_attestation_and_reader(self, tmp_path) -> None:
+        art = self._artifact(tmp_path)
+        with pytest.raises(StageBUnreachableError):
+            attest_m1_pass(verdict="PASS", artifact=art,
+                           use_policy_digest="sha256:" + "00" * 32, m1_gate_version="x")
+        good = attest_m1_pass(verdict="PASS", artifact=art,
+                              use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest="sha256:" + "00" * 32, m1_attestation=good)
+
+    def test_forged_attestation_refused(self, tmp_path) -> None:
+        art = self._artifact(tmp_path)
+        forged = M1PassAttestation(artifact_digest=art.content_digest(),
+                                   use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                   m1_gate_version="x", _token=object())
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                m1_attestation=forged)
+
+    def test_attestation_bound_to_a_different_artifact_refused(self, tmp_path) -> None:
+        art = self._artifact(tmp_path)
+        other = art.__class__(lockbox_id=art.lockbox_id, bundle_digest=art.bundle_digest,
+                              authorisation_digest=art.authorisation_digest,
+                              grant_at_utc=art.grant_at_utc,
+                              outcomes=(MinimalOutcome("1.1", 11),))  # different outcome set
+        att_other = attest_m1_pass(verdict="PASS", artifact=other,
+                                   use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                   m1_gate_version="x")
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                m1_attestation=att_other)
