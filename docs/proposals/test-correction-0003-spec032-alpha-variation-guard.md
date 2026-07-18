@@ -50,3 +50,25 @@ other test touched.
 slice tests pass. No money-module behaviour is affected. Approving this correction (or
 an amended guard) restores green; nothing in the Stage-2 programme depends on the
 outcome either way.
+
+---
+
+## DISPOSITION (founder-approved, applied 2026-07-18)
+
+Approved under the founder's conditions and applied as a TEST-DOMAIN-ONLY correction:
+
+- production SPEC-032 code untouched (no epsilon, deadband, or tolerance introduced);
+- the guard now checks REPRESENTABLE influence under the production arithmetic:
+  softmax is shift-invariant, so alpha acts through score differences; the guard
+  requires `|Δα|·spread(ln p_f) > 128·ulp(score_scale)` where `score_scale` is the
+  largest |score| magnitude the production fsum actually forms — ULP/representability
+  reasoning anchored to the arithmetic, with a power-of-two ULP count covering the
+  fsum/exp/normalise rounding chain, not an arbitrary decimal epsilon
+  (the originally-proposed `spread > 1+1e-6` decimal guard was NOT applied);
+- ordinary and boundary `@example`s pinned: (0.3/0.7, α 0→1) and a barely-but-
+  comfortably-representable case (ln-spread ≈ 2e-9), both proving alpha changes the
+  output whenever its effect is representable — these same examples fail any
+  alpha-ignoring mutant, preserving the property's mutation-killing power;
+- the hypothesis-cached counterexample (values distinct by ~1 ULP) now falls outside
+  the property domain by the representability rule, which is the correct statement of
+  SPEC-032's "informative input" region.
