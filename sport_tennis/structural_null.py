@@ -27,13 +27,13 @@ class StructuralNullFamily:
         _races: "Sequence[Race]",
         _schema: "FeatureSchema",
         *,
-        horizon: "HorizonLabel",  # noqa: ARG002
-        max_iter: int,  # noqa: ARG002
+        horizon: "HorizonLabel",  # noqa: ARG002  # pylint: disable=unused-argument
+        max_iter: int,  # noqa: ARG002  # pylint: disable=unused-argument
     ) -> _NullModel:
         return _NullModel()
 
     def predict(
-        self, _model: object, race: "Race", *, horizon: "HorizonLabel"  # noqa: ARG002
+        self, _model: object, race: "Race", *, horizon: "HorizonLabel"  # noqa: ARG002  # pylint: disable=unused-argument
     ) -> Mapping[int, float]:
         active = [r.runner_id for r in race.runners if not r.non_runner]
         return {rid: 1.0 / len(active) for rid in active}

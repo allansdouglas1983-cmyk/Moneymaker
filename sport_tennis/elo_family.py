@@ -65,8 +65,8 @@ class GlobalEloFamily:
         races: "Sequence[Race]",
         _schema: "FeatureSchema",
         *,
-        horizon: "HorizonLabel",  # noqa: ARG002 - horizon-agnostic ratings; recorded by orchestrator
-        max_iter: int,  # noqa: ARG002 - single-pass online update, no iteration
+        horizon: "HorizonLabel",  # noqa: ARG002  # pylint: disable=unused-argument
+        max_iter: int,  # noqa: ARG002  # pylint: disable=unused-argument
     ) -> _FittedElo:
         ratings: dict[int, float] = {}
         by_day: dict[object, list["Race"]] = defaultdict(list)
@@ -97,7 +97,7 @@ class GlobalEloFamily:
         return _FittedElo(ratings=dict(ratings), k_factor=self._k)
 
     def predict(
-        self, model: object, race: "Race", *, horizon: "HorizonLabel"  # noqa: ARG002
+        self, model: object, race: "Race", *, horizon: "HorizonLabel"  # noqa: ARG002  # pylint: disable=unused-argument
     ) -> Mapping[int, float]:
         if not isinstance(model, _FittedElo):
             raise TypeError(f"GlobalEloFamily.predict needs its own fitted artefact, got {type(model).__name__}")
