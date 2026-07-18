@@ -1,0 +1,58 @@
+# specs/evidence/lockbox-june-2026-tennis-v1.yaml — THE SEALED JUNE 2026 TENNIS LOCKBOX
+#
+# Founder decision 2026-07-18 (Stage-2A acceptance, decision 3): the ENTIRE June 2026
+# primary singles universe is sealed — not a final-portion split. specs/** is CODEOWNERS
+# human-owned; this file records that founder act. SPEC-092: one holdout, never inspected
+# during development; any non-GATE-1 access burns it.
+#
+# Looking at it burns it. There is no partial opening.
+
+lockbox_id: lockbox-june-2026-tennis-v1
+sealed_on: "2026-07-18"
+sealed_by: founder (Stage-2A acceptance directive, decision 3)
+spec: SPEC-092
+period_start: "2026-06-01"
+period_end: "2026-06-30"
+
+membership:
+  source: docs/evidence/lockbox-june-2026-tennis/members.csv    # generated from the frozen
+    # universe manifest (sha256 ce9a147e…), never hand-copied
+  member_count: 2876            # every PRIMARY_JUNE_SINGLES_UNIVERSE market
+  strict_sensitivity_tagged: 2287   # retained as a TAGGED SUBSET inside the seal
+  doubles: excluded from the primary modelling programme (descriptive cohort only,
+    outside this lockbox and outside Stage-2 modelling)
+  seal_digest: "sha256:24df4bd22ef28569ac8dd22c4d431725d0de010419c98f5a0402742f93878156"
+    # canonical sorted JSONL of member rows; docs/evidence/lockbox-june-2026-tennis/seal-digest.txt
+
+sealed_content:
+  - all sporting outcomes of member markets
+  - every OUTCOME_CONTROLLED / POST_SETTLEMENT_ONLY field of member markets
+    (specs/evidence/outcome-field-classification-v1.yaml)
+  - any join of any prediction to any member market's result
+
+remains_accessible:
+  - SAFE_BEFORE_LOCKBOX fields of member markets under the knowledge-time line rule
+    (pre-off prices, schedule, identity) — the F0/F1 harness substrate
+  - all frozen Stage-1 feasibility artefacts (docs/evidence/pilot-2026-06-tennis/)
+
+training_data_rule: >-
+  Model training, model selection, hyperparameter selection and calibration must use
+  lawful data ending BEFORE 2026-06-01. If adequate pre-June longitudinal data cannot be
+  licensed, the fundamental modelling programme remains blocked; that is NEVER solved by
+  opening part of June.
+
+opening:
+  permitted_reader: GATE-1 only, via l8_evidence.lockbox.LockboxRegistry.access
+    (log-then-grant; the grant burns the lockbox)
+  june_opening: NOT AUTHORISED. Requires a SEPARATE explicit founder authorisation
+    recorded as a v2 of this file. The governed extractor (l8_evidence.tennis_outcomes)
+    structurally cannot represent a June scope until that authorisation exists.
+  binding: every opening is bound to experiment_id + model/feature/data manifests +
+    gate spec version (the extractor's authorisation record enforces this).
+  post_lockbox_models: an unregistered model evaluated after this lockbox's opening
+    requires a NEW lockbox period; this seal cannot be reused.
+
+runtime_registration: >-
+  The evidence pipeline instantiates LockboxRegistry.define() from this file at boot
+  (lockbox_id, period, defined_by=founder). is_uncontaminated(lockbox-june-2026-tennis-v1)
+  is GATE-1's deterministic input.

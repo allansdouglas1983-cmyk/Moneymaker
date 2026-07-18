@@ -144,3 +144,36 @@ No training data purchase/licence; no model; no feature; no outcome read; no loc
 definition (a separate governed act); no numeric boundary (⟨PENDING FOUNDER⟩); nothing live
 (ADR 0015). Resolving the ⟨PENDING FOUNDER⟩ values and defining the lockbox are the gating
 prerequisites before the first `TrialLedger.register(...)`.
+
+---
+
+## Founder amendment (2026-07-18): declared values and lockbox decision
+
+Declared by the founder at Stage-2A acceptance. These entries RESOLVE the corresponding
+⟨PENDING FOUNDER⟩ items above and SUPERSEDE §4's June-internal partition sketch.
+
+1. **α-budget:** `alpha_total = 0.05`, PROGRAMME-LEVEL FAMILY-WISE — the total budget
+   across ALL pre-registered model-family comparisons, not 0.05 per model. Rationed by
+   the existing multiplicity machinery only (`spent_alpha = (1−confidence)·(prior_trials+1)
+   ≤ alpha_total`, SPEC-091 / gates-v1 `alpha_times_trials_exact_multiplication`); no
+   parallel correction system exists or may be invented. Each family's per-trial
+   confidence level is set at its registration so the family-wise budget is respected.
+2. **Power:** `power = 0.80` (planning target). Recorded once; never increased later
+   because a result is inconvenient.
+3. **Lockbox (supersedes §4's partition sketch):** the ENTIRE June 2026 primary singles
+   universe is sealed — 2,876 markets, with the 2,287 strict cohort retained as a tagged
+   sensitivity subset, doubles excluded from the primary modelling programme
+   (`specs/evidence/lockbox-june-2026-tennis-v1.yaml`, seal digest `sha256:24df4bd2…`).
+   All June sporting outcomes and outcome-controlled fields are inaccessible. Model
+   training, model selection, hyperparameter selection and calibration use lawful data
+   ending BEFORE 2026-06-01. If adequate pre-June longitudinal data cannot be licensed,
+   fundamental modelling remains blocked — never solved by opening part of June.
+4. **Outcome opening:** implementing the governed extractor and permissions is
+   authorised; June outcome opening is NOT. Pre-June development/validation outcomes may
+   later be accessed under registered experiments only, bound to experiment/model/
+   feature/data/gate manifests. Opening June requires a separate explicit founder
+   authorisation. An unregistered post-lockbox model requires a new lockbox period.
+5. **Still ⟨PENDING FOUNDER⟩:** δ (minimum meaningful effect), σ_d (planning
+   assumption), reschedule dwell `W` and max nominal lead — to be declared from the
+   outcome-blind evidence packets (docs/evidence/stage2b-planning-packets/), never
+   invented and never chosen because they improve any real result.
