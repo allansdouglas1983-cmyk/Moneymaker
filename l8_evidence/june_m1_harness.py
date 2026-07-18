@@ -20,8 +20,19 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from typing import Protocol
 
-from l8_evidence.tennis_outcomes import ExtractedMatchOutcome
+
+class _WinnerOutcome(Protocol):
+    """Anything carrying a market id and a winning Betfair selection id — both a governed
+    :class:`~l8_evidence.tennis_outcomes.ExtractedMatchOutcome` and the immutable artifact's
+    ``MinimalOutcome`` satisfy this, so the same join scores either."""
+
+    @property
+    def market_id(self) -> str: ...
+    @property
+    def winner_selection_id(self) -> int: ...
+
 
 __all__ = [
     "FrozenPrediction",
@@ -89,7 +100,7 @@ class ScoredRow:
     y_designated: int               # 1 iff the designated competitor won
 
 
-def score_market(prediction: FrozenPrediction, outcome: ExtractedMatchOutcome) -> ScoredRow:
+def score_market(prediction: FrozenPrediction, outcome: _WinnerOutcome) -> ScoredRow:
     """Join ONE burned outcome to its frozen prediction by market id + selection id.
 
     The winner is mapped to y for the DESIGNATED competitor purely by selection id — so the
@@ -122,7 +133,7 @@ def score_market(prediction: FrozenPrediction, outcome: ExtractedMatchOutcome) -
 
 def score_bundle(
     predictions: Sequence[FrozenPrediction],
-    outcomes: Mapping[str, ExtractedMatchOutcome],
+    outcomes: Mapping[str, _WinnerOutcome],
 ) -> tuple[tuple[ScoredRow, ...], tuple[tuple[str, str], ...]]:
     """Score every frozen prediction against the burned outcome map.
 
