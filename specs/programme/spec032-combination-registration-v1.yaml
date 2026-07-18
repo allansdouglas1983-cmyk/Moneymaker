@@ -1,0 +1,66 @@
+# specs/programme/spec032-combination-registration-v1.yaml — Stage 2C §8. Human-owned
+# (CODEOWNERS specs/**). REGISTRATION ONLY — alpha and beta are NOT fitted here. This freezes
+# the combination form, its inputs, initialisation, constraints, convergence and reporting
+# BEFORE any coefficient is fitted, so the later fit (on the pre-June market-development block)
+# is a mechanical execution of a frozen recipe, not a modelling choice. No June. No odds.
+
+registration_id: SPEC-032-COMBINATION-v1
+spec_id: SPEC-032
+registered_on: "2026-07-18"
+status: REGISTERED — NOT FITTED (alpha, beta unfitted; fitting is a later, separate step)
+implementation: l4_pricing.stage_two (combine / fit_stage_two / predict_combined) — the
+  model-independent SPEC-032 combiner already in the platform; this registration binds to it,
+  it does not re-implement it.
+
+form:
+  equation: >-
+    score_i = alpha·log(p_fundamental_i) + beta·log(p_market_info_i);
+    p_combined = softmax(score) within the choice set
+  frozen: the FORM is fixed. No formula contest, no alternative combiner, no interaction
+    terms, no cohort/surface/odds-band coefficients — exactly two scalars (alpha, beta).
+
+inputs:
+  p_fundamental: the FINAL affine-calibrated F2 probability (calibration-policy-v2;
+    selected-model-record-v1). A float in (0,1). NOT raw Elo — the calibrated output.
+  p_market_info: >-
+    the governed Betfair F0 committed price as price_contracts.MarketInfoPrice (info-price-v2
+    implied midpoint; COMMIT_ONCE_HOLD_THROUGH_RESCHEDULE W=60s L=300s). Type separation
+    (SPEC-051) is enforced — a p_close or a bare float MUST NOT type in.
+  forbidden_inputs: bookmaker/Tennis-Data odds; p_close; any June-dated row; any
+    post-event or settlement field.
+
+fitting_recipe:                    # executed LATER, on the pre-June market-development block
+  data: the pre-June market-development block ONLY (market-development-block-protocol.md);
+    each row carries an honest OOS affine-calibrated F2 p_fundamental AND a governed
+    p_market_info; outcomes are the match winners of that pre-June block.
+  estimator: deterministic MLE on the winner (l4_pricing.stage_two.fit_stage_two —
+    grouped-softmax Newton over the two-feature design [ln p_fundamental, ln p_market]).
+  initialisation: Newton from the implementation's fixed start (zero coefficients);
+    deterministic — no random restarts.
+  constraints: two free scalars (alpha, beta); collinear inputs (fundamental ≡ market) leave
+    them unidentified along a ridge and are REFUSED (CollinearInputsError), never regularised
+    into a fabricated value.
+  convergence: the implementation's frozen Newton tolerance / max_iter; iterations_used and
+    final log-likelihood recorded on the fitted CombinedModel.
+  reporting:
+    - alpha, beta point estimates AND coefficient uncertainty (e.g. cluster-bootstrap or
+      observed-information standard errors on the pre-June block)
+    - training race-id set + digest; trained_through chronology key
+    - full training exclusion funnel (missing fundamental, missing market, collinear) —
+      every excluded market accounted for (SPEC-038)
+  horizon: fitted and deployed at ONE decision horizon (SPEC-033); a horizon mismatch is
+    refused by predict_combined.
+
+freezing:
+  final_alpha_beta_frozen_before_june: MANDATORY. The fitted CombinedModel is immutable
+    (SPEC-032 §6.11) and frozen before the June lockbox is opened; the staged opening applies
+    it unchanged (june-lockbox-staged-opening-runbook.md).
+  no_june_in_fit: no data on/after 2026-06-01 enters selection, fitting, or calibration.
+
+alpha_budget: NONE for the fit itself — combination fitting is model construction, not a
+  confirmatory superiority trial. The superiority test is Gate M2 (probability-m2.yaml), which
+  spends the reserved 0.025 on the untouched June block.
+
+tests: tests/unit/governance/test_spec032_combination_registration.py — bind this registration
+  to the implementation WITHOUT fitting (form, input types/separation, determinism, metamorphic
+  properties on synthetic inputs; and that this registration file pins the frozen fields).

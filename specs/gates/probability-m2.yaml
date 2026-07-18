@@ -1,0 +1,106 @@
+# specs/gates/probability-m2.yaml — Gate M2: market information gain (tennis probability
+# programme). Human-owned (CODEOWNERS specs/**). FROZEN BEFORE the June lockbox is opened
+# (Stage 2C §9). Evaluated by the SPEC-093 deterministic evaluator over the untouched June
+# block; an LLM never decides this gate. Changing anything here is probability-m2-v2 plus a
+# new pre-registration, never an in-place edit; the gate formula and the June evidence it is
+# evaluated on never change together (Rule 2).
+
+version: probability-m2
+gate_id: GATE-M2
+title: Market information gain — does the combined probability beat the market?
+question: >-
+  Does the PRE-FITTED combined probability add predictive information BEYOND the governed
+  Betfair market probability on the untouched June 2026 block?
+# The central question is combined-vs-market, NOT standalone-fundamental-vs-market. A
+# fundamental model that merely rederives the market adds nothing; the test is whether
+# blending it with the market (SPEC-032) improves on the market alone.
+excludes: [EV, returns, ROI, CLV, staking, selection, profitability]
+outcomes: [PASS, CONTINUE, FAIL_HARM, FAIL_FUTILITY]
+
+primary_comparison:
+  baseline: market-only p_market_info (governed Betfair F0 committed price, info-price-v2)
+  candidate: pre-fitted combined p_combined (SPEC-032 softmax of
+    alpha·log p_fundamental + beta·log p_market_info; alpha,beta FROZEN pre-June from the
+    market-development block; p_fundamental = final affine-calibrated F2)
+  endpoint: >-
+    per-decision-unit paired log-score difference on the actual winner
+    d_i = ll_market - ll_combined = ln p_combined(winner) - ln p_market(winner)
+    (POSITIVE => combined better). This is exactly l8_evidence.paired_inference.PairedRace
+    with p_market_winner and p_combined_winner; d_r is computed there.
+  unit_of_analysis: the market choice set (the tennis match), never the selection.
+
+preregistered_boundaries:          # declared here, frozen before observation (SPEC-094)
+  minimum_economic_effect_delta_nats: 0.0007   # preregistration-constants-v1
+  confidence_level: 0.975          # one-sided lower bound
+  alpha_charge: 0.025              # June-M2 reservation (alpha-consumption-ledger-v1)
+  alpha_budget_total: 0.05         # family-wise
+  number_of_prior_trials: 1        # the F3-vs-F2 confirmatory trial precedes M2
+  # Multiplicity (SPEC-091), exact Decimal multiplication:
+  #   (1 - confidence_level) * (number_of_prior_trials + 1) = 0.025 * 2 = 0.05 <= 0.05  OK
+  harm_threshold_nats: 0.0         # material degradation boundary on the same endpoint scale
+
+inference:
+  method: adapter-owned clustered block bootstrap (l8_evidence.paired_inference.
+    block_bootstrap_ci), UTC-calendar-day clusters (the tennis correlation-cluster key,
+    SPEC-090). Selection-level independence is forbidden.
+  seed: pre-registered in the experiment record (deterministic, replayable)
+  bounds: the 97.5% one-sided lower bound is block_bootstrap_ci(...).lower at
+    confidence_level 0.95 two-sided; mean_d and upper reported alongside.
+  eligibility: bound to the immutable June eligibility/intersection manifest
+    (docs/evidence/stage2c-june-intersection/JUNE_M2_INTERSECTION_MANIFEST.json); every
+    excluded market stays in the funnel with a typed reason (SPEC-038). Missing predictions
+    are abstentions in the denominator, never silent drops.
+
+items:                             # attested before the SPEC-093 evaluator runs
+  - item_id: coefficients_frozen_pre_june
+    requirement: alpha, beta (and the final affine calibration + F2 K) were fitted on
+      pre-June data only and frozen before any June access; no June row informed them
+    on_false: FAIL_HARM
+  - item_id: june_intersection_manifest_immutable
+    requirement: the June eligibility/intersection manifest is frozen and digest-pinned
+      before opening; the evaluated set is exactly that manifest
+    on_false: FAIL_HARM
+  - item_id: endpoint_and_boundaries_preregistered
+    requirement: endpoint, delta, confidence, clustering and seed declared before observation
+    on_false: FAIL_HARM
+  - item_id: clustered_inference_used
+    requirement: the bound is the UTC-day-clustered block-bootstrap bound, not a
+      selection-independent one
+    on_false: FAIL_HARM
+  - item_id: no_post_open_parameter_change
+    requirement: no model, calibration parameter, or coefficient changed after June opened
+    on_false: FAIL_HARM
+
+decision:                          # SPEC-093 evaluator; anytime/one-shot clustered bound
+  precedence:
+    - any_item_false_produces_its_declared_flavour
+    - stale_or_misconfigured_facts -> FAIL_HARM
+    - upper_bound_below_harm_threshold (upper < 0) -> FAIL_HARM      # material degradation
+    - PASS requires ALL of:
+        - mean_improvement >= 0.0007 nats
+        - clustered 97.5% lower bound > 0
+        - no item false, no unresolved refusal
+        - multiplicity holds: (1-confidence)*(prior_trials+1) <= alpha_budget_total
+    - registered_futility_rules_out_delta (upper_bound < 0.0007) -> FAIL_FUTILITY
+    - otherwise -> CONTINUE          # includes: CI includes zero; intersection too small;
+                                     # uncertainty too wide (INCONCLUSIVE)
+
+outcome_semantics:
+  PASS: the combined probability adds information beyond the market at the pre-registered
+    effect, with a strictly positive clustered lower bound. (Licenses NOTHING about live
+    trading, EV, or profitability; ADR 0015 block stands.)
+  CONTINUE: plausible but not demonstrated — the CI includes zero, or the June intersection
+    is too small / the uncertainty too wide to resolve. INCONCLUSIVE lives here.
+  FAIL_FUTILITY: the registered futility bound rules out an improvement as large as 0.0007.
+  FAIL_HARM: material degradation (combined worse than market) or a governance item false.
+
+underpowering_note: >-
+  June is EXPECTED to be underpowered — the prospective intersection is ~1,027 markets
+  across ~30 UTC-day clusters, far below the ~32,212 paired units the planning sigma_d
+  implies for a decisive test at delta 0.0007. An underpowered June result is
+  CONTINUE / INCONCLUSIVE BY DESIGN. delta, confidence, and clustering MUST NOT be changed
+  to force a PASS or a FAIL; doing so voids the trial.
+
+activation: frozen structure returned for founder review; the June evaluation runs only
+  under the staged opening runbook (june-lockbox-staged-opening-runbook.md) AFTER Stage A
+  (M1) returns PASS. specs/** is CODEOWNERS human-owned; founder veto voids this record.

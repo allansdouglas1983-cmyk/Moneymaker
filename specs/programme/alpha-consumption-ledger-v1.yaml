@@ -33,5 +33,11 @@ rules:
   - do NOT reactivate F4 merely because F3 fails
   - any future model-family programme requires a NEWLY governed registration and a new
     evidence period (new lockbox; multiplicity reset is a human-controlled spec change)
-  - calibration (temperature scaling) is a probability-quality correction, NOT a
-    superiority trial — it receives no alpha
+  - calibration (temperature scaling v1; affine-logit v2) is a probability-quality
+    correction, NOT a superiority trial — it receives no alpha
+  # --- Stage 2C §1 finalization (2026-07-18) ---
+  - The F3-vs-F2 surface trial is CLOSED FAIL_HARM (specs/programme/f3-closure-record-v1.yaml).
+    No further surface-family trial is authorised under this programme or alpha budget.
+  - Only the June-M2 reservation (0.025) remains; it is the sole outstanding allocation and
+    exhausts the family-wise budget. Spending it requires the staged June opening
+    (june-lockbox-staged-opening-runbook) AND Stage A (M1) returning PASS first.

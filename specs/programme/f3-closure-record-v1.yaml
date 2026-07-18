@@ -1,0 +1,59 @@
+# specs/programme/f3-closure-record-v1.yaml — PERMANENT closure of the F3 surface-Elo
+# family (Stage 2C §1). Human-owned (CODEOWNERS specs/**). Records the read confirmatory
+# result and permanently closes the surface-family line of enquiry. This record is
+# append-only history: F3 is not reopened, retuned, or rescued under this programme.
+
+closure_id: F3-CLOSURE-v1
+closed_on: "2026-07-18"
+registration_closed: EXP-STAGE2-F3-SURFACE-ELO-001
+family: surface-conditioned Elo (dual global+surface ratings; sport_tennis.surface_elo_family)
+selected_model_after_closure: F2 global Elo (EXP-STAGE2-F2-GLOBAL-ELO-001) — retained
+
+verdict: FAIL_HARM
+interpretation: >-
+  Surface-conditioned ratings are MATERIALLY WORSE than global Elo on the confirmatory
+  endpoint. This is a clean, informative negative: surface ratings add noise (per-surface
+  histories are short and the surface seed re-imports the global rating as shrinkage), and
+  the one-sided 97.5% upper bound is entirely below zero. Not a defect; the system working.
+
+confirmatory_result:               # from docs/evidence/stage2b-f3-confirmatory/ (frozen)
+  design: nested chronological cross-fitting (confirmatory-evaluation-integrity-audit.md,
+    Design A); K and K_surface selected on inner folds strictly before each outer year
+  endpoint: d = ln p_F3(winner) - ln p_F2(winner) (positive => F3 better), RAW probabilities
+  inference: SPEC-090 UTC-day-clustered block bootstrap (l8_evidence.paired_inference),
+    seed 20260718, n_resamples 20000
+  overall:
+    paired_races: 34038          # >= 32212 planning requirement -> powered at planning sigma_d
+    n_utc_day_clusters: 2175
+    ll_F2: 0.623933
+    ll_F3: 0.633451
+    mean_d: -0.009518            # founder-cited rounding: -0.00952
+    ci_975_lower: -0.011988      # founder-cited rounding: [-0.01199, -0.00708]
+    ci_975_upper: -0.007081
+    ci_digest: "sha256:65055d17bae7d2c827b991bbd54cc58775e2d36c17d5ce41554f84805cddc1c9"
+  secondary_atp:                 # SECONDARY, not a decision on its own
+    n_races: 17686
+    mean_d: -0.006568
+    ci_975: [-0.010007, -0.003169]
+  secondary_wta:
+    n_races: 16352
+    mean_d: -0.012709
+    ci_975: [-0.016184, -0.009210]
+  yearly_secondary: every outer year 2019..2026 shows F3 ll >= F2 ll except 2020 (a thin,
+    pandemic-truncated block); direction stable — recorded, never used to rescue a fold
+  report_digest_source: docs/evidence/stage2b-f3-confirmatory/F3_CONFIRMATORY_REPORT.json
+
+alpha:
+  charge: "0.025"                 # confidence 0.975, first confirmatory trial
+  status: SPENT 2026-07-18
+  ledger: specs/programme/alpha-consumption-ledger-v1.yaml (F3-vs-F2-confirmatory)
+
+permanent_closure_rules:
+  - No further surface-family trial is authorised under this programme or alpha budget.
+  - F3's K, K_surface, seeding/shrinkage, surface vocabulary, or fallback policy MUST NOT
+    be retuned to seek a different verdict; that would be outcome-directed selection.
+  - Any future surface-aware model is a NEWLY governed registration requiring a new
+    evidence period (new lockbox) and a human-controlled multiplicity reset — not a
+    reopening of this ID.
+  - The ATP/WTA and yearly breakdowns are secondary context; they never override the
+    overall FAIL_HARM, and no subgroup may be re-labelled the primary result.

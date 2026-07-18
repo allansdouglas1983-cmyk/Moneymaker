@@ -554,3 +554,29 @@ calibrated F2 (per-fold temperature scaling): slope 0.83->1.005, log_loss 0.622<
 temperature has no intercept, method contest forbidden) -> **M1 = CONTINUE** (Gate 1 not
 closed). Alpha: F3-vs-F2 0.025 SPENT; June M2 0.025 reserved; F4+ none. June sealed; no odds
 in F2/F3; no ROI/CLV/selection. Evidence docs/evidence/stage2b-f3-confirmatory/.
+
+## Stage 2C governance + preparation: affine remediation, M2 gate, June intersection (2026-07-18)
+
+Governance/preparation slice — NO June opened, NO data purchased, NO SPEC-032 fit, NO M2
+computed. §1 F3 CLOSED FAIL_HARM permanently (specs/programme/f3-closure-record-v1.yaml; no
+further surface-family trial authorised; alpha ledger finalised — June-M2 0.025 the sole
+remaining allocation). §2 F2 frozen as SELECTED model (selected-model-record-v1.yaml). §3
+registered AFFINE_LOGIT_CALIBRATION_V2 (calibration-policy-v2: z_cal = intercept + z/temperature,
+temperature>0; ONE intercept + ONE temperature; ATP/WTA separate params — permitted because
+frozen F2 policy already runs the tours as independent models; supersedes temperature-only v1,
+which is retained as a diagnostic vintage). §3/§4 nested fold-safe affine remediation scorecard
+(REMEDIATION/DEVELOPMENT evidence; does NOT close M1): overall calibration-in-the-large
++0.02328 -> **+0.00406** (in ±0.02 band), slope 1.0028, log_loss 0.62217<ln2, all 15 bands met
+on pre-June data; final pre-June params ATP intercept 0.025399/T 1.218638, WTA 0.029204/1.150681;
+digest sha256:6001657753… (docs/evidence/stage2c-affine-remediation/). §5 M1 remediation
+amendment PROPOSAL (returned for approval; preserves every band; June = external transfer check).
+§6 May-2026 ADVANCED procurement PROPOSAL (returned; no purchase; 10 items; outcome-blind month).
+§7 market-development block protocol (prepared). §8 SPEC-032 combination REGISTERED not fitted
+(spec032-combination-registration-v1.yaml + 8 binding tests, no fit). §9 M2 gate frozen
+(specs/gates/probability-m2.yaml: market-only vs pre-fitted combined; d=ll_market-ll_combined;
+δ0.0007, α0.025, conf0.975, UTC-day clustered; PASS/CONTINUE/FAIL_HARM/FAIL_FUTILITY). §10
+prospective June M2 intersection **1,027 markets / 30 UTC-day clusters** (F0-committed ∧ F2-valid;
+underpowered by design; ATP/WTA split reported as a gap, not fabricated; digest sha256:9f747bfa…).
+§11 staged June opening runbook (Stage A M1 transfer -> if PASS Stage B M2; not authorised).
+Identity ledger frozen; F3 closed; June-surface extractor still refused. make verify: 1853
+unit+property tests pass. June sealed; no odds; no ROI/CLV/P&L/selection.

@@ -1,0 +1,252 @@
+{
+ "artefact": "AFFINE_LOGIT_CALIBRATION_V2 pre-June remediation scorecard",
+ "atp_wta_params_separate_because": "frozen F2 policy runs ATP and WTA as fully independent models (f2-global-elo-registration-v1.yaml atp_wta_separation)",
+ "calibration_policy": "calibration-policy-v2 (affine logit: z_cal = intercept + z/temperature)",
+ "cold_start": {
+  "0": {
+   "log_loss": 0.59717,
+   "n": 702
+  },
+  "1-4": {
+   "log_loss": 0.59629,
+   "n": 1837
+  },
+  "10-19": {
+   "log_loss": 0.64421,
+   "n": 2946
+  },
+  "20+": {
+   "log_loss": 0.62241,
+   "n": 26718
+  },
+  "5-9": {
+   "log_loss": 0.61883,
+   "n": 1835
+  }
+ },
+ "coverage": {
+  "coverage_rate": 1.0,
+  "eligible_confirmatory": 34038,
+  "scored": 34038
+ },
+ "evidence_label": "REMEDIATION / DEVELOPMENT EVIDENCE \u2014 does NOT close M1; June is the external transfer check (Stage 2C \u00a74).",
+ "final_pre_june_params_for_june_freeze": {
+  "ATP": {
+   "intercept": 0.025399,
+   "n_oof_fit": 17686,
+   "temperature": 1.218638
+  },
+  "WTA": {
+   "intercept": 0.029204,
+   "n_oof_fit": 16352,
+   "temperature": 1.150681
+  }
+ },
+ "overall": {
+  "brier": 0.21699,
+  "cal_in_large": 0.00406,
+  "cal_slope": 1.0028,
+  "log_loss": 0.62217,
+  "n": 34038
+ },
+ "per_fold_params": {
+  "ATP": {
+   "2019": {
+    "intercept": 0.05035,
+    "temperature": 1.29291
+   },
+   "2020": {
+    "intercept": 0.01346,
+    "temperature": 1.3177
+   },
+   "2021": {
+    "intercept": -0.00736,
+    "temperature": 1.28384
+   },
+   "2022": {
+    "intercept": 0.03718,
+    "temperature": 1.20279
+   },
+   "2023": {
+    "intercept": 0.03421,
+    "temperature": 1.20451
+   },
+   "2024": {
+    "intercept": 0.03321,
+    "temperature": 1.18635
+   },
+   "2025": {
+    "intercept": 0.02711,
+    "temperature": 1.20888
+   },
+   "2026": {
+    "intercept": 0.03784,
+    "temperature": 1.17819
+   }
+  },
+  "WTA": {
+   "2019": {
+    "intercept": -0.06041,
+    "temperature": 1.1845
+   },
+   "2020": {
+    "intercept": 0.00996,
+    "temperature": 1.25148
+   },
+   "2021": {
+    "intercept": 0.04874,
+    "temperature": 1.25065
+   },
+   "2022": {
+    "intercept": 0.03394,
+    "temperature": 1.12419
+   },
+   "2023": {
+    "intercept": 0.04854,
+    "temperature": 1.12969
+   },
+   "2024": {
+    "intercept": 0.03516,
+    "temperature": 1.16428
+   },
+   "2025": {
+    "intercept": -0.00734,
+    "temperature": 1.06607
+   },
+   "2026": {
+    "intercept": 0.00209,
+    "temperature": 1.12715
+   }
+  }
+ },
+ "per_tour": {
+  "ATP": {
+   "brier": 0.21792,
+   "cal_in_large": -0.00332,
+   "cal_slope": 1.0069,
+   "log_loss": 0.62411,
+   "n": 17686
+  },
+  "WTA": {
+   "brier": 0.21598,
+   "cal_in_large": 0.01203,
+   "cal_slope": 0.9987,
+   "log_loss": 0.62008,
+   "n": 16352
+  }
+ },
+ "reliability_deciles": [
+  {
+   "abs_gap": 0.0034,
+   "mean_p": 0.1873,
+   "n": 3403,
+   "obs": 0.1907
+  },
+  {
+   "abs_gap": 0.0026,
+   "mean_p": 0.3029,
+   "n": 3403,
+   "obs": 0.3003
+  },
+  {
+   "abs_gap": 0.0117,
+   "mean_p": 0.3733,
+   "n": 3403,
+   "obs": 0.385
+  },
+  {
+   "abs_gap": 0.0132,
+   "mean_p": 0.4296,
+   "n": 3403,
+   "obs": 0.4428
+  },
+  {
+   "abs_gap": 0.0034,
+   "mean_p": 0.4791,
+   "n": 3403,
+   "obs": 0.4758
+  },
+  {
+   "abs_gap": 0.0132,
+   "mean_p": 0.5272,
+   "n": 3403,
+   "obs": 0.514
+  },
+  {
+   "abs_gap": 0.0081,
+   "mean_p": 0.5767,
+   "n": 3403,
+   "obs": 0.5686
+  },
+  {
+   "abs_gap": 0.0021,
+   "mean_p": 0.6326,
+   "n": 3403,
+   "obs": 0.6347
+  },
+  {
+   "abs_gap": 0.0002,
+   "mean_p": 0.7016,
+   "n": 3403,
+   "obs": 0.7014
+  },
+  {
+   "abs_gap": 0.0073,
+   "mean_p": 0.8145,
+   "n": 3411,
+   "obs": 0.8218
+  }
+ ],
+ "selected_model": "F2 global Elo (EXP-STAGE2-F2-GLOBAL-ELO-001)",
+ "temporal": {
+  "oof": {
+   "brier": 0.2171,
+   "cal_in_large": 0.00449,
+   "cal_slope": 1.0091,
+   "log_loss": 0.62239,
+   "n": 29103
+  },
+  "val_minus_oof_logloss": -0.0015,
+  "validation": {
+   "brier": 0.2163,
+   "cal_in_large": 0.00151,
+   "cal_slope": 0.9687,
+   "log_loss": 0.62089,
+   "n": 4935
+  }
+ },
+ "yearly": {
+  "2019": {
+   "log_loss": 0.63043,
+   "n": 4855
+  },
+  "2020": {
+   "log_loss": 0.62678,
+   "n": 2268
+  },
+  "2021": {
+   "log_loss": 0.62092,
+   "n": 4746
+  },
+  "2022": {
+   "log_loss": 0.61831,
+   "n": 4798
+  },
+  "2023": {
+   "log_loss": 0.62307,
+   "n": 5016
+  },
+  "2024": {
+   "log_loss": 0.62028,
+   "n": 5052
+  },
+  "2025": {
+   "log_loss": 0.62157,
+   "n": 4866
+  },
+  "2026": {
+   "log_loss": 0.61473,
+   "n": 2437
+  }
+ }
+}

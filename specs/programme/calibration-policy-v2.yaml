@@ -1,0 +1,87 @@
+# specs/programme/calibration-policy-v2.yaml — FROZEN calibration remediation
+# (Stage 2C §3). Human-owned (CODEOWNERS specs/**). ONE and ONLY ONE remediation method.
+# Registered AFTER observing the temperature-only calibration-in-the-large shortfall of
+# +0.02328 (docs/evidence/stage2b-f3-confirmatory/M1_SCORECARD.json). Because it was chosen
+# with knowledge of that residual, its regenerated results are REMEDIATION / DEVELOPMENT
+# evidence — they do NOT close M1 and are NOT fresh external confirmation (Stage 2C §4).
+#
+# This SUPERSEDES calibration-policy-v1 (temperature scaling) as the finalization step. The
+# temperature-only output is NOT rewritten or deleted; it remains a recorded diagnostic
+# vintage.
+
+version: calibration-policy-v2
+supersedes: calibration-policy-v1
+frozen_on: "2026-07-18"
+method_id: AFFINE_LOGIT_CALIBRATION_V2
+applies_to: EXP-STAGE2-F2-GLOBAL-ELO-001 (the selected model; selected-model-record-v1.yaml)
+
+motivation: >-
+  One-parameter temperature scaling repaired the slope (0.83 -> ~1.005) but has no intercept,
+  so it cannot move the mean: a residual calibration-in-the-large of +0.02328 remained,
+  outside the frozen ±0.02 M1 band. An affine map in logit space adds exactly the one degree
+  of freedom (an intercept) needed to correct the mean, and nothing more. This is a
+  probability-quality correction, not a superiority trial.
+
+map:
+  # Applied per two-runner choice set on the model's raw logit; renormalises within the set.
+  definition: |
+    z        = logit(p_raw)              # p_raw in (0,1)
+    z_cal    = intercept + z / temperature
+    p_cal    = sigmoid(z_cal)
+  parameters:
+    intercept: one scalar (real)
+    temperature: one scalar, STRICTLY > 0
+  constraints:
+    - exactly ONE intercept and ONE temperature per fitted process (no per-band, per-surface,
+      per-odds, or per-cohort parameters)
+    - temperature MUST be > 0 (a non-positive fitted slope is refused, not clamped silently)
+    - the map is monotone in p_raw (temperature > 0), so it never reorders a choice set
+
+forbidden:
+  - any alternative calibration method (isotonic, spline, beta, histogram, Platt-vs-temperature
+    or any method contest / method search)
+  - band-specific, surface-specific, odds-specific, or cohort-specific correction
+  - fitting or selecting any parameter on data on/after 2026-06-01 (June is sealed)
+  - any post-hoc ATP/WTA split introduced AT calibration time (see atp_wta below)
+  - an LLM creating, altering, smoothing, or repairing any probability
+
+atp_wta:
+  decision: SEPARATE (intercept, temperature) per tour — ATP and WTA fitted independently.
+  authorisation: >-
+    Permitted under §3 ONLY because the ATP/WTA separation was ALREADY part of the frozen
+    model policy: f2-global-elo-registration-v1.yaml `atp_wta_separation` runs the two tours
+    as fully independent models (separate namespaces, ratings, reports). Calibrating each
+    independent model with its own affine map is a faithful continuation of that frozen
+    policy, NOT a new post-hoc subgroup split. If the founder judges the tours should instead
+    share ONE governed calibration, that is a one-line change here returned for review; the
+    remediation scorecard is reproducible under either choice.
+  each_tour_still_one_map: within each tour, exactly one intercept + one temperature.
+
+fitting:
+  fold_safety: |
+    STRICTLY fold-safe nested procedure, per outer fold Y (per tour):
+      1. inner OOF F2 predictions produced from the outer-training data ONLY (data < Y),
+      2. fit (intercept, temperature) by MLE on those inner OOF preds + their outcomes,
+      3. refit F2 on the full outer-training data,
+      4. apply the fitted calibration to the outer-eval matches (year Y),
+      5. stamp per-fold provenance (intercept, temperature, trained_through).
+    No outer-eval match ever informs its own calibration parameters.
+  objective: minimise mean log loss of the calibrated probability on the fitting partition
+  final_pre_june_model: |
+    The single model to be applied on June is finalized entirely from pre-June data:
+      - fit ONE (intercept, temperature) per tour on the governed pre-June OOF preds+outcomes,
+      - fit F2 on ALL pre-June data,
+      - freeze both BEFORE June is opened; keep raw and calibrated predictions separate.
+    The fitted final parameters are recorded (with a digest) in the remediation scorecard;
+    they are the parameters the staged June opening applies unchanged.
+  provenance: every calibrated prediction carries the fold's (intercept, temperature) and its
+    training-through date; raw and calibrated are retained side by side (raw is the basis).
+
+alpha: NONE — calibration is a pre-registered probability-quality correction, not a
+  model-family superiority trial; it receives no alpha allocation.
+
+evidence:
+  scorecard: docs/evidence/stage2c-affine-remediation/AFFINE_REMEDIATION_SCORECARD.json
+  status: REMEDIATION / DEVELOPMENT — labelled, does not close M1, not external confirmation
+  diagnostic_vintage_retained: docs/evidence/stage2b-f3-confirmatory/M1_SCORECARD.json
+    (temperature-only; NOT rewritten)

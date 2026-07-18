@@ -1,0 +1,57 @@
+{
+ "artefact": "PROSPECTIVE June M2 intersection manifest (outcome-blind)",
+ "atp_wta_counts": "NOT DERIVABLE from the two frozen per-market manifests (neither carries a tour tag). Deriving it requires a governed join of the June market catalogue competition/tour tag (SAFE_BEFORE_LOCKBOX) added at manifest finalization BEFORE opening. Reported as a gap, never fabricated (Stage 2C \u00a710).",
+ "exclusion_funnel": {
+  "f0_committed_but_f2_ineligible": 1491,
+  "f0_uncommitted_reasons": {
+   "NO_TWO_SIDED_BOOK_AT_COMMIT": 26,
+   "NO_VALID_COMMIT_WINDOW": 332
+  },
+  "f2_ineligible_reasons": {
+   "EXCLUDED_IDENTITY:CROSS_NAMESPACE_AMBIGUOUS": 20,
+   "EXCLUDED_IDENTITY:CROSS_NAMESPACE_AMBIGUOUS|HOMONYM_MULTIPLE_SOURCE": 1,
+   "EXCLUDED_IDENTITY:CROSS_NAMESPACE_AMBIGUOUS|NO_SOURCE_MATCH": 6,
+   "EXCLUDED_IDENTITY:HOMONYM_MULTIPLE_BETFAIR": 51,
+   "EXCLUDED_IDENTITY:HOMONYM_MULTIPLE_BETFAIR|HOMONYM_MULTIPLE_SOURCE": 3,
+   "EXCLUDED_IDENTITY:HOMONYM_MULTIPLE_BETFAIR|NO_SOURCE_MATCH": 39,
+   "EXCLUDED_IDENTITY:HOMONYM_MULTIPLE_SOURCE": 80,
+   "EXCLUDED_IDENTITY:HOMONYM_MULTIPLE_SOURCE|NO_SOURCE_MATCH": 27,
+   "EXCLUDED_IDENTITY:NO_SOURCE_MATCH": 1431
+  },
+  "f2_valid_but_f0_uncommitted": 191
+ },
+ "f0_committed_p_market_info": 2518,
+ "f2_valid_from_pre_june_history": 1218,
+ "final_prospective_intersection": 1027,
+ "gate_deferred_to_june": "selected outcome policy scoring (completed singles, label-policy-v1) \u2014 evaluable only on opening; can only REDUCE the count.",
+ "gates_applied_outcome_blind": [
+  "in frozen 2876 universe",
+  "F0 committed p_market_info",
+  "both identities governed",
+  "F2 emits from pre-June history",
+  "final affine calibration available (global)"
+ ],
+ "intersection_primary_only_tier": 59,
+ "intersection_strict_cohort": 968,
+ "note": "June remains SEALED (SPEC-092). This manifest is prospective planning metadata derived from SAFE_BEFORE_LOCKBOX fields only.",
+ "prior_history_cohorts_in_intersection": {
+  "1-4": 351,
+  "10-19": 111,
+  "20+": 447,
+  "5-9": 118
+ },
+ "purpose": "Stage 2C \u00a710 \u2014 the outcome-blind maximum-eligible June set for M2 (market-only vs pre-fitted combined). No sporting outcome is read.",
+ "source_manifests": {
+  "eligibility": "docs/evidence/tennis-data-2026-07-18/JUNE_F2F3_ELIGIBILITY_MANIFEST.jsonl (sha256 96bd1f12\u2026)",
+  "f0": "docs/evidence/stage2b-f0-f2-runs/F0_MARKET_YARDSTICK_MANIFEST.jsonl (sha256 90b80100\u2026)"
+ },
+ "universe_total_june_primary_singles": 2876,
+ "utc_day_cluster_distribution_in_intersection": {
+  "max": 63,
+  "mean": 34.23,
+  "min": 3,
+  "n_clusters": 30,
+  "p50": 34,
+  "p90": 52
+ }
+}

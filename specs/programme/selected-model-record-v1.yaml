@@ -1,0 +1,62 @@
+# specs/programme/selected-model-record-v1.yaml — Stage 2C §2. Human-owned (CODEOWNERS
+# specs/**). Freezes the SELECTED fundamental model for the tennis probability programme.
+# No model-family tuning or selection continues after this record. The model policy below
+# is a FROZEN restatement of the immutable F2 registration; it adds nothing and changes
+# nothing — it names F2 as selected and pins the exact policies calibration and combination
+# will build on.
+
+record_id: SELECTED-MODEL-v1
+frozen_on: "2026-07-18"
+selected_model: EXP-STAGE2-F2-GLOBAL-ELO-001   # specs/programme/f2-global-elo-registration-v1.yaml
+family: global Elo (sport_tennis.elo_family.GlobalEloFamily)
+selection_basis: >-
+  F3 (surface Elo) closed FAIL_HARM (f3-closure-record-v1.yaml); F2 is retained as the
+  selected family. M1 adequacy is evaluated on F2's CALIBRATED output (calibration-policy-v2).
+model_selection_status: CLOSED — no further model-family tuning or selection continues.
+
+frozen_policies:                   # restated from the immutable F2 registration, unchanged
+  probability_equation: "P(a beats b) = 1 / (1 + 10 ** ((R_b - R_a) / 400))"
+  initial_rating: 1500.0
+  divisor: 400
+  base: 10
+  k_selection:
+    parameter: K factor only
+    grid: [16, 24, 32]
+    rule: minimum mean OOF log loss per tour; ties -> smallest K
+    nested_confirmatory_variant: K selected on inner folds strictly before each outer year
+      (confirmatory-evaluation-integrity-audit.md, Design A) — this is the selection used
+      for the honest confirmatory / remediation scorecards
+  atp_wta_policy: TWO FULLY INDEPENDENT MODELS — separate identity namespaces (td-atp /
+    td-wta), separate ratings, separate reports; NO cross-tour pooling. (This separation is
+    what authorises separate ATP/WTA calibration parameters under calibration-policy-v2 §3.)
+  initialization_and_cold_start: every competitor enters at 1500.0; NO minimum-prior-match
+    exclusion; cold-start matches retained and reported by prior-history cohort 0/1-4/5-9/
+    10-19/20+
+  same_day_update: same-day BATCH against start-of-date ratings; row-permutation invariant
+    (property-tested); same-day repeat players handled by the same batch rule
+  label_policy: label-policy-v1-completed-only (completed singles, one unambiguous winner;
+    retirement/walkover/awarded/disqualified/ambiguous EXCLUDED with typed reasons)
+  identity_policy: sport_tennis.identity_bridge td-norm-v1 (namespaced CompetitorId;
+    homonym refusal; append-only correction ledger, currently 0 corrections)
+  field_registry: tennis-data-field-registry-v1 (SAFE_FOR_F2_GLOBAL_ELO set only; no odds)
+  chronological_design: Design B (f2-development-design-selection.md); expanding-window
+    UTC-day-clustered folds; warm-up <= 2018; OOF 2019-01-01..2025-05-31; validation
+    2025-06-01..2026-05-31; hard boundary — no data on/after 2026-06-01
+  exclusion_policy: universe in = OOF rows + typed exclusions (orchestrator invariant);
+    every exclusion visible
+
+manifests:
+  source: tennis-data.co.uk vintage-2026-07-18 (manifest sha256 d9af2525…, single-user
+    personal scope; Gate -1 PASS on founder attestation; evidence held privately by founder)
+  registration: specs/programme/f2-global-elo-registration-v1.yaml
+  design: docs/architecture/f2-development-design-selection.md
+  constants: specs/programme/preregistration-constants-v1.yaml
+
+downstream:
+  calibration: calibration-policy-v2 (AFFINE_LOGIT_CALIBRATION_V2) applied on this model's
+    raw output; raw and calibrated kept strictly separate
+  combination: SPEC-032 combination (spec032-combination-registration-v1.yaml) consumes this
+    model's final affine-calibrated fundamental probability as p_fundamental
+  adequacy_gate: GATE-M1 (specs/gates/probability-m1.yaml) on the calibrated output
+  no_change_after_june: once June is opened no policy in this record, no calibration
+    parameter, and no combination coefficient may change (staged-opening runbook)
