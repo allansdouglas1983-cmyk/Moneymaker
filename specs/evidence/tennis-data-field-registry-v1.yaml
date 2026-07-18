@@ -1,0 +1,57 @@
+# specs/evidence/tennis-data-field-registry-v1.yaml — FROZEN initial field policy
+# (founder directive 2026-07-18 §4). Human-owned (specs/**). Changing a class is a v2 +
+# founder review; nothing moves from DEFERRED/QUARANTINED by convenience.
+#
+# Empirical basis: the governed acceptance audit over the vintage-2026-07-18 corpus
+# (docs/evidence/tennis-data-2026-07-18/acceptance_report.json). Any field not listed
+# here is UNCLASSIFIED => not usable (fail closed).
+
+version: tennis-data-field-registry-v1
+provider: tennis-data.co.uk
+vintage: vintage-2026-07-18
+
+SAFE_FOR_F2_GLOBAL_ELO:
+  - field: competitor identity
+    source: Winner/Loser names via the governed identity bridge ONLY
+      (sport_tennis.identity_bridge, td-norm-v1); raw names never join anything else
+  - field: Date
+    note: match date (UTC-day chronology key)
+  - field: sporting winner/loser
+    note: unambiguous outcomes only — Comment in {COMPLETED, RETIRED, AWARDED,
+      DISQUALIFIED} per the frozen label policy proposal; WALKOVER/ABANDONED/SCHEDULED/
+      AMBIGUOUS are excluded with reasons, never guessed
+  - field: tour namespace
+    note: ATP|WTA — identity separation (td-atp / td-wta); no cross-tour pooling in v1
+
+SAFE_FOR_F3_SURFACE_ELO:
+  - every F2 field
+  - field: Surface
+    note: VALIDATED by the acceptance audit — zero missing values corpus-wide;
+      vocabulary {Hard, Clay, Grass, Carpet, Greenset}
+
+DEFERRED_PENDING_KNOWLEDGE_TIME:
+  - field: WRank / LRank (rankings)
+    note: ~99.98% present BUT publication timing not machine-verifiable from the files
+      (SPEC-023) — deferred until knowledge-time semantics are established
+  - field: WPts / LPts (ranking points)
+  - field: seedings (not present as a column; any future derivation deferred)
+  - field: Series / tournament category
+  - field: Best of / Round / Location / Tournament
+    note: plausibly pre-match but publication semantics unaudited — deferred, not safe
+      by default
+  - field: any derived statistic
+  - field: any provider field whose historical publication timing is unclear
+
+QUARANTINED_FROM_THE_FUNDAMENTAL_MODEL:
+  - field: ALL bookmaker odds columns (B365*/PS*/CB*/IW*/SB*/B&W*/EX*/LB*/GB*/SJ*/UB*/Max*/Avg*)
+    note: catalogued by name/null-count only in the audit; NEVER a fundamental-model
+      input. Market probability enters ONLY via the separately governed SPEC-032
+      combination stage using the frozen Betfair info-price — never provider odds.
+  - field: closing odds (Max*/Avg* families)
+  - field: betting returns (not present; refused if ever derived)
+  - field: W1..L5 set scores, Wsets/Lsets
+    note: within-match future information relative to pre-match prediction
+  - field: Comment beyond the label policy
+  - field: any field with unknown timing
+  - field: June 2026 outcomes (sealed lockbox; rows dated >= 2026-06-01 are counted,
+      never read — enforced in every parser)

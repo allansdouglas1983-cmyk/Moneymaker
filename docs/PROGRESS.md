@@ -448,3 +448,26 @@ not purchased: SportsDataAPI free/$19.99 + API-Tennis $40/mo (8+2 written questi
 trial needs founder approval). (4) Updated Gate -1 decision tree
 (docs/procurement/results-data-gate-minus1-decision-tree.md). F0/F1 harness work
 remains authorised and unblocked in parallel.
+
+## Tennis-Data approved & executed: acquisition, audit, identity bridge (2026-07-18)
+
+Founder approved Tennis-Data.co.uk as primary longitudinal results source (single-user
+personal scope; no further provider search; paid fallbacks not required). Executed:
+**acquisition** — 47 raw files (ATP 2000-2026, WTA 2007-2026) with per-file provenance
+(URL, timestamp, provider headers), sorted manifest digest `d9af2525…`, vintage
+discipline (no overwrites), raw outside repo, archive bundled for founder private
+storage (`8c7e715c…`). **Acceptance audit** (§3, boundary 2026-06-01 strict): 117,276
+pre-June singles (ATP 70,631 / WTA 46,645); 620 post-boundary rows counted-never-read;
+comment vocabulary fully enumerated (3,624 RETIRED, 691 WALKOVER, 3 AMBIGUOUS); surfaces
+COMPLETE (zero missing — F3 field validated); 1 winner-conflict excluded; rankings
+present but DEFERRED on knowledge-time; odds columns catalogued by name only +
+QUARANTINED. **Field registry frozen** (`specs/evidence/tennis-data-field-registry-v1.yaml`).
+**Identity bridge implemented** tests-first (`sport_tennis/identity_bridge.py`, 12 tests):
+td-norm-v1, namespaced td-atp/td-wta CompetitorIds, homonym/cross-namespace refusal,
+append-only corrections, unresolved ledger; June-vs-TD run (names only): 657/1,471
+players, per-market both-mapped 1,218/2,876 (42.4%; strict 50.5%) — lower-tier gap is
+explicit abstention, kept in denominators. **Corpus design proposed**
+(`docs/architecture/pre-june-development-corpus-design.md`). **Gate −1: CONDITIONAL
+PASS** — blocked only on ingesting the written approval evidence file
+(`docs/procurement/tennis-data-rights-and-gate-minus1.md`; matrix drafted; recheck =
+provider date else +12 months). No June outcome read; no odds value in any pipeline.

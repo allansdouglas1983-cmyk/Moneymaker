@@ -1,0 +1,227 @@
+{
+ "betfair_primary_universe_players": 1471,
+ "coverage_pct": 44.7,
+ "mapped": 657,
+ "per_market_coverage": {
+  "both_mapped": 1218,
+  "markets": 2876,
+  "one_mapped": 949,
+  "pct_both": 42.4,
+  "strict_both": 1155,
+  "strict_markets": 2287,
+  "strict_pct_both": 50.5,
+  "zero_mapped": 709
+ },
+ "td_distinct_names": {
+  "ATP": 1762,
+  "WTA": 1335
+ },
+ "unresolved_examples": [
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Coleman Wong",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Maria Oliver Sanchez",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Martina Trevisan",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Mell Elizabeth Reasco Gonzalez",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Xinyu Gao",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Yi Zhou",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['td-atp', 'td-wta']",
+   "name": "Yuhan Wang",
+   "reason": "CROSS_NAMESPACE_AMBIGUOUS"
+  },
+  {
+   "detail": "['Abdullah Shelbayh', 'Abedallah Shelbayh']",
+   "name": "Abdullah Shelbayh",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Abdullah Shelbayh', 'Abedallah Shelbayh']",
+   "name": "Abedallah Shelbayh",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Alba Rey Garcia', 'Andrea Lazaro Garcia', 'Aran Teixido Garcia']",
+   "name": "Alba Rey Garcia",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Amarissa Kiara Toth', 'Amarissa Toth']",
+   "name": "Amarissa Kiara Toth",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Amarissa Kiara Toth', 'Amarissa Toth']",
+   "name": "Amarissa Toth",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Alba Rey Garcia', 'Andrea Lazaro Garcia', 'Aran Teixido Garcia']",
+   "name": "Andrea Lazaro Garcia",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Andrej Martin', 'Andres Martin']",
+   "name": "Andrej Martin",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Andrej Martin', 'Andres Martin']",
+   "name": "Andres Martin",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Alba Rey Garcia', 'Andrea Lazaro Garcia', 'Aran Teixido Garcia']",
+   "name": "Aran Teixido Garcia",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Caijsa Hennemann', 'Caijsa Wilda Hennemann']",
+   "name": "Caijsa Hennemann",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Caijsa Hennemann', 'Caijsa Wilda Hennemann']",
+   "name": "Caijsa Wilda Hennemann",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Catherine Mcnally', 'Caty Mcnally']",
+   "name": "Catherine Mcnally",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Catherine Mcnally', 'Caty Mcnally']",
+   "name": "Caty Mcnally",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Gabriela Andrea Knutson', 'Gabriela Knutson']",
+   "name": "Gabriela Andrea Knutson",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Gabriela Andrea Knutson', 'Gabriela Knutson']",
+   "name": "Gabriela Knutson",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Gerard Campana Lee', 'Gyeong Seo Lee']",
+   "name": "Gerard Campana Lee",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Gerard Campana Lee', 'Gyeong Seo Lee']",
+   "name": "Gyeong Seo Lee",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Jiaqi Wang', 'Jiayi Wang']",
+   "name": "Jiaqi Wang",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Jiaqi Wang', 'Jiayi Wang']",
+   "name": "Jiayi Wang",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Miriam Bianca Bulgaru', 'Miriam Bulgaru']",
+   "name": "Miriam Bianca Bulgaru",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Miriam Bianca Bulgaru', 'Miriam Bulgaru']",
+   "name": "Miriam Bulgaru",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Raluca Georgiana Serban', 'Raluka Serban']",
+   "name": "Raluca Georgiana Serban",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Raluca Georgiana Serban', 'Raluka Serban']",
+   "name": "Raluka Serban",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Ya Yi Yang', 'Yidi Yang']",
+   "name": "Ya Yi Yang",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['Ya Yi Yang', 'Yidi Yang']",
+   "name": "Yidi Yang",
+   "reason": "HOMONYM_MULTIPLE_BETFAIR"
+  },
+  {
+   "detail": "['alves|c', 'alves|cm']",
+   "name": "Carolina Alves",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['blanch|d', 'blanch|dar']",
+   "name": "Dali Blanch",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['dutra da silva|d', 'silva|d']",
+   "name": "Daniel Dutra da Silva",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['galan|d', 'galan|de']",
+   "name": "Daniel Elahi Galan",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['blanch|d', 'blanch|dar']",
+   "name": "Darwin Blanch",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['gomez|f', 'gomez|fa']",
+   "name": "Federico Agustin Gomez",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['ferreira silva|f', 'silva|f', 'silva|ff']",
+   "name": "Frederico Ferreira Silva",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  },
+  {
+   "detail": "['bailly|g', 'bailly|ga']",
+   "name": "Gilles Arnaud Bailly",
+   "reason": "HOMONYM_MULTIPLE_SOURCE"
+  }
+ ],
+ "unresolved_reasons": {
+  "CROSS_NAMESPACE_AMBIGUOUS": 7,
+  "HOMONYM_MULTIPLE_BETFAIR": 25,
+  "HOMONYM_MULTIPLE_SOURCE": 22,
+  "NO_SOURCE_MATCH": 760
+ }
+}

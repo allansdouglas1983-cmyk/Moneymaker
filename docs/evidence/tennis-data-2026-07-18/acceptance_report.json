@@ -1,0 +1,1082 @@
+{
+ "ambiguous_examples": [
+  {
+   "date": "2021-09-22",
+   "file": "atp-2021.xlsx",
+   "reason": "UNKNOWN_COMMENT:rrtired"
+  },
+  {
+   "file": "wta-2010.xls",
+   "reason": "UNPARSEABLE_DATE"
+  },
+  {
+   "file": "wta-2012.xls",
+   "reason": "UNPARSEABLE_DATE"
+  },
+  {
+   "date": "2018-05-17",
+   "file": "wta-2018.xlsx",
+   "reason": "UNKNOWN_COMMENT:walkoer"
+  },
+  {
+   "date": "2021-02-07",
+   "file": "wta-2021.xlsx",
+   "reason": "UNKNOWN_COMMENT:cancelled"
+  }
+ ],
+ "ambiguous_outcome_rows": 5,
+ "available_years": {
+  "ATP": "2000-2026 files",
+  "WTA": "2007-2026 files"
+ },
+ "bookmaker_odds_columns_by_year": {
+  "ATP-2000": [],
+  "ATP-2001": [
+   "CBW",
+   "CBL",
+   "GBW",
+   "GBL",
+   "IWW",
+   "IWL",
+   "SBW",
+   "SBL"
+  ],
+  "ATP-2002": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "GBW",
+   "GBL",
+   "IWW",
+   "IWL",
+   "SBW",
+   "SBL"
+  ],
+  "ATP-2003": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "IWW",
+   "IWL",
+   "SBW",
+   "SBL",
+   "B&WW",
+   "B&WL"
+  ],
+  "ATP-2004": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "EXW",
+   "EXL",
+   "IWW",
+   "IWL",
+   "PSW",
+   "PSL"
+  ],
+  "ATP-2005": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "EXW",
+   "EXL",
+   "IWW",
+   "IWL",
+   "PSW",
+   "PSL"
+  ],
+  "ATP-2006": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "EXW",
+   "EXL",
+   "PSW",
+   "PSL",
+   "UBW",
+   "UBL"
+  ],
+  "ATP-2007": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "EXW",
+   "EXL",
+   "PSW",
+   "PSL",
+   "UBW",
+   "UBL"
+  ],
+  "ATP-2008": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "UBW",
+   "UBL"
+  ],
+  "ATP-2009": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "SJW",
+   "SJL",
+   "UBW",
+   "UBL"
+  ],
+  "ATP-2010": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2011": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2012": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2013": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2014": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2015": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2016": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2017": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2018": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2019": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2020": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2021": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2022": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2023": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2024": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2025": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "ATP-2026": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2007": [
+   "B365W",
+   "B365L",
+   "CBW",
+   "CBL",
+   "EXW",
+   "EXL",
+   "PSW",
+   "PSL",
+   "UBW",
+   "UBL"
+  ],
+  "WTA-2008": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "UBW",
+   "UBL"
+  ],
+  "WTA-2009": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "SJW",
+   "SJL",
+   "UBW",
+   "UBL"
+  ],
+  "WTA-2010": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2011": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2012": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2013": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2014": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "SJW",
+   "SJL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2015": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2016": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2017": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2018": [
+   "B365W",
+   "B365L",
+   "EXW",
+   "EXL",
+   "LBW",
+   "LBL",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2019": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2020": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2021": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2022": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2023": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2024": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2025": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ],
+  "WTA-2026": [
+   "B365W",
+   "B365L",
+   "PSW",
+   "PSL",
+   "MaxW",
+   "MaxL",
+   "AvgW",
+   "AvgL"
+  ]
+ },
+ "bookmaker_odds_null_rate_note": {
+  "ATP-2001": 0.216,
+  "ATP-2002": 0.29,
+  "ATP-2003": 0.253,
+  "ATP-2004": 0.084,
+  "ATP-2005": 0.051,
+  "ATP-2006": 0.053,
+  "ATP-2007": 0.046,
+  "ATP-2008": 0.028,
+  "ATP-2009": 0.019,
+  "ATP-2010": 0.112,
+  "ATP-2011": 0.008,
+  "ATP-2012": 0.008,
+  "ATP-2013": 0.006,
+  "ATP-2014": 0.009,
+  "ATP-2015": 0.002,
+  "ATP-2016": 0.002,
+  "ATP-2017": 0.019,
+  "ATP-2018": 0.033,
+  "ATP-2019": 0.002,
+  "ATP-2020": 0.003,
+  "ATP-2021": 0.003,
+  "ATP-2022": 0.003,
+  "ATP-2023": 0.002,
+  "ATP-2024": 0.003,
+  "ATP-2025": 0.012,
+  "ATP-2026": 0.237,
+  "WTA-2007": 0.055,
+  "WTA-2008": 0.045,
+  "WTA-2009": 0.038,
+  "WTA-2010": 0.111,
+  "WTA-2011": 0.008,
+  "WTA-2012": 0.01,
+  "WTA-2013": 0.008,
+  "WTA-2014": 0.009,
+  "WTA-2015": 0.004,
+  "WTA-2016": 0.005,
+  "WTA-2017": 0.018,
+  "WTA-2018": 0.021,
+  "WTA-2019": 0.004,
+  "WTA-2020": 0.003,
+  "WTA-2021": 0.009,
+  "WTA-2022": 0.004,
+  "WTA-2023": 0.003,
+  "WTA-2024": 0.003,
+  "WTA-2025": 0.013,
+  "WTA-2026": 0.231
+ },
+ "boundary": "2026-06-01T00:00:00Z (strict; rows on/after counted, never read)",
+ "comment_vocabulary_counts": {
+  "AMBIGUOUS": 3,
+  "AWARDED": 5,
+  "COMPLETED": 112950,
+  "DISQUALIFIED": 2,
+  "RETIRED": 3624,
+  "SCHEDULED": 1,
+  "WALKOVER": 691
+ },
+ "conflicting_winner_records": [
+  {
+   "key": [
+    "ATP",
+    "2000-11-27",
+    "masters cup"
+   ],
+   "winners": [
+    "agassi a.",
+    "kuerten g."
+   ]
+  }
+ ],
+ "cross_tour_collision_note": "handled by tour namespacing (identity bridge); listed, never merged",
+ "cross_tour_name_collisions": [
+  "beck a.",
+  "gao x.",
+  "gonzalez m.",
+  "harrison c.",
+  "sanchez m.",
+  "trevisan m.",
+  "wang y.",
+  "washington m.",
+  "wong c.",
+  "zhang y."
+ ],
+ "date_anomaly_examples": [
+  {
+   "date": "2002-12-30",
+   "file": "atp-2003.xls",
+   "prev": "2003-01-05"
+  },
+  {
+   "date": "2002-12-30",
+   "file": "atp-2003.xls",
+   "prev": "2003-01-05"
+  },
+  {
+   "date": "2003-01-06",
+   "file": "atp-2003.xls",
+   "prev": "2003-01-12"
+  },
+  {
+   "date": "2003-02-11",
+   "file": "atp-2003.xls",
+   "prev": "2003-02-16"
+  },
+  {
+   "date": "2003-02-10",
+   "file": "atp-2003.xls",
+   "prev": "2003-02-17"
+  },
+  {
+   "date": "2003-02-17",
+   "file": "atp-2003.xls",
+   "prev": "2003-02-23"
+  },
+  {
+   "date": "2003-02-17",
+   "file": "atp-2003.xls",
+   "prev": "2003-02-23"
+  },
+  {
+   "date": "2003-02-24",
+   "file": "atp-2003.xls",
+   "prev": "2003-03-02"
+  },
+  {
+   "date": "2003-02-24",
+   "file": "atp-2003.xls",
+   "prev": "2003-03-01"
+  },
+  {
+   "date": "2003-03-03",
+   "file": "atp-2003.xls",
+   "prev": "2003-03-09"
+  }
+ ],
+ "date_order_anomalies": 1196,
+ "doubles_note": "Tennis-Data files are SINGLES-ONLY by construction (no doubles rows exist in the format); doubles count = 0",
+ "duplicate_policy": "exact duplicates excluded keeping first; pair-day-tournament dupes with AGREEING winners deduped to one; CONFLICTING winners excluded entirely (both rows) into the exclusion ledger \u2014 never resolved by guess",
+ "exact_duplicate_rows": 0,
+ "match_counts_by_year": {
+  "ATP-2000": {
+   "COMPLETED": 2874,
+   "RETIRED": 75,
+   "WALKOVER": 14,
+   "matches": 2963
+  },
+  "ATP-2001": {
+   "COMPLETED": 2889,
+   "RETIRED": 69,
+   "WALKOVER": 5,
+   "matches": 2963
+  },
+  "ATP-2002": {
+   "COMPLETED": 2746,
+   "RETIRED": 101,
+   "WALKOVER": 7,
+   "matches": 2854
+  },
+  "ATP-2003": {
+   "COMPLETED": 2745,
+   "RETIRED": 100,
+   "WALKOVER": 16,
+   "matches": 2861
+  },
+  "ATP-2004": {
+   "COMPLETED": 2788,
+   "RETIRED": 82,
+   "WALKOVER": 7,
+   "matches": 2877
+  },
+  "ATP-2005": {
+   "COMPLETED": 2821,
+   "RETIRED": 77,
+   "WALKOVER": 11,
+   "matches": 2909
+  },
+  "ATP-2006": {
+   "COMPLETED": 2804,
+   "RETIRED": 94,
+   "WALKOVER": 11,
+   "matches": 2909
+  },
+  "ATP-2007": {
+   "COMPLETED": 2702,
+   "RETIRED": 93,
+   "WALKOVER": 11,
+   "matches": 2806
+  },
+  "ATP-2008": {
+   "COMPLETED": 2591,
+   "RETIRED": 97,
+   "WALKOVER": 19,
+   "matches": 2707
+  },
+  "ATP-2009": {
+   "COMPLETED": 2614,
+   "RETIRED": 102,
+   "WALKOVER": 15,
+   "matches": 2731
+  },
+  "ATP-2010": {
+   "COMPLETED": 2569,
+   "RETIRED": 94,
+   "WALKOVER": 16,
+   "matches": 2679
+  },
+  "ATP-2011": {
+   "COMPLETED": 2566,
+   "RETIRED": 95,
+   "WALKOVER": 14,
+   "matches": 2675
+  },
+  "ATP-2012": {
+   "COMPLETED": 2501,
+   "DISQUALIFIED": 1,
+   "RETIRED": 89,
+   "WALKOVER": 16,
+   "matches": 2607
+  },
+  "ATP-2013": {
+   "COMPLETED": 2521,
+   "RETIRED": 93,
+   "WALKOVER": 17,
+   "matches": 2631
+  },
+  "ATP-2014": {
+   "COMPLETED": 2488,
+   "RETIRED": 87,
+   "WALKOVER": 25,
+   "matches": 2600
+  },
+  "ATP-2015": {
+   "COMPLETED": 2528,
+   "RETIRED": 93,
+   "WALKOVER": 9,
+   "matches": 2630
+  },
+  "ATP-2016": {
+   "COMPLETED": 2527,
+   "RETIRED": 82,
+   "WALKOVER": 17,
+   "matches": 2626
+  },
+  "ATP-2017": {
+   "COMPLETED": 2530,
+   "RETIRED": 89,
+   "WALKOVER": 14,
+   "matches": 2633
+  },
+  "ATP-2018": {
+   "COMPLETED": 2555,
+   "RETIRED": 68,
+   "WALKOVER": 14,
+   "matches": 2637
+  },
+  "ATP-2019": {
+   "AWARDED": 1,
+   "COMPLETED": 2530,
+   "RETIRED": 57,
+   "SCHEDULED": 1,
+   "WALKOVER": 21,
+   "matches": 2610
+  },
+  "ATP-2020": {
+   "COMPLETED": 1237,
+   "DISQUALIFIED": 1,
+   "RETIRED": 24,
+   "WALKOVER": 5,
+   "matches": 1267
+  },
+  "ATP-2021": {
+   "AMBIGUOUS": 1,
+   "AWARDED": 1,
+   "COMPLETED": 2408,
+   "RETIRED": 61,
+   "WALKOVER": 18,
+   "matches": 2489
+  },
+  "ATP-2022": {
+   "COMPLETED": 2547,
+   "RETIRED": 72,
+   "WALKOVER": 13,
+   "matches": 2632
+  },
+  "ATP-2023": {
+   "AWARDED": 1,
+   "COMPLETED": 2614,
+   "RETIRED": 69,
+   "WALKOVER": 19,
+   "matches": 2703
+  },
+  "ATP-2024": {
+   "AWARDED": 2,
+   "COMPLETED": 2608,
+   "RETIRED": 75,
+   "WALKOVER": 18,
+   "matches": 2703
+  },
+  "ATP-2025": {
+   "COMPLETED": 2518,
+   "RETIRED": 104,
+   "WALKOVER": 22,
+   "matches": 2644
+  },
+  "ATP-2026": {
+   "COMPLETED": 1244,
+   "RETIRED": 31,
+   "WALKOVER": 10,
+   "matches": 1285
+  },
+  "WTA-2007": {
+   "COMPLETED": 2396,
+   "RETIRED": 87,
+   "WALKOVER": 8,
+   "matches": 2491
+  },
+  "WTA-2008": {
+   "COMPLETED": 2322,
+   "RETIRED": 67,
+   "WALKOVER": 15,
+   "matches": 2404
+  },
+  "WTA-2009": {
+   "COMPLETED": 2349,
+   "RETIRED": 77,
+   "WALKOVER": 7,
+   "matches": 2433
+  },
+  "WTA-2010": {
+   "COMPLETED": 2374,
+   "RETIRED": 64,
+   "WALKOVER": 9,
+   "matches": 2447
+  },
+  "WTA-2011": {
+   "COMPLETED": 2372,
+   "RETIRED": 78,
+   "WALKOVER": 18,
+   "matches": 2468
+  },
+  "WTA-2012": {
+   "COMPLETED": 2286,
+   "RETIRED": 106,
+   "WALKOVER": 14,
+   "matches": 2406
+  },
+  "WTA-2013": {
+   "COMPLETED": 2371,
+   "RETIRED": 56,
+   "WALKOVER": 15,
+   "matches": 2442
+  },
+  "WTA-2014": {
+   "COMPLETED": 2389,
+   "RETIRED": 65,
+   "WALKOVER": 22,
+   "matches": 2476
+  },
+  "WTA-2015": {
+   "COMPLETED": 2420,
+   "RETIRED": 81,
+   "WALKOVER": 20,
+   "matches": 2521
+  },
+  "WTA-2016": {
+   "COMPLETED": 2438,
+   "RETIRED": 65,
+   "WALKOVER": 19,
+   "matches": 2522
+  },
+  "WTA-2017": {
+   "COMPLETED": 2404,
+   "RETIRED": 84,
+   "WALKOVER": 12,
+   "matches": 2500
+  },
+  "WTA-2018": {
+   "AMBIGUOUS": 1,
+   "COMPLETED": 2379,
+   "RETIRED": 77,
+   "WALKOVER": 12,
+   "matches": 2469
+  },
+  "WTA-2019": {
+   "COMPLETED": 2374,
+   "RETIRED": 88,
+   "WALKOVER": 10,
+   "matches": 2472
+  },
+  "WTA-2020": {
+   "COMPLETED": 1032,
+   "RETIRED": 15,
+   "WALKOVER": 8,
+   "matches": 1055
+  },
+  "WTA-2021": {
+   "AMBIGUOUS": 1,
+   "COMPLETED": 2338,
+   "RETIRED": 81,
+   "WALKOVER": 27,
+   "matches": 2447
+  },
+  "WTA-2022": {
+   "COMPLETED": 2254,
+   "RETIRED": 90,
+   "WALKOVER": 25,
+   "matches": 2369
+  },
+  "WTA-2023": {
+   "COMPLETED": 2391,
+   "RETIRED": 78,
+   "WALKOVER": 22,
+   "matches": 2491
+  },
+  "WTA-2024": {
+   "COMPLETED": 2389,
+   "RETIRED": 84,
+   "WALKOVER": 17,
+   "matches": 2490
+  },
+  "WTA-2025": {
+   "COMPLETED": 2414,
+   "RETIRED": 73,
+   "WALKOVER": 18,
+   "matches": 2505
+  },
+  "WTA-2026": {
+   "COMPLETED": 1193,
+   "RETIRED": 35,
+   "WALKOVER": 9,
+   "matches": 1237
+  }
+ },
+ "no_june_betfair_join": "no Betfair June outcome or market data was joined or inspected",
+ "odds_quarantine": "odds columns catalogued by NAME/null-count only; QUARANTINED from the fundamental pipeline; no odds value analysed or exported",
+ "pair_day_tournament_duplicate_keys": 2,
+ "post_2026_06_01_records_counted_not_read": {
+  "ATP-2026": 308,
+  "WTA-2026": 312
+ },
+ "ranking_availability": {
+  "missing_or_NR": {
+   "ATP": 29,
+   "WTA": 1
+  },
+  "present": {
+   "ATP": 141233,
+   "WTA": 93289
+  }
+ },
+ "ranking_knowledge_time": "WRank/LRank are tournament-entry-time ranks published before the event per provider convention, but PUBLICATION TIMING IS NOT MACHINE-VERIFIABLE from the files alone => rankings stay DEFERRED_PENDING_KNOWLEDGE_TIME (field registry), not F2/F3-usable",
+ "retrospective_fields": [
+  "W1..L5 set scores",
+  "Wsets/Lsets",
+  "Comment",
+  "all odds columns (incl. closing-style Max/Avg)",
+  "WPts/LPts where present"
+ ],
+ "surface_missing_by_year": {},
+ "surfaces": {
+  "Carpet": 1860,
+  "Clay": 36030,
+  "Grass": 12707,
+  "Greenset": 31,
+  "Hard": 66648
+ },
+ "totals_pre_june": {
+  "ATP": 70631,
+  "WTA": 46645
+ },
+ "unparseable_dates": 2,
+ "winner_or_loser_missing": 0
+}
