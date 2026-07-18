@@ -1,0 +1,106 @@
+# specs/programme/baseline-v1.yaml — FROZEN programme decisions (Stage-1 closure).
+#
+# Authority: founder closure directive 2026-07-18 (ADR 0018; Gate M0 PASS).
+# These are the WORKING DEFAULTS for the remainder of the programme. Each decision
+# stands until DISPLACED BY EVIDENCE through a governed gate or an explicit founder
+# decision — never by convenience, never by an agent, never in-place: a change is
+# baseline-v2 with a supersession note, so the decision history is append-only.
+#
+# specs/** is CODEOWNERS human-owned; this file is part of the founder-ratified
+# closure package and is void if the founder rejects it.
+
+baseline_version: programme-baseline-v1
+frozen_on: "2026-07-18"
+authority: founder closure directive 2026-07-18
+evidence:
+  gate: specs/gates/market-m0.yaml            # outcome: PASS (scope-bounded)
+  review: docs/decisions/0018-june-tennis-market-feasibility-review.md
+  frozen_evidence_dir: docs/evidence/pilot-2026-06-tennis/
+  universe_manifest_sha256: ce9a147e64df0db5865dade4d78f0ae02cb93532c2f81518e9da313115029049
+  canonical_replay_manifest_sha256: be2ae21a938fdc0ba2b4a9dfb21f6d4c8dcde699fab2f245383f19ed844bc617
+
+decisions:
+  primary_market:
+    value: { sport: tennis, market_kind: MATCH_ODDS, format: SINGLES }
+    detail: >-
+      MATCH_ODDS is the sole analytical market unit (sport_core ENABLED_MARKET_KINDS
+      policy, ADR 0017 S8); other market kinds remain metadata-only corroboration.
+      Singles only in the primary cohort; MatchFormat from the frozen two-axis
+      classifier (primary runner structure decides; sibling evidence corroborates).
+    displaced_by: a governed gate decision only
+
+  primary_universe:
+    value: PRIMARY_JUNE_SINGLES_UNIVERSE (2,876 markets, June 2026)
+    detail: >-
+      The frozen pilot universe (manifest sha256 ce9a147e…). The strict
+      sibling-corroborated subset (2,287) is the sensitivity tier;
+      classification-evidence tier travels with every analysis as a liquidity
+      covariate. Primary-only markets are never dropped. Membership is defined by the
+      frozen RULES (date window on marketTime, MATCH_ODDS-only, classifier), never by
+      copied counts.
+    displaced_by: a new frozen universe manifest (new data month or governed rule change)
+
+  primary_horizon:
+    value: T-10m to T-5m operational target
+    detail: >-
+      Justified by pilot evidence: liquidity horizon-invariant, coverage high, short-
+      horizon reschedule churn avoided. Horizons are INSTANCES of the governed
+      marketTime state machine, never wall-clock offsets from any fixed anchor.
+    displaced_by: Stage-2 evidence via a governed decision
+
+  doubles:
+    value: DESCRIPTIVE_ONLY
+    detail: >-
+      613-market cohort retained for description; excluded from any feasibility or
+      trading universe (median 21-tick spreads, £13.63 median best-back, 47.5%
+      benchmark-window availability).
+    displaced_by: explicit founder decision with new evidence
+
+  markettime_protocol:
+    value: governed as-of-published-marketTime horizon state machine
+    detail: >-
+      At publish time t, remaining = marketTime_known_at_t − t; an immutable instance
+      mints on crossing >H → <=H while OPEN and pre-match; schedule revisions re-arm;
+      instances are lineage-linked, never rewritten, never retrospectively selected;
+      first inPlay is post-hoc timing description only. earliest/final/first-inPlay
+      anchors are descriptive sensitivities only. The operational reschedule policy
+      (first-crossing vs invalidate-and-refresh vs stability condition) is UNFROZEN
+      and must be decided outcome-blind before any Stage-2 consumer depends on it.
+    displaced_by: governed protocol version bump only
+
+  closing_benchmark:
+    value: UNSELECTED
+    detail: >-
+      Feasibility measured (midpoint/microprice/LTP >=96.7% constructible; traded-WAP
+      evidenced out at 40.4%); selection is a separate, evidence-gated human decision
+      (DR-TENNIS-BENCHMARK-001 open; sport_core.benchmarks.selected_benchmark()
+      refuses).
+    displaced_by: founder benchmark selection with pilot evidence, own governed slice
+
+  model:
+    value: NOT_STARTED
+    detail: >-
+      No model exists, no feature engineering has begun, no outcome has been opened.
+      Stage 2 (docs/architecture/stage2-probability-programme.md) governs the start;
+      its first slices are outcome-opening protocol, lockbox freeze and
+      pre-registration — in that order, before any result is read.
+    displaced_by: Stage-2 slice activation (human-controlled)
+
+  live_activity:
+    value: PROHIBITED
+    detail: >-
+      ADR 0015 stands: no live key, no real order, no real-money activity, no account
+      access, no bypass, ever, while the block stands. Independent of and unaffected
+      by Gate M0's PASS. Later gates (M3+) can be DEFINED but their live halves cannot
+      be SCHEDULED while ADR 0015 stands.
+    displaced_by: nothing in this programme; founder-only, outside the gate ladder
+
+standing_prohibitions_reaffirmed:
+  - no in-play (pre-off only)
+  - no lay, no hedging, no green-up; back only, hold to settlement
+  - one selection per market; commission on net market result
+  - no Kelly; fixed minimum stake + absolute loss budget (SPEC-060)
+  - taker-v1 only until Gate 4 (FOK, minFillSize = full stake)
+  - no automatic live learning
+  - no LLM prices, sizes, or decides a gate
+  - no profitability inference from Stage-1 artefacts (ADR 0018 §10)

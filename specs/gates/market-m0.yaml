@@ -1,0 +1,191 @@
+# specs/gates/market-m0.yaml — Gate M0: Market Adequacy (tennis programme, Stage 1 exit).
+#
+# ONE QUESTION ONLY: "Is Betfair Tennis Match Odds a technically suitable market for an
+# evidence-led probability project?"  Profitability is EXPLICITLY out of scope — no EV,
+# no returns, no edge, no outcome data was used or is considered here.
+#
+# KIND: one-time programme gate over the completed, frozen June-2026 pilot evidence
+# (docs/evidence/pilot-2026-06-tennis/). It differs from v1.yaml / predictor-p1.yaml in
+# that those are pre-registered structures awaiting future experiment evidence, while M0
+# is evaluated NOW against a closed, hashed evidence set. It is NOT consumed by the
+# SPEC-093 runtime evaluator (which consumes anytime-valid experiment bounds); it is a
+# governance record in the same repository discipline.
+#
+# DECISION HYGIENE (SPEC-093 spirit — an LLM must not decide a gate):
+#   - Every item below binds to a MEASURED, digest-pinned fact from the frozen evidence.
+#   - No numeric pass/fail boundary was invented after seeing the data. Where adequacy
+#     needs an anchor, the anchor is a pre-existing PLATFORM POLICY (e.g. SPEC-060 fixed
+#     minimum stake; SPEC-052 taker-v1; the governed horizon protocol), never a number
+#     chosen to make the evidence pass.
+#   - The item truth values are mechanical reads of the evidence; the OUTCOME follows
+#     from the precedence rule; the founder ratifies (authority: founder closure
+#     directive, 2026-07-18 — this file is part of that closure package and is void if
+#     the founder rejects it. specs/** is CODEOWNERS human-owned).
+#
+# Changing anything here is market-m1-adequacy-v2 territory, never an in-place edit.
+
+version: market-m0
+gate_id: GATE-M0
+title: Market Adequacy — Betfair Tennis Match Odds (June 2026 pilot evidence)
+question: >-
+  Is Betfair Tennis Match Odds a technically suitable market for an evidence-led
+  probability project?
+excludes: [profitability, expected value, returns, edge, outcomes, settlement, model quality]
+outcomes: [PASS, CONTINUE, FAIL]
+outcome_semantics:
+  PASS: technically suitable; Stage 2 (probability engine) may be defined and started
+  CONTINUE: evidence insufficient to answer; further MEASUREMENT (not modelling) required
+  FAIL: a structural inadequacy makes the market unsuitable; the tennis programme stops
+precedence:
+  - any_item_INADEQUATE -> FAIL
+  - any_item_UNMEASURED -> CONTINUE
+  - otherwise -> PASS
+
+evidence_base:
+  frozen_dir: docs/evidence/pilot-2026-06-tennis/
+  corpus_manifest_sha256: d6d2f44b318aea425f3904ac83b8eb4a4bd067b7fe777c0375f107519162f9cc
+  universe_manifest_sha256: ce9a147e64df0db5865dade4d78f0ae02cb93532c2f81518e9da313115029049
+  canonical_replay_manifest_sha256: be2ae21a938fdc0ba2b4a9dfb21f6d4c8dcde699fab2f245383f19ed844bc617
+  packaging_audit_sha256: b8d3470e9d3f86da0e5e1a884cd629eb13e43ccdee613f6c291d699508876564
+  reconstruction_output_sha256: 3c1b64ab8d5c08f1bc654d690ac593ecb34dc073eb099f3d9abc7d4486a5d793
+  pilot_report_sha256: 349cb6735383c0e4dd289a08bc23aa6446e6e28ad2d61816f6d44e2f4452e7e8
+  pilot_metrics_sha256: 8fb1c8bfcec47ffd757fecd67112bef740146461f75be438cfbc80f9ecf7ca9e
+
+items:
+  - item_id: replay_correctness
+    question: does replay of the purchased stream reproduce faithfully and completely?
+    evidence: >-
+      3,489 date-included MATCH_ODDS markets reconstructed with zero errors; metadata
+      pass covered all 16,955 standalone market files with zero errors and zero null
+      marketTime; every observed price resolved to the canonical Betfair tick ladder
+      (zero off-ladder events, SPEC-053 arithmetic exact).
+    finding: ADEQUATE
+  - item_id: deterministic_reconstruction
+    question: is the reconstruction a pure function of the canonical bytes?
+    evidence: >-
+      two independent full reconstruction runs produced byte-identical output
+      (sha256 3c1b64ab…); per-market re-runs identical (SPEC-010/011 discipline held).
+    finding: ADEQUATE
+  - item_id: canonical_corpus_integrity
+    question: is the purchased corpus intact, fingerprinted and immutable?
+    evidence: >-
+      20,482 files match the delivered archive (portal cross-check: 20,482 markets,
+      1081 MB); per-file SHA-256 manifest pinned in-repo; full re-verification passed
+      both BEFORE and AFTER the price-analysis pass — the raw corpus was never modified.
+    finding: ADEQUATE
+  - item_id: universe_integrity
+    question: is the analytical universe frozen by rules, before outcomes, with no unknowns?
+    evidence: >-
+      rules-not-counts manifest (sha256 ce9a147e…): 3,521 MATCH_ODDS markets, every one
+      carrying date membership (3,489 in / 32 out-of-window / 0 unknown), MatchFormat
+      (2,896 singles / 625 doubles / 0 unknown), ClassificationEvidence (0 conflicts,
+      0 unclassifiable), packaging status and inclusion/exclusion reason; frozen and
+      hashed before any price field was opened.
+    finding: ADEQUATE
+  - item_id: packaging_integrity
+    question: can any market enter replay twice or ambiguously?
+    evidence: >-
+      full-corpus dual-packaging audit (16,935 rows): 16,909 combined-file copies
+      byte-identical to their standalone canonical files, 26 combined-only markets
+      (all non-MATCH_ODDS), ZERO conflicting representations; canonical replay
+      manifest binds each of 16,981 unique markets to exactly one source + content hash.
+    finding: ADEQUATE
+  - item_id: schedule_behaviour
+    question: is start-time behaviour measurable and manageable by a live-replicable protocol?
+    evidence: >-
+      measured, not assumed: earliest marketTime is a session placeholder (off median
+      +105 min later); median 6 revisions/market, non-monotone; off median +5.7 min
+      LATE even vs the final published schedule, with 125/2,876 EARLY starts —
+      confirming F-01 (scheduled-start is not a safe knowability floor for tennis).
+      The governed as-of-published-marketTime state machine (immutable, lineage-linked,
+      re-arming horizon instances) handled 100% of markets deterministically.
+    finding: ADEQUATE_WITH_LIMITS
+    limits: operational reschedule policy (first-crossing vs invalidate-and-refresh vs
+      stability window) is deliberately unfrozen; it is a Stage-2+ governed decision and
+      must never be chosen on profitability.
+  - item_id: benchmark_feasibility
+    question: is at least one closing-benchmark candidate honestly constructible from the data?
+    evidence: >-
+      for in-play primary singles — final midpoint 99.5%, windowed midpoint 96.7%,
+      microprice 96.7%, last-traded 99.2% constructible with structural in-play
+      exclusion; traded-WAP only 40.4% (insufficient final-minute trade flow) and is
+      thereby evidenced as unsuitable as a primary candidate. NO benchmark is selected
+      (sport_core.benchmarks.selected_benchmark() still refuses; DR-TENNIS-BENCHMARK-001
+      remains open — selection is a separate, evidence-gated human decision).
+    finding: ADEQUATE
+  - item_id: market_completeness
+    question: do valid pre-match two-selection states exist across the universe at governed horizons?
+    evidence: >-
+      every horizon instance had exactly two active selections; complete two-sided books
+      in ~99% of instances (e.g. 2,336/2,353 at first-instance T-5m); one-sided/missing/
+      crossed books negligible and enumerated; 2,646/2,876 primary singles carry a T-30m
+      instance; every no-instance case carries an explicit typed reason; 124/2,876
+      (4.3%) never observed in-play — recorded, cause not inferred (outcome-adjacent).
+    finding: ADEQUATE_WITH_LIMITS
+    limits: never-in-play markets and no-instance reasons stay in every future
+      denominator (SPEC-038 discipline); they may not be silently dropped.
+  - item_id: liquidity
+    question: are spreads and matched volumes consistent with a functioning continuous market?
+    evidence: >-
+      primary singles median spread 3 ticks (~135 bp implied), stable T-30m→T-60s;
+      strict sibling-corroborated tier tighter (~107 bp) and deeper (median matched
+      £840/selection vs £502) — classification-evidence tier is a real liquidity
+      covariate, carried forward, with primary-only markets retained.
+    finding: ADEQUATE_WITH_LIMITS
+    limits: single-month, single-regime (grass run-up) magnitudes; cross-regime
+      stability is the pre-registered question any second data month must answer.
+  - item_id: executable_depth
+    question: does displayed depth support the platform's OWN v1 staking policy (SPEC-060 fixed minimum stake)?
+    evidence: >-
+      at the exchange-minimum-scale £2 stake, 96.2% fully executable at best displayed
+      back price (99.9% within the three delivered levels) at first-instance T-5m —
+      the v1 policy anchor is comfortably supported. Larger stakes degrade smoothly and
+      are RECORDED (£10: 72.6% at best / 98.3% within 3; £50: 52.5% / 85.9%;
+      £100: 35.0% / 75.2%) — a measured capacity ceiling, not an adequacy failure,
+      because v1 stakes at the fixed minimum. Displayed-liquidity scenario only; not a
+      claim of actual historical fill (queue position is latent — SPEC-040 discipline).
+    finding: ADEQUATE
+  - item_id: operational_decision_horizons
+    question: does at least one live-replicable decision horizon exist with high coverage and tolerable churn?
+    evidence: >-
+      liquidity is horizon-invariant T-30m→T-60s, so nothing forces last-minute
+      operation; T-10m/T-5m instances exist for ~2.35k of 2,876 primary singles with
+      ~99% complete books; short horizons carry the reschedule churn (1,100+ markets
+      with multiple instances) which the state machine exposes with full lineage rather
+      than hiding.
+    finding: ADEQUATE
+  - item_id: known_limitations
+    question: are the limitations of this evidence explicitly recorded?
+    evidence: >-
+      recorded in PILOT_REPORT.md §11 and ADR 0018 §8: single month/regime; three
+      delivered ladder levels only (ADVANCED tier truncation); displayed ≠ executed
+      (no order/queue data); historical-file latency/conflation vs live stream
+      unmeasured; commission tier not modelled; 4.3% never-in-play; primary-only tier
+      thinness; reschedule operational policy unfrozen.
+    finding: ADEQUATE
+  - item_id: remaining_unknowns
+    question: are the unknowns that later gates must resolve explicitly enumerated?
+    evidence: >-
+      enumerated in ADR 0018 §8/§11: cross-regime stability; benchmark selection;
+      live latency and realised-fill behaviour; outcome-data opening protocol and
+      lockbox; longitudinal training-data licensing; competitor-identity resolution
+      quality; reschedule operational policy. None blocks the M0 question; each is
+      assigned to a later gate or governed decision.
+    finding: ADEQUATE
+
+evaluation:
+  method: mechanical mapping of each item to the digest-pinned evidence above; outcome
+    by the precedence rule (no INADEQUATE, no UNMEASURED)
+  outcome: PASS
+  outcome_statement: >-
+    Betfair Tennis Match Odds (singles) is a technically suitable market for an
+    evidence-led probability project. The data is reproducible, the corpus and universe
+    are integrity-proven, books are near-universally complete and two-sided at
+    live-replicable horizons, the v1 fixed-minimum-stake policy is comfortably
+    executable against displayed depth, and multiple closing-benchmark candidates are
+    honestly constructible. The PASS is scope-bounded to the June-2026 regime; it
+    licenses Stage 2 (probability engine) and licenses NOTHING about profitability,
+    execution at scale, or live activity (ADR 0015 block unaffected and standing).
+  evaluated_on: "2026-07-18"
+  ratification: founder closure directive 2026-07-18 (this package); founder veto voids
+    this record.

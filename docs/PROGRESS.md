@@ -361,3 +361,24 @@ A3 backfill replay → A1 knowability boundary → A6 outcome vocabulary → A4 
 provider seam/OOF orchestrator. Hard gates: A2+A3 before any data purchase; A1 before any
 tennis feature work. F-13 ruled (zero-fill FOK release; see ADR 0017 addendum). Standing
 blocks unchanged: ADR 0015, SPEC-084 refusal, no benchmark, no models, no live orders.
+
+## Stage-1 closure: June-2026 tennis market-feasibility pilot (2026-07-18)
+
+The pilot ran under the ADR 0015 carve-out (one historical month, no live activity) and is
+formally CLOSED. Evidence frozen at `docs/evidence/pilot-2026-06-tennis/` (corpus manifest
+`d6d2f44b…`, universe `ce9a147e…`, canonical replay `be2ae21a…`, deterministic reconstruction
+`3c1b64ab…` — proven byte-identical across independent runs, zero errors, zero off-ladder
+prices). **Gate M0 (market adequacy): PASS**, scope-bounded to the June regime
+(`specs/gates/market-m0.yaml`); profitability explicitly out of scope and no outcome ever
+opened. Programme review: ADR 0018 (questions answered/unanswered, assumptions disproved —
+incl. the placeholder `earliest marketTime` anchor, corrected mid-pilot by governed founder
+decision to the as-of-published-marketTime horizon state machine; critical failure-mode
+ranking: M2 futility most likely). Baseline frozen machine-readably at
+`specs/programme/baseline-v1.yaml`: tennis / MATCH_ODDS / singles; June universe (2,876;
+strict 2,287 sensitivity tier; doubles descriptive); T-10m→T-5m horizon target; benchmark
+UNSELECTED; models NOT_STARTED; live PROHIBITED (ADR 0015 unaffected). Stage 2 (probability
+engine → P(model), NOT betting) defined at `docs/architecture/stage2-probability-programme.md`
+with the F0–F7 family roadmap and the M0→M1→M2→M3→M4→canary→production gate ladder (one
+question per gate; M4 the only profitability gate; canary unschedulable while ADR 0015
+stands). Stage-2 slice activation remains human-controlled; first slices are outcome-opening
+protocol, tennis lockbox freeze, and pre-registration — before any result is read.
