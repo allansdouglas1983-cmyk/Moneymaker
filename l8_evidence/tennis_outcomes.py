@@ -47,11 +47,13 @@ from sport_core.outcomes import ChoiceSetResolution
 
 __all__ = [
     "JUNE_LOCKBOX_ID",
+    "JUNE_M1_SEAL_AUTHORISATION_DIGEST",
     "OutcomeAccessScope",
     "OutcomeAccessAuthorisation",
     "OutcomeAccessNotAuthorisedError",
     "OutcomeScopeError",
     "JuneLockboxSealedError",
+    "SealAuthorisationMismatchError",
     "OutcomeUndeterminedError",
     "ExtractedMatchOutcome",
     "TennisOutcomeExtractor",
@@ -62,6 +64,14 @@ __all__ = [
 JUNE_LOCKBOX_ID = "lockbox-june-2026-tennis-v1"
 _SCOPE_BOUNDARY = "2026-06-01"  # ISO date; any marketTime on/after this is out of scope
 _SEALED_MEMBERS_CSV = Path("docs/evidence/lockbox-june-2026-tennis/members.csv")
+
+#: The digest of the ONE governed authorisation that may open June (Stage 2E;
+#: specs/evidence/lockbox-june-2026-tennis-v2.yaml). A JUNE_M1_TRANSFER authorisation is valid
+#: ONLY carrying exactly this seal digest; the v1 seal cannot authorise June, and no other
+#: month/model/programme can reuse this scope (the extractor also binds the exact market set).
+JUNE_M1_SEAL_AUTHORISATION_DIGEST = (
+    "sha256:f552c7bfafd8432693a26d01519ffac29e1d81d7554901041553952b2ddb88c8"
+)
 
 
 class OutcomeAccessNotAuthorisedError(RuntimeError):
@@ -75,8 +85,15 @@ class OutcomeScopeError(RuntimeError):
 
 
 class JuneLockboxSealedError(RuntimeError):
-    """The market is a member of the sealed June-2026 lockbox (SPEC-092). Opening June
-    requires a separate explicit founder authorisation; refusal is unconditional here."""
+    """The market is a member of the sealed June-2026 lockbox (SPEC-092). Refused unless the
+    authorisation is the ONE governed JUNE_M1_TRANSFER opening AND the market is in that
+    authorisation's explicit authorised set."""
+
+
+class SealAuthorisationMismatchError(RuntimeError):
+    """A JUNE_M1_TRANSFER authorisation did not carry the exact governed v2 seal digest
+    (:data:`JUNE_M1_SEAL_AUTHORISATION_DIGEST`). The June opening is bound to that one seal;
+    no other seal, month, model or programme may reuse the scope."""
 
 
 class OutcomeUndeterminedError(RuntimeError):
@@ -86,10 +103,14 @@ class OutcomeUndeterminedError(RuntimeError):
 
 @unique
 class OutcomeAccessScope(Enum):
-    """The ONLY authorised outcome-access scope. A June scope is deliberately
-    unrepresentable (founder decision 4); adding a member is a governed founder change."""
+    """The authorised outcome-access scopes. ``PRE_JUNE_DEVELOPMENT`` is the standing
+    development scope. ``JUNE_M1_TRANSFER`` is the ONE governed June opening the founder
+    authorised in Stage 2E (lockbox-june-2026-tennis-v2) — for the M1 external transfer only,
+    bound to the exact v2 seal digest and an explicit market set. No generic
+    JUNE/RESEARCH/MODEL/M2/ROI/unrestricted scope exists; adding one is a governed change."""
 
     PRE_JUNE_DEVELOPMENT = "PRE_JUNE_DEVELOPMENT"
+    JUNE_M1_TRANSFER = "JUNE_M1_TRANSFER"
 
 
 def _require_sha256(name: str, value: str) -> None:
@@ -115,6 +136,9 @@ class OutcomeAccessAuthorisation:
     gate_spec_version: str
     granted_by: str
     granted_on: date
+    #: Required for JUNE_M1_TRANSFER (binds to the v2 seal), forbidden otherwise. Additive:
+    #: defaults to None so every PRE_JUNE_DEVELOPMENT authorisation is unchanged.
+    seal_authorisation_digest: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.scope, OutcomeAccessScope):
@@ -125,6 +149,17 @@ class OutcomeAccessAuthorisation:
         _require_sha256("data_manifest_sha256", self.data_manifest_sha256)
         _require_nonempty("gate_spec_version", self.gate_spec_version)
         _require_nonempty("granted_by", self.granted_by)
+        if self.scope is OutcomeAccessScope.JUNE_M1_TRANSFER:
+            if self.seal_authorisation_digest is None:
+                raise ValueError(
+                    "a JUNE_M1_TRANSFER authorisation MUST carry the v2 seal_authorisation_digest"
+                )
+            _require_sha256("seal_authorisation_digest", self.seal_authorisation_digest)
+        elif self.seal_authorisation_digest is not None:
+            raise ValueError(
+                f"only JUNE_M1_TRANSFER may carry a seal_authorisation_digest; "
+                f"scope {self.scope.value} must not"
+            )
 
     def content_digest(self) -> str:
         body = json.dumps(
@@ -137,6 +172,7 @@ class OutcomeAccessAuthorisation:
                 "gate_spec_version": self.gate_spec_version,
                 "granted_by": self.granted_by,
                 "granted_on": self.granted_on.isoformat(),
+                "seal_authorisation_digest": self.seal_authorisation_digest,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -171,19 +207,43 @@ class TennisOutcomeExtractor:
         authorisation: OutcomeAccessAuthorisation,
         *,
         sealed_market_ids: frozenset[str],
+        june_authorised_market_ids: frozenset[str] = frozenset(),
     ) -> None:
         if not isinstance(authorisation, OutcomeAccessAuthorisation):
             raise OutcomeAccessNotAuthorisedError(
                 "tennis outcome extraction requires a validated OutcomeAccessAuthorisation"
             )
+        if authorisation.scope is OutcomeAccessScope.JUNE_M1_TRANSFER:
+            # The ONE governed June opening: bound to the exact v2 seal digest AND an explicit,
+            # non-empty authorised market set. A wrong seal, or an empty set, refuses here.
+            if authorisation.seal_authorisation_digest != JUNE_M1_SEAL_AUTHORISATION_DIGEST:
+                raise SealAuthorisationMismatchError(
+                    "JUNE_M1_TRANSFER requires the exact v2 seal digest "
+                    f"{JUNE_M1_SEAL_AUTHORISATION_DIGEST!r}; the v1 seal cannot authorise June"
+                )
+            if not june_authorised_market_ids:
+                raise ValueError(
+                    "JUNE_M1_TRANSFER requires a non-empty june_authorised_market_ids set"
+                )
+        elif june_authorised_market_ids:
+            # A non-June scope must never carry a June authorised set.
+            raise ValueError(
+                f"scope {authorisation.scope.value} must not carry june_authorised_market_ids"
+            )
         self._auth = authorisation
         self._sealed = sealed_market_ids
+        self._june_authorised = june_authorised_market_ids
 
     def extract(self, market_id: str, stream_lines: Iterable[str]) -> ExtractedMatchOutcome:
-        if market_id in self._sealed:
+        june_open = (
+            self._auth.scope is OutcomeAccessScope.JUNE_M1_TRANSFER
+            and market_id in self._june_authorised
+        )
+        if market_id in self._sealed and not june_open:
             raise JuneLockboxSealedError(
                 f"market {market_id} is sealed in {JUNE_LOCKBOX_ID}; June outcomes are "
-                "inaccessible without a separate explicit founder authorisation"
+                "inaccessible without the governed JUNE_M1_TRANSFER authorisation for exactly "
+                "this market"
             )
         last_closed_runners: dict[int, str] | None = None
         settled_time: str | None = None
@@ -199,11 +259,16 @@ class TennisOutcomeExtractor:
                 if md is None:
                     continue
                 market_time = md.get("marketTime")
-                if isinstance(market_time, str) and market_time[:10] >= _SCOPE_BOUNDARY:
+                if (
+                    isinstance(market_time, str)
+                    and market_time[:10] >= _SCOPE_BOUNDARY
+                    and not june_open
+                ):
                     raise OutcomeScopeError(
                         f"market {market_id} has marketTime {market_time}, on/after "
-                        f"{_SCOPE_BOUNDARY}: outside the authorised PRE_JUNE_DEVELOPMENT "
-                        "scope (the seal binds by data, not only by membership list)"
+                        f"{_SCOPE_BOUNDARY}: outside the authorised scope (the seal binds by "
+                        "data, not only by membership list; only the governed JUNE_M1_TRANSFER "
+                        "authorisation for this exact market may cross the boundary)"
                     )
                 if md.get("status") == "CLOSED":
                     runners = md.get("runners") or []
