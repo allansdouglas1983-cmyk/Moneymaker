@@ -382,3 +382,27 @@ with the F0–F7 family roadmap and the M0→M1→M2→M3→M4→canary→produc
 question per gate; M4 the only profitability gate; canary unschedulable while ADR 0015
 stands). Stage-2 slice activation remains human-controlled; first slices are outcome-opening
 protocol, tennis lockbox freeze, and pre-registration — before any result is read.
+
+## Stage 2A: lockbox, outcome governance & pre-registration (2026-07-18)
+
+Validity-protection slice BEFORE any probability model. Landed on
+`claude/project-files-followup-dif8al` (full `make verify` green: 272 files mypy-strict,
++23 tests, import-quarantine incl. the new l8_evidence.tennis_outcomes boundary).
+**Structural anti-contamination (completes SPEC-092's deferred data-layer block):**
+`specs/evidence/outcome-field-classification-v1.yaml` (every corpus field classified
+SAFE/OUTCOME_CONTROLLED/POST_SETTLEMENT/UNKNOWN, fail-closed, human-owned) + `l8_evidence/
+outcome_fields.py` (assert_pre_lockbox_readable, value sentinels, replay-provable
+PreLockboxAccessRecorder) + `l8_evidence/tennis_outcomes.py` (single refusing outcome home,
+import-forbidden from l3_features/l4_pricing). **Governance:** `.claude/rules/
+stage2-evidence-discipline.md` (no modelling decision from returns/ROI/CLV/hindsight/winner
+inspection pre-opening); `docs/architecture/stage2a-lockbox-protocol.md` (full protocol,
+Task 1); `docs/experiments/STAGE2-tennis-preregistration.md` (master pre-registration,
+numeric boundaries PENDING FOUNDER, Task 4); `docs/architecture/
+reschedule-operational-policy.md` (RECOMMENDED stability-window policy vs rejected first/
+latest/refresh, outcome-blind, Task 5); `docs/architecture/
+stage2a-readiness-and-stage2b-plan.md` (readiness = YES WITH BLOCKERS in dependency order,
+Task 6; Stage 2B = F0 market baseline + F1 null first, then F2 Elo, Task 7). No model,
+feature, parameter or outcome read; no governance weakened; no numbers invented. Blockers
+before outcome modelling: (1) founder resolves pre-reg numbers + dwell W; (2) define/seal
+tennis lockbox; (3) authorise outcome-opening (implement tennis_outcomes); (4) license
+longitudinal results (Gate -1); (5) competitor-identity resolution.
