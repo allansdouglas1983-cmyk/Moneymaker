@@ -41,7 +41,83 @@ __all__ = [
     "score_market",
     "score_bundle",
     "m1_scorecard",
+    "evaluate_m1_verdict",
 ]
+
+_LN2 = math.log(2.0)
+#: Frozen M1 bands (probability-m1.yaml numeric_bands_v1 + remediation_amendment_v1).
+_CIL_PASS = 0.02          # |calibration-in-the-large| adequacy band
+_CIL_HARM = 0.05          # catastrophic-transfer / harm boundary (NOT a widened PASS band)
+_SLOPE_LO, _SLOPE_HI = 0.90, 1.10
+_BRIER_LT = 0.25
+
+
+def evaluate_m1_verdict(scorecard: Mapping[str, object], *, min_support: int = 500) -> dict[str, object]:
+    """Deterministic M1 verdict from a scorecard against the FROZEN probability-m1 bands +
+    remediation_amendment_v1. No LLM decides this; it is a mechanical mapping (SPEC-093 spirit).
+
+    PASS requires (overall + both supported tours): log loss < ln2, Brier < 0.25, slope in
+    [0.90,1.10], and |cal-in-large| <= 0.02. CONTINUE if any adequacy item is merely in the
+    (0.02, 0.05] cal band, or a required tour is unsupported (< min_support), or overall support
+    is short. FAIL_HARM if |cal-in-large| > 0.05 anywhere supported, or a supported log loss >=
+    ln2. Returns the verdict + the reasons (auditable)."""
+    def _num(v: object) -> float:
+        assert isinstance(v, (int, float))
+        return float(v)
+
+    overall = scorecard["overall"]
+    assert isinstance(overall, Mapping)
+    reasons: list[str] = []
+    verdict = "PASS"
+
+    def worse(v: str) -> None:
+        nonlocal verdict
+        order = {"PASS": 0, "CONTINUE": 1, "FAIL_FUTILITY": 2, "FAIL_HARM": 3}
+        if order[v] > order[verdict]:
+            verdict = v
+
+    n_overall = int(_num(overall.get("n", 0)))
+    if n_overall < min_support:
+        worse("CONTINUE")
+        reasons.append(f"overall support {n_overall} < {min_support}")
+
+    def check(block: Mapping[str, object], label: str, *, required: bool) -> None:
+        nonlocal verdict
+        supported = bool(block.get("supported", False))
+        if not supported:
+            if required:
+                worse("CONTINUE")
+                reasons.append(f"{label} unsupported (< {min_support}) -> CONTINUE")
+            return
+        ll = _num(block["log_loss"])
+        brier = _num(block["brier"])
+        cil = abs(_num(block["cal_in_large"]))
+        slope = _num(block["cal_slope"])
+        if ll >= _LN2:
+            worse("FAIL_HARM")
+            reasons.append(f"{label} log_loss {ll} >= ln2")
+        if brier >= _BRIER_LT:
+            worse("FAIL_HARM")
+            reasons.append(f"{label} brier {brier} >= {_BRIER_LT}")
+        if cil > _CIL_HARM:
+            worse("FAIL_HARM")
+            reasons.append(f"{label} |cal_in_large| {cil} > {_CIL_HARM} (harm)")
+        elif cil > _CIL_PASS:
+            worse("CONTINUE")
+            reasons.append(f"{label} |cal_in_large| {cil} in ({_CIL_PASS},{_CIL_HARM}] -> CONTINUE")
+        if not (_SLOPE_LO <= slope <= _SLOPE_HI):
+            worse("CONTINUE")
+            reasons.append(f"{label} slope {slope} outside [{_SLOPE_LO},{_SLOPE_HI}]")
+
+    check(overall, "overall", required=True)
+    per_tour = scorecard["per_tour"]
+    assert isinstance(per_tour, Mapping)
+    for tour in ("ATP", "WTA"):
+        block = per_tour[tour]
+        assert isinstance(block, Mapping)
+        check(block, tour, required=True)   # both tours required (amendment: neither carried by the other)
+
+    return {"verdict": verdict, "reasons": reasons, "min_support": min_support}
 
 
 class HarnessJoinError(RuntimeError):

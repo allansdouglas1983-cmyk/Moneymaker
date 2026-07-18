@@ -7,11 +7,14 @@ deterministic regardless of input order.
 """
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from l8_evidence.june_m1_harness import (
     FrozenPrediction,
     HarnessJoinError,
+    evaluate_m1_verdict,
     m1_scorecard,
     score_bundle,
     score_market,
@@ -20,6 +23,17 @@ from l8_evidence.tennis_outcomes import ExtractedMatchOutcome
 from sport_core.outcomes import ChoiceSetResolution
 
 pytestmark = [pytest.mark.spec("SPEC-092"), pytest.mark.spec("SPEC-097")]
+
+_LN2 = math.log(2.0)
+
+
+def _block(*, n=600, ll=0.62, brier=0.21, cil=0.004, slope=1.0, supported=None):
+    return {"n": n, "log_loss": ll, "brier": brier, "cal_in_large": cil, "cal_slope": slope,
+            "supported": (n >= 500) if supported is None else supported}
+
+
+def _card(overall=None, atp=None, wta=None):
+    return {"overall": overall or _block(), "per_tour": {"ATP": atp or _block(), "WTA": wta or _block()}}
 
 
 def _pred(market_id: str, *, sel_des: int = 11, sel_oth: int = 22, tour: str = "ATP",
@@ -110,3 +124,32 @@ class TestScorecard:
         assert card["overall"]["supported"] is True
         # deterministic: same rows in any order -> identical card
         assert m1_scorecard(list(reversed(scored)), min_support=500) == card
+
+
+class TestM1Verdict:
+    def test_all_bands_met_passes(self) -> None:
+        assert evaluate_m1_verdict(_card())["verdict"] == "PASS"
+
+    def test_cal_in_large_in_grey_band_continues(self) -> None:
+        v = evaluate_m1_verdict(_card(overall=_block(cil=0.035)))
+        assert v["verdict"] == "CONTINUE"
+
+    def test_cal_in_large_above_harm_boundary_fails_harm(self) -> None:
+        v = evaluate_m1_verdict(_card(overall=_block(cil=0.06)))
+        assert v["verdict"] == "FAIL_HARM"
+
+    def test_log_loss_worse_than_null_fails_harm(self) -> None:
+        v = evaluate_m1_verdict(_card(overall=_block(ll=_LN2 + 0.01)))
+        assert v["verdict"] == "FAIL_HARM"
+
+    def test_unsupported_tour_continues_never_passes(self) -> None:
+        # WTA below support -> CONTINUE, never PASS, never fabricated
+        v = evaluate_m1_verdict(_card(wta=_block(n=100, supported=False)))
+        assert v["verdict"] == "CONTINUE"
+
+    def test_slope_out_of_band_continues(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(slope=0.80)))["verdict"] == "CONTINUE"
+
+    def test_insufficient_overall_support_never_passes(self) -> None:
+        v = evaluate_m1_verdict(_card(overall=_block(n=100, supported=False)))
+        assert v["verdict"] != "PASS"

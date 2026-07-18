@@ -20,6 +20,8 @@ from pathlib import Path
 
 from l8_evidence.june_m1_harness import FrozenPrediction
 from l8_evidence.june_stage_a_extraction import MinimalOutcome
+from l8_evidence.lockbox import LockboxRegistry
+from l8_evidence.prediction_snapshots import DualClockTimestamp
 from l8_evidence.tennis_outcomes import (
     JUNE_M1_SEAL_AUTHORISATION_DIGEST,
     OutcomeAccessAuthorisation,
@@ -35,6 +37,8 @@ __all__ = [
     "build_june_authorisation",
     "build_extractor",
     "read_market_outcome",
+    "locate_market_streams",
+    "run_stage_a_burn",
 ]
 
 BUNDLE_PATH = Path("docs/evidence/stage2e-june-m1-bundle/JUNE_M1_PREDICTION_BUNDLE.jsonl")
@@ -112,3 +116,66 @@ def read_market_outcome(extractor: TennisOutcomeExtractor, stream: _MarketStream
     with bz2.open(stream.path, "rt", encoding="utf-8") as fh:
         outcome = extractor.extract(stream.market_id, fh)
     return MinimalOutcome(stream.market_id, outcome.winner_selection_id)
+
+
+def locate_market_streams(
+    bundle: Sequence[FrozenPrediction], streams_root: Path,
+) -> tuple[tuple[str, Path], ...]:
+    """Find each bundle market's .bz2 stream under ``streams_root`` (outcome-blind: only paths).
+    Refuses if any market's stream is missing (no silent drop)."""
+    index: dict[str, Path] = {}
+    for p in streams_root.rglob("*.bz2"):
+        index.setdefault(p.stem, p)
+    located: list[tuple[str, Path]] = []
+    missing: list[str] = []
+    for pred in sorted(bundle, key=lambda pr: pr.market_id):
+        path = index.get(pred.market_id)
+        (located.append((pred.market_id, path)) if path is not None
+         else missing.append(pred.market_id))
+    if missing:
+        raise ValueError(f"{len(missing)} bundle markets have no stream, e.g. {missing[:3]}")
+    return tuple(located)
+
+
+def run_stage_a_burn(
+    *,
+    registry: LockboxRegistry, lockbox_id: str, at: DualClockTimestamp,
+    sealed_market_ids: frozenset[str],
+    model_manifest_sha256: str, feature_manifest_sha256: str, data_manifest_sha256: str,
+    granted_on: date, streams_root: Path, burn_record_path: Path, artifact_path: Path,
+) -> dict[str, object]:
+    """THE ONE-TIME BURN (founder-gated; runs ONLY on an explicit ``BURN JUNE STAGE A``).
+
+    Wiring, no new logic: load+verify the frozen bundle → build the governed JUNE_M1_TRANSFER
+    authorisation + extractor scoped to the 1,213 markets → atomic extraction (durable burn
+    BEFORE the one raw read; single immutable artifact) → score the artifact through the governed
+    join → M1 scorecard → deterministic M1 verdict. Returns verdict + scorecard + digests. Stage
+    B is NOT run here — it is gated separately on an M1 PASS attestation (requirement B)."""
+    from l8_evidence.june_m1_harness import evaluate_m1_verdict, m1_scorecard, score_bundle
+    from l8_evidence.june_stage_a_extraction import load_artifact, run_stage_a_extraction
+
+    bundle = load_frozen_bundle()
+    ids = bundle_market_ids(bundle)
+    auth = build_june_authorisation(
+        model_manifest_sha256=model_manifest_sha256,
+        feature_manifest_sha256=feature_manifest_sha256,
+        data_manifest_sha256=data_manifest_sha256, granted_on=granted_on)
+    extractor = build_extractor(auth, sealed_market_ids=sealed_market_ids, bundle=bundle)
+    streams = locate_market_streams(bundle, streams_root)   # outcome-blind path resolution
+
+    def read_outcomes() -> list[MinimalOutcome]:            # the ONE raw access
+        return [read_market_outcome(extractor, _MarketStream(mid, path)) for mid, path in streams]
+
+    run_stage_a_extraction(
+        registry=registry, lockbox_id=lockbox_id, accessor="GATE-1", at=at,
+        bundle_market_ids=ids, bundle_digest=BUNDLE_SHA256,
+        authorisation_digest=auth.content_digest(), read_outcomes=read_outcomes,
+        burn_record_path=burn_record_path, artifact_path=artifact_path)
+    artifact = load_artifact(artifact_path)
+    by_id = {o.market_id: o for o in artifact.outcomes}
+    scored, exclusions = score_bundle(bundle, by_id)
+    scorecard = m1_scorecard(scored)
+    verdict = evaluate_m1_verdict(scorecard)
+    return {"verdict": verdict, "scorecard": scorecard, "n_scored": len(scored),
+            "exclusions": [list(e) for e in exclusions], "artifact_digest": artifact.content_digest(),
+            "bundle_digest": BUNDLE_SHA256, "authorisation_digest": auth.content_digest()}
