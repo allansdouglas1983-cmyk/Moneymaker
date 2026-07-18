@@ -540,3 +540,17 @@ guesses; 54 ambiguities documented unresolved, affect only June M2, not pre-June
 ledger: F0/F1/F2 zero; F3-vs-F2 0.025; June M2 0.025; budget exhausted; F4+ none. make
 verify green (283 files). No June outcome; no odds in F2/F3; NO F3-vs-F2 confirmatory
 result computed or inspected.
+
+## Stage 2B F3 confirmatory + M1: F3 FAILS, F2 selected, M1 CONTINUE (2026-07-18)
+
+Ran the registered nested chronological F3-vs-F2 confirmatory trial (34,038 paired preds,
+0 refusals; UTC-day block bootstrap via l8_evidence.paired_inference, seed 20260718).
+Result: F2 0.62393 vs F3 0.63345; mean_d -0.00952; 97.5% CI [-0.01199,-0.00708] entirely
+negative -> **FAIL_HARM** (surface Elo materially WORSE; ATP -0.0066, WTA -0.0127). Per
+registered rule F3 NOT promoted; F2 global Elo retained as selected family. M1 scorecard on
+calibrated F2 (per-fold temperature scaling): slope 0.83->1.005, log_loss 0.622<ln2, Brier
+0.217, coverage 100%, temporal val<=oof, reliability<=0.017, cold-start fine, ATP/WTA pass;
+**one band CONTINUE** (overall calibration-in-the-large +0.0233 vs +-0.02; one-param
+temperature has no intercept, method contest forbidden) -> **M1 = CONTINUE** (Gate 1 not
+closed). Alpha: F3-vs-F2 0.025 SPENT; June M2 0.025 reserved; F4+ none. June sealed; no odds
+in F2/F3; no ROI/CLV/selection. Evidence docs/evidence/stage2b-f3-confirmatory/.

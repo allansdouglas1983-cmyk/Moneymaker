@@ -1,0 +1,93 @@
+{
+ "gate": "M1",
+ "selected_model": "F2 global Elo (calibrated, temperature per fold)",
+ "overall_verdict": "CONTINUE",
+ "items": [
+  {
+   "item": "lawful_reproducible",
+   "status": "PASS",
+   "detail": "Gate-1 attested scope; deterministic reruns; full provenance"
+  },
+  {
+   "item": "overall_log_loss_lt_ln2",
+   "status": "PASS",
+   "detail": "0.62211 < 0.69315"
+  },
+  {
+   "item": "overall_brier_lt_0.25",
+   "status": "PASS",
+   "detail": "0.21697 < 0.25"
+  },
+  {
+   "item": "overall_cal_in_large_[-0.02,0.02]",
+   "status": "CONTINUE",
+   "detail": "0.02328 > 0.02 by 0.0033 (one-param temperature has no intercept; frozen policy forbids method contest)"
+  },
+  {
+   "item": "overall_slope_[0.90,1.10]",
+   "status": "PASS",
+   "detail": "1.0048 (was ~0.83 raw; temperature-corrected)"
+  },
+  {
+   "item": "overall_coverage_ge_95",
+   "status": "PASS",
+   "detail": "100.0% (34038/34038)"
+  },
+  {
+   "item": "ATP_log_loss_lt_ln2",
+   "status": "PASS",
+   "detail": "0.62408"
+  },
+  {
+   "item": "ATP_cal_in_large_[-0.03,0.03]",
+   "status": "PASS",
+   "detail": "0.02179"
+  },
+  {
+   "item": "ATP_slope_[0.85,1.15]",
+   "status": "PASS",
+   "detail": "1.0086"
+  },
+  {
+   "item": "WTA_log_loss_lt_ln2",
+   "status": "PASS",
+   "detail": "0.61997"
+  },
+  {
+   "item": "WTA_cal_in_large_[-0.03,0.03]",
+   "status": "PASS",
+   "detail": "0.02489"
+  },
+  {
+   "item": "WTA_slope_[0.85,1.15]",
+   "status": "PASS",
+   "detail": "1.001"
+  },
+  {
+   "item": "temporal_transfer_le_0.01",
+   "status": "PASS",
+   "detail": "val-oof=-0.00145 (validation better)"
+  },
+  {
+   "item": "no_annual_ge1000_ll_ge_ln2",
+   "status": "PASS",
+   "detail": "all yearly blocks < ln2 (max 0.6299 @2019)"
+  },
+  {
+   "item": "reliability_ge500_gap_le_0.05",
+   "status": "PASS",
+   "detail": "max gap 0.017 across deciles (all n>=3403)"
+  },
+  {
+   "item": "cold_start_no_ge500_cohort_gt_ln2+0.02",
+   "status": "PASS",
+   "detail": "worst cohort 10-19: 0.6441 < 0.71315; cohorts retained"
+  },
+  {
+   "item": "f3_vs_f2_confirmatory_recorded",
+   "status": "PASS",
+   "detail": "FAIL_HARM recorded; F2 selected"
+  }
+ ],
+ "note": "M1 is an adequacy AND-gate; a single CONTINUE item -> overall CONTINUE. NOT FAIL: the model is adequate on 14/15 axes; the calibration-in-the-large item is marginally outside its band and is a CONTINUE-flavoured item. No band was weakened; no re-tuning performed."
+}

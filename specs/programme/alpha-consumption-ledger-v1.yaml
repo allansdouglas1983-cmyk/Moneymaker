@@ -19,8 +19,9 @@ allocations:
     note: REGISTERED BASELINE; makes no superiority claim; consumes no confirmatory alpha
   - id: F3-vs-F2-confirmatory
     alpha_charge: "0.025"      # confidence 0.975
-    status: RESERVED (not yet read)
-    powered: "yes at planning sigma_d (34,038 >= 32,212)"
+    status: SPENT 2026-07-18 — verdict FAIL_HARM (F3 materially worse; overall mean_d
+      -0.0095, 97.5% CI [-0.0120, -0.0071] entirely negative). F3 not promoted; F2 retained.
+    powered: "yes at planning sigma_d (34,038 >= 32,212); realised CI decisive"
   - id: June-M2-market-comparison
     alpha_charge: "0.025"      # confidence 0.975; exhausts the budget
     status: RESERVED (June sealed; underpowered at 1,218 eligible -> CONTINUE by design)

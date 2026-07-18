@@ -1,0 +1,159 @@
+{
+ "cluster_size_distribution": {
+  "max": 87,
+  "mean": 15.65,
+  "min": 1,
+  "n_clusters": 2175,
+  "p50": 14,
+  "p90": 32
+ },
+ "confidence": "0.975 one-sided lower (=.lower of 95% two-sided)",
+ "delta": 0.0007,
+ "n_resamples": 20000,
+ "results": {
+  "ATP": {
+   "ci_digest": "sha256:84eef30cf4e33d5de90ad690e334797606ae1152fc36b731ca549f301fb0c0be",
+   "ll_F2": 0.626567,
+   "ll_F3": 0.633135,
+   "lower_975": -0.010007,
+   "mean_d": -0.006568,
+   "n_clusters": 2003,
+   "n_races": 17686,
+   "upper": -0.003169
+  },
+  "WTA": {
+   "ci_digest": "sha256:37291087e56e96011ff497ce1d1a93d24cc8d4183bf922f1580f37877f183272",
+   "ll_F2": 0.621084,
+   "ll_F3": 0.633792,
+   "lower_975": -0.016184,
+   "mean_d": -0.012709,
+   "n_clusters": 1925,
+   "n_races": 16352,
+   "upper": -0.00921
+  },
+  "overall": {
+   "ci_digest": "sha256:65055d17bae7d2c827b991bbd54cc58775e2d36c17d5ce41554f84805cddc1c9",
+   "ll_F2": 0.623933,
+   "ll_F3": 0.633451,
+   "lower_975": -0.011988,
+   "mean_d": -0.009518,
+   "n_clusters": 2175,
+   "n_races": 34038,
+   "upper": -0.007081
+  }
+ },
+ "seed": 20260718,
+ "selected_k_by_fold": {
+  "ATP": {
+   "2019": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2020": {
+    "k_global": 24.0,
+    "k_surface": 24.0
+   },
+   "2021": {
+    "k_global": 24.0,
+    "k_surface": 24.0
+   },
+   "2022": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2023": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2024": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2025": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2026": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   }
+  },
+  "WTA": {
+   "2019": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2020": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2021": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2022": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2023": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2024": {
+    "k_global": 32.0,
+    "k_surface": 32.0
+   },
+   "2025": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   },
+   "2026": {
+    "k_global": 24.0,
+    "k_surface": 32.0
+   }
+  }
+ },
+ "verdict": "FAIL_HARM",
+ "yearly": {
+  "2019": {
+   "ll_F2": 0.63268,
+   "ll_F3": 0.63973,
+   "n": 4855
+  },
+  "2020": {
+   "ll_F2": 0.63098,
+   "ll_F3": 0.62804,
+   "n": 2268
+  },
+  "2021": {
+   "ll_F2": 0.62039,
+   "ll_F3": 0.6386,
+   "n": 4746
+  },
+  "2022": {
+   "ll_F2": 0.61988,
+   "ll_F3": 0.63326,
+   "n": 4798
+  },
+  "2023": {
+   "ll_F2": 0.62591,
+   "ll_F3": 0.63432,
+   "n": 5016
+  },
+  "2024": {
+   "ll_F2": 0.62202,
+   "ll_F3": 0.63156,
+   "n": 5052
+  },
+  "2025": {
+   "ll_F2": 0.62321,
+   "ll_F3": 0.6332,
+   "n": 4866
+  },
+  "2026": {
+   "ll_F2": 0.61617,
+   "ll_F3": 0.61896,
+   "n": 2437
+  }
+ }
+}
