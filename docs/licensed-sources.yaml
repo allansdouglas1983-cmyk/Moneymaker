@@ -116,3 +116,28 @@
   verified_at: null
   recheck_by: null
   data_classification: null
+
+- source_id: tennis-data-couk
+  provider: Tennis-Data.co.uk
+  dataset: Historical ATP/WTA singles results files (2000-2026 ATP, 2007-2026 WTA),
+    vintage-2026-07-18, manifest sha256 d9af2525055c61ecc9e010c04604a3359ebe2a1fe786cba9f496d972091d0ceb
+  status: permitted
+  operational: false   # research/model-training source; flips only if wired into a deployable pipeline
+  permitted_uses:
+    offline_research: true
+    model_training: true          # private, single-user, personal profit-seeking scope only
+    automated_betting: false      # data does not place bets; derived-model use for the founder's own Betfair betting is within the attested scope
+    cloud_processing: true        # private workspace processing, per attested approval scope
+    retention: true               # raw-data retention, per attested scope
+    derived_models: true          # derived-model retention, per attested scope
+  prohibited_uses:
+    - raw-data redistribution (programme rule, unconditional)
+    - public prediction publication (Gate P1 machinery; NOT_EVALUATED stands)
+    - third-party access / sharing / tipping (single-user programme)
+    - any use not explicitly covered by the provider's written approval
+  verified_by: founder (written provider confirmation held privately by the founder;
+    not shared into the workspace for security reasons; recorded on founder attestation
+    2026-07-18 — no document digest available by explicit founder decision)
+  verified_at: "2026-07-18"
+  recheck_by: "2027-07-18"   # 12 months from attestation; earlier if provider-specified or published terms change
+  data_classification: personal-scope commercial-restricted (single-user research)

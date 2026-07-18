@@ -205,3 +205,15 @@
   - paid fallbacks prepared, not purchased (docs/procurement/paid-fallback-results-providers.md)
   - Sackmann/Tennis Abstract + scraping-derived sources remain prohibited from the deployable path
   - Goalserve/enterprise feeds deferred on cost
+- id: DR-TENNIS-RESULTS-001-RESOLUTION
+  title: Resolved by founder decision + attestation — Tennis-Data.co.uk approved as primary
+    longitudinal source; Gate -1 PASS on attestation (evidence held privately by founder)
+  classification: RESOLUTION
+  status: ASSESSED
+  requested: 2026-07-18
+  request: docs/procurement/tennis-data-rights-and-gate-minus1.md
+  notes:
+  - written provider approval retained privately by founder (security); no workspace copy, no digest
+  - registry entry tennis-data-couk (permitted, verified_by founder, recheck_by 2027-07-18)
+  - residual-risk record in the rights doc; PASS void-forward if terms found narrower
+  - paid fallbacks stood down; BASIC pilot not required for results

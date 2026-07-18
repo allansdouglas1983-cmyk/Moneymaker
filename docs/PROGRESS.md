@@ -471,3 +471,12 @@ explicit abstention, kept in denominators. **Corpus design proposed**
 PASS** — blocked only on ingesting the written approval evidence file
 (`docs/procurement/tennis-data-rights-and-gate-minus1.md`; matrix drafted; recheck =
 provider date else +12 months). No June outcome read; no odds value in any pipeline.
+
+## Gate −1 PASS on founder attestation (2026-07-18)
+
+Founder decision: the written Tennis-Data approval stays private to the founder
+(security); Gate −1 for tennis-data-couk marked PASS ON FOUNDER ATTESTATION within the
+exact single-user personal scope — no evidence fields fabricated, no digest recorded;
+registry entry permitted/verified_by-founder/recheck 2027-07-18; residual-risk record:
+PASS is void-forward if the provider's terms are ever found narrower. F2 blockers now:
+ONLY the founder declarations (delta, sigma_d, W/L + post-decision-revision response).

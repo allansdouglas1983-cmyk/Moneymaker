@@ -47,14 +47,24 @@ no paid or free tipping service; no raw-data redistribution.
 
 ## Gate −1 verdict (SPEC-101, Tennis-Data as F2+ results source)
 
-**CONDITIONAL PASS — finalisation blocked on one item only:** ingestion of the written
-approval evidence and confirmation that the matrix above matches its exact text
-(including the private-cloud-processing line, which stays REFUSED unless explicitly
-present). Every other Gate −1 element is in place: source identified; acquisition
-executed with full provenance; acceptance audit passed; field registry frozen;
-quarantines enforced. On evidence match: mark **PASS within this exact scope** and
-enter `docs/licensed-sources.yaml`. Until then F2 training may be PREPARED but not
-evaluated against any gate.
+**PASS — on founder attestation (2026-07-18), within the exact single-user personal
+scope above.** Founder decision: the written provider approval is retained PRIVATELY by
+the founder and is deliberately not shared into the workspace for security reasons; no
+document digest is therefore recorded, and the evidence-field table above stays marked
+as held-by-founder rather than being filled with unverifiable values. The permission
+matrix rests on the founder's attestation that the written confirmation covers the
+requested project scope (the eight requested permissions of the provider-enquiry
+draft); any permission not explicitly covered by the provider's text REMAINS REFUSED,
+and the founder — as rights authority — bears the verification of that match.
+Registry entry: `docs/licensed-sources.yaml` `tennis-data-couk` (status permitted,
+verified_by founder, recheck_by 2027-07-18 — twelve months from attestation, earlier if
+the provider specifies a date or its published terms change).
+
+**Residual-risk record (honest, standing):** if the provider's written terms are ever
+found narrower than the attested scope, this PASS is void from that discovery forward:
+the source re-enters review, affected artefacts keep internal-research status only, and
+nothing derived from it may reach a deployable path until re-verified. Preservation of
+the original approval (safely, outside this repo) remains a founder responsibility.
 
 Prohibitions unchanged: Sackmann/Tennis Abstract/scraped sources stay out of the
 deployable path; no API-Tennis/Goalserve/SportsDataAPI purchase (not required).
