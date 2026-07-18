@@ -1,0 +1,36 @@
+# specs/programme/june-surface-source-policy-v1.yaml — June surface source policy
+# (Stage 2B §6). PREPARED, EXECUTION REFUSED. Human-owned. Activation requires explicit
+# founder authorisation AND F3 having earned selection (F3 registration §2). F3 is built
+# and evaluated entirely from pre-June Tennis-Data; June F3 emission stays at zero.
+
+version: june-surface-source-policy-v1
+status: PREPARED_EXECUTION_REFUSED
+activation_conditions:
+  - F3 earns selection over F2 (else June surface is moot — F2 has no surface)
+  - explicit founder authorisation of THIS policy
+  - the June lockbox seal remains intact for model and evaluator code
+
+preferred_option: quarantined_projection_extractor
+projection_output_fields_ONLY:
+  - normalized UNORDERED player pair (frozenset of the two mapped CompetitorIds)
+  - match date
+  - validated surface (Hard/Clay/Grass/Carpet; else UNKNOWN)
+  - source/provenance digest
+required_proofs_before_execution:            # each a hard, testable gate
+  - Winner/Loser orientation CANNOT escape the extractor (column identity destroyed at read)
+  - swapping the source Winner and Loser cells produces BYTE-IDENTICAL output
+  - score, comment, result, odds and winner status are NEVER returned or logged
+  - output ordering cannot encode winner identity
+  - no row-level debug artefact contains outcome orientation
+  - the June lockbox remains sealed for model and evaluator code
+fallback_option: tournament_to_surface_registry
+  # a governed tournament->surface map, usable where it can be built WITHOUT outcome access
+  # and without a name heuristic (June Betfair competition names are largely null, so this
+  # is a fallback for the residual, not the primary route)
+selection_rule: the option is chosen on CONSTRUCTIBILITY and the proofs above — NEVER on
+  June performance (no June outcome or price informs the choice)
+
+prohibited_now:
+  - implementing the extractor
+  - running any June surface projection
+  - any June F3 prediction

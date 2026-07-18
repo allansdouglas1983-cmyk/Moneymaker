@@ -518,3 +518,25 @@ weakest in validation ~.70-.72). Same-day policy frozen: batch-update (12,182 af
 matches counted first; 911 OOF / 88 val). Alpha map: two confirmatory trials at .975
 exhaust the .05 budget (F3-vs-F2 powered: 32,212<=34,046; June M2 CONTINUE by design).
 No June outcome, no odds in F2, no ROI/CLV/P&L anywhere. make verify green (280 files).
+
+## Stage 2B confirmatory-integrity slice (2026-07-18)
+
+F3 authorised as the sole confirmatory challenger; scoring NOT run (frozen first).
+Confirmatory-evaluation integrity audit (docs/architecture/...): F2's K was OOF-selected,
+so nested chronological cross-fitting is REGISTERED (Design A) — warm-up <=2018 selects
+the 2019 block, each outer year re-selects on its past; confirmatory-eligible = ALL 34,038
+matches 2019-01..2026-05 (ATP 17,686 / WTA 16,352) >= required N 32,212 -> powered at
+planning sigma_d. (Nested-drop-2019 = 29,183 and validation-only = 4,935 are BOTH
+underpowered; recorded.) F3 surface Elo implemented (dual global+surface rating, shrinkage
+seed, unknown->global fallback, same-day batch; 6 tests) + immutable registration
+(K_surface in {16,24,32}, nested eval, decision rule frozen: PASS/CONTINUE/FAIL_FUTILITY/
+FAIL_HARM at delta 0.0007, conf 0.975, alpha 0.025). M1 gate spec frozen
+(specs/gates/probability-m1.yaml) — adequacy AND-gate, must NOT pass merely because F3
+beats F2; numeric bands ⟨PENDING FOUNDER⟩ (returned for review, never agent-derived).
+Calibration policy frozen (one-param temperature scaling, fold-safe, finalization only, no
+alpha). June-surface source policy PREPARED / EXECUTION REFUSED (unordered-pair projection
+proofs). Identity-correction ledger frozen (append-only, 0 auto-corrections — agent never
+guesses; 54 ambiguities documented unresolved, affect only June M2, not pre-June). Alpha
+ledger: F0/F1/F2 zero; F3-vs-F2 0.025; June M2 0.025; budget exhausted; F4+ none. make
+verify green (283 files). No June outcome; no odds in F2/F3; NO F3-vs-F2 confirmatory
+result computed or inspected.

@@ -1,0 +1,84 @@
+# specs/gates/probability-m1.yaml — Gate M1: probability adequacy (tennis probability
+# programme). Human-owned (CODEOWNERS specs/**). Frozen BEFORE F3 confirmatory results are
+# read (Stage 2B §4). STRUCTURE ONLY — no numeric leaf is invented by an agent; every
+# numeric boundary is either already pre-registered or is ⟨PENDING FOUNDER⟩ and returned
+# for founder review. Evaluated by the SPEC-093 deterministic evaluator; an LLM never
+# decides this gate.
+
+version: probability-m1
+gate_id: GATE-M1
+title: Probability adequacy — tennis fundamental model
+question: >-
+  Does the programme possess a lawful, reproducible and sufficiently well-calibrated
+  fundamental probability model that transfers through time?
+excludes: [market comparison, beating Betfair, EV, returns, CLV, staking]
+outcomes: [PASS, CONTINUE, FAIL_HARM, FAIL_FUTILITY]
+
+# M1 must NOT pass merely because F3 beats F2. Adequacy is an AND over independent items;
+# the F3-vs-F2 confirmatory result is ONE input, not the gate. If F3 does not earn
+# promotion, F2 may remain the selected model provided the adequacy items hold for F2.
+precedence:
+  - any_item_FAIL_HARM -> FAIL_HARM
+  - reproducibility_or_lawfulness_absent -> FAIL_HARM
+  - adequacy_items_unmet_after_evidence -> FAIL_FUTILITY
+  - adequacy_items_incomplete_or_underpowered -> CONTINUE
+  - all_adequacy_items_met_on_the_selected_calibrated_model -> PASS
+
+selected_model_rule: >-
+  M1 evaluates the SELECTED model's CALIBRATED output (temperature-scaling per
+  calibration-policy-v1) through an honest out-of-fold process. Selection is F3 if it
+  earns promotion (F3 registration §3), else F2.
+
+items:
+  - item_id: lawful_reproducible
+    requirement: source rights PASS within attested scope (Gate -1); run reproducible from
+      immutable manifests + seeds; provenance complete (source/identity/field-registry/
+      design versions)
+    on_false: FAIL_HARM
+  - item_id: honest_outer_fold_proper_scores
+    requirement: nested-crossfit OOF log loss and Brier for the selected calibrated model,
+      materially better than the structural null (ln 2)
+    on_false: FAIL_FUTILITY
+    boundary: minimum improvement over null — ⟨PENDING FOUNDER⟩ (return for review)
+  - item_id: chronological_validation_transfer
+    requirement: performance on the later untouched validation period does not materially
+      degrade vs development
+    on_false: FAIL_FUTILITY
+    boundary: max tolerated degradation — ⟨PENDING FOUNDER⟩
+  - item_id: calibration_in_the_large
+    requirement: calibrated model's in-the-large calibration within a pre-registered band
+    on_false: CONTINUE
+    boundary: band — ⟨PENDING FOUNDER⟩
+  - item_id: calibration_slope
+    requirement: calibrated model's slope within a pre-registered band around 1.0
+    on_false: CONTINUE
+    boundary: band — ⟨PENDING FOUNDER⟩
+  - item_id: reliability_by_band
+    requirement: reliability curve monotone and within CI of the diagonal by approved bands
+    on_false: CONTINUE
+  - item_id: temporal_stability
+    requirement: per-period cohort scores stable within a pre-registered tolerance
+    on_false: CONTINUE
+    boundary: tolerance — ⟨PENDING FOUNDER⟩
+  - item_id: atp_wta_cohort_stability
+    requirement: both tours meet the adequacy items (neither carried by the other)
+    on_false: CONTINUE
+  - item_id: cold_start_behaviour_characterised
+    requirement: prior-history cohorts (0/1-4/5-9/10-19/20+) reported; no cohort silently
+      degrades the aggregate; cold-start handled by the governed prior (no hidden exclusion)
+    on_false: CONTINUE
+  - item_id: coverage_and_exclusions_complete
+    requirement: full exclusion funnel; every eligible match accounted (SPEC-038); missing
+      predictions in the denominator
+    on_false: FAIL_HARM
+  - item_id: f3_vs_f2_confirmatory_recorded
+    requirement: the F3-vs-F2 confirmatory trial (alpha 0.025) has been evaluated and its
+      PASS/CONTINUE/FAIL recorded; selection follows its result — but M1 does not pass on
+      this item alone
+    on_false: CONTINUE
+
+numeric_thresholds_pending: >-
+  The ⟨PENDING FOUNDER⟩ boundaries above are NOT derived by an agent and NOT chosen from
+  whichever F2/F3 result looks convenient. They are returned for founder review and, once
+  declared, frozen as probability-m1 boundaries (a new version if changed later). Until
+  they are declared, M1 evaluation returns CONTINUE by construction.

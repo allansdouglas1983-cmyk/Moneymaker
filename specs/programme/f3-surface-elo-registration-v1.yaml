@@ -1,0 +1,80 @@
+# specs/programme/f3-surface-elo-registration-v1.yaml — IMMUTABLE F3 registration
+# (Stage 2B §2; founder-authorised as the next and ONLY confirmatory challenger).
+# Human-owned. Frozen BEFORE implementation-scoring. Changing anything after the first
+# confirmatory outcome is read is a new registration with multiplicity debited (SPEC-091).
+
+registration_id: EXP-STAGE2-F3-SURFACE-ELO-001
+registered_on: "2026-07-18"
+family: surface Elo (sport_tennis.surface_elo_family.SurfaceEloFamily; StageOneFamily seam)
+challenger_to: EXP-STAGE2-F2-GLOBAL-ELO-001 (global Elo baseline)
+
+model:
+  probability_equation: "P(a beats b) = 1 / (1 + 10 ** ((R_b - R_a) / 400))  (F2's equation)"
+  ratings: dual — a GLOBAL rating per competitor (updated on every match, K_global) and a
+    per-(competitor, surface) SURFACE rating (updated on that surface only, K_surface)
+  global_surface_relationship: SHRINKAGE at cold start — a surface rating is initialised,
+    at the player's FIRST appearance on that surface, to their CURRENT global rating;
+    thereafter it evolves independently on that surface. (Not independent-from-1500; not
+    continuously shrunk.)
+  supported_surfaces: {Hard: 1, Clay: 2, Grass: 3, Carpet: 4}
+  unknown_or_inconsistent_surface: code 0 (blank / Greenset / unrecognised) — the match
+    updates GLOBAL ratings only and F3 predicts it with the GLOBAL rating (fallback), so
+    F3 emits a prediction for EVERY eligible match and the paired F2/F3 set stays aligned
+    (no F3-only exclusions). Greenset (~31 rows) and any blank fall here.
+  initialization: global and surface both from ELO_INITIAL_RATING 1500.0 via the seed rule
+  atp_wta_separation: two fully independent runs (namespaces td-atp / td-wta)
+  cold_start: identical to F2 — governed prior, NO minimum-prior-match exclusion
+  update_rule: same-day BATCH for BOTH global and surface ratings (start-of-date ratings;
+    deltas applied after the date); row-permutation invariant (property-tested)
+  deterministic: no seeds required (integer-id, sorted iteration; ties -> exactly 0.5)
+  output_uncertainty: none per-match; interval statements via UTC-day block bootstrap in
+    evaluation (SPEC-090)
+
+candidate_set:                    # deliberately SMALL; NO broad grid / feature search
+  K_global: inherit each outer fold's F2-selected K (not re-searched in F3)
+  K_surface: [16, 24, 32]
+  selection: inner minimisation of mean OOF log loss on data strictly BEFORE each outer
+    block (nested chronological cross-fitting); ties -> smallest K_surface
+  # total F3 free choices per outer fold = 3 (K_surface only)
+
+evaluation:                       # confirmatory-evaluation-integrity-audit.md, design A
+  protocol: NESTED chronological cross-fitting; outer folds = calendar years 2019..2026-05;
+    warm-up <=2018 feeds ratings + the 2019 block's inner selection; each outer block's
+    K's chosen only on its past; one honest prediction per eligible match per family;
+    outer-fold + inner-selection provenance on every prediction
+  confirmatory_eligible: 34038 (ATP 17,686 / WTA 16,352) — >= required N 32,212 -> powered
+    at the planning sigma_d
+  same_matches_both_families: yes (F2 and F3 predict the identical eligible set)
+
+confirmatory_trial:               # Stage 2B §3 (founder-fixed)
+  endpoint: paired per-match log-score difference d_m = -ln p_F2(winner) + ln p_F3(winner)
+  primary_population: the overall registered population (ATP+WTA); ATP and WTA are
+    SECONDARY cohorts, reported but never selected-after-results
+  delta_nats: 0.0007
+  confidence: 0.975
+  alpha_charge: 0.025           # first confirmatory allocation of alpha_total=0.05
+  comparison_basis: RAW registered model probabilities (temperature scaling is a
+    finalization step, not part of the family-superiority comparison — §5)
+  decision_rule:                # FROZEN; never changed after seeing results
+    PASS: observed mean improvement >= delta AND 97.5% CI lower bound > 0 AND no
+      pre-registered harm/calibration refusal triggered
+    CONTINUE: point estimate potentially meaningful but CI includes zero, OR the honest
+      sample is underpowered
+    FAIL_FUTILITY: evidence rules out an improvement of delta under the pre-registered
+      futility procedure
+    FAIL_HARM: evidence supports material degradation
+
+abandonment_and_refusal:
+  refuse: any June row; any bookmaker-odds field; unlabelled/non-two-player race;
+    inconsistent per-runner surface code; registry-unlisted field
+  no_June_surface_needed: the pre-June F3 comparison uses only pre-June Tennis-Data
+    surface; June F3 emission stays blocked (June-surface source unauthorised — §6)
+
+versions:
+  source: tennis-data.co.uk vintage-2026-07-18 (manifest d9af2525…)
+  identity: sport_tennis.identity_bridge td-norm-v1 + identity-correction ledger (frozen
+    before confirmatory scoring)
+  field_registry: tennis-data-field-registry-v1 (SAFE_FOR_F3 = F2 fields + validated Surface)
+  label_policy: label-policy-v1-completed-only
+  constants: specs/programme/preregistration-constants-v1.yaml
+  calibration: specs/programme/calibration-policy-v1.yaml (finalization only)

@@ -1,0 +1,36 @@
+# specs/programme/alpha-consumption-ledger-v1.yaml — programme-level alpha ledger
+# (Stage 2B §8). Human-owned. alpha_total = 0.05 family-wise, rationed ONLY by the
+# existing multiplicity machinery. This ledger RESERVES allocations; a trial's alpha is
+# spent when its confirmatory result is read.
+
+version: alpha-consumption-ledger-v1
+alpha_total: "0.05"          # preregistration-constants-v1
+rationing: spent = (1 - confidence) * (prior_trials + 1) <= alpha_total  (SPEC-091/gates-v1)
+
+allocations:
+  - id: F0-market-yardstick
+    alpha_charge: "0.000"
+    note: deterministic June market-probability producer; no superiority claim
+  - id: F1-structural-null
+    alpha_charge: "0.000"
+    note: harness leakage proof; no superiority claim
+  - id: F2-global-elo
+    alpha_charge: "0.000"
+    note: REGISTERED BASELINE; makes no superiority claim; consumes no confirmatory alpha
+  - id: F3-vs-F2-confirmatory
+    alpha_charge: "0.025"      # confidence 0.975
+    status: RESERVED (not yet read)
+    powered: "yes at planning sigma_d (34,038 >= 32,212)"
+  - id: June-M2-market-comparison
+    alpha_charge: "0.025"      # confidence 0.975; exhausts the budget
+    status: RESERVED (June sealed; underpowered at 1,218 eligible -> CONTINUE by design)
+
+remaining_after_reservations: "0.000"
+
+rules:
+  - F4 and later families receive NO confirmatory alpha under this registration
+  - do NOT reactivate F4 merely because F3 fails
+  - any future model-family programme requires a NEWLY governed registration and a new
+    evidence period (new lockbox; multiplicity reset is a human-controlled spec change)
+  - calibration (temperature scaling) is a probability-quality correction, NOT a
+    superiority trial — it receives no alpha

@@ -132,3 +132,18 @@ class TestCorrections:
         )
         with pytest.raises(ValueError):
             apply_corrections(r, [c])
+
+
+class TestCorrectionLedger:
+    def test_loads_the_frozen_governed_ledger_empty(self) -> None:
+        from sport_tennis.identity_bridge import load_correction_ledger
+
+        corrections = load_correction_ledger("specs/evidence/identity-correction-ledger-v1.yaml")
+        assert corrections == ()  # append-only, zero human corrections applied yet
+
+    def test_applying_loaded_ledger_is_a_noop_when_empty(self) -> None:
+        from sport_tennis.identity_bridge import load_correction_ledger
+
+        r = _bridge(["Alcaraz C."], [], ["Carlos Alcaraz"])
+        r2 = apply_corrections(r, load_correction_ledger("specs/evidence/identity-correction-ledger-v1.yaml"))
+        assert r2.mappings == r.mappings and r2.corrections == ()

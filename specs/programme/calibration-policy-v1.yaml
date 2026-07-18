@@ -1,0 +1,34 @@
+# specs/programme/calibration-policy-v1.yaml — FROZEN calibration procedure (Stage 2B §5).
+# Human-owned. Frozen BEFORE F3 results are known. ONE permitted method; no method contest.
+
+version: calibration-policy-v1
+frozen_on: "2026-07-18"
+motivation: F2's measured OOF calibration slope ~0.83-0.85 shows material overconfidence
+  (reliability: underdogs win more than predicted). This is corrected, not ignored, and
+  not shopped among methods.
+
+method: one-parameter TEMPERATURE SCALING on model logits
+  # p_cal_i = softmax(logit_i / T) over the choice set; T > 0 a single scalar.
+  # For a two-runner choice set: logit = ln(p/(1-p)); calibrated p = sigma(logit / T).
+forbidden:
+  - isotonic regression
+  - Platt vs temperature (or any) method contest / alternative-method search
+  - per-cohort or per-surface separate temperatures in v1 (one T per fitted process)
+fitting:
+  where: strictly WITHIN each outer training process (nested crossfit) — T is fitted on
+    the outer-training data only, never on the outer-evaluation matches
+  objective: minimise mean log loss of the calibrated probability on outer-training data
+  provenance: every calibrated prediction carries the fold's fitted T and its
+    training-through date
+outputs:
+  normalization: calibrated probabilities remain normalised within the choice set
+  retention: BOTH raw and calibrated predictions retained (raw is the comparison basis)
+
+roles:
+  family_comparison: the F3-vs-F2 confirmatory comparison (§3) uses RAW registered model
+    probabilities as primary — temperature scaling is NOT part of that superiority trial
+  finalization: after F2 or F3 is SELECTED, the single frozen temperature-scaling is
+    applied as the model-finalization step; M1 cannot pass until the selected model's
+    CALIBRATED output is evaluated through an honest out-of-fold process
+alpha: NONE — calibration is a pre-registered probability-quality correction, not a
+  model-family superiority trial; it receives no alpha allocation

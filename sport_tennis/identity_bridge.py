@@ -47,6 +47,7 @@ __all__ = [
     "normalize_name",
     "build_bridge",
     "apply_corrections",
+    "load_correction_ledger",
 ]
 
 NORMALIZATION_VERSION = "td-norm-v1"
@@ -247,6 +248,30 @@ def build_bridge(
             )
         )
     return BridgeResult(mappings=tuple(mappings), unresolved=tuple(sorted(unresolved, key=lambda u: (u.reason.value, u.name))))
+
+
+def load_correction_ledger(path: str) -> tuple[IdentityCorrection, ...]:
+    """Load the append-only governed identity-correction ledger
+    (specs/evidence/identity-correction-ledger-v1.yaml). Returns the applied corrections
+    in file order (an empty tuple when none have been human-entered yet). An agent never
+    writes this file — corrections are per-case, evidence-backed, human-reviewed entries.
+    """
+    import yaml
+
+    with open(path, encoding="utf-8") as fh:
+        doc = yaml.safe_load(fh) or {}
+    out: list[IdentityCorrection] = []
+    for row in doc.get("corrections") or []:
+        out.append(
+            IdentityCorrection(
+                subject=CompetitorId(row["subject"]),
+                action=row["action"],
+                detail=row["detail"],
+                authorised_by=row["reviewer"],
+                rationale=row["rationale"],
+            )
+        )
+    return tuple(out)
 
 
 def apply_corrections(result: BridgeResult, corrections: Sequence[IdentityCorrection]) -> BridgeResult:
