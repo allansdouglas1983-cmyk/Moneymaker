@@ -44,6 +44,7 @@ class TestCommitOnce:
         # (quiet since t=0) -> commit at the first event state covering t>=700.
         assert d.commit_pt_ms == 700_000
         assert d.market_time_ms_at_commit == 1_000_000
+        assert d.decision_digest is not None and d.book_state_digest is not None
         assert d.decision_digest.startswith("sha256:") and d.book_state_digest.startswith("sha256:")
 
     def test_revision_during_dwell_resets_dwell(self) -> None:
@@ -52,7 +53,7 @@ class TestCommitOnce:
         tl = [ev(0, 1000), ev(680, 1050), ev(750, 1050), ev(900, 1050)]
         d = commit_once_decision(tl, first_inplay_pt_ms=1_100_000)
         assert d.committed
-        assert d.commit_pt_ms >= 740_000
+        assert d.commit_pt_ms is not None and d.commit_pt_ms >= 740_000
         assert d.market_time_ms_at_commit == 1_050_000
 
     def test_commit_once_holds_through_later_revisions(self) -> None:

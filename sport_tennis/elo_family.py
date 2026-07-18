@@ -21,6 +21,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Mapping, Sequence
 
+from sport_core.clustering import ChronologyKey
+
 from l4_pricing.stage_one import StageOneFitRefusal
 
 if TYPE_CHECKING:
@@ -36,7 +38,7 @@ def elo_win_probability(rating_a: float, rating_b: float) -> float:
     """The registered equation. Equal ratings give exactly 0.5."""
     if rating_a == rating_b:
         return 0.5
-    return 1.0 / (1.0 + 10.0 ** ((rating_b - rating_a) / 400.0))
+    return float(1.0 / (1.0 + 10.0 ** ((rating_b - rating_a) / 400.0)))
 
 
 @dataclass(frozen=True)
@@ -69,7 +71,7 @@ class GlobalEloFamily:
         max_iter: int,  # noqa: ARG002  # pylint: disable=unused-argument
     ) -> _FittedElo:
         ratings: dict[int, float] = {}
-        by_day: dict[object, list["Race"]] = defaultdict(list)
+        by_day: defaultdict[ChronologyKey, list["Race"]] = defaultdict(list)
         for race in races:
             by_day[race.cluster.chronology].append(race)
         for day in sorted(by_day):
