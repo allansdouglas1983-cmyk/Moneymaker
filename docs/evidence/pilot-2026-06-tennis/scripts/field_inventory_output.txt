@@ -1,0 +1,62 @@
+scanned 1205 files; market_types_seen=['COMBINED_TOTAL', 'HANDICAP', 'MATCH_ODDS', 'NUMBER_OF_SETS', 'PLAYER_A_WIN_A_SET', 'PLAYER_B_WIN_A_SET', 'SET_BETTING', 'SET_CORRECT_SCORE', 'SET_WINNER', 'TOURNAMENT_WINNER']
+
+===== TOP-LEVEL (mcm message) (4 distinct keys) =====
+  clk                      types=['str']                    status=['-'] n=2131746
+  mc                       types=['list']                   status=['-'] n=2131746
+  op                       types=['str']                    status=['-'] n=2131746
+  pt                       types=['int']                    status=['-'] n=2131746
+
+===== mc[] (market change) (4 distinct keys) =====
+  id                       types=['str']                    status=['?', 'CLOSED', 'OPEN', 'SUSPENDED'] n=2466399
+  marketDefinition         types=['dict']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  rc                       types=['list']                   status=['?', 'OPEN', 'SUSPENDED'] n=2418913
+  tv                       types=['float']                  status=['?', 'CLOSED', 'OPEN', 'SUSPENDED'] n=359385
+
+===== marketDefinition (29 distinct keys) =====
+  betDelay                 types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  bettingType              types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  bspMarket                types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  bspReconciled            types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  complete                 types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  countryCode              types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=18456
+  crossMatching            types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  discountAllowed          types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  eventId                  types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  eventName                types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  eventTypeId              types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  inPlay                   types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  marketBaseRate           types=['float']                  status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  marketTime               types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  marketType               types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  name                     types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  numberOfActiveRunners    types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  numberOfWinners          types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  openDate                 types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  persistenceEnabled       types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  regulators               types=['list']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  runners                  types=['list']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  runnersVoidable          types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  settledTime              types=['str']                    status=['CLOSED'] n=1960
+  status                   types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  suspendTime              types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  timezone                 types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  turnInPlayEnabled        types=['bool']                   status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+  version                  types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=78508
+
+===== marketDefinition.runners[] (7 distinct keys) =====
+  adjustmentFactor         types=['float']                  status=['CLOSED', 'OPEN', 'SUSPENDED'] n=2457
+  hc                       types=['float']                  status=['CLOSED', 'OPEN', 'SUSPENDED'] n=3052818
+  id                       types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=3182081
+  name                     types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=3182081
+  removalDate              types=['str']                    status=['CLOSED', 'SUSPENDED'] n=483
+  sortPriority             types=['int']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=3182081
+  status                   types=['str']                    status=['CLOSED', 'OPEN', 'SUSPENDED'] n=3182081
+
+===== rc[] (runner change / prices) (7 distinct keys) =====
+  batb                     types=['list']                   status=['?', 'OPEN', 'SUSPENDED'] n=3391636
+  batl                     types=['list']                   status=['?', 'OPEN', 'SUSPENDED'] n=2637565
+  hc                       types=['float']                  status=['?', 'OPEN', 'SUSPENDED'] n=809628
+  id                       types=['int']                    status=['?', 'OPEN', 'SUSPENDED'] n=4455131
+  ltp                      types=['float']                  status=['?', 'OPEN', 'SUSPENDED'] n=4455131
+  trd                      types=['list']                   status=['?', 'OPEN', 'SUSPENDED'] n=475208
+  tv                       types=['float']                  status=['?', 'OPEN', 'SUSPENDED'] n=4455131
