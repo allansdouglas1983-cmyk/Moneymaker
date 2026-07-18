@@ -1,0 +1,81 @@
+# specs/programme/f2-global-elo-registration-v1.yaml — IMMUTABLE F2 registration
+# (Stage 2B §4; founder-authorised). Human-owned. Changing ANYTHING here after the
+# first outcome-scored run is a new registration with multiplicity debited (SPEC-091).
+
+registration_id: EXP-STAGE2-F2-GLOBAL-ELO-001
+registered_on: "2026-07-18"
+family: global Elo (sport_tennis.elo_family.GlobalEloFamily; seam: l4_pricing.stage_one.StageOneFamily)
+evaluator_path: l4_pricing.crossfit.cross_fit — the model-independent orchestrator; NO special path
+
+model:
+  probability_equation: "P(a beats b) = 1 / (1 + 10 ** ((R_b - R_a) / 400))"
+  rating_scale: { initial: 1500.0, divisor: 400, base: 10 }
+  initialization_policy: every competitor enters at 1500.0 (one governed prior)
+  cold_start: identical to initialization — NO minimum-prior-match exclusion (founder §5);
+    cold-start matches retained and reported by prior-history cohort 0/1-4/5-9/10-19/20+
+  atp_wta_separation: two fully independent runs (separate identity namespaces td-atp /
+    td-wta, separate ratings, separate reports); no cross-tour pooling
+  update_rule: same-day BATCH (frozen ordering invariant, Stage 2B §5) — all matches on
+    a UTC calendar date expected-scored against START-of-date ratings, deltas applied
+    together after the date; row-permutation invariant (property-tested); same-day
+    repeat players handled by the same batch rule, tagged and reported, never ordered
+    by file/row position
+  deterministic_tie_breaking: iteration sorted by (chronology, race_id); runner pair
+    sorted by runner_id; equal ratings give exactly 0.5
+
+tuning:
+  parameter: K factor only
+  predeclared_grid: [16, 24, 32]
+  selection_rule: minimum mean OOF log loss over the OOF window (2019-01-01..2025-05-31),
+    per tour, computed from orchestrator OOF rows; ties -> smallest K
+  selection_data: DEVELOPMENT ONLY — validation never participates in selection
+
+folds_and_windows:                # Design B, frozen (f2-development-design-selection.md)
+  chronological_folds: expanding-window per UTC-day cluster (sport_core.clustering
+    calendar_day_assignment("tennis", date); cross_fit fold semantics)
+  warm_up: through 2018-12-31 (in training windows; predictions there are not endpoints)
+  oof_window: 2019-01-01 .. 2025-05-31
+  validation: 2025-06-01 .. 2026-05-31, PREQUENTIAL — day-by-day chronological
+    prediction with ratings updating inside the block; K and every policy frozen from
+    development; validation never tunes anything
+  hard_boundary: no data on or after 2026-06-01 in any fit, selection, or calibration
+
+exclusion_policy:                 # label-policy-v1; every exclusion visible
+  include: normally completed singles with exactly one unambiguous sporting winner,
+    lawful pre-June rows, resolved tour-namespace identity
+  exclude_with_reasons: retirement, walkover, awarded, disqualified, ambiguous outcome,
+    conflicting duplicate (both rows), malformed identity
+  accounting: universe in = OOF rows + typed exclusions (orchestrator invariant)
+
+outputs:
+  calibration_policy: NONE FITTED in v1 — raw Elo probabilities; calibration MEASURED
+    and reported (in-the-large, slope, reliability bands), never adjusted
+  uncertainty: no per-match uncertainty in v1; interval statements only via UTC-day
+    clustered block bootstrap in evaluation reports (SPEC-090 machinery)
+  metrics_primary: mean OOF / validation log loss (nats)
+  metrics_secondary: binary Brier; calibration-in-the-large; calibration slope;
+    reliability by probability band; ATP/WTA split; calendar-period cohorts;
+    cold-start prior-history cohorts; coverage + full exclusion funnel;
+    K-selection stability by period cohort
+  forbidden: ROI, P&L, CLV, betting simulation, any market-relative claim (no Betfair
+    baseline exists pre-June — baseline-availability-and-gate-roles.md)
+
+abandonment_and_refusal:
+  refuse: any June row; any bookmaker-odds field; unlabelled training race; non-two-
+    player choice set; unresolved identity in training; registry-unlisted field
+  abandon_defect: OOF mean log loss not better than the structural null's ln 2 —
+    indicates a harness or data defect, investigated as such, never shipped
+  endpoint: F2 is the registered BASELINE family — it consumes no model-vs-model
+    superiority alpha itself; confirmatory comparisons (F3-vs-F2) are separately
+    registered with the alpha-consumption map produced first (Stage 2B §9)
+
+versions_and_manifests:
+  source: tennis-data.co.uk vintage-2026-07-18 (manifest sha256 d9af2525…)
+  identity: sport_tennis.identity_bridge td-norm-v1
+  field_registry: tennis-data-field-registry-v1 (SAFE_FOR_F2_GLOBAL_ELO set only)
+  label_policy: label-policy-v1-completed-only
+  eligibility: JUNE_F2F3_ELIGIBILITY_MANIFEST sha256 96bd1f12… (June: REPORT-ONLY
+    context; June is NOT touched by this registration)
+  design: Design B (docs/architecture/f2-development-design-selection.md)
+  constants: specs/programme/preregistration-constants-v1.yaml
+  outcome_access: pre-June scope, founder decision 4 (2026-07-18); experiment-bound

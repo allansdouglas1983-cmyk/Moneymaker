@@ -221,3 +221,18 @@ consistency, calibration/coverage transfer, catastrophic contradiction; wide int
 market-comparison block for M2; underpowered June results stay CONTINUE; no data month
 is bought for volume; any further ADVANCED month is proposed only after M1 to close a
 derived, named gap.
+
+---
+
+## Founder amendment 3 (2026-07-18): comparator-availability wording (governed, outcome-blind)
+
+§2's primary metric (combined-vs-market paired score) and the δ = 0.0007 endpoint apply
+ONLY where the governed Betfair `p_market_info` genuinely exists — June 2026 (M2). For
+pre-June periods no Betfair baseline exists: there, δ and the derived-N table
+(26,600 / 41,039) govern **model-vs-model** paired comparisons only (F3-vs-F2 and other
+registered model-vs-model endpoints), and no market-relative claim may be made at M1.
+Tennis-Data bookmaker-odds fields are never a proxy for `p_market_info`, whose frozen
+definition is unchanged. June M2 results at the 1,218-market eligible count are
+CONTINUE/INCONCLUSIVE when underpowered. Full statement:
+`docs/architecture/baseline-availability-and-gate-roles.md`. This amendment is
+wording/roles only: no endpoint, boundary, or metric definition changed.
