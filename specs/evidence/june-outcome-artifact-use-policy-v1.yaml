@@ -1,0 +1,58 @@
+# specs/evidence/june-outcome-artifact-use-policy-v1.yaml — Stage 2E §2. Human-owned
+# (CODEOWNERS specs/**). Frozen BEFORE the burn, before any June outcome is visible. Resolves
+# the Stage-A / Stage-B purpose boundary for the ONE immutable outcome artifact the burn
+# creates. It does NOT authorise a second read and does NOT relax the single-opening invariant.
+#
+# Relationship to the v2 seal: lockbox-june-2026-tennis-v2 authorises exactly ONE GATE-1
+# READ (scope JUNE_M1_TRANSFER, digest pinned in l8_evidence.tennis_outcomes as
+# JUNE_M1_SEAL_AUTHORISATION_DIGEST). That read is driven by M1. This record governs the
+# downstream USE of the resulting immutable, hash-bound artifact — which is where the
+# conditional Stage-B reuse is expressed. The v2 file is NOT edited (its digest is load-bearing
+# in code); this record is the added governed amendment the founder's §2 required.
+
+policy_id: JUNE-OUTCOME-ARTIFACT-USE-v1
+frozen_on: "2026-07-18"
+authority: founder directive (Stage 2E §2)
+outcome_blind: true                # frozen before any June outcome is visible
+read_authorisation: lockbox-june-2026-tennis-v2 (one GATE-1 read; scope JUNE_M1_TRANSFER)
+
+the_artifact:
+  what: the single immutable, SHA-256-hash-bound June outcome artifact created by the one burn.
+  read_count: EXACTLY ONCE. The raw June lockbox is opened once; every downstream computation
+    (M1 and any permitted Stage-B) runs from this immutable artifact and NEVER reopens the raw
+    lockbox.
+  scope_of_content: only the minimum governed outcome fields for the frozen prospective-M1 /
+    conditional-Stage-B universe (the 1,213-market frozen June M1 transfer manifest).
+
+permitted_use_1_M1:
+  use: M1 external-transfer evaluation of the FROZEN affine-calibrated F2 model.
+  conditional: NO — always permitted (this is the reason for the read).
+
+conditional_permitted_use_2_stage_b:
+  use: SPEC-032 June market-combination DEVELOPMENT (nested OOF diagnostic + final pooled
+    alpha,beta) reusing THIS artifact.
+  condition: ONLY if the frozen SPEC-093 M1 evaluator returns PASS. On any non-PASS M1 outcome
+    this use is forbidden and Stage B does not run.
+  reuse_rule: Stage B reuses this same immutable hash-bound artifact; it MUST NOT reopen the
+    raw lockbox (the seal is already burned).
+
+prohibited:                        # regardless of M1 outcome
+  - M2 confirmation of any kind (June is not the M2 block; Stage C is a future untouched stream)
+  - model-family selection; F2 or calibration changes; F3; F4
+  - EV, ROI, P&L, CLV, staking, or betting selections
+  - identity repair / new guessed identity corrections to change coverage
+  - retrospective eligibility changes
+  - any use outside the frozen June intersection (the 1,213-market M1 manifest / the governed
+    Stage-B intersection derived from it)
+  - a second raw-lockbox read for any purpose
+
+invariants:
+  - the lockbox is read exactly once; BURNED is absorbing (SPEC-092)
+  - no model, calibration parameter, combination coefficient, eligibility policy, benchmark or
+    feature may change after the artifact becomes visible
+  - an LLM never decides M1 or any gate (SPEC-093 deterministic evaluator)
+
+records:
+  amendment: june-evidence-plan-amendment-v1 (Stage A/B/C)
+  m1_manifest: docs/evidence/stage2d-june-m1-transfer/ (digest d192b4e3…)
+  seal_v2: lockbox-june-2026-tennis-v2 (digest f552c7bf…)
