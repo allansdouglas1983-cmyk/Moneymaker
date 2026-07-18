@@ -190,3 +190,18 @@
   - SPEC-023
   - SPEC-103
   - STAGE2-tennis-preregistration
+- id: DR-TENNIS-RESULTS-001-ADDENDUM-A
+  title: Founder strategy refinement 2026-07-18 — zero-cost-first routing (Betfair BASIC
+    outcome pilot + Tennis-Data enrichment permission) before any paid provider
+  classification: STRATEGY-NOTE
+  status: RECORDED
+  requested: 2026-07-18
+  request: docs/procurement/results-data-gate-minus1-decision-tree.md
+  notes:
+  - Betfair BASIC May-2026 sufficiency pilot prepared (docs/procurement/betfair-basic-may-2026-pilot.md);
+    price must display GBP 0 or STOP
+  - Tennis-Data permission email drafted (docs/procurement/provider-enquiry-tennis-data.md);
+    not approved until written answer in rights registry
+  - paid fallbacks prepared, not purchased (docs/procurement/paid-fallback-results-providers.md)
+  - Sackmann/Tennis Abstract + scraping-derived sources remain prohibited from the deployable path
+  - Goalserve/enterprise feeds deferred on cost

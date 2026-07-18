@@ -430,3 +430,21 @@ RESULTS-001** filed (11-point longitudinal-results licensing; silence never perm
 non-commercial never deployable). Readiness: YES WITH BLOCKERS — remaining: founder
 declares delta/sigma_d/W(+revision-response policy); DR-TENNIS-RESULTS-001 returns +
 Gate -1; F0/F1 harness authorised and unblocked. NO June outcome was read at any point.
+
+## Zero-cost-first results routing prepared (2026-07-18)
+
+Founder direction executed as preparation only — nothing purchased, downloaded, or
+subscribed; all portal interaction remains founder-only (ADR 0015). Prepared:
+(1) Betfair BASIC May-2026 GBP-0 sufficiency pilot runbook + exact portal selections +
+stop-if-not-zero rule + the 8-point verification protocol (terminal WINNER/LOSER,
+void handling, May-June selection-id stability, singles classification, chronological
+completeness, extractor compatibility, M-only dedup, exclusion retention) — outcome
+reads via the governed extractor under a pilot authorisation, pre-June scope, June
+sealed throughout; BASIC scope-capped to global Elo / outcome-only BT / recency counts;
+proposed backfill 2021-01..2026-05 with cold-start audit gating anything earlier.
+(2) Tennis-Data.co.uk permission email draft (8 explicit permissions; silence never
+permission; nothing ingested until rights registry entry). (3) Paid fallbacks prepared
+not purchased: SportsDataAPI free/$19.99 + API-Tennis $40/mo (8+2 written questions,
+trial needs founder approval). (4) Updated Gate -1 decision tree
+(docs/procurement/results-data-gate-minus1-decision-tree.md). F0/F1 harness work
+remains authorised and unblocked in parallel.
