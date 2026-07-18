@@ -1,0 +1,35 @@
+{
+ "atp_count": 592,
+ "bundle_sha256": "37e43f64a65fd89ac3ba03263f224f2c23acb9ee5a93f995367a951bc2906347",
+ "calibration_params": {
+  "ATP": {
+   "intercept": 0.025399,
+   "temperature": 1.218638
+  },
+  "WTA": {
+   "intercept": 0.029204,
+   "temperature": 1.150681
+  }
+ },
+ "calibration_provenance": "calibration-policy-v2",
+ "exclusions": [],
+ "generated_from": {
+  "eligible_f2_rows": 1213,
+  "f3_report": "/tmp/claude-0/-home-user-Moneymaker/b09554bc-9729-5d86-bb7c-43d4f555802d/scratchpad/tennis-data/F3_CONFIRMATORY_REPORT.json",
+  "identity_policy": "td-norm-v1",
+  "june_streams_root": "/tmp/claude-0/-home-user-Moneymaker/b09554bc-9729-5d86-bb7c-43d4f555802d/scratchpad/pilot-data/extracted/ADVANCED/2026/Jun",
+  "rating_model": "F2-global-elo-v1 (same-day batch, cold-start=1500.0)",
+  "tennis_data_vintage": "vintage-2026-07-18",
+  "transfer_manifest": "/home/user/Moneymaker/docs/evidence/stage2d-june-m1-transfer/JUNE_M1_TRANSFER_MANIFEST.jsonl"
+ },
+ "k_global_by_tour": {
+  "ATP": 24.0,
+  "WTA": 24.0
+ },
+ "manifest_tour_match": true,
+ "n_markets": 1213,
+ "n_missing_selection_join": 0,
+ "n_missing_stream": 0,
+ "tour_mismatch_vs_manifest": [],
+ "wta_count": 621
+}

@@ -650,3 +650,26 @@ pre-burn checkpoint is returned AND the founder issues "BURN JUNE STAGE A". Deli
 REMAINING before the checkpoint is complete: build the real 1,213-market outcome-blind prediction
 bundle (F2 prequential + selection-id↔identity from pre-off June streams); atomic one-time
 extraction + restart-safety; full dry-run + make verify/mutation; then the §7 checkpoint return.
+
+## Stage 2E pre-burn (part 2): atomic extraction, Stage-B gating, real bundle, dry-run (2026-07-18)
+
+Completed the reversible pre-burn build (burn still WITHHELD pending "BURN JUNE STAGE A"):
+- §4 real bundle: docs/evidence/stage2e-june-m1-bundle/ — 1,213 outcome-blind F2 affine-calibrated
+  predictions (ATP 592, WTA 621; digest 37e43f64…); independently verified outcome-blind (no
+  winner/status/settled token; built only from pre-off OPEN marketDefinitions + pre-June ratings);
+  5 mixed-tour homonyms stay refused.
+- §5 l8_evidence/june_stage_a_extraction.py: requirement A (durable burn record fsync'd BEFORE the
+  one raw read; recovery finalizes a complete artifact and NEVER re-reads raw; else typed incident)
+  + requirement B (immutable artifact; Stage-B needs exact use-policy digest 84efd4a2… + a genuine
+  tokened M1PassAttestation bound to the artifact; any non-PASS/mismatch/forgery -> structurally
+  unreachable; no raw reference on the Stage-B path). 16 tests.
+- l8_evidence/june_m1_harness.py: the scoring join (winner selection-id -> designated competitor
+  by ID; unknown/mismatch refuse; deterministic scorecard, 500-support flags). 9 tests.
+- l8_evidence/june_stage_a_driver.py: the exact burn wiring (bundle load+digest, governed
+  JUNE_M1_TRANSFER authorisation, extractor scoped to the 1,213). Only run_stage_a_burn reads June;
+  everything else outcome-blind. 3 real-bundle readiness tests.
+- §6 dry-run: synthetic end-to-end proves the artifact regenerates the M1 scorecard byte-identically
+  and the raw lockbox is never reopened; a fresh seal stays uncontaminated.
+Verify green: spec coverage 44 IDs; ruff ARG clean; 1900 unit/integration/property/stateful/
+failure-injection tests + 11 replay + quarantine pass; ruff+mypy --strict clean on all new modules.
+June lockbox UNSPENT; no outcome read.
