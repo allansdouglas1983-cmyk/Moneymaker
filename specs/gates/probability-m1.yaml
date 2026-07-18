@@ -82,3 +82,32 @@ numeric_thresholds_pending: >-
   whichever F2/F3 result looks convenient. They are returned for founder review and, once
   declared, frozen as probability-m1 boundaries (a new version if changed later). Until
   they are declared, M1 evaluation returns CONTINUE by construction.
+
+# --- Founder M1 numeric-band amendment (2026-07-18), frozen BEFORE F3 results ---
+# All bands are probability-quality requirements only; they assert NO economic value and
+# NO superiority to Betfair. Evaluated on the SELECTED model's fold-safe TEMPERATURE-
+# CALIBRATED output. ln(2) = 0.6931471805599453.
+numeric_bands_v1:
+  frozen_on: "2026-07-18"
+  overall:
+    log_loss_lt: "ln2"
+    brier_lt: 0.25
+    calibration_in_the_large_logit_in: [-0.02, 0.02]
+    calibration_slope_in: [0.90, 1.10]
+    valid_prediction_coverage_ge: 0.95
+  per_tour:               # ATP and WTA separately
+    log_loss_lt: "ln2"
+    calibration_in_the_large_logit_in: [-0.03, 0.03]
+    calibration_slope_in: [0.85, 1.15]
+    valid_prediction_coverage_ge: 0.90
+  temporal_transfer:
+    validation_minus_oof_log_loss_le_nats: 0.01
+    no_annual_block_ge_1000_preds_with_log_loss_ge: "ln2"
+  reliability:
+    adaptive_band_min_predictions: 500
+    max_abs_obs_minus_pred_win_rate: 0.05
+    smaller_bands_are_diagnostic_only: true
+  cold_start:
+    cohorts_included_and_reported: true
+    no_automatic_prior_match_exclusion: true
+    cohort_ge_500_log_loss_gt_continue_threshold: "ln2 + 0.02"  # -> CONTINUE, not silent removal

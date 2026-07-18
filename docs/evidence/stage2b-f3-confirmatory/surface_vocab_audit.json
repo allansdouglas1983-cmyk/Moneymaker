@@ -1,0 +1,20 @@
+{
+ "mapping_policy": {
+  "Clay": "KNOWN:2",
+  "Grass": "KNOWN:3",
+  "Hard": "KNOWN:1"
+ },
+ "mapping_policy_digest": "sha256:29b3df676699c939cb2fb18ae5a09d95f1ee3987f60140a4a8486a51041349fb",
+ "note": "Greenset and <BLANK> retain the registered global fallback (code 0); no string heuristic reinterprets any label; policy is frozen pre-scoring",
+ "raw_surface_label_counts": {
+  "Clay": 10210,
+  "Grass": 3612,
+  "Hard": 20224
+ },
+ "registered_known": {
+  "Carpet": 4,
+  "Clay": 2,
+  "Grass": 3,
+  "Hard": 1
+ }
+}
