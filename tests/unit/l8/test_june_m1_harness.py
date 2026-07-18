@@ -153,3 +153,86 @@ class TestM1Verdict:
     def test_insufficient_overall_support_never_passes(self) -> None:
         v = evaluate_m1_verdict(_card(overall=_block(n=100, supported=False)))
         assert v["verdict"] != "PASS"
+
+
+class TestMetricsGoldenValues:
+    """Pin exact SPEC-097 metric arithmetic (kills log-loss/brier/cil/slope mutations)."""
+
+    def test_metrics_exact(self) -> None:
+        from l8_evidence.june_m1_harness import _metrics
+        m = _metrics([(0.6, 1), (0.4, 0), (0.7, 0), (0.3, 1), (0.8, 1), (0.55, 0), (0.2, 0), (0.9, 1)])
+        assert m == {"n": 8, "log_loss": 0.597469, "brier": 0.211563,
+                     "cal_in_large": -0.225956, "cal_slope": 0.931158}
+
+    def test_metrics_empty(self) -> None:
+        from l8_evidence.june_m1_harness import _metrics
+        assert _metrics([]) == {"n": 0}
+
+    def test_scorecard_exact_values_and_structure(self) -> None:
+        rows = [_pred(f"1.{i}", tour="ATP" if i < 3 else "WTA", band="20+" if i % 2 == 0 else "1-4",
+                      day=f"2026-06-0{i+1}") for i in range(5)]
+        outs = {r.market_id: _outcome(r.market_id, 11 if i % 2 == 0 else 22) for i, r in enumerate(rows)}
+        scored, _ = score_bundle(rows, outs)
+        card = m1_scorecard(scored, min_support=3)
+        assert card["n_scored"] == 5
+        assert card["n_utc_day_clusters"] == 5
+        assert card["per_tour"]["ATP"]["n"] == 3 and card["per_tour"]["ATP"]["supported"] is True
+        assert card["per_tour"]["WTA"]["n"] == 2 and card["per_tour"]["WTA"]["supported"] is False
+        assert set(card["prior_history_cohorts"]) == {"20+", "1-4"}
+
+
+class TestJoinHardening:
+    """Kill Eq->Is (small-int interning) and !=->> (lexical) survivors with real-scale values."""
+
+    def test_large_selection_ids_map_by_value_not_identity(self) -> None:
+        # 9632014 / 24966308 are NOT interned; == must hold, `is` would not.
+        p = _pred("1.1", sel_des=9632014, sel_oth=24966308)
+        assert score_market(p, _outcome("1.1", 9632014)).y_designated == 1
+        assert score_market(p, _outcome("1.1", 24966308)).y_designated == 0
+        with pytest.raises(HarnessJoinError):
+            score_market(p, _outcome("1.1", 9999999))   # unknown large id refuses
+
+    def test_market_mismatch_refuses_both_lexical_directions(self) -> None:
+        with pytest.raises(HarnessJoinError):   # outcome id lexically GREATER
+            score_market(_pred("1.1"), _outcome("1.2", 11))
+        with pytest.raises(HarnessJoinError):   # outcome id lexically SMALLER
+            score_market(_pred("1.5"), _outcome("1.2", 11))
+
+
+class TestVerdictBoundaries:
+    """Boundary-exact tests kill band-constant NumberReplacer + comparison-operator survivors."""
+
+    def test_cal_pass_band_edges(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.02)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.0201)))["verdict"] == "CONTINUE"
+
+    def test_cal_harm_band_edges(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.05)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.0501)))["verdict"] == "FAIL_HARM"
+        # negative side symmetric
+        assert evaluate_m1_verdict(_card(overall=_block(cil=-0.0501)))["verdict"] == "FAIL_HARM"
+
+    def test_slope_band_edges(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(slope=0.90)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(slope=0.8999)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(overall=_block(slope=1.10)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(slope=1.1001)))["verdict"] == "CONTINUE"
+
+    def test_brier_edge(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.2499)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.25)))["verdict"] == "FAIL_HARM"
+
+    def test_log_loss_edge(self) -> None:
+        assert evaluate_m1_verdict(_card(overall=_block(ll=_LN2 - 1e-9)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(ll=_LN2)))["verdict"] == "FAIL_HARM"
+
+    def test_scorecard_support_boundary(self) -> None:
+        def rows(n):
+            return [_pred(f"1.{1000+i}", sel_des=1, sel_oth=2) for i in range(n)]
+
+        def outs(rs):
+            return {r.market_id: _outcome(r.market_id, 1) for r in rs}
+        r500 = rows(500)
+        assert m1_scorecard(score_bundle(r500, outs(r500))[0], min_support=500)["overall"]["supported"] is True
+        r499 = rows(499)
+        assert m1_scorecard(score_bundle(r499, outs(r499))[0], min_support=500)["overall"]["supported"] is False

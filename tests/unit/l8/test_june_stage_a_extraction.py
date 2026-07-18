@@ -195,3 +195,30 @@ class TestRequirementB_ConditionalStageB:
         with pytest.raises(StageBUnreachableError):
             open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                                 m1_attestation=att_other)
+
+
+class TestExtractionMutationHardening:
+    def test_strict_subset_extraction_succeeds(self, tmp_path) -> None:
+        # Outcomes a STRICT subset of the bundle must be accepted (kills <= -> == / < on the
+        # subset check): a market can refuse at burn, leaving fewer outcomes than the bundle.
+        reg = _registry()
+        art, _ = _run(reg, tmp_path, reader=lambda: [MinimalOutcome("1.1", 11), MinimalOutcome("1.2", 44)])
+        assert {o.market_id for o in art.outcomes} == {"1.1", "1.2"}  # 1.3 legitimately absent
+
+    def test_corrupt_artifact_on_disk_fails_digest_selfcheck(self, tmp_path) -> None:
+        reg = _registry()
+        _run(reg, tmp_path)
+        p = tmp_path / "artifact.json"
+        blob = p.read_text().replace('"winner_selection_id":11', '"winner_selection_id":22')
+        p.write_text(blob)  # tamper -> content no longer matches stored digest
+        with pytest.raises(StageAIncidentError):
+            load_artifact(p)
+
+    def test_recover_returns_bytewise_same_artifact(self, tmp_path) -> None:
+        reg = _registry()
+        art, _ = _run(reg, tmp_path)
+        rec = recover_stage_a(burn_record_path=tmp_path / "burn.json",
+                              artifact_path=tmp_path / "artifact.json")
+        assert rec.content_digest() == art.content_digest()
+        assert tuple((o.market_id, o.winner_selection_id) for o in rec.outcomes) == \
+            tuple((o.market_id, o.winner_selection_id) for o in art.outcomes)

@@ -278,3 +278,55 @@ class TestSealLoader:
         ids = load_sealed_market_ids()
         assert len(ids) == 2876
         assert all(i.startswith("1.") for i in ids)
+
+
+class TestSealMutationHardening:
+    """Kill behavioural survivors: seal-digest inequality direction, marketTime boundary,
+    zero/multiple winners, sha length. All synthetic; no June outcome."""
+
+    def test_seal_digest_lexically_greater_is_refused(self) -> None:
+        # A wrong seal digest GREATER than the real one must still refuse (kills != -> <).
+        with pytest.raises(SealAuthorisationMismatchError):
+            TennisOutcomeExtractor(
+                _june_auth(seal_digest="sha256:" + "ff" * 32),
+                sealed_market_ids=frozenset({"1.900"}),
+                june_authorised_market_ids=frozenset({"1.900"}),
+            )
+
+    def test_market_time_exactly_at_boundary_refuses(self) -> None:
+        # marketTime exactly 2026-06-01 is IN June -> refuse (kills >= -> >).
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.700", "CLOSED", "2026-06-01T00:00:00.000Z",
+                       [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeScopeError):
+            ex.extract("1.700", lines)
+
+    def test_zero_winners_refuses(self) -> None:
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.555", "CLOSED", _PRE_JUNE,
+                       [{"id": 1, "status": "LOSER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.555", lines)
+
+    def test_three_winners_refuses(self) -> None:
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.555", "CLOSED", _PRE_JUNE,
+                       [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "WINNER"}, {"id": 3, "status": "WINNER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.555", lines)
+
+    def test_sha256_of_wrong_length_refused_both_directions(self) -> None:
+        base = dict(scope=OutcomeAccessScope.PRE_JUNE_DEVELOPMENT, experiment_id="X",
+                    model_manifest_sha256=_SHA, feature_manifest_sha256=_SHA,
+                    data_manifest_sha256=_SHA, gate_spec_version="g", granted_by="f",
+                    granted_on=date(2026, 7, 18))
+        for bad in ("sha256:" + "ab" * 31, "sha256:" + "ab" * 33):  # too short AND too long
+            with pytest.raises(ValueError):
+                OutcomeAccessAuthorisation(**{**base, "model_manifest_sha256": bad})  # type: ignore[arg-type]
+
+    def test_extractor_skips_other_market_ids_in_a_shared_stream(self) -> None:
+        # A CLOSED definition for a DIFFERENT market must not settle this market (kills id != -> ==).
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.OTHER", "CLOSED", _PRE_JUNE, [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):  # no CLOSED def for 1.555 -> undetermined
+            ex.extract("1.555", lines)
