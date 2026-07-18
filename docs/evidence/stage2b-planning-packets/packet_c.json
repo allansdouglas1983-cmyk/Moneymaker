@@ -1,0 +1,484 @@
+{
+ "policies": [
+  {
+   "L_min": 5,
+   "W_s": 15,
+   "abstention_pct": 10.9,
+   "cohort": "primary",
+   "decision_availability_pct": 89.1,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 26.59,
+    "n": 2529,
+    "p10": 9.59,
+    "p90": 142.77
+   },
+   "rearm_mean": 4.85,
+   "subsequent_revision_pct_of_decided": 82.4
+  },
+  {
+   "L_min": 5,
+   "W_s": 15,
+   "abstention_pct": 13.2,
+   "cohort": "strict",
+   "decision_availability_pct": 86.8,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 21.69,
+    "n": 1952,
+    "p10": 9.09,
+    "p90": 148.14
+   },
+   "rearm_mean": 5.28,
+   "subsequent_revision_pct_of_decided": 77.3
+  },
+  {
+   "L_min": 10,
+   "W_s": 15,
+   "abstention_pct": 7.2,
+   "cohort": "primary",
+   "decision_availability_pct": 92.8,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 51.98,
+    "n": 2632,
+    "p10": 16.38,
+    "p90": 151.59
+   },
+   "rearm_mean": 3.64,
+   "subsequent_revision_pct_of_decided": 87.0
+  },
+  {
+   "L_min": 10,
+   "W_s": 15,
+   "abstention_pct": 8.7,
+   "cohort": "strict",
+   "decision_availability_pct": 91.3,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 54.73,
+    "n": 2054,
+    "p10": 17.61,
+    "p90": 159.55
+   },
+   "rearm_mean": 3.85,
+   "subsequent_revision_pct_of_decided": 83.4
+  },
+  {
+   "L_min": 15,
+   "W_s": 15,
+   "abstention_pct": 5.3,
+   "cohort": "primary",
+   "decision_availability_pct": 94.7,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 56.55,
+    "n": 2684,
+    "p10": 21.58,
+    "p90": 158.14
+   },
+   "rearm_mean": 3.43,
+   "subsequent_revision_pct_of_decided": 87.3
+  },
+  {
+   "L_min": 15,
+   "W_s": 15,
+   "abstention_pct": 6.3,
+   "cohort": "strict",
+   "decision_availability_pct": 93.7,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 58.9,
+    "n": 2105,
+    "p10": 22.24,
+    "p90": 165.06
+   },
+   "rearm_mean": 3.77,
+   "subsequent_revision_pct_of_decided": 83.8
+  },
+  {
+   "L_min": 5,
+   "W_s": 30,
+   "abstention_pct": 11.0,
+   "cohort": "primary",
+   "decision_availability_pct": 89.0,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 26.62,
+    "n": 2527,
+    "p10": 9.56,
+    "p90": 141.08
+   },
+   "rearm_mean": 4.86,
+   "subsequent_revision_pct_of_decided": 82.4
+  },
+  {
+   "L_min": 5,
+   "W_s": 30,
+   "abstention_pct": 13.3,
+   "cohort": "strict",
+   "decision_availability_pct": 86.7,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 21.69,
+    "n": 1950,
+    "p10": 9.09,
+    "p90": 147.13
+   },
+   "rearm_mean": 5.28,
+   "subsequent_revision_pct_of_decided": 77.3
+  },
+  {
+   "L_min": 10,
+   "W_s": 30,
+   "abstention_pct": 7.2,
+   "cohort": "primary",
+   "decision_availability_pct": 92.8,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 51.96,
+    "n": 2632,
+    "p10": 16.25,
+    "p90": 151.5
+   },
+   "rearm_mean": 3.64,
+   "subsequent_revision_pct_of_decided": 87.0
+  },
+  {
+   "L_min": 10,
+   "W_s": 30,
+   "abstention_pct": 8.7,
+   "cohort": "strict",
+   "decision_availability_pct": 91.3,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 54.73,
+    "n": 2054,
+    "p10": 17.61,
+    "p90": 159.45
+   },
+   "rearm_mean": 3.85,
+   "subsequent_revision_pct_of_decided": 83.4
+  },
+  {
+   "L_min": 15,
+   "W_s": 30,
+   "abstention_pct": 5.3,
+   "cohort": "primary",
+   "decision_availability_pct": 94.7,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 56.44,
+    "n": 2684,
+    "p10": 21.58,
+    "p90": 157.13
+   },
+   "rearm_mean": 3.43,
+   "subsequent_revision_pct_of_decided": 87.3
+  },
+  {
+   "L_min": 15,
+   "W_s": 30,
+   "abstention_pct": 6.3,
+   "cohort": "strict",
+   "decision_availability_pct": 93.7,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 58.89,
+    "n": 2105,
+    "p10": 22.24,
+    "p90": 164.88
+   },
+   "rearm_mean": 3.78,
+   "subsequent_revision_pct_of_decided": 83.8
+  },
+  {
+   "L_min": 5,
+   "W_s": 60,
+   "abstention_pct": 11.4,
+   "cohort": "primary",
+   "decision_availability_pct": 88.6,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 26.72,
+    "n": 2516,
+    "p10": 9.5,
+    "p90": 143.06
+   },
+   "rearm_mean": 4.86,
+   "subsequent_revision_pct_of_decided": 82.4
+  },
+  {
+   "L_min": 5,
+   "W_s": 60,
+   "abstention_pct": 13.5,
+   "cohort": "strict",
+   "decision_availability_pct": 86.5,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 21.72,
+    "n": 1947,
+    "p10": 9.03,
+    "p90": 147.13
+   },
+   "rearm_mean": 5.28,
+   "subsequent_revision_pct_of_decided": 77.4
+  },
+  {
+   "L_min": 10,
+   "W_s": 60,
+   "abstention_pct": 7.3,
+   "cohort": "primary",
+   "decision_availability_pct": 92.7,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 51.92,
+    "n": 2629,
+    "p10": 16.22,
+    "p90": 151.5
+   },
+   "rearm_mean": 3.64,
+   "subsequent_revision_pct_of_decided": 87.0
+  },
+  {
+   "L_min": 10,
+   "W_s": 60,
+   "abstention_pct": 8.7,
+   "cohort": "strict",
+   "decision_availability_pct": 91.3,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 54.93,
+    "n": 2052,
+    "p10": 17.62,
+    "p90": 159.45
+   },
+   "rearm_mean": 3.85,
+   "subsequent_revision_pct_of_decided": 83.4
+  },
+  {
+   "L_min": 15,
+   "W_s": 60,
+   "abstention_pct": 5.4,
+   "cohort": "primary",
+   "decision_availability_pct": 94.6,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 56.44,
+    "n": 2681,
+    "p10": 21.61,
+    "p90": 157.13
+   },
+   "rearm_mean": 3.43,
+   "subsequent_revision_pct_of_decided": 87.2
+  },
+  {
+   "L_min": 15,
+   "W_s": 60,
+   "abstention_pct": 6.4,
+   "cohort": "strict",
+   "decision_availability_pct": 93.6,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 58.88,
+    "n": 2103,
+    "p10": 22.22,
+    "p90": 164.88
+   },
+   "rearm_mean": 3.78,
+   "subsequent_revision_pct_of_decided": 83.8
+  },
+  {
+   "L_min": 5,
+   "W_s": 120,
+   "abstention_pct": 12.1,
+   "cohort": "primary",
+   "decision_availability_pct": 87.9,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 26.72,
+    "n": 2496,
+    "p10": 9.24,
+    "p90": 143.55
+   },
+   "rearm_mean": 4.88,
+   "subsequent_revision_pct_of_decided": 82.3
+  },
+  {
+   "L_min": 5,
+   "W_s": 120,
+   "abstention_pct": 13.8,
+   "cohort": "strict",
+   "decision_availability_pct": 86.2,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 21.69,
+    "n": 1939,
+    "p10": 8.96,
+    "p90": 148.14
+   },
+   "rearm_mean": 5.29,
+   "subsequent_revision_pct_of_decided": 77.4
+  },
+  {
+   "L_min": 10,
+   "W_s": 120,
+   "abstention_pct": 7.6,
+   "cohort": "primary",
+   "decision_availability_pct": 92.4,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 51.98,
+    "n": 2621,
+    "p10": 16.03,
+    "p90": 151.59
+   },
+   "rearm_mean": 3.65,
+   "subsequent_revision_pct_of_decided": 87.0
+  },
+  {
+   "L_min": 10,
+   "W_s": 120,
+   "abstention_pct": 9.1,
+   "cohort": "strict",
+   "decision_availability_pct": 90.9,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 55.54,
+    "n": 2044,
+    "p10": 17.61,
+    "p90": 159.55
+   },
+   "rearm_mean": 3.86,
+   "subsequent_revision_pct_of_decided": 83.5
+  },
+  {
+   "L_min": 15,
+   "W_s": 120,
+   "abstention_pct": 5.6,
+   "cohort": "primary",
+   "decision_availability_pct": 94.4,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 56.57,
+    "n": 2675,
+    "p10": 21.58,
+    "p90": 158.14
+   },
+   "rearm_mean": 3.43,
+   "subsequent_revision_pct_of_decided": 87.3
+  },
+  {
+   "L_min": 15,
+   "W_s": 120,
+   "abstention_pct": 6.7,
+   "cohort": "strict",
+   "decision_availability_pct": 93.3,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 59.08,
+    "n": 2097,
+    "p10": 22.24,
+    "p90": 164.88
+   },
+   "rearm_mean": 3.78,
+   "subsequent_revision_pct_of_decided": 83.9
+  },
+  {
+   "L_min": 5,
+   "W_s": 300,
+   "abstention_pct": 18.2,
+   "cohort": "primary",
+   "decision_availability_pct": 81.8,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 31.2,
+    "n": 2320,
+    "p10": 9.37,
+    "p90": 148.67
+   },
+   "rearm_mean": 5.01,
+   "subsequent_revision_pct_of_decided": 83.3
+  },
+  {
+   "L_min": 5,
+   "W_s": 300,
+   "abstention_pct": 18.7,
+   "cohort": "strict",
+   "decision_availability_pct": 81.3,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 26.89,
+    "n": 1827,
+    "p10": 9.25,
+    "p90": 154.88
+   },
+   "rearm_mean": 5.32,
+   "subsequent_revision_pct_of_decided": 78.9
+  },
+  {
+   "L_min": 10,
+   "W_s": 300,
+   "abstention_pct": 9.8,
+   "cohort": "primary",
+   "decision_availability_pct": 90.2,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 53.89,
+    "n": 2558,
+    "p10": 16.44,
+    "p90": 154.03
+   },
+   "rearm_mean": 3.68,
+   "subsequent_revision_pct_of_decided": 87.2
+  },
+  {
+   "L_min": 10,
+   "W_s": 300,
+   "abstention_pct": 11.6,
+   "cohort": "strict",
+   "decision_availability_pct": 88.4,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 57.73,
+    "n": 1987,
+    "p10": 18.19,
+    "p90": 160.75
+   },
+   "rearm_mean": 3.9,
+   "subsequent_revision_pct_of_decided": 83.7
+  },
+  {
+   "L_min": 15,
+   "W_s": 300,
+   "abstention_pct": 7.5,
+   "cohort": "primary",
+   "decision_availability_pct": 92.5,
+   "n": 2876,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 58.37,
+    "n": 2620,
+    "p10": 22.22,
+    "p90": 159.38
+   },
+   "rearm_mean": 3.46,
+   "subsequent_revision_pct_of_decided": 87.5
+  },
+  {
+   "L_min": 15,
+   "W_s": 300,
+   "abstention_pct": 9.0,
+   "cohort": "strict",
+   "decision_availability_pct": 91.0,
+   "n": 2287,
+   "posthoc_lead_to_first_inplay_min": {
+    "median": 60.89,
+    "n": 2044,
+    "p10": 22.83,
+    "p90": 166.58
+   },
+   "rearm_mean": 3.81,
+   "subsequent_revision_pct_of_decided": 84.1
+  }
+ ]
+}

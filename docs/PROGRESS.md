@@ -406,3 +406,27 @@ feature, parameter or outcome read; no governance weakened; no numbers invented.
 before outcome modelling: (1) founder resolves pre-reg numbers + dwell W; (2) define/seal
 tennis lockbox; (3) authorise outcome-opening (implement tennis_outcomes); (4) license
 longitudinal results (Gate -1); (5) competitor-identity resolution.
+
+## Stage-2A acceptance executed: seal, extractor, packets (2026-07-18)
+
+Founder decisions 1-5 executed on `claude/project-files-followup-dif8al` (make verify
+green, 273 files mypy-strict). **Sealed:** the ENTIRE June-2026 primary singles universe
+(2,876 members, 2,287 strict-tagged; doubles excluded) — `specs/evidence/
+lockbox-june-2026-tennis-v1.yaml`, seal digest `sha256:24df4bd2…`; alpha_total=0.05
+family-wise + power=0.80 recorded as a dated pre-registration amendment; training data
+must end before 2026-06-01, never solved by opening part of June. **Implemented (tests
+first):** the governed outcome extractor `l8_evidence/tennis_outcomes.py` — pre-June
+scope ONLY (June structurally unrepresentable in the scope vocabulary), sealed-membership
+refusal, data-level marketTime>=June refusal, manifest-bound OutcomeAccessAuthorisation
+(experiment/model/feature/data/gate) stamped on every extraction; unauthenticated path
+still refuses; unambiguous exactly-one-WINNER pattern only, anything else refuses
+(SPEC-084 not re-invented). **Evidence packets (outcome-blind, digest-pinned,
+`docs/evidence/stage2b-planning-packets/`):** A (candidate delta grid: diffuse 1-point
+signal invisible+cost-blocked; candidates 1e-4..1.3e-3 nats), B (planning sigma_d p90 =
+0.04075; N table at power .80, family-wise alpha .05: ~15k..millions), C (dwell W 15-120s
+indistinguishable; ~82-88% of decisions see a LATER revision at every (W,L) — the real
+policy question is the governed response to post-decision revisions). **DR-TENNIS-
+RESULTS-001** filed (11-point longitudinal-results licensing; silence never permission;
+non-commercial never deployable). Readiness: YES WITH BLOCKERS — remaining: founder
+declares delta/sigma_d/W(+revision-response policy); DR-TENNIS-RESULTS-001 returns +
+Gate -1; F0/F1 harness authorised and unblocked. NO June outcome was read at any point.

@@ -172,3 +172,21 @@
     CLV evidence remains thin/open as expected
   related:
   - ADR-0016
+- id: DR-TENNIS-RESULTS-001
+  title: Pre-June-2026 longitudinal ATP/WTA singles results licensing (11 evidence points,
+    personal profit-seeking training rights)
+  classification: BLOCKING
+  status: REQUESTED
+  requested: 2026-07-18
+  routed_to: chatgpt-deep-research (project owner)
+  request: docs/research/requests/DR-TENNIS-RESULTS-001-longitudinal-results-licensing.md
+  blocks:
+  - fundamental model families F2-F6 (Elo, surface Elo, Bradley-Terry, logistic, serve/return)
+  - licensed-sources entry + Gate -1 (SPEC-101) for model training data
+  - F2+ trial registrations
+  related:
+  - SPEC-101
+  - SPEC-044
+  - SPEC-023
+  - SPEC-103
+  - STAGE2-tennis-preregistration
