@@ -624,3 +624,29 @@ param change after opening; seal never reused. Future-prospective M2 protocol dr
 (seal-code change + irreversible GATE-1 burn + M1 scorecard) is the next discrete step — the
 seal-invariant test correction is a Rule-2 separate change and the burn is irreversible, so it is
 NOT bundled here. Governance green (spec coverage 44 IDs; gate/outcome tests pass). June still sealed.
+
+## Stage 2E pre-burn (part 1): seal-scope, use-policy, reconciliation, M1 join-harness (2026-07-18)
+
+Founder approved the REVERSIBLE pre-burn work; the GATE-1 read stays withheld until the complete
+pre-burn checkpoint is returned AND the founder issues "BURN JUNE STAGE A". Delivered so far
+(June still SEALED; no outcome read):
+- §1 governed seal-scope correction: test-correction committed SEPARATELY (Rule 2), then impl —
+  OutcomeAccessScope.JUNE_M1_TRANSFER (one digest-bound June opening); authorisation carries an
+  additive seal_authorisation_digest (required for June, forbidden else); extractor permits a
+  sealed/after-boundary June market ONLY under scope JUNE_M1_TRANSFER + exact v2 seal digest
+  (f552c7bf…) + explicit authorised set. All other scopes/markets still refuse; unauthenticated
+  path still refuses. 27 governed+quarantine tests; ruff+mypy clean.
+- §2 june-outcome-artifact-use-policy-v1 (digest 84efd4a2…): one immutable hash-bound artifact,
+  read once; permitted M1; conditional Stage-B SPEC-032 dev ONLY on M1 PASS reusing the artifact
+  (never reopening raw lockbox); M2/EV/ROI/etc prohibited.
+- §3 reconciliation 1,213 vs 1,218: the 5-market gap is cross-tour homonym mis-resolution
+  (female name collides with a male ATP surname+initial: Black B./Britton D./Johnson S.),
+  correctly refused REFUSED_TOUR_PROVENANCE:MIXED_TOUR; no outcome used, not a defect. Frozen
+  M1-valid 1,213 (ATP 592, WTA 621; 30 day-clusters).
+- §4 (core) l8_evidence/june_m1_harness.py: the outcome-blind scoring JOIN (winner selection-id
+  -> designated competitor by ID not order; unknown/mismatched refuse; exclusions visible;
+  deterministic scorecard with 500-support flags), proven with 9 synthetic tests. 1872 unit+
+  property tests green.
+REMAINING before the checkpoint is complete: build the real 1,213-market outcome-blind prediction
+bundle (F2 prequential + selection-id↔identity from pre-off June streams); atomic one-time
+extraction + restart-safety; full dry-run + make verify/mutation; then the §7 checkpoint return.
