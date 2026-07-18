@@ -24,7 +24,7 @@ _NONSAFE = [f for f in ALL_CLASSIFIED_FIELDS if classify(*f) is not OutcomeField
 
 @given(accesses=st.lists(st.sampled_from(_SAFE), min_size=0, max_size=40))
 @settings(max_examples=200)
-def test_recorder_admits_exactly_the_safe_fields(accesses: list) -> None:
+def test_recorder_admits_exactly_the_safe_fields(accesses: list[tuple[str, str]]) -> None:
     rec = PreLockboxAccessRecorder()
     for lvl, fld in accesses:
         rec.record(lvl, fld)
@@ -36,7 +36,7 @@ def test_recorder_admits_exactly_the_safe_fields(accesses: list) -> None:
 
 @given(accesses=st.lists(st.sampled_from(_SAFE), min_size=1, max_size=40))
 @settings(max_examples=200)
-def test_manifest_digest_is_order_independent(accesses: list) -> None:
+def test_manifest_digest_is_order_independent(accesses: list[tuple[str, str]]) -> None:
     rec_a = PreLockboxAccessRecorder()
     for lvl, fld in accesses:
         rec_a.record(lvl, fld)
@@ -48,7 +48,7 @@ def test_manifest_digest_is_order_independent(accesses: list) -> None:
 
 @given(bad=st.sampled_from(_NONSAFE) if _NONSAFE else st.just(("runner", "status")))
 @settings(max_examples=100)
-def test_no_non_safe_field_can_ever_be_recorded(bad: tuple) -> None:
+def test_no_non_safe_field_can_ever_be_recorded(bad: tuple[str, str]) -> None:
     rec = PreLockboxAccessRecorder()
     with pytest.raises(OutcomeFieldAccessError):
         rec.record(*bad)
