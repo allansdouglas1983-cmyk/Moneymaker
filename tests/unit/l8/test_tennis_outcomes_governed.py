@@ -18,12 +18,14 @@ from datetime import date
 import pytest
 
 from l8_evidence.tennis_outcomes import (
+    JUNE_M1_SEAL_AUTHORISATION_DIGEST,
     JuneLockboxSealedError,
     OutcomeAccessAuthorisation,
     OutcomeAccessNotAuthorisedError,
     OutcomeAccessScope,
     OutcomeScopeError,
     OutcomeUndeterminedError,
+    SealAuthorisationMismatchError,
     TennisOutcomeExtractor,
     extract_match_outcome,
     load_sealed_market_ids,
@@ -45,6 +47,21 @@ def _auth() -> OutcomeAccessAuthorisation:
         gate_spec_version="gates-v1",
         granted_by="founder",
         granted_on=date(2026, 7, 18),
+    )
+
+
+def _june_auth(*, seal_digest: str = JUNE_M1_SEAL_AUTHORISATION_DIGEST) -> OutcomeAccessAuthorisation:
+    """The Stage-A June-M1 authorisation (Stage 2E; lockbox-june-2026-tennis-v2)."""
+    return OutcomeAccessAuthorisation(
+        scope=OutcomeAccessScope.JUNE_M1_TRANSFER,
+        experiment_id="GATE-M1-JUNE-TRANSFER",
+        model_manifest_sha256=_SHA,
+        feature_manifest_sha256=_SHA,
+        data_manifest_sha256=_SHA,
+        gate_spec_version="probability-m1",
+        granted_by="founder",
+        granted_on=date(2026, 7, 18),
+        seal_authorisation_digest=seal_digest,
     )
 
 
@@ -95,9 +112,109 @@ class TestAuthorisationRecord:
         with pytest.raises(ValueError):
             OutcomeAccessAuthorisation(**kwargs)  # type: ignore[arg-type]
 
-    def test_scope_vocabulary_cannot_express_june(self) -> None:
-        # The structural seal: there is no June member to pass.
-        assert [m.name for m in OutcomeAccessScope] == ["PRE_JUNE_DEVELOPMENT"]
+    def test_scope_vocabulary_is_exactly_pre_june_and_the_one_authorised_june_scope(self) -> None:
+        # GOVERNED CORRECTION (Stage 2E, lockbox-june-2026-tennis-v2; SPEC-092): the founder
+        # created ONE explicit digest-bound authorisation for a single controlled June opening.
+        # The vocabulary now contains EXACTLY the pre-June scope and the ONE June-M1 scope — no
+        # generic JUNE / RESEARCH / MODEL / M2 / ROI / unrestricted outcome scope exists.
+        assert [m.name for m in OutcomeAccessScope] == ["PRE_JUNE_DEVELOPMENT", "JUNE_M1_TRANSFER"]
+
+    def test_june_scope_requires_the_exact_v2_seal_digest(self) -> None:
+        # A JUNE_M1_TRANSFER authorisation is only valid carrying the exact v2 seal digest.
+        with pytest.raises(ValueError):
+            OutcomeAccessAuthorisation(
+                scope=OutcomeAccessScope.JUNE_M1_TRANSFER,
+                experiment_id="GATE-M1-JUNE-TRANSFER",
+                model_manifest_sha256=_SHA, feature_manifest_sha256=_SHA,
+                data_manifest_sha256=_SHA, gate_spec_version="probability-m1",
+                granted_by="founder", granted_on=date(2026, 7, 18),
+                seal_authorisation_digest=None,  # missing seal binding
+            )
+
+    def test_pre_june_scope_must_not_carry_a_seal_digest(self) -> None:
+        # The pre-June path can never carry a June seal authorisation.
+        with pytest.raises(ValueError):
+            OutcomeAccessAuthorisation(
+                scope=OutcomeAccessScope.PRE_JUNE_DEVELOPMENT,
+                experiment_id="EXP-X", model_manifest_sha256=_SHA,
+                feature_manifest_sha256=_SHA, data_manifest_sha256=_SHA,
+                gate_spec_version="gates-v1", granted_by="founder",
+                granted_on=date(2026, 7, 18),
+                seal_authorisation_digest=JUNE_M1_SEAL_AUTHORISATION_DIGEST,
+            )
+
+
+class TestJuneM1TransferScope:
+    """The ONE authorised, digest-bound June opening (Stage 2E; v2 seal). All streams synthetic."""
+
+    def test_authorised_june_market_extracts_only_under_matching_seal_and_membership(self) -> None:
+        ex = TennisOutcomeExtractor(
+            _june_auth(),
+            sealed_market_ids=frozenset({"1.900", "1.901"}),
+            june_authorised_market_ids=frozenset({"1.900"}),
+        )
+        lines = [
+            _line("1.900", "OPEN", _IN_JUNE, [{"id": 11, "status": "ACTIVE"}, {"id": 22, "status": "ACTIVE"}]),
+            _line("1.900", "CLOSED", _IN_JUNE, [{"id": 11, "status": "WINNER"}, {"id": 22, "status": "LOSER"}], pt=2),
+        ]
+        out = ex.extract("1.900", lines)
+        assert out.winner_selection_id == 11
+        assert out.authorisation_digest == _june_auth().content_digest()
+
+    def test_sealed_june_market_not_in_authorised_set_still_refuses(self) -> None:
+        ex = TennisOutcomeExtractor(
+            _june_auth(),
+            sealed_market_ids=frozenset({"1.900", "1.901"}),
+            june_authorised_market_ids=frozenset({"1.900"}),
+        )
+        with pytest.raises(JuneLockboxSealedError):
+            ex.extract("1.901", [])  # sealed June market outside the authorised set
+
+    def test_wrong_seal_digest_refuses_at_construction(self) -> None:
+        with pytest.raises(SealAuthorisationMismatchError):
+            TennisOutcomeExtractor(
+                _june_auth(seal_digest="sha256:" + "00" * 32),
+                sealed_market_ids=frozenset({"1.900"}),
+                june_authorised_market_ids=frozenset({"1.900"}),
+            )
+
+    def test_june_scope_requires_a_nonempty_authorised_set(self) -> None:
+        with pytest.raises(ValueError):
+            TennisOutcomeExtractor(
+                _june_auth(), sealed_market_ids=frozenset({"1.900"}),
+                june_authorised_market_ids=frozenset(),
+            )
+
+    def test_pre_june_authorisation_still_refuses_every_june_market(self) -> None:
+        # The other scope continues to refuse June — by membership AND by data.
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset({"1.900"}))
+        with pytest.raises(JuneLockboxSealedError):
+            ex.extract("1.900", [])
+        ex2 = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.902", "CLOSED", _IN_JUNE, [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeScopeError):
+            ex2.extract("1.902", lines)
+
+    def test_pre_june_authorisation_cannot_carry_a_june_authorised_set(self) -> None:
+        with pytest.raises(ValueError):
+            TennisOutcomeExtractor(
+                _auth(), sealed_market_ids=frozenset({"1.900"}),
+                june_authorised_market_ids=frozenset({"1.900"}),
+            )
+
+    def test_june_anomalous_settlement_still_refuses(self) -> None:
+        ex = TennisOutcomeExtractor(
+            _june_auth(), sealed_market_ids=frozenset({"1.900"}),
+            june_authorised_market_ids=frozenset({"1.900"}),
+        )
+        lines = [_line("1.900", "CLOSED", _IN_JUNE, [{"id": 11, "status": "WINNER"}, {"id": 22, "status": "WINNER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.900", lines)
+
+    def test_the_frozen_v2_seal_digest_is_pinned(self) -> None:
+        assert JUNE_M1_SEAL_AUTHORISATION_DIGEST == (
+            "sha256:f552c7bfafd8432693a26d01519ffac29e1d81d7554901041553952b2ddb88c8"
+        )
 
 
 class TestExtraction:
