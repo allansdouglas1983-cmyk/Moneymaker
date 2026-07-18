@@ -109,6 +109,7 @@ def cross_fit(
     horizon: HorizonLabel,
     max_iter: int = 100,
     family: StageOneFamily = CONDITIONAL_LOGIT_FAMILY,
+    score_only_after: ChronologyKey | None = None,
 ) -> CrossFitResult:
     """Produce strictly out-of-fold fundamentals for every race that can honestly have one.
 
@@ -119,6 +120,16 @@ def cross_fit(
     ``trained_through`` or ``training_race_ids`` no matter what its fitted artefact
     claims. Conditional logit is the default registered family, not the owner of this
     path.
+
+    ``score_only_after`` (additive; default ``None`` = existing behaviour, byte-
+    identical): folds whose cluster chronology is <= the threshold are WARM-UP —
+    neither fit nor scored; their races become typed
+    ``WARM_UP_BEFORE_SCORE_THRESHOLD`` exclusions (the universe-accounting invariant
+    holds unchanged). Scored folds still train on the FULL prior history including the
+    warm-up, so leakage discipline and provenance are untouched. Motivation: at multi-
+    decade corpus scale, minting per-fold provenance for folds no endpoint consumes is
+    pure memory burn (observed OOM at ~5,900 folds); warm-up-not-scored is endpoint
+    semantics that belongs here, never in caller-side row filtering.
     """
     if not isinstance(family, StageOneFamily):
         raise TypeError(
@@ -151,6 +162,17 @@ def cross_fit(
     excluded: list[ExcludedRace] = []
     for index, day in enumerate(days):
         day_races = by_day[day]
+        if score_only_after is not None and day.chronology <= score_only_after:
+            excluded.extend(
+                ExcludedRace(
+                    race.race_id,
+                    "WARM_UP_BEFORE_SCORE_THRESHOLD: fold chronology "
+                    f"{day.chronology.ordinal} <= {score_only_after.ordinal}; races here "
+                    "train later folds but are not endpoints",
+                )
+                for race in day_races
+            )
+            continue
         if index == 0:
             excluded.extend(
                 ExcludedRace(race.race_id, "no earlier cluster chronology to train on")
