@@ -580,3 +580,28 @@ underpowered by design; ATP/WTA split reported as a gap, not fabricated; digest 
 §11 staged June opening runbook (Stage A M1 transfer -> if PASS Stage B M2; not authorised).
 Identity ledger frozen; F3 closed; June-surface extractor still refused. make verify: 1853
 unit+property tests pass. June sealed; no odds; no ROI/CLV/P&L/selection.
+
+## Stage 2D governance: calibration frozen, M1 amendment approved, June M1 manifest, M2 alpha review, May purchase authorised (2026-07-18)
+
+Founder ACCEPTED Stage 2C; Stage 2D executes the doable governance and prepares the rest.
+NO June opened, NO May data present yet (agent never purchases — ADR 0015; founder purchases
+personally). §1 separate ATP/WTA affine calibration params APPROVED + FROZEN in
+calibration-policy-v2 (ATP intercept 0.025399/T 1.218638; WTA 0.029204/1.150681; scorecard
+digest 6001657753…; no player/surface/band/tournament/other-method additions). §2 M1
+remediation amendment APPROVED + FROZEN (probability-m1.yaml remediation_amendment_v1): all
+bands unchanged; min_supported_predictions=500 (ATP/WTA/cohorts/reliability/overall);
+cal-in-large PASS [-0.02,0.02] / CONTINUE (±0.02,±0.05] or unsupported / FAIL_HARM |cil|>0.05
+AND cluster-aware evidence not noise; ±0.05 is a harm boundary only, not a widened PASS band;
+unsupported June submetrics -> CONTINUE. §3 prospective June M1 transfer manifest (outcome-blind;
+tour from governed identity-namespace provenance, mixed->typed refusal): 2,876 -> 1,213
+calibrated-F2-valid (ATP 592, WTA 621 — both ≥500 supported; 5 MIXED_TOUR refusals reconcile
+1,218 both-mapped = 1,213 + 5), 30 calendar-day clusters; digest d192b4e3…
+(docs/evidence/stage2d-june-m1-transfer/). §4 May-2026 ADVANCED purchase AUTHORISED (£49 cap,
+one month, MATCH_ODDS singles; agent does not purchase — founder executes, then provides files;
+docs/procurement/advanced-may-2026-purchase-authorization.md). §8 M2 alpha-preservation review:
+Option A one-shot (zero cost, ~CONTINUE, exhausts budget) vs Option B anytime-valid sequential
+e-process (SPEC-096 unimplemented/planned; material engineering + years of monthly blocks for
+δ=0.0007) — returned for founder selection; one-shot gate untouched. §10 wording: F3 closure
+"paired races" -> "paired matches/decision units" (no number/verdict/digest change). §5/§6/§7
+(May ingest, F0/F2 dev block, SPEC-032 fit) BLOCKED pending founder-provided May data. June sealed;
+no odds; no ROI/CLV/P&L/EV/selection. make verify: gate/governance tests + spec coverage green.

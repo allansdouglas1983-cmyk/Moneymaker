@@ -23,7 +23,8 @@ confirmatory_result:               # from docs/evidence/stage2b-f3-confirmatory/
   inference: SPEC-090 UTC-day-clustered block bootstrap (l8_evidence.paired_inference),
     seed 20260718, n_resamples 20000
   overall:
-    paired_races: 34038          # >= 32212 planning requirement -> powered at planning sigma_d
+    paired_matches: 34038        # paired decision units; >= 32212 planning requirement ->
+      # powered at planning sigma_d (sport-neutral wording; number/verdict/digest unchanged)
     n_utc_day_clusters: 2175
     ll_F2: 0.623933
     ll_F3: 0.633451

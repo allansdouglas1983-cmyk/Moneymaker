@@ -85,3 +85,30 @@ evidence:
   status: REMEDIATION / DEVELOPMENT — labelled, does not close M1, not external confirmation
   diagnostic_vintage_retained: docs/evidence/stage2b-f3-confirmatory/M1_SCORECARD.json
     (temperature-only; NOT rewritten)
+
+# --- FROZEN separate ATP/WTA parameters (founder approval, Stage 2D §1, 2026-07-18) ---
+# Separate per-tour parameters APPROVED. Rationale (founder): F2 already consists of
+# independently governed ATP and WTA Elo systems; the separation predates this remediation;
+# the calibration method and fitting procedure are identical for both tours; no
+# shared-vs-separate method contest was performed; June remains untouched. Values are the
+# governed scorecard values (digest 6001657753…), preferred over rounded prose.
+frozen_parameters:
+  approved_on: "2026-07-18"
+  authority: founder directive (Stage 2D §1)
+  source: docs/evidence/stage2c-affine-remediation/AFFINE_REMEDIATION_SCORECARD.json
+    (final_pre_june_params_for_june_freeze; scorecard digest
+    sha256:6001657753c8a26ea2ba53e3d323c0a132b1034161b6708d65c2c45e30284470)
+  ATP:
+    intercept: 0.025399
+    temperature: 1.218638
+  WTA:
+    intercept: 0.029204
+    temperature: 1.150681
+  forbidden_additions:            # founder §1 — none of these may ever be added
+    - player-specific calibration
+    - surface-specific calibration
+    - probability-band calibration
+    - tournament-specific calibration
+    - any other calibration method
+  frozen_for_june: these exact parameters are applied UNCHANGED on June (staged opening
+    Stage A); no recalibration on June, no refit after May opens.

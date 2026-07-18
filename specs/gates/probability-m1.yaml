@@ -111,3 +111,52 @@ numeric_bands_v1:
     cohorts_included_and_reported: true
     no_automatic_prior_match_exclusion: true
     cohort_ge_500_log_loss_gt_continue_threshold: "ln2 + 0.02"  # -> CONTINUE, not silent removal
+
+# --- Founder M1 REMEDIATION AMENDMENT (2026-07-18, APPROVED — Stage 2D §2) ---
+# Frozen with the founder's exact interpretation. ALL previously frozen numeric bands
+# (numeric_bands_v1) remain UNCHANGED. This amendment ONLY defines how M1 closes given three
+# evidence sources and adds two NON-BAND thresholds (a support minimum and a catastrophic-harm
+# boundary). It widens, narrows, or reinterprets NO adequacy band. Proposal that this ratifies:
+# docs/architecture/m1-remediation-amendment-proposal.md.
+remediation_amendment_v1:
+  frozen_on: "2026-07-18"
+  authority: founder directive (Stage 2D §2)
+  selected_model: EXP-STAGE2-F2-GLOBAL-ELO-001 with calibration-policy-v2 (affine logit)
+  bands_unchanged: true            # every numeric_bands_v1 leaf is preserved verbatim
+  evidence_sources:
+    A: frozen pre-June adequacy evidence (nested-crossfit OOF; structural/proper-scoring items)
+    B: affine remediation scorecard (pre-June; REMEDIATION/DEVELOPMENT — necessary, not sufficient)
+    C: untouched June external-transfer check (Stage A of the staged opening; model+calib frozen)
+  support_threshold:
+    minimum_supported_predictions: 500
+    applies_to:
+      - ATP-specific metrics
+      - WTA-specific metrics
+      - prior-history cohorts
+      - reliability bands
+      - any other reported subgroup metric
+      - the OVERALL June transfer population (also >= 500)
+    rule: >-
+      A metric with fewer than 500 predictions is UNSUPPORTED and returns CONTINUE. It may NOT
+      pass, may NOT fail, and may NOT be fabricated through pooling after outcomes are viewed.
+  calibration_in_the_large_rules:
+    PASS_band: [-0.02, 0.02]       # UNCHANGED adequacy band (numeric_bands_v1)
+    CONTINUE_if:
+      - estimate outside +/-0.02 but inside or equal to +/-0.05
+      - or support insufficient (< 500)
+      - or cluster-aware uncertainty prevents a stable interpretation
+    FAIL_HARM_if:
+      - absolute calibration-in-the-large exceeds 0.05
+      - AND the cluster-aware interval gives evidence this is not merely sampling noise
+    harm_boundary_note: >-
+      The +/-0.05 threshold is a catastrophic-transfer / harm boundary ONLY. It does NOT
+      replace, widen, or reinterpret the +/-0.02 M1 PASS band.
+  other_bands: no other existing M1 numeric band is altered.
+  unsupported_june_submetrics: return CONTINUE — never PASS, never FAIL, never fabricated.
+  frozen_invariants:
+    - no model or calibration parameter changes after June is opened (frozen affine params applied)
+    - M1 is evaluated in Stage A only, before any M2 computation; the lockbox opening burns it
+    - an LLM never decides M1 (SPEC-093 deterministic evaluator)
+  prospective_june_manifest: docs/evidence/stage2d-june-m1-transfer/ (digest
+    sha256:d192b4e3a3980fd3e2108a3efd68feb03d15e041a436569353178395f8b17b23; ATP 592, WTA 621,
+    overall 1,213 — all >= 500, so both tours are support-eligible on June)

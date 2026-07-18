@@ -1,0 +1,75 @@
+{
+ "artefact": "PROSPECTIVE June M1 transfer manifest (outcome-blind)",
+ "atp_count": 592,
+ "calendar_day_clusters": {
+  "ATP": {
+   "max": 65,
+   "mean": 19.73,
+   "min": 2,
+   "n_clusters": 30,
+   "p50": 15
+  },
+  "WTA": {
+   "max": 60,
+   "mean": 21.41,
+   "min": 2,
+   "n_clusters": 29,
+   "p50": 18
+  },
+  "overall_atp_plus_wta": {
+   "max": 125,
+   "mean": 40.43,
+   "min": 5,
+   "n_clusters": 30,
+   "p50": 36
+  }
+ },
+ "calibration_provenance": {
+  "ATP": {
+   "intercept": 0.025399,
+   "temperature": 1.218638
+  },
+  "WTA": {
+   "intercept": 0.029204,
+   "temperature": 1.150681
+  },
+  "policy": "calibration-policy-v2",
+  "scorecard_digest": "sha256:6001657753c8a26ea2ba53e3d323c0a132b1034161b6708d65c2c45e30284470"
+ },
+ "exclusion_funnel": {
+  "ELIGIBLE_F2": 1213,
+  "EXCLUDED_IDENTITY": 1658,
+  "REFUSED_TOUR_PROVENANCE": 5
+ },
+ "f2_valid_primary_only_tier": 63,
+ "f2_valid_strict": 1150,
+ "f2_valid_total": 1213,
+ "manifest_digest": "sha256:d192b4e3a3980fd3e2108a3efd68feb03d15e041a436569353178395f8b17b23",
+ "min_supported_predictions": 500,
+ "mixed_or_unknown_tour_refusals": 5,
+ "note": "June SEALED (SPEC-092); derived only from SAFE_BEFORE_LOCKBOX fields (schedule, runner names, pre-June TD history).",
+ "prior_history_cohorts_by_tour": {
+  "ATP": {
+   "1-4": 223,
+   "10-19": 59,
+   "20+": 236,
+   "5-9": 74
+  },
+  "WTA": {
+   "1-4": 197,
+   "10-19": 74,
+   "20+": 286,
+   "5-9": 64
+  }
+ },
+ "purpose": "Stage 2D \u00a73 \u2014 calibrated-F2-valid June singles for the M1 external transfer check; does NOT require an F0 market snapshot.",
+ "support_verdict": {
+  "atp_supported": true,
+  "note": "A tour with < 500 supported predictions CANNOT pass its tour-specific M1 requirements on June; Stage A returns CONTINUE for that tour unless the frozen amendment permits an overall-only PASS. Threshold fixed BEFORE these counts were computed; not to be altered after.",
+  "overall_supported": true,
+  "wta_supported": true
+ },
+ "total_june_primary_singles": 2876,
+ "tour_derivation": "governed identity-namespace provenance (m.source.tour); mixed/contradictory/absent -> typed refusal; NEVER inferred from names/tournaments/prices/outcomes.",
+ "wta_count": 621
+}
