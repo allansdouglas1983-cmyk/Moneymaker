@@ -1,0 +1,136 @@
+# specs/evidence/outcome-field-classification-v1.yaml
+#
+# Stage-2A Task 2 — complete outcome classification of EVERY field in the Betfair Tennis
+# ADVANCED corpus. This is the authoritative, human-owned (CODEOWNERS specs/**) governance
+# record; l8_evidence/outcome_fields.py encodes the SAME classification and a sync test
+# (tests/unit/l8/test_outcome_fields.py) fails if the two ever diverge. Changing a
+# classification is outcome-field-classification-v2 plus founder review — never an in-place
+# loosening.
+#
+# METHOD: derived from an empirical scan of 1,205 corpus files spanning all ten observed
+# market types and both event folders (docs/evidence/pilot-2026-06-tennis/scripts/... the
+# Stage-2A field_inventory.py). Every distinct key at every nesting level is listed. NO
+# outcome VALUE was recorded — this catalogues field NAMES/positions/status-context only.
+#
+# CLASSES (conservative; ties break toward the more restrictive class):
+#   SAFE_BEFORE_LOCKBOX  - a field whose meaning is fixed before the market goes off and
+#                          which carries no result/settlement information. Readable by
+#                          pre-lockbox code, BUT ONLY subject to the universal knowledge-time
+#                          line rule below (a safe field read from a post-off line is a
+#                          contamination, not a safe read).
+#   OUTCOME_CONTROLLED   - a field that encodes, or is materially perturbed by, the sporting
+#                          result / withdrawal / reconciliation. Unreadable by any pre-lockbox
+#                          consumer; reachable ONLY through the authorised outcome-opening
+#                          protocol at grading time.
+#   POST_SETTLEMENT_ONLY - a field that exists ONLY after settlement (never present pre-off).
+#                          A strict subset relationship to OUTCOME_CONTROLLED in effect, but
+#                          named distinctly because its mere PRESENCE dates the record as
+#                          post-settlement.
+#   UNKNOWN              - not observed in the pilot scan / not yet classified. Treated as
+#                          NOT pre-lockbox-safe (fail closed). Any new field in a future
+#                          corpus month is UNKNOWN until a v2 classifies it.
+#
+# UNIVERSAL KNOWLEDGE-TIME LINE RULE (applies ON TOP OF the field class): a pre-lockbox
+# reader may read a SAFE_BEFORE_LOCKBOX field ONLY from a stream line whose publish time
+# `pt` is at or before the governed decision boundary (a horizon-instance crossing_pt from
+# the marketTime state machine) AND whose marketDefinition.status is OPEN or SUSPENDED with
+# inPlay == false. Reading ANY field from a line at/after the off (inPlay true, or the first
+# CLOSED) is outside the pre-lockbox surface regardless of the field's class.
+
+version: outcome-field-classification-v1
+corpus: betfair-tennis-advanced
+derived_from_scan:
+  files_scanned: 1205
+  market_types_seen: [COMBINED_TOTAL, HANDICAP, MATCH_ODDS, NUMBER_OF_SETS,
+    PLAYER_A_WIN_A_SET, PLAYER_B_WIN_A_SET, SET_BETTING, SET_CORRECT_SCORE,
+    SET_WINNER, TOURNAMENT_WINNER]
+fail_closed: true   # any (level, field) not listed here => UNKNOWN => not pre-lockbox-safe
+
+# Value-level outcome sentinels: fields whose FIELD class permits pre-off reading but whose
+# specific VALUES mark the off/settlement boundary. A pre-lockbox reader must refuse a line
+# carrying any of these values, even for otherwise-safe fields on that line.
+value_level_outcome_sentinels:
+  - level: marketDefinition
+    field: status
+    outcome_values: [CLOSED]                      # settlement marker
+  - level: marketDefinition
+    field: inPlay
+    outcome_values: [true]                        # the off boundary (also: no-in-play rule)
+  - level: marketDefinition
+    field: bspReconciled
+    outcome_values: [true]                        # reconciled closing benchmark computed (post-off)
+  - level: runner
+    field: status
+    outcome_values: [WINNER, LOSER, REMOVED]      # the result itself (ACTIVE is pre-off, but see note)
+
+fields:
+  # ---- top-level mcm envelope ----
+  - {level: top, field: op,  class: SAFE_BEFORE_LOCKBOX, note: "operation type ('mcm'); framing"}
+  - {level: top, field: clk, class: SAFE_BEFORE_LOCKBOX, note: "stream change token; framing"}
+  - {level: top, field: pt,  class: SAFE_BEFORE_LOCKBOX, note: "publish time (ms) — the knowledge-time clock itself"}
+  - {level: top, field: mc,  class: SAFE_BEFORE_LOCKBOX, note: "market-change container; children classified below"}
+
+  # ---- mc[] (market change) ----
+  - {level: mc, field: id,               class: SAFE_BEFORE_LOCKBOX, note: "market id"}
+  - {level: mc, field: img,              class: SAFE_BEFORE_LOCKBOX, note: "image/replace flag (snapshot vs delta); framing"}
+  - {level: mc, field: marketDefinition, class: SAFE_BEFORE_LOCKBOX, note: "container; children classified below"}
+  - {level: mc, field: rc,               class: SAFE_BEFORE_LOCKBOX, note: "runner-change (price) container; children below — never present on CLOSED lines"}
+  - {level: mc, field: tv,               class: SAFE_BEFORE_LOCKBOX, note: "market total matched volume — a liquidity feature; governed by the knowledge-time line rule (never read from a CLOSED/in-play line)"}
+
+  # ---- marketDefinition ----
+  - {level: marketDefinition, field: betDelay,              class: SAFE_BEFORE_LOCKBOX, note: "in-play bet delay parameter; structural"}
+  - {level: marketDefinition, field: bettingType,           class: SAFE_BEFORE_LOCKBOX, note: "ODDS etc.; structural"}
+  - {level: marketDefinition, field: bspMarket,             class: SAFE_BEFORE_LOCKBOX, note: "structural flag: does the market have a BSP mechanism (known at creation). The BSP VALUE/reconciliation is separate and controlled."}
+  - {level: marketDefinition, field: bspReconciled,         class: OUTCOME_CONTROLLED,  note: "True => reconciled closing benchmark computed (post-off); SPEC-021 taint family"}
+  - {level: marketDefinition, field: complete,              class: SAFE_BEFORE_LOCKBOX, note: "marketDefinition completeness (all runners known); structural, present pre-off"}
+  - {level: marketDefinition, field: countryCode,           class: SAFE_BEFORE_LOCKBOX, note: "venue country; structural"}
+  - {level: marketDefinition, field: crossMatching,         class: SAFE_BEFORE_LOCKBOX, note: "cross-matching enabled; structural"}
+  - {level: marketDefinition, field: discountAllowed,       class: SAFE_BEFORE_LOCKBOX, note: "commission discount flag; structural"}
+  - {level: marketDefinition, field: eventId,               class: SAFE_BEFORE_LOCKBOX, note: "event id; identity"}
+  - {level: marketDefinition, field: eventName,             class: SAFE_BEFORE_LOCKBOX, note: "event name (player-vs-player); identity"}
+  - {level: marketDefinition, field: eventTypeId,           class: SAFE_BEFORE_LOCKBOX, note: "sport id (2 = tennis); structural"}
+  - {level: marketDefinition, field: inPlay,                class: SAFE_BEFORE_LOCKBOX, note: "off boundary signal; the value true is a sentinel (see value_level_outcome_sentinels)"}
+  - {level: marketDefinition, field: marketBaseRate,        class: SAFE_BEFORE_LOCKBOX, note: "commission base rate; structural, known pre-off"}
+  - {level: marketDefinition, field: marketTime,            class: SAFE_BEFORE_LOCKBOX, note: "scheduled off time (the state-machine input); schedule"}
+  - {level: marketDefinition, field: marketType,            class: SAFE_BEFORE_LOCKBOX, note: "MATCH_ODDS etc.; structural"}
+  - {level: marketDefinition, field: name,                  class: SAFE_BEFORE_LOCKBOX, note: "market name; identity"}
+  - {level: marketDefinition, field: numberOfActiveRunners, class: SAFE_BEFORE_LOCKBOX, note: "count of active runners — the SAFE way to know activeness (use instead of runner.status)"}
+  - {level: marketDefinition, field: numberOfWinners,       class: SAFE_BEFORE_LOCKBOX, note: "how many winners the market pays (=1 for match odds); structural, NOT the winner identity"}
+  - {level: marketDefinition, field: openDate,              class: SAFE_BEFORE_LOCKBOX, note: "market open date; schedule"}
+  - {level: marketDefinition, field: persistenceEnabled,    class: SAFE_BEFORE_LOCKBOX, note: "order persistence flag; structural"}
+  - {level: marketDefinition, field: regulators,            class: SAFE_BEFORE_LOCKBOX, note: "regulator list; structural"}
+  - {level: marketDefinition, field: runners,               class: SAFE_BEFORE_LOCKBOX, note: "runner-definition container; children classified below"}
+  - {level: marketDefinition, field: runnersVoidable,       class: SAFE_BEFORE_LOCKBOX, note: "structural flag (can runners be voided). The void EVENT is outcome; this parameter is pre-off."}
+  - {level: marketDefinition, field: status,                class: SAFE_BEFORE_LOCKBOX, note: "OPEN/SUSPENDED pre-off; the value CLOSED is a settlement sentinel (see sentinels)"}
+  - {level: marketDefinition, field: settledTime,           class: POST_SETTLEMENT_ONLY, note: "present ONLY on CLOSED lines; the settlement timestamp"}
+  - {level: marketDefinition, field: suspendTime,           class: SAFE_BEFORE_LOCKBOX, note: "scheduled suspend time; schedule"}
+  - {level: marketDefinition, field: timezone,              class: SAFE_BEFORE_LOCKBOX, note: "venue timezone; structural"}
+  - {level: marketDefinition, field: turnInPlayEnabled,     class: SAFE_BEFORE_LOCKBOX, note: "whether the market turns in-play; structural"}
+  - {level: marketDefinition, field: version,               class: SAFE_BEFORE_LOCKBOX, note: "marketVersion (the SPEC-072 guard counter); structural"}
+
+  # ---- marketDefinition.runners[] (runner DEFINITIONS) ----
+  - {level: runner, field: id,               class: SAFE_BEFORE_LOCKBOX, note: "selection id; identity"}
+  - {level: runner, field: name,             class: SAFE_BEFORE_LOCKBOX, note: "player/pair name; identity"}
+  - {level: runner, field: sortPriority,     class: SAFE_BEFORE_LOCKBOX, note: "market's initial ranking, assigned at creation; pre-off structural (NOT the result)"}
+  - {level: runner, field: hc,               class: SAFE_BEFORE_LOCKBOX, note: "runner handicap; market parameter"}
+  - {level: runner, field: status,           class: OUTCOME_CONTROLLED,  note: "THE result carrier: WINNER/LOSER post-off (ACTIVE/REMOVED pre-off). Conservative: the whole field is controlled. Pre-lockbox activeness comes from numberOfActiveRunners, never from here."}
+  - {level: runner, field: adjustmentFactor, class: OUTCOME_CONTROLLED,  note: "reduction-factor-like; changes on removal; settlement-adjacent; not needed for pricing features"}
+  - {level: runner, field: removalDate,      class: OUTCOME_CONTROLLED,  note: "runner removal/withdrawal event; for tennis a retirement/walkover proxy; SPEC-084 outcome-adjacent"}
+
+  # ---- rc[] (runner change — the PRICE/liquidity substrate; never present on CLOSED lines) ----
+  - {level: rc, field: id,   class: SAFE_BEFORE_LOCKBOX, note: "selection id; identity"}
+  - {level: rc, field: batb, class: SAFE_BEFORE_LOCKBOX, note: "best available to back (3 delivered levels); price/liquidity"}
+  - {level: rc, field: batl, class: SAFE_BEFORE_LOCKBOX, note: "best available to lay (3 delivered levels); price/liquidity"}
+  - {level: rc, field: trd,  class: SAFE_BEFORE_LOCKBOX, note: "traded ladder (price, cumulative matched); liquidity"}
+  - {level: rc, field: ltp,  class: SAFE_BEFORE_LOCKBOX, note: "last traded price; liquidity"}
+  - {level: rc, field: tv,   class: SAFE_BEFORE_LOCKBOX, note: "runner total matched volume; liquidity"}
+  - {level: rc, field: hc,   class: SAFE_BEFORE_LOCKBOX, note: "runner handicap on the price entry; market parameter"}
+
+# Fields deliberately noted ABSENT from the ADVANCED tier (would be OUTCOME_CONTROLLED/taint
+# if they appeared, and are classified so pre-emptively via fail_closed + this note):
+#   spb, spl, spn, spf  (Betfair Starting Price back/lay/near/far) — NOT present in this
+#     corpus; tennis has no SP mechanism in these files. Any future appearance is UNKNOWN =>
+#     unsafe until a v2 classifies them (expected: OUTCOME_CONTROLLED, BSP taint family).
+#   atb, atl, bdatb, bdatl (full / display ladders) — NOT present (3-level tier); if a
+#     future tier carries them they are price/liquidity (expected SAFE) but remain UNKNOWN
+#     until classified.
