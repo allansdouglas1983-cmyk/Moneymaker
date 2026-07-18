@@ -126,3 +126,23 @@ explicit human approval. Parameters CONFIRMED as the standing proposal:
 No live key, real order, or real-money activity is authorised by that acceptance.
 Purchase execution still requires: ADR 0015 resolution (lawful account access
 confirmed) + the founder's explicit final go.
+
+---
+
+## Founder amendment (2026-07-18): storage rule updated for the founder's actual workflow
+
+SUPERSEDES the "processed locally only / no cloud upload" precaution above, by explicit
+founder decision (in-session, 2026-07-18). The founder operates entirely through the
+remote workspace and runs nothing locally; a local-only rule is unworkable in fact.
+
+**Amended rule:** the purchased raw data is stored in PRIVATE, access-controlled
+storage under the founder's own control (e.g. a private Google Drive/Dropbox folder),
+and pulled into the project workspace only while running analysis, for the founder's
+own research exclusively. It is never made public, never shared, never published,
+never committed to GitHub, and never redistributed in raw form. Betfair's portal
+re-download of purchased months serves as the ultimate source of record.
+
+**Unchanged:** checksum discipline (the first workspace pull computes and pins the
+SHA-256 manifest in the repo; every later pull must match it); derived outputs and
+manifests in the repo, raw data never; the rights questions to Betfair remain open and
+any written answer from Betfair that contradicts this posture reopens the decision.
