@@ -66,7 +66,7 @@ def _td_key(normalized: str) -> tuple[str, str] | None:
 
     The trailing dotted token(s) are initials; everything before is the surname."""
     tokens = normalized.split(" ")
-    initial_tokens = []
+    initial_tokens: list[str] = []
     while tokens and tokens[-1].replace(".", "").isalpha() and "." in tokens[-1]:
         initial_tokens.insert(0, tokens.pop())
     if not tokens or not initial_tokens:

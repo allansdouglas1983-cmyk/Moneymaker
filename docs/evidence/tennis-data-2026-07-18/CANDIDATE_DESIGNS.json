@@ -1,0 +1,105 @@
+{
+ "designs": [
+  {
+   "design": "A",
+   "development_oof": {
+    "from": "2021-01-01",
+    "matches": {
+     "ATP": 12229,
+     "WTA": 11343
+    },
+    "surfaces": {
+     "Clay": 6927,
+     "Grass": 2999,
+     "Hard": 13646
+    },
+    "to": "2025-08-31"
+   },
+   "evaluation_total": 26918,
+   "oof_prediction_count": 23572,
+   "power_vs_declared": {
+    "alpha_0.05_over_6": {
+     "adequate": false,
+     "n_available_oof_plus_validation": 26918,
+     "n_required": 41039
+    },
+    "alpha_0.05_single": {
+     "adequate": true,
+     "n_available_oof_plus_validation": 26918,
+     "n_required": 26600
+    }
+   },
+   "validation": {
+    "from": "2025-09-01",
+    "matches": {
+     "ATP": 1710,
+     "WTA": 1636
+    },
+    "surfaces": {
+     "Clay": 1134,
+     "Hard": 2212
+    },
+    "to": "2026-05-31"
+   },
+   "validation_count": 3346,
+   "warm_up": {
+    "matches": {
+     "ATP": 54126,
+     "WTA": 31906
+    },
+    "through": "2020-12-31"
+   }
+  },
+  {
+   "design": "B",
+   "development_oof": {
+    "from": "2019-01-01",
+    "matches": {
+     "ATP": 15168,
+     "WTA": 13943
+    },
+    "surfaces": {
+     "Clay": 8883,
+     "Grass": 3030,
+     "Hard": 17198
+    },
+    "to": "2025-05-31"
+   },
+   "evaluation_total": 34046,
+   "oof_prediction_count": 29111,
+   "power_vs_declared": {
+    "alpha_0.05_over_6": {
+     "adequate": false,
+     "n_available_oof_plus_validation": 34046,
+     "n_required": 41039
+    },
+    "alpha_0.05_single": {
+     "adequate": true,
+     "n_available_oof_plus_validation": 34046,
+     "n_required": 26600
+    }
+   },
+   "validation": {
+    "from": "2025-06-01",
+    "matches": {
+     "ATP": 2521,
+     "WTA": 2414
+    },
+    "surfaces": {
+     "Clay": 1327,
+     "Grass": 582,
+     "Hard": 3026
+    },
+    "to": "2026-05-31"
+   },
+   "validation_count": 4935,
+   "warm_up": {
+    "matches": {
+     "ATP": 50376,
+     "WTA": 28528
+    },
+    "through": "2018-12-31"
+   }
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "both_player_mapped": 1218,
+ "coverage_ledger_note": "760 source-unmatched players and 54 ambiguity/homonym refusals remain visible in identity_resolution_report.json; nothing dropped",
+ "exclusion_funnel": {
+  "ELIGIBLE_F2": 1218,
+  "EXCLUDED_IDENTITY": 1658
+ },
+ "f2_eligible": 1218,
+ "f2_eligible_primary_only_tier": 63,
+ "f2_eligible_strict": 1155,
+ "f3_blocker": "JUNE_SURFACE_SOURCE_MISSING (governed June-surface source required)",
+ "f3_eligible": 0,
+ "manifest_sha256": "96bd1f1283120651bc9a2508c647e1e9300d53d14e5b108847940933088c11a9",
+ "markets": 2876,
+ "prior_history_bands_f2_eligible": {
+  "1-4": 422,
+  "10-19": 134,
+  "20+": 524,
+  "5-9": 138
+ }
+}

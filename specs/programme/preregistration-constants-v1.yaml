@@ -1,0 +1,37 @@
+# specs/programme/preregistration-constants-v1.yaml — FROZEN founder declarations
+# (2026-07-18, Stage-2 pre-registration). Human-owned (specs/**). PERMANENT for this
+# registered programme: no value may be changed because a later result is inconvenient;
+# any change is a NEW programme registration with multiplicity consequences, never an
+# edit. Consumed by every F-family TrialRegistration.
+
+version: preregistration-constants-v1
+declared_by: founder
+declared_on: "2026-07-18"
+
+alpha_total: "0.05"          # programme-level FAMILY-WISE budget across all
+                             # pre-registered model-family comparisons; rationed ONLY by
+                             # the existing multiplicity rule
+                             # spent_alpha = (1-confidence)*(prior_trials+1) <= alpha_total
+power: "0.80"                # planning target; never increased after results exist
+
+minimum_meaningful_effect_delta_nats: "0.0007"
+  # delta = mean per-match PAIRED log-score improvement over the governed market
+  # baseline (SPEC-090 d_m, natural log), across the eligible evaluation set.
+
+planning_sigma_d_nats: "0.04075"
+  # EXPLICITLY a conservative, OUTCOME-BLIND PLANNING ASSUMPTION (Packet B predeclared
+  # p90 across synthetic-winner scenarios) — not an empirically measured fact.
+
+derived_sample_size:         # derived via l8_evidence.sample_size.derive_sample_size
+  formula: "N = (z_alpha + z_beta)^2 * sigma_d^2 / delta^2 (two-sided, power 0.80)"
+  n_required_alpha_0_05_single: 26600
+  n_required_alpha_0_05_over_6: 41039
+
+stability_dwell_seconds: 60
+maximum_nominal_lead_seconds: 300
+reschedule_policy: COMMIT_ONCE_HOLD_THROUGH_RESCHEDULE   # specs/programme/reschedule-policy-v1.yaml
+
+evidence_basis:
+  packet_a_sha256: 3f425c33f8033834fef727b029838c2d59bf02176fc50d2e95dcae270267be54
+  packet_b_sha256: 89b32475817b89adf996d0df439cf4488418d99b6bc393560deb117652682e3f
+  packet_c_sha256: 7fce303e97f9f8f0461b1feb6a296ca367256abfba7afcb13c56f785a7619e72

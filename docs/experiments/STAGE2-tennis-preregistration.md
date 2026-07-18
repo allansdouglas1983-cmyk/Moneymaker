@@ -177,3 +177,47 @@ Declared by the founder at Stage-2A acceptance. These entries RESOLVE the corres
    assumption), reschedule dwell `W` and max nominal lead — to be declared from the
    outcome-blind evidence packets (docs/evidence/stage2b-planning-packets/), never
    invented and never chosen because they improve any real result.
+
+---
+
+## Founder amendment 2 (2026-07-18): ALL numeric boundaries declared — pre-registration COMPLETE
+
+Every ⟨PENDING FOUNDER⟩ item is now resolved (frozen machine-readably in
+`specs/programme/preregistration-constants-v1.yaml`, digest in the commit):
+
+- `alpha_total = 0.05` (family-wise, existing multiplicity machinery only), `power = 0.80`;
+- `minimum_meaningful_effect_delta_nats = 0.0007` — mean per-match PAIRED log-score
+  improvement over the governed market baseline;
+- `planning_sigma_d_nats = 0.04075` — explicitly a conservative outcome-blind PLANNING
+  ASSUMPTION, not a measured fact;
+- derived N (platform SPEC-094 code, two-sided): 26,600 (α=0.05 single) / 41,039 (α=0.05/6);
+- `stability_dwell_seconds = 60`, `maximum_nominal_lead_seconds = 300`, policy
+  `COMMIT_ONCE_HOLD_THROUGH_RESCHEDULE` (`specs/programme/reschedule-policy-v1.yaml`).
+
+These values are PERMANENT for this registered programme and may not be changed because
+a later result is inconvenient.
+
+**Label policy (founder §4):** the primary F2/F3 programme INCLUDES only normally
+completed singles matches with exactly one unambiguous sporting winner, lawful pre-June
+data and resolved identities; retirements, walkovers, awarded matches,
+disqualifications, ambiguous outcomes and conflicting duplicates are EXCLUDED (visible
+exclusions). Retirement treatment is only ever a separately pre-registered sensitivity
+analysis after score/settlement semantics are proven. This supersedes the corpus-design
+draft's retired-kept proposal.
+
+**Cold-start policy (founder §5):** the ten-prior-match abstention rule is NOT
+activated. F2 supports new/sparse competitors through one governed initial-rating
+policy; all otherwise-eligible cold-start matches are retained and reported by
+prior-history cohort (0 / 1–4 / 5–9 / 10–19 / 20+). Any history-based abstention
+belongs to the decision/risk layer and must never hide baseline weakness or inflate
+reported coverage.
+
+**Gate vocabulary (founder clarification):** Gate −1 (data rights) is CLOSED (PASS on
+founder attestation, Tennis-Data scope). Gate 1 / M1 (probability adequacy) is NOT
+closed — it is evaluable only after governed F2/F3 modelling and pre-June outcome
+evaluation. June remains an external replication/veto block for M1 (directional
+consistency, calibration/coverage transfer, catastrophic contradiction; wide interval
+= CONTINUE/INCONCLUSIVE; it is never independently-powered by assertion) and the first
+market-comparison block for M2; underpowered June results stay CONTINUE; no data month
+is bought for volume; any further ADVANCED month is proposed only after M1 to close a
+derived, named gap.

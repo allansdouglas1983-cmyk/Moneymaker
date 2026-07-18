@@ -480,3 +480,25 @@ exact single-user personal scope — no evidence fields fabricated, no digest re
 registry entry permitted/verified_by-founder/recheck 2027-07-18; residual-risk record:
 PASS is void-forward if the provider's terms are ever found narrower. F2 blockers now:
 ONLY the founder declarations (delta, sigma_d, W/L + post-decision-revision response).
+
+## Pre-registration COMPLETE; policy frozen; 0003 landed; CI green (2026-07-18)
+
+Founder declarations frozen (specs/programme/preregistration-constants-v1.yaml):
+alpha_total=0.05 family-wise, power=0.80, delta=0.0007 nats (paired mean per-match),
+sigma_d=0.04075 (explicit planning assumption), W=60s, L=300s; derived N (platform
+code): 26,600 @ a=.05 / 41,039 @ a=.05/6. Reschedule policy frozen:
+COMMIT_ONCE_HOLD_THROUGH_RESCHEDULE (9 founder rules; F-13 retries are execution, not
+new decisions; time passage never material). Test-correction 0003 applied per founder
+conditions (representability guard, 128-ULP anchored, examples pinned; production
+untouched) — **full make verify GREEN repo-wide (275 files)**. Label policy: completed-
+only primary (retirements/walkovers/awarded/DQ excluded, visible); cold-start rule NOT
+activated (governed prior + banded reporting 0/1-4/5-9/10-19/20+). June F2/F3
+eligibility manifest FROZEN (digest 96bd1f12..., derived from rules not hard-coded):
+2,876 -> F2-eligible 1,218 (strict 1,155 / primary-only 63); bands 1-4:422, 5-9:138,
+10-19:134, 20+:524; F3 June emission 0 (JUNE_SURFACE_SOURCE_MISSING, governed source
+needed); 1,658 EXCLUDED_IDENTITY visible in the coverage ledger. Development design
+SELECTED: Design B (warm<=2018; OOF 2019-01..2025-05 = 29,111; validation
+2025-06..2026-05 = 4,935; eval 34,046 — adequate @ a=.05 single, NOT @ .05/6; COVID-2020
+inside OOF recorded as regime cohort). Gate -1 CLOSED (attestation scope); Gate 1/M1
+NOT evaluated; June sealed; no odds in fundamental pipeline; no paid provider. F2
+implementation + pre-June training AUTHORISED (all four §9 preconditions met).

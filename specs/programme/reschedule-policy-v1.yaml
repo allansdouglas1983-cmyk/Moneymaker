@@ -1,0 +1,36 @@
+# specs/programme/reschedule-policy-v1.yaml — FROZEN v1 operational reschedule policy
+# (founder declaration 2026-07-18). Human-owned. Chosen outcome-blind from Packet C;
+# revisited only by a governed v2, never because a result would prefer different timing.
+
+version: reschedule-policy-v1
+policy: COMMIT_ONCE_HOLD_THROUGH_RESCHEDULE
+declared_by: founder
+declared_on: "2026-07-18"
+constants:
+  stability_dwell_seconds: 60        # W
+  maximum_nominal_lead_seconds: 300  # L (five-minute nominal window)
+
+rules:
+  - 1: the as-of-published-marketTime state machine governs all horizon/crossing
+       semantics (immutable, lineage-linked instances; nothing rewritten).
+  - 2: a marketTime revision during the 60-second dwell RESETS the dwell.
+  - 3: the FIRST stable crossing inside the current five-minute nominal window may
+       create ONE immutable model decision for the market.
+  - 4: the committed decision may be BET or ABSTAIN — both are decisions.
+  - 5: once committed, later marketTime revisions do NOT create another model decision
+       (hold-through-reschedule).
+  - 6: if no decision has yet been committed, a later valid crossing may still create
+       the market's one decision.
+  - 7: F-13 may retry EXECUTION of the same economic decision after a confirmed
+       zero-fill FOK, under its existing cooldown, state-change and attempt-budget
+       rules (l6_broker.retry.RetryGovernor).
+  - 8: an F-13 retry is NOT a new model decision.
+  - 9: time passage by itself is NOT a material market-state change (identical
+       decision/book digests can never re-fire — F-13 never-twice rule).
+
+notes:
+  - one market, one model decision: SPEC-054's one-selection-per-market discipline
+    extends temporally — the decision, once committed, is held.
+  - post-decision marketTime revisions are EXPECTED (~82-88% of decided markets,
+    Packet C); the policy makes them a recorded fact, not a trigger.
+  - live replicable (uses only past observations) and deterministically replayable.
