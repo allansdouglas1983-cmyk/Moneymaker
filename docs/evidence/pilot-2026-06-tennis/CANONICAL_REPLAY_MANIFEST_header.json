@@ -1,0 +1,11 @@
+{
+  "canonical_replay_manifest_digest": "be2ae21a938fdc0ba2b4a9dfb21f6d4c8dcde699fab2f245383f19ed844bc617",
+  "canonical_unique_market_count": 16981,
+  "combined_only_markets": 26,
+  "corpus_sha256sums_digest": "d6d2f44b318aea425f3904ac83b8eb4a4bd067b7fe777c0375f107519162f9cc",
+  "manifest_version": "CANONICAL_REPLAY_MANIFEST-v1",
+  "match_odds_analytical_markets": 3521,
+  "packaging_audit_digest": "b8d3470e9d3f86da0e5e1a884cd629eb13e43ccdee613f6c291d699508876564",
+  "standalone_canonical_markets": 16955,
+  "universe_manifest_digest": "ce9a147e64df0db5865dade4d78f0ae02cb93532c2f81518e9da313115029049"
+}

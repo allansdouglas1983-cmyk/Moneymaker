@@ -31,6 +31,9 @@ package = false
 
 [tool.ruff]
 target-version = "py311"
+# docs/evidence holds ARCHIVAL analysis scripts frozen exactly as run (pilot evidence,
+# ADR 0018) — records, not source; excluded from lint/type-check, never imported.
+extend-exclude = ["docs/evidence"]
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers"
@@ -52,4 +55,4 @@ python_version = "3.11"
 strict = true
 namespace_packages = true
 explicit_package_bases = true
-exclude = ['^\.venv/']
+exclude = ['^\.venv/', '^docs/evidence/']  # docs/evidence: archival pilot scripts (ADR 0018), not source

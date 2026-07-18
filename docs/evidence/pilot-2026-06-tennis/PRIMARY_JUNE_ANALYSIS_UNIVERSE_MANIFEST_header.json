@@ -1,0 +1,32 @@
+{
+  "body_sha256": "ce9a147e64df0db5865dade4d78f0ae02cb93532c2f81518e9da313115029049",
+  "cohort_counts": {
+    "DOUBLES_DESCRIPTIVE_COHORT": 613,
+    "PRIMARY_JUNE_SINGLES_UNIVERSE": 2876,
+    "STRICT_SIBLING_CORROBORATED_SENSITIVITY_COHORT": 2287
+  },
+  "combined_only_non_match_odds_count": 26,
+  "generated_from": {
+    "full_corpus_metadata": "audit/full_corpus_metadata.jsonl",
+    "match_format_classification": "audit/match_format_v2.jsonl",
+    "packaging_dedup_audit": "audit/dedup_audit_output.jsonl"
+  },
+  "manifest_version": "PRIMARY_JUNE_ANALYSIS_UNIVERSE-v1",
+  "packaging_status_counts": {
+    "STANDALONE_CANONICAL_COMBINED_REDUNDANT": 3520,
+    "STANDALONE_ONLY_NO_COMBINED_COPY": 1
+  },
+  "row_count": 3521,
+  "rules": {
+    "date_window": "[2026-06-01T00:00:00Z, 2026-07-01T00:00:00Z)",
+    "date_window_field": "marketDefinition.marketTime (earliest valid, never folder path)",
+    "match_format_rule": "classify_v2.py: primary runner structure -> MatchFormat; sibling markets -> ClassificationEvidence, absence never forces UNKNOWN",
+    "packaging_rule": "standalone canonical when present; combined-file copy excluded from replay as redundant; combined-only market included once with provenance; conflicting duplicate representation fails hard",
+    "v1_analytical_market_unit": "MATCH_ODDS only"
+  },
+  "universe_membership_counts": {
+    "DOUBLES_DESCRIPTIVE_COHORT": 613,
+    "EXCLUDED_OUT_OF_WINDOW": 32,
+    "PRIMARY_JUNE_SINGLES_UNIVERSE": 2876
+  }
+}
