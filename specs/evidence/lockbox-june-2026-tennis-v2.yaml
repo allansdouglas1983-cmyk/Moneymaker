@@ -1,0 +1,53 @@
+# specs/evidence/lockbox-june-2026-tennis-v2.yaml — SEPARATE EXPLICIT FOUNDER AUTHORISATION
+# to open the June 2026 tennis lockbox for GATE-1 / M1 external transfer ONLY (Stage 2E §2/§3).
+# Human-owned (CODEOWNERS specs/**). This is the v2 the v1 seal required for any June opening
+# ("june_opening: NOT AUTHORISED. Requires a SEPARATE explicit founder authorisation recorded
+# as a v2 of this file"). It does NOT relax the permanent invariants; it authorises exactly one
+# governed, logged, burning read.
+
+supersedes: lockbox-june-2026-tennis-v1
+lockbox_id: lockbox-june-2026-tennis-v1     # SAME lockbox; v2 authorises its opening
+authorised_on: "2026-07-18"
+authorised_by: founder (Stage 2E directive §2/§3)
+spec: SPEC-092
+
+authorisation:
+  scope: JUNE_M1_TRANSFER            # the new governed OutcomeAccessScope member
+  purpose: >-
+    Stage A — evaluate the FROZEN affine-calibrated F2 model against the approved M1
+    remediation amendment (probability-m1.yaml remediation_amendment_v1) on the untouched
+    June block, as an EXTERNAL TRANSFER check. M1 ONLY. No M2 on June. No market-combination
+    fitting during Stage A.
+  reader: GATE-1 via l8_evidence.lockbox.LockboxRegistry.access (log-then-grant; the grant
+    BURNS the lockbox — GATE1_EVALUATION_CONSUMED). One opening, then absorbing BURNED.
+  binding: bound to experiment_id + model/feature/data manifests + gate spec version via the
+    extractor's OutcomeAccessAuthorisation (whose digest stamps every extracted outcome).
+  frozen_artefacts_applied_unchanged:
+    - F2 global Elo (selected-model-record-v1); frozen per-tour K selection rule
+    - affine calibration (calibration-policy-v2) — ATP intercept 0.025399 / temperature 1.218638;
+      WTA intercept 0.029204 / temperature 1.150681
+    - identity td-norm-v1; eligibility-policy-v1; label-policy-v1-completed-only
+    - June M1 transfer manifest (docs/evidence/stage2d-june-m1-transfer/, digest d192b4e3…)
+
+what_this_authorises: exactly ONE GATE-1 read of the June member markets' sporting outcomes,
+  for the M1 transfer scorecard, logged in the LockboxRegistry and burning the lockbox.
+
+what_this_does_NOT_authorise:
+  - any M2 / market-combination / EV / ROI / CLV / P&L / betting-selection analysis on June
+  - any model, calibration, coefficient, feature, eligibility or benchmark change after opening
+  - re-use of this seal — once burned it can never again serve as an untouched holdout;
+    post-opening confirmatory evidence must come from a NEW untouched period (Stage C future stream)
+  - any relaxation of the permanent invariants (ADR 0015 account block; no live orders;
+    no other-account bypass)
+
+structural_change_required:
+  module: l8_evidence.tennis_outcomes
+  change: add the OutcomeAccessScope member JUNE_M1_TRANSFER and a June-authorised extraction
+    path that permits ONLY the sealed June membership under an authorisation carrying that
+    scope + this v2 record; the PRE_JUNE_DEVELOPMENT path and the unauthenticated-refusal path
+    are UNCHANGED and still refuse June.
+  discipline: the seal-invariant test that asserted "June is unrepresentable" is updated as a
+    SEPARATE, founder-authorised test-correction citing SPEC-092 and this v2 (Rule 2 — never
+    bundled with the burn).
+
+continuation: governed by june-evidence-plan-amendment-v1 (Stage A continuation rule).

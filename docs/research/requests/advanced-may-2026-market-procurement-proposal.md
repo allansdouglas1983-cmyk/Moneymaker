@@ -1,5 +1,12 @@
 # Proposal: targeted procurement of May 2026 Betfair tennis market data (SPEC-032 alpha/beta training block)
 
+> **WITHDRAWN 2026-07-18 (Stage 2E).** This proposal is REJECTED on budget and
+> sequencing grounds — scientifically clean but no further historical-data purchase is
+> authorised. The programme uses the EXISTING June corpus to demonstrate progress first
+> (see specs/programme/june-evidence-plan-amendment-v1.yaml). No May/April/other month and
+> no bulk package is to be purchased. Retained only as an audit record of the rejected plan.
+
+
 **Status:** PROPOSAL — returned for founder review. Authorises nothing. Requests no purchase.
 **Type:** ADVISORY (data-procurement proposal; not a Deep Research handoff).
 **Date drafted:** 2026-07-18

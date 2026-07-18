@@ -605,3 +605,22 @@ e-process (SPEC-096 unimplemented/planned; material engineering + years of month
 "paired races" -> "paired matches/decision units" (no number/verdict/digest change). §5/§6/§7
 (May ingest, F0/F2 dev block, SPEC-032 fit) BLOCKED pending founder-provided May data. June sealed;
 no odds; no ROI/CLV/P&L/EV/selection. make verify: gate/governance tests + spec coverage green.
+
+## Stage 2E: June re-sequenced (M1 transfer -> SPEC-032 dev -> future M2); May purchase WITHDRAWN (2026-07-18)
+
+Founder rejected the May purchase on budget/sequencing; NO further historical-data purchase.
+Programme AMENDED (outcome-blind, before any June result): June is NO LONGER the M2 confirmation
+block. New stages (june-evidence-plan-amendment-v1, digest 94f37c2a…): STAGE A = open June ONCE
+as GATE-1 for the M1 external transfer of the frozen affine-calibrated F2 (burns the lockbox);
+STAGE B = only if M1 PASS, June becomes the SPEC-032 combination DEVELOPMENT block (nested OOF
+diagnostic + final pooled alpha,beta; no confirmatory alpha); STAGE C = FUTURE unseen matches
+become the M2 confirmation stream (0.025 preserved). Continuation rule: M1 PASS->Stage B;
+FAIL_HARM/substantive FAIL->stop; CONTINUE-on-support->stop+founder decision. May procurement +
+authorisation marked WITHDRAWN. Alpha ledger reclassified June-M2 -> future-prospective-M2. v2
+seal spec authorises the Stage A opening (lockbox-june-2026-tennis-v2, digest f552c7bf…): adds
+governed scope JUNE_M1_TRANSFER; one logged burning GATE-1 read; no M2/EV/ROI on June; no
+param change after opening; seal never reused. Future-prospective M2 protocol drafted
+(one-shot vs anytime-valid e-process; SPEC-096 unimplemented). NOTE: the actual Stage A opening
+(seal-code change + irreversible GATE-1 burn + M1 scorecard) is the next discrete step — the
+seal-invariant test correction is a Rule-2 separate change and the burn is irreversible, so it is
+NOT bundled here. Governance green (spec coverage 44 IDs; gate/outcome tests pass). June still sealed.

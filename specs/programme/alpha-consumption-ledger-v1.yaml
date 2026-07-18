@@ -22,9 +22,13 @@ allocations:
     status: SPENT 2026-07-18 — verdict FAIL_HARM (F3 materially worse; overall mean_d
       -0.0095, 97.5% CI [-0.0120, -0.0071] entirely negative). F3 not promoted; F2 retained.
     powered: "yes at planning sigma_d (34,038 >= 32,212); realised CI decisive"
-  - id: June-M2-market-comparison
+  - id: future-prospective-M2-market-comparison
     alpha_charge: "0.025"      # confidence 0.975; exhausts the budget
-    status: RESERVED (June sealed; underpowered at 1,218 eligible -> CONTINUE by design)
+    status: RESERVED for the Stage C FUTURE-PROSPECTIVE M2 stream (Stage 2E amendment
+      june-evidence-plan-amendment-v1). June is NO LONGER the M2 confirmation block — it is
+      spent as the Stage A M1 external transfer and the Stage B SPEC-032 DEVELOPMENT block
+      (development consumes NO alpha). This 0.025 is preserved for future unseen matches.
+    was: "June-M2-market-comparison (reclassified 2026-07-18, before any June result)"
 
 remaining_after_reservations: "0.000"
 

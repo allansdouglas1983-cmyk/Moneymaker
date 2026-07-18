@@ -1,0 +1,60 @@
+# specs/programme/june-evidence-plan-amendment-v1.yaml — Stage 2E programme amendment.
+# Human-owned (CODEOWNERS specs/**). Made OUTCOME-BLIND, before any June result was opened.
+# Re-sequences how the existing June corpus is used, on budget + sequencing grounds (no
+# further historical-data purchase). Records the founder's Stage 2E directive.
+
+amendment_id: JUNE-EVIDENCE-PLAN-v1
+frozen_on: "2026-07-18"
+authority: founder directive (Stage 2E)
+outcome_blind: true            # frozen BEFORE June outcomes were opened
+
+supersedes_intent:
+  - June is NO LONGER the final independent M2 confirmation block.
+  - The May-2026 ADVANCED procurement proposal is WITHDRAWN (budget + sequencing); no
+    further historical-data month or bulk package is purchased. The project must demonstrate
+    modelling progress on the EXISTING June corpus before any further expenditure.
+
+new_stages:
+  STAGE_A:
+    name: June external M1 transfer
+    role: June is opened ONCE, as GATE-1, as an untouched EXTERNAL TRANSFER block for the
+      frozen F2 model (no fitting/recalibration/parameter/feature change). Evaluates the
+      frozen affine-calibrated F2 against the approved M1 remediation amendment
+      (specs/gates/probability-m1.yaml remediation_amendment_v1).
+    burns_lockbox: true          # SPEC-092 — the GATE-1 read consumes the holdout
+    continuation_rule:
+      - M1 PASS -> Stage B authorised
+      - FAIL_HARM or substantive FAIL -> STOP the programme; Stage B prohibited
+      - CONTINUE solely because a pre-registered subgroup lacks the required support ->
+        STOP and return for founder decision (never silently continue from CONTINUE)
+  STAGE_B:
+    name: June market-combination development
+    role: only after an M1 PASS and no founder veto, June becomes the DEVELOPMENT block for
+      fitting the registered SPEC-032 combination (nested chronological OOF diagnostic, then
+      a final pooled alpha,beta). DEVELOPMENT evidence — consumes NO confirmatory alpha and
+      CANNOT close M2.
+    precondition: Stage A returned PASS
+  STAGE_C:
+    name: future prospective M2 confirmation
+    role: FUTURE unseen matches (after the final combination model is frozen) become the
+      untouched M2 confirmation stream (future-prospective-m2-protocol.md). The reserved
+      0.025 confirmatory alpha is preserved for this — never spent on the June development
+      diagnostic.
+
+alpha:
+  june_development: "0.000"    # Stage B is development; no confirmatory alpha
+  future_m2_reserved: "0.025"  # unchanged; now spent on Stage C, not June
+  ledger: specs/programme/alpha-consumption-ledger-v1.yaml
+
+invariants:
+  - no model, calibration parameter, combination coefficient, eligibility policy, benchmark,
+    or feature may change after June is opened (Stage A) or between Stage B and Stage C
+  - opening June burns the lockbox (SPEC-092); it can never again be an untouched holdout
+  - the opening authorises NO betting/EV/ROI/CLV/P&L/selection analysis
+  - an LLM never decides a gate (SPEC-093 deterministic evaluator)
+
+records:
+  seal_v2: specs/evidence/lockbox-june-2026-tennis-v2.yaml (authorises the Stage A opening)
+  m1_gate: specs/gates/probability-m1.yaml (remediation_amendment_v1)
+  m2_gate_retained: specs/gates/probability-m2.yaml (retained; its evaluation target moves
+    from June to the Stage C future-prospective stream)

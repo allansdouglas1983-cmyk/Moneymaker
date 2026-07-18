@@ -1,5 +1,11 @@
 # May 2026 ADVANCED market-development purchase — AUTHORISATION + handoff (Stage 2D §4)
 
+> **WITHDRAWN 2026-07-18 (Stage 2E).** The May 2026 ADVANCED purchase authorisation is
+> REVOKED — no historical-data purchase is authorised. Superseded by
+> specs/programme/june-evidence-plan-amendment-v1.yaml (use the existing June corpus first).
+> Retained only as an audit record.
+
+
 **Founder authorisation, 2026-07-18.** One targeted historical-market development month is
 authorised for fitting the frozen SPEC-032 combination (development data only — not a new
 model-family search, not confirmatory evidence).
