@@ -502,3 +502,19 @@ SELECTED: Design B (warm<=2018; OOF 2019-01..2025-05 = 29,111; validation
 inside OOF recorded as regime cohort). Gate -1 CLOSED (attestation scope); Gate 1/M1
 NOT evaluated; June sealed; no odds in fundamental pipeline; no paid provider. F2
 implementation + pre-June training AUTHORISED (all four §9 preconditions met).
+
+## Stage 2B executed: F0, F1, F2 first evaluation (2026-07-18)
+
+Gate-role clarification + pre-reg amendment 3 (no pre-June market-relative claims).
+F0 June yardstick RUN: 2,518/2,876 committed decisions (manifest 90b80100...), typed
+refusals, info-price-v2, no outcome read. F1 structural null + harness-leakage suite
+through the REAL orchestrator (row-order cannot create information; ignoring-inputs
+detected; byte-identical reruns). F2 registered (f2-global-elo-registration-v1) and
+evaluated under Design B via cross_fit + additive score_only_after warm-up threshold
+(fixes OOM 137; default byte-identical, test-pinned): ATP K*=24 OOF ll .62645 / val
+.6256; WTA K*=32 OOF .62123 / val .6199 (null ln2=.69315; slopes .83-.85 = measured
+overconfidence, no calibration fitted per registration; cold-start benign, 10-19 band
+weakest in validation ~.70-.72). Same-day policy frozen: batch-update (12,182 affected
+matches counted first; 911 OOF / 88 val). Alpha map: two confirmatory trials at .975
+exhaust the .05 budget (F3-vs-F2 powered: 32,212<=34,046; June M2 CONTINUE by design).
+No June outcome, no odds in F2, no ROI/CLV/P&L anywhere. make verify green (280 files).

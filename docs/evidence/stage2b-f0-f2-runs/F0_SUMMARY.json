@@ -1,0 +1,11 @@
+{
+ "committed_decisions": 2518,
+ "committed_strict": 1959,
+ "manifest_sha256": "90b80100dc0d141a6b39fa5f18df17a1d627366d827e9d3a48acaa6ed9cec828",
+ "markets": 2876,
+ "post_commit_revision_markets": 2078,
+ "refusals": {
+  "NO_TWO_SIDED_BOOK_AT_COMMIT": 26,
+  "NO_VALID_COMMIT_WINDOW": 332
+ }
+}

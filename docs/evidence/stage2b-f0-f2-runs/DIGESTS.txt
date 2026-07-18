@@ -1,0 +1,2 @@
+90b80100dc0d141a6b39fa5f18df17a1d627366d827e9d3a48acaa6ed9cec828  docs/evidence/stage2b-f0-f2-runs/F0_MARKET_YARDSTICK_MANIFEST.jsonl
+9c3af3ac3b8214bd1f1915038e4fe5c0de2141884b5e5bb277131a29b2c08efe  docs/evidence/stage2b-f0-f2-runs/F2_EVALUATION_REPORT.json
