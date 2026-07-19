@@ -268,6 +268,33 @@ def _sigmoid(z: float) -> float:
     return 1.0 / (1.0 + math.exp(-z))
 
 
+#: Frozen Newton-fit boundary parameters (founder round-3 §3). Pinned exactly by
+#: TestFitPredicateBoundaries, so a mutated cap or epsilon is killed at the definition.
+MAX_NEWTON_ITERATIONS = 60
+DET_EPSILON = 1e-12
+STEP_EPSILON = 1e-11
+
+
+def iteration_allowed(iterations: int, maximum: int) -> bool:
+    """True iff another Newton iteration may start: strictly below the cap. The loop counter
+    starts at 0, only ever increments by exactly 1, and is never reassigned, so it cannot skip
+    the cap; the predicate itself is total over ints and boundary-tested at 59/60/61."""
+    return iterations < maximum
+
+
+def hessian_is_singular(determinant: float) -> bool:
+    """True iff the 2x2 information determinant has collapsed: at or BELOW ``DET_EPSILON``
+    (the boundary value itself is singular). Boundary-tested at the epsilon and one ulp above."""
+    return determinant <= DET_EPSILON
+
+
+def step_has_converged(step_norm: float) -> bool:
+    """True iff the Newton step norm ``|da| + |db|`` is strictly BELOW ``STEP_EPSILON``
+    (the boundary value itself has NOT converged). Boundary-tested at the epsilon and one
+    ulp below."""
+    return step_norm < STEP_EPSILON
+
+
 def _fit_slope(xs: Sequence[float], ys: Sequence[int]) -> tuple[float, int, str]:
     """Newton fit of the calibration slope. Returns (slope, iterations, status) where status is
     one of 'converged' | 'singular' | 'max_iterations'.
@@ -275,16 +302,17 @@ def _fit_slope(xs: Sequence[float], ys: Sequence[int]) -> tuple[float, int, str]
     The iteration count and exit status are RETAINED as first-class outputs so the optimiser's
     convergence behaviour is an observable of the M1 scorecard (SPEC-097): a degraded fit — one
     that takes a different number of iterations, exits by a different path, or fails to converge —
-    cannot pass silently even when it lands on the same rounded slope. The numerical update is
-    unchanged from the pre-diagnostics form (byte-identical coefficients)."""
+    cannot pass silently even when it lands on the same rounded slope. All three loop boundaries
+    are the pure predicates above (directly boundary-tested); the numerical update is unchanged
+    from the pre-diagnostics form (byte-identical coefficients)."""
     a, b = 0.0, 1.0
     iterations = 0
     status = "max_iterations"
     # `iterations` is LIVE in the loop condition (its initial 0 is read before the first step and
-    # determines the reported count), so it is not a dead store. 60 is a non-binding safety cap:
-    # the fit provably exits via convergence or singularity first (fit_status is never
-    # 'max_iterations'; TestOptimiserConvergenceDiagnostics pins this), so the exact cap is inert.
-    while iterations < 60:
+    # determines the reported count), so it is not a dead store. The cap is a non-binding safety
+    # backstop: the fit provably exits via convergence or singularity first (fit_status is never
+    # 'max_iterations'; TestOptimiserConvergenceDiagnostics pins this).
+    while iteration_allowed(iterations, MAX_NEWTON_ITERATIONS):
         iterations += 1
         ga = gb = haa = hab = hbb = 0.0
         for x, y in zip(xs, ys):
@@ -296,14 +324,14 @@ def _fit_slope(xs: Sequence[float], ys: Sequence[int]) -> tuple[float, int, str]
             hab += w * x
             hbb += w * x * x
         det = haa * hbb - hab * hab
-        if det <= 1e-12:
+        if hessian_is_singular(det):
             status = "singular"
             break
         da = (hbb * ga - hab * gb) / det
         db = (haa * gb - hab * ga) / det
         a += da
         b += db
-        if abs(da) + abs(db) < 1e-11:
+        if step_has_converged(abs(da) + abs(db)):
             status = "converged"
             break
     return b, iterations, status
