@@ -244,6 +244,14 @@ def _logit(p: float) -> float:
     return math.log(p / (1 - p))
 
 
+def _sigmoid(z: float) -> float:
+    """Overflow-safe logistic. Clamps the linear predictor so an extreme probability (a valid
+    FrozenPrediction input, e.g. p<=1e-12) cannot make ``math.exp`` overflow and crash the
+    scorecard. |z|<=700 is far outside any well-conditioned fit; it never alters a normal one."""
+    z = max(-700.0, min(700.0, z))
+    return 1.0 / (1.0 + math.exp(-z))
+
+
 def _metrics(pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
     """SPEC-097 proper scores + calibration-in-the-large + slope for (p, y) pairs."""
     n = len(pairs)
@@ -260,7 +268,7 @@ def _metrics(pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
     for _ in range(60):
         ga = gb = haa = hab = hbb = 0.0
         for x, y in zip(xs, ys):
-            m = 1 / (1 + math.exp(-(a + b * x)))
+            m = _sigmoid(a + b * x)
             ga += y - m
             gb += (y - m) * x
             w = m * (1 - m)

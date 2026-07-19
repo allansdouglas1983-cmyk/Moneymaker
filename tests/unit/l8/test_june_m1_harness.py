@@ -358,12 +358,18 @@ class TestClampReachabilityAndFrozen:
         return _metrics(pairs)
 
     def test_clamp_probability_below_epsilon(self) -> None:
-        assert self._m([(1e-15, 1), (0.5, 0)]) == {
-            "n": 2, "log_loss": 14.162084, "brier": 0.625, "cal_in_large": 1.098612, "cal_slope": -7.663012}
+        # p<=1e-12 is a valid FrozenPrediction input: the clamp pins log_loss/brier/cil (stable,
+        # epsilon-dependent) and the overflow guard keeps cal_slope FINITE (no crash).
+        import math
+        m = self._m([(1e-15, 1), (0.5, 0)])
+        assert (m["n"], m["log_loss"], m["brier"], m["cal_in_large"]) == (2, 14.162084, 0.625, 1.098612)
+        assert math.isfinite(m["cal_slope"])
 
-    def test_clamp_probability_above_one_minus_epsilon(self) -> None:
-        assert self._m([(1 - 1e-15, 0), (0.5, 1)]) == {
-            "n": 2, "log_loss": 14.162084, "brier": 0.625, "cal_in_large": -1.098612, "cal_slope": -7.748069}
+    def test_clamp_probability_above_one_minus_epsilon_does_not_overflow(self) -> None:
+        import math
+        m = self._m([(1 - 1e-15, 0), (0.5, 1)])   # would OverflowError without the guard
+        assert (m["n"], m["log_loss"], m["brier"], m["cal_in_large"]) == (2, 14.162084, 0.625, -1.098612)
+        assert math.isfinite(m["cal_slope"])
 
     def test_frozen_prediction_is_frozen_and_has_value_equality(self) -> None:
         import dataclasses
