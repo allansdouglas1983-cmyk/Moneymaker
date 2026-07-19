@@ -1,0 +1,31 @@
+# GOVERNED BUDGET FREEZE — founder directive, 2026-07-19 (issued immediately after the
+# Stage-A incident). Binding on every session and agent until the founder EXPLICITLY lifts it.
+freeze:
+  effective: "2026-07-19"
+  budget: "GBP 0"
+  lifted: false            # only an explicit founder instruction may flip this
+  prohibited_without_explicit_founder_lift:
+    - purchase of any historical-data month
+    - purchase of any bulk data package
+    - purchase of the Live App Key
+    - subscription to any provider
+    - any real-money deposit or stake
+    - any paid cloud or compute service (Git LFS and paid storage included)
+    - proposing any plan that depends on new expenditure
+  standing_obligations:
+    - preserve the June Stage-A incident state and all existing evidence (committed: 1613d4d)
+    - the strict new-lockbox route is NOT an operational default (no replacement purchase is funded)
+    - the only potentially permitted route is governed recovery over the ALREADY-PURCHASED June
+      corpus; a second raw access remains UNAUTHORISED; nothing may be prepared or executed that
+      creates paid usage; STOP AND REPORT before any action with a financial cost
+  recorded_facts_at_freeze:
+    active_paid_services: none
+    scheduled_jobs: none
+    corpus_residency_risk: >
+      The already-purchased June ADVANCED corpus (2.4 GB) resides ONLY in ephemeral container
+      storage. It cannot be preserved in-repo (size; Git LFS is a paid service and frozen) and the
+      source-rights registry records no cloud-retention permission (betfair-historical-advanced:
+      permitted_uses unresolved, status candidate) — so no relocation is performed. If the
+      container is reclaimed, the working copy is lost; whether the existing purchase entitles a
+      free re-download from the provider is a provider-terms question for the founder to verify.
+      No agent may repurchase (frozen) or re-download without founder instruction.
