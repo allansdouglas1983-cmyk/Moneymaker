@@ -1,0 +1,630 @@
+{
+ "join_exclusions": [
+  [
+   "1.258760846",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258762784",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258771012",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258813751",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258813752",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258871429",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258875439",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258926831",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258946350",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258946903",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258948797",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258956378",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258957566",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258962627",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.258980100",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259010735",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259016624",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259071617",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259115313",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259115574",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259119534",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259130492",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259139925",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259141253",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259141521",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259141522",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259141852",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259143362",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259143586",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259143741",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259145564",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259146460",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259156885",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259157211",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259158482",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259167581",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259168319",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259175447",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259201486",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259214738",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259223751",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259309814",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259310157",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259331120",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259331392",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259331681",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259333100",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259335350",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259335351",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259375758",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259379443",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259393089",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259406405",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259409720",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259490560",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259494625",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259499721",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259551732",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ],
+  [
+   "1.259553536",
+   "NO_OUTCOME_IN_ARTIFACT"
+  ]
+ ],
+ "n_bundle": 1213,
+ "n_scored": 1154,
+ "recovery_artifact_digest": "sha256:f603b1832d40c99e9a04b60ad59ebcf78f19318bb10dfd0db33b066d06d8bdf1",
+ "recovery_exclusions": [
+  {
+   "market_id": "1.258760846",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258762784",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258771012",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258813751",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258813752",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258871429",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258875439",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258926831",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258946350",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258946903",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258948797",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258956378",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258957566",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258962627",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.258980100",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259010735",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259016624",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259071617",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259115313",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259115574",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259119534",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259130492",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259139925",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259141253",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259141521",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259141522",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259141852",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259143362",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259143586",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259143741",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259145564",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259146460",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259156885",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259157211",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259158482",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259167581",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259168319",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259175447",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259201486",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259214738",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259223751",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259309814",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259310157",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259331120",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259331392",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259331681",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259333100",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259335350",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259335351",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259375758",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259379443",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259393089",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259406405",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259409720",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259490560",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259494625",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259499721",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259551732",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  },
+  {
+   "market_id": "1.259553536",
+   "reason": "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+   "summary": "closed=yes statuses={REMOVED:2}"
+  }
+ ],
+ "scorecard": {
+  "min_support": 500,
+  "n_scored": 1154,
+  "n_utc_day_clusters": 30,
+  "overall": {
+   "brier": 0.239676,
+   "cal_in_large": -0.004574,
+   "cal_slope": 0.790754,
+   "fit_iterations": 5,
+   "fit_status": "converged",
+   "log_loss": 0.671649,
+   "n": 1154,
+   "supported": true
+  },
+  "per_tour": {
+   "ATP": {
+    "brier": 0.240001,
+    "cal_in_large": -0.050718,
+    "cal_slope": 0.841219,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.671875,
+    "n": 556,
+    "supported": true
+   },
+   "WTA": {
+    "brier": 0.239374,
+    "cal_in_large": 0.038327,
+    "cal_slope": 0.759694,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.671438,
+    "n": 598,
+    "supported": true
+   }
+  },
+  "prior_history_cohorts": {
+   "1-4": {
+    "brier": 0.239754,
+    "cal_in_large": -0.133195,
+    "cal_slope": 1.445887,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.670865,
+    "n": 404,
+    "supported": false
+   },
+   "10-19": {
+    "brier": 0.248109,
+    "cal_in_large": -0.169961,
+    "cal_slope": 0.574993,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.689671,
+    "n": 125,
+    "supported": false
+   },
+   "20+": {
+    "brier": 0.237757,
+    "cal_in_large": 0.157121,
+    "cal_slope": 0.704775,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.668454,
+    "n": 491,
+    "supported": false
+   },
+   "5-9": {
+    "brier": 0.238609,
+    "cal_in_large": -0.05509,
+    "cal_slope": 1.321639,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.668909,
+    "n": 134,
+    "supported": false
+   }
+  }
+ },
+ "verdict": {
+  "min_support": 500,
+  "reasons": [
+   "overall slope 0.790754 outside [0.9,1.1]",
+   "ATP |cal_in_large| 0.050718 > 0.05 (harm)",
+   "ATP slope 0.841219 outside [0.9,1.1]",
+   "WTA |cal_in_large| 0.038327 in (0.02,0.05] -> CONTINUE",
+   "WTA slope 0.759694 outside [0.9,1.1]"
+  ],
+  "verdict": "FAIL_HARM"
+ }
+}
