@@ -1,0 +1,254 @@
+# Round-3 governed survivor manifest. Every residual survivor carries approved_by: founder under an
+# exact recorded class (round-2 ratified x10; round-3 conditional x2). The round-3-approved != cap
+# mutant and the five refused boundary mutants were closed by the §3 predicate-seam refactor and are
+# recorded as killed. Regenerate from scratchpad/gen_manifest_v3.py.
+manifest: june-evidence-final-mutation-gate-v3
+supersedes: june-evidence-final-mutation-gate-v2
+generated_for: 'Founder round-3 (2026-07-19): ratification of 10; conditional approval of 3 exact survivors; predicate-seam
+  closure of the 5 refused boundary mutants.'
+modules:
+- l8_evidence/june_m1_harness.py
+- l8_evidence/june_stage_a_extraction.py
+- l8_evidence/tennis_outcomes.py
+environment:
+  python_implementation: CPython
+  python_version: 3.11.15
+expected_residual_after_final_pass:
+  count: 12
+  all_approved_by_founder: true
+  ids:
+  - l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitOr::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitXor::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::1
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::2
+  - l8_evidence/june_stage_a_extraction.py::core/ReplaceComparisonOperator_NotEq_Gt::0
+  - l8_evidence/tennis_outcomes.py::core/NumberReplacer::7
+  - l8_evidence/tennis_outcomes.py::core/RemoveDecorator::0
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Gt_GtE::0
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Eq_LtE::4
+  - l8_evidence/tennis_outcomes.py::core/NumberReplacer::2
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Eq_Is::0
+founder_approved:
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitOr::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §1 integer-expression
+  mutation: len("sha256:") + 64  ->  len("sha256:") | 64
+  proof: 7 and 64 are bit-disjoint (7=0b0000111, 64=0b1000000) so 7+64 == 7|64 == 71 exactly; only the integer 71 affects
+    behaviour; source not hashed; no coercion/overflow.
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitXor::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §1 integer-expression
+  mutation: len("sha256:") + 64  ->  len("sha256:") ^ 64
+  proof: 7^64 == 7+64 == 71 exactly (bit-disjoint operands); same as the BitOr sibling.
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 152
+  klass: §1 same-class Enum identity
+  mutation: self.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: scope is guaranteed an OutcomeAccessScope member (isinstance guard, __post_init__ L144); Enum members are singletons
+    with no __eq__ override; raw strings/foreign enums/None are refused before comparison; is == == for a guaranteed member.
+  tests:
+  - TestAuthorisationRecord::test_invalid_fields_refused
+  - TestAuthorisationRecord::test_scope_vocabulary_is_exactly_pre_june_and_the_one_authorised_june_scope
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::1
+  module: l8_evidence/tennis_outcomes.py
+  line: 216
+  klass: §1 same-class Enum identity
+  mutation: authorisation.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: authorisation validated isinstance(OutcomeAccessAuthorisation); its .scope is a validated Enum member; is == ==
+    for a guaranteed member.
+  tests:
+  - TestJuneM1TransferScope::test_authorised_june_market_extracts_only_under_matching_seal_and_membership
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::2
+  module: l8_evidence/tennis_outcomes.py
+  line: 239
+  klass: §1 same-class Enum identity
+  mutation: self._auth.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: self._auth.scope is a validated Enum member (set only from a validated authorisation); is == == for a guaranteed
+    member.
+  tests:
+  - TestJuneM1TransferScope::test_authorised_june_market_extracts_only_under_matching_seal_and_membership
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/june_stage_a_extraction.py::core/ReplaceComparisonOperator_NotEq_Gt::0
+  module: l8_evidence/june_stage_a_extraction.py
+  line: 187
+  klass: §2A duplicate-cardinality
+  mutation: len(ids) != len(set(ids))  ->  len(ids) > len(set(ids))
+  proof: ids is a list and set(ids) de-duplicates, so len(list) >= len(set(list)) for every input; != and > detect exactly
+    the duplicate condition. Operate on the same list and its set.
+  tests:
+  - TestDuplicateCardinalityInvariant::test_list_is_never_shorter_than_its_set
+  - TestDuplicateCardinalityInvariant::test_validate_raises_iff_duplicate_present
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/NumberReplacer::7
+  module: l8_evidence/tennis_outcomes.py
+  line: 295
+  klass: §2B single-element indexing
+  mutation: winner_selection_id=winners[0]  ->  winners[-1]
+  proof: L286 guarantees len(winners)==1 before line 295 (otherwise OutcomeUndeterminedError is raised); for a single-element
+    list winners[0] is winners[-1]. Prior tested invariant proves len==1.
+  tests:
+  - TestSealMutationHardening::test_zero_winners_refuses
+  - TestSealMutationHardening::test_three_winners_refuses
+  - TestExtraction::test_pre_june_winner_extracts
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/RemoveDecorator::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 104
+  klass: §2C @unique on distinct-valued Enum
+  mutation: '@unique removed from OutcomeAccessScope'
+  proof: '@unique only raises at class creation if two members share a value; OutcomeAccessScope has two statically-distinct
+    values and cannot be dynamically extended; removal changes no value, equality, serialization or control flow.'
+  tests:
+  - TestAuthorisationRecord::test_scope_vocabulary_is_exactly_pre_june_and_the_one_authorised_june_scope
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Gt_GtE::0
+  module: l8_evidence/june_m1_harness.py
+  line: 85
+  klass: §2D idempotent equality branch
+  mutation: _M1_SEVERITY.index(v) > _M1_SEVERITY.index(verdict)  ->  >=
+  proof: the equality case (index(v)==index(verdict) iff v==verdict, since severities are distinct) performs verdict=v —
+    an idempotent assignment of the exact value already held. No property setter, callback, counter, timestamp, event, or
+    persisted-state difference.
+  tests:
+  - TestVerdictSeverityTruthTable::test_repeated_same_severity_is_idempotent
+  - TestVerdictOrderingAndControlFlow::test_worse_never_downgrades_severity
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Eq_LtE::4
+  module: l8_evidence/june_m1_harness.py
+  line: 316
+  klass: §10 domain-invariant
+  mutation: if n == 0  ->  if n <= 0   (n = len(pairs))
+  proof: n = len(pairs); len() is non-negative for every input, so n>=0 and (n==0) <=> (n<=0) on the whole reachable domain.
+    No reliance on interning or corpus values.
+  tests:
+  - TestMetricsDomainInvariants::test_n_equals_len_and_is_nonnegative
+  approved_by: founder
+  ratified: 'founder round-3 (2026-07-19): formally ratified under the recorded exact proof class'
+- id: l8_evidence/tennis_outcomes.py::core/NumberReplacer::2
+  module: l8_evidence/tennis_outcomes.py
+  line: 264
+  klass: iso-date-slice
+  mutation: market_time[:10] >= _SCOPE_BOUNDARY  ->  market_time[:11] >= ...
+  proof: '_SCOPE_BOUNDARY is exactly 10 chars (''2026-06-01''). For s10=market_time[:10], s11=market_time[:11], and boundary
+    B (10 chars): if s10>B then s11>B (shared 10-char prefix); if s10==B then s11=B+char>B (both satisfy >=); if s10<B then
+    s11<B. So (s10>=B)==(s11>=B) for EVERY ISO-8601 value (UTC ''Z'', numeric offset, space separator, date-only). The 11th
+    char (the ISO ''T''/'' '' separator or absent) can never change a comparison against a 10-char boundary. The killed
+    sibling [:10]->[:9] IS behavioural (drops a date digit) and is covered by test_market_time_exactly_at_boundary_refuses.
+    NO input distinguishes [:10] from [:11]. Refactor option (date.fromisoformat) available on request — it changes error
+    handling on malformed marketTime.'
+  tests:
+  - TestSealMutationHardening::test_market_time_exactly_at_boundary_refuses
+  approved_by: founder
+  approval_class: round-3 §1B ISO date slice (exact site only)
+  approval_conditions:
+  - lexicographic >= against the fixed 10-char canonical boundary YYYY-MM-DD only
+  - inputs are validated ISO date/timestamp strings (isinstance-str checked; case analysis in fact holds for arbitrary strings)
+  - first ten characters are the canonical calendar date; date-only strings unchanged
+  - at an equal-date prefix the appended separator leaves both comparisons true; a differing date is decided within ten
+    chars
+  - the sliced value is used ONLY in that comparison — never persisted, hashed, returned, or reused
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Eq_Is::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §8 environment-bound (interned int)
+  mutation: len(value) == len('sha256:') + 64  ->  len(value) is 71
+  proof: 'The compared value is always the built-in int from len(value), checked against 71. CPython caches every int in
+    [-5,256], so all int-71 objects are identical: `len(value) is 71` == `len(value) == 71` on this interpreter. The contract
+    structurally requires the length to equal the built-in int 71 (a sha256 hex string is exactly 71 chars incl. prefix);
+    no valid input yields a non-interned 71, so the founder-sanctioned kill-with-a-runtime-distinct-71 is not constructible.
+    ENVIRONMENT-BOUND PROOF (founder §8): holds on all supported CPython (3.11+); RECLASSIFY on a non-CPython interpreter
+    without small-int caching.'
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: founder
+  approval_class: round-3 §1C CPython environment-bound integer identity (NOT a language-level equivalence)
+  environment_binding:
+    python_implementation: CPython
+    python_version: 3.11.15
+    basis: len() returns a built-in int; CPython caches ints in [-5, 256], so 71 is a cached singleton in the approved runtime
+    revalidation: classification INVALID on any Python implementation or version change until mutation verification and
+      equivalence review are rerun
+approved_then_killed:
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_NotEq::3
+  module: l8_evidence/june_m1_harness.py
+  klass: round-3 §1A loop-bound (< -> !=) — approved, then closed by the §3 refactor
+  mutation: while iterations < 60  ->  while iterations != 60  (site as of round-2)
+  status: APPROVED_THEN_KILLED
+  note: 'Founder-approved under the counter invariants (starts at 0 below the cap; increments by exactly 1; never skips,
+    is reassigned, or receives an external value — all visible in _fit_slope). The §3 predicate-seam refactor then ELIMINATED
+    the loop-site comparison: the boundary now lives in iteration_allowed(), where the != form is KILLED outright by iteration_allowed(61,
+    60) is False. The approval is retained on record but is no longer load-bearing; killed > approved.'
+  tests:
+  - TestFitPredicateBoundaries::test_iteration_allowed_exact_boundary
+  approved_by: founder
+refused_then_killed:
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::3
+  mutation: iterations < 60 -> <= 60
+  killed_by: iteration_allowed(60, 60) is False (a <= form would allow iteration 60)
+  module: l8_evidence/june_m1_harness.py
+  status: REFUSED_THEN_KILLED_AT_PREDICATE_SEAM
+  note: 'Founder round-3 §2 refused equivalence; closed via the §3 tests-first refactor: the boundary expression is now
+    a pure predicate whose exact boundary is directly unit-tested, so the operator/value mutation fails a test instead of
+    hiding behind an unreachable runtime boundary. Mutant IDs refer to the round-2 sites; the equivalent mutations at the
+    new predicate sites are killed in the final pass.'
+- id: l8_evidence/june_m1_harness.py::core/NumberReplacer::42
+  mutation: cap 60 -> 59
+  killed_by: MAX_NEWTON_ITERATIONS == 60 pin + iteration_allowed(59, 60) is True
+  module: l8_evidence/june_m1_harness.py
+  status: REFUSED_THEN_KILLED_AT_PREDICATE_SEAM
+  note: 'Founder round-3 §2 refused equivalence; closed via the §3 tests-first refactor: the boundary expression is now
+    a pure predicate whose exact boundary is directly unit-tested, so the operator/value mutation fails a test instead of
+    hiding behind an unreachable runtime boundary. Mutant IDs refer to the round-2 sites; the equivalent mutations at the
+    new predicate sites are killed in the final pass.'
+- id: l8_evidence/june_m1_harness.py::core/NumberReplacer::43
+  mutation: cap 60 -> 61
+  killed_by: MAX_NEWTON_ITERATIONS == 60 pin + iteration_allowed(60, 60) is False
+  module: l8_evidence/june_m1_harness.py
+  status: REFUSED_THEN_KILLED_AT_PREDICATE_SEAM
+  note: 'Founder round-3 §2 refused equivalence; closed via the §3 tests-first refactor: the boundary expression is now
+    a pure predicate whose exact boundary is directly unit-tested, so the operator/value mutation fails a test instead of
+    hiding behind an unreachable runtime boundary. Mutant IDs refer to the round-2 sites; the equivalent mutations at the
+    new predicate sites are killed in the final pass.'
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_LtE_Lt::2
+  mutation: det <= 1e-12 -> <
+  killed_by: hessian_is_singular(DET_EPSILON) is True (a < form excludes the boundary)
+  module: l8_evidence/june_m1_harness.py
+  status: REFUSED_THEN_KILLED_AT_PREDICATE_SEAM
+  note: 'Founder round-3 §2 refused equivalence; closed via the §3 tests-first refactor: the boundary expression is now
+    a pure predicate whose exact boundary is directly unit-tested, so the operator/value mutation fails a test instead of
+    hiding behind an unreachable runtime boundary. Mutant IDs refer to the round-2 sites; the equivalent mutations at the
+    new predicate sites are killed in the final pass.'
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::4
+  mutation: '|da|+|db| < 1e-11 -> <='
+  killed_by: step_has_converged(STEP_EPSILON) is False (a <= form includes the boundary)
+  module: l8_evidence/june_m1_harness.py
+  status: REFUSED_THEN_KILLED_AT_PREDICATE_SEAM
+  note: 'Founder round-3 §2 refused equivalence; closed via the §3 tests-first refactor: the boundary expression is now
+    a pure predicate whose exact boundary is directly unit-tested, so the operator/value mutation fails a test instead of
+    hiding behind an unreachable runtime boundary. Mutant IDs refer to the round-2 sites; the equivalent mutations at the
+    new predicate sites are killed in the final pass.'
+totals_expected:
+  behavioural: 0
+  unexplained: 0
+  pending_founder: 0
