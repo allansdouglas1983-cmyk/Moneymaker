@@ -263,3 +263,21 @@ class TestDigestDirectionHardening:
         with pytest.raises(StageBUnreachableError):
             open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                                 m1_attestation=forged)
+
+
+class TestLargeInputHardening:
+    def test_large_no_duplicate_extraction_succeeds(self, tmp_path) -> None:
+        # >256 markets, no dups: kills `len(ids) != len(set(ids))` -> `is not` (list lengths
+        # above the small-int cache are distinct objects; `is not` would falsely flag a dup and
+        # break the real 1,213-market burn).
+        n = 400
+        ids = frozenset(f"1.{1000+i}" for i in range(n))
+        reg = LockboxRegistry()
+        reg.define(LockboxDefinition(lockbox_id=_LB, period_start=datetime(2026, 6, 1).date(),
+                   period_end=datetime(2026, 6, 30).date(), defined_at=_TS, defined_by="founder"))
+        art = run_stage_a_extraction(
+            registry=reg, lockbox_id=_LB, accessor="g", at=_TS, bundle_market_ids=ids,
+            bundle_digest=_BUNDLE_DIGEST, authorisation_digest=_AUTH_DIGEST,
+            read_outcomes=lambda: [MinimalOutcome(f"1.{1000+i}", i + 1) for i in range(n)],
+            burn_record_path=tmp_path / "b.json", artifact_path=tmp_path / "a.json")
+        assert len(art.outcomes) == n

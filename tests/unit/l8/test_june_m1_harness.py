@@ -299,3 +299,16 @@ class TestJoinIdentityVsEquality:
         win_oth = 24000000 + 966308     # runtime-computed, distinct object, == oth
         assert win_oth is not oth and win_oth == oth
         assert score_market(p, _outcome("1.1", win_oth)).y_designated == 0
+
+
+class TestFrozenPredictionIdentityChecks:
+    def test_equal_ids_as_distinct_objects_are_rejected(self) -> None:
+        same_sel = int("70000000")
+        with pytest.raises(ValueError):   # value-equal DIFFERENT-object selection ids -> reject
+            _pred("1.1", sel_des=same_sel, sel_oth=int("7000" + "0000"))
+        comp = "td:x|" + "z"
+        with pytest.raises(ValueError):   # value-equal DIFFERENT-object competitor ids -> reject
+            FrozenPrediction(market_id="1.1", tour="ATP", cohort="STRICT", prior_band="20+",
+                             cluster_day="2026-06-10", competitor_designated=comp,
+                             competitor_other="td:x|" + "z", selection_id_designated=1,
+                             selection_id_other=2, p_raw_designated=0.5, p_cal_designated=0.5)
