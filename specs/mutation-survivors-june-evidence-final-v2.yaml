@@ -1,0 +1,244 @@
+# Round-2 governed survivor manifest. approved_by: founder = explicitly approved under the
+# founder's narrow equivalence classes (§1/§2/§10, 2026-07-19). approved_by: null = exact
+# structural proof supplied; mutant has NO distinguishing input (mathematically unkillable);
+# awaiting founder adjudication. Regenerate from scratchpad/gen_manifest_v2.py.
+manifest: june-evidence-final-mutation-gate-v2
+supersedes: june-evidence-final-mutation-gate-v1
+generated_for: 'Founder round-2 directive (2026-07-19): approve only the narrow equivalence classes; kill or re-prove the
+  rest.'
+modules:
+- l8_evidence/june_m1_harness.py
+- l8_evidence/june_stage_a_extraction.py
+- l8_evidence/tennis_outcomes.py
+totals:
+  mutants: 1039
+  killed: 1021
+  residual_survivors: 18
+  founder_approved: 10
+  structural_proof_pending_founder: 8
+  behavioural: 0
+  unexplained: 0
+group_summary:
+  FOUNDER_APPROVED:
+  - l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitOr::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitXor::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::0
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::1
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::2
+  - l8_evidence/june_stage_a_extraction.py::core/ReplaceComparisonOperator_NotEq_Gt::0
+  - l8_evidence/tennis_outcomes.py::core/NumberReplacer::7
+  - l8_evidence/tennis_outcomes.py::core/RemoveDecorator::0
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Gt_GtE::0
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Eq_LtE::4
+  STRUCTURAL_PROOF_PENDING:
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_NotEq::3
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::3
+  - l8_evidence/june_m1_harness.py::core/NumberReplacer::42
+  - l8_evidence/june_m1_harness.py::core/NumberReplacer::43
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_LtE_Lt::2
+  - l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::4
+  - l8_evidence/tennis_outcomes.py::core/NumberReplacer::2
+  - l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Eq_Is::0
+founder_approved:
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitOr::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §1 integer-expression
+  mutation: len("sha256:") + 64  ->  len("sha256:") | 64
+  proof: 7 and 64 are bit-disjoint (7=0b0000111, 64=0b1000000) so 7+64 == 7|64 == 71 exactly; only the integer 71 affects
+    behaviour; source not hashed; no coercion/overflow.
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceBinaryOperator_Add_BitXor::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §1 integer-expression
+  mutation: len("sha256:") + 64  ->  len("sha256:") ^ 64
+  proof: 7^64 == 7+64 == 71 exactly (bit-disjoint operands); same as the BitOr sibling.
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 152
+  klass: §1 same-class Enum identity
+  mutation: self.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: scope is guaranteed an OutcomeAccessScope member (isinstance guard, __post_init__ L144); Enum members are singletons
+    with no __eq__ override; raw strings/foreign enums/None are refused before comparison; is == == for a guaranteed member.
+  tests:
+  - TestAuthorisationRecord::test_invalid_fields_refused
+  - TestAuthorisationRecord::test_scope_vocabulary_is_exactly_pre_june_and_the_one_authorised_june_scope
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::1
+  module: l8_evidence/tennis_outcomes.py
+  line: 216
+  klass: §1 same-class Enum identity
+  mutation: authorisation.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: authorisation validated isinstance(OutcomeAccessAuthorisation); its .scope is a validated Enum member; is == ==
+    for a guaranteed member.
+  tests:
+  - TestJuneM1TransferScope::test_authorised_june_market_extracts_only_under_matching_seal_and_membership
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Is_Eq::2
+  module: l8_evidence/tennis_outcomes.py
+  line: 239
+  klass: §1 same-class Enum identity
+  mutation: self._auth.scope is OutcomeAccessScope.JUNE_M1_TRANSFER  ->  ==
+  proof: self._auth.scope is a validated Enum member (set only from a validated authorisation); is == == for a guaranteed
+    member.
+  tests:
+  - TestJuneM1TransferScope::test_authorised_june_market_extracts_only_under_matching_seal_and_membership
+  approved_by: founder
+- id: l8_evidence/june_stage_a_extraction.py::core/ReplaceComparisonOperator_NotEq_Gt::0
+  module: l8_evidence/june_stage_a_extraction.py
+  line: 187
+  klass: §2A duplicate-cardinality
+  mutation: len(ids) != len(set(ids))  ->  len(ids) > len(set(ids))
+  proof: ids is a list and set(ids) de-duplicates, so len(list) >= len(set(list)) for every input; != and > detect exactly
+    the duplicate condition. Operate on the same list and its set.
+  tests:
+  - TestDuplicateCardinalityInvariant::test_list_is_never_shorter_than_its_set
+  - TestDuplicateCardinalityInvariant::test_validate_raises_iff_duplicate_present
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/NumberReplacer::7
+  module: l8_evidence/tennis_outcomes.py
+  line: 295
+  klass: §2B single-element indexing
+  mutation: winner_selection_id=winners[0]  ->  winners[-1]
+  proof: L286 guarantees len(winners)==1 before line 295 (otherwise OutcomeUndeterminedError is raised); for a single-element
+    list winners[0] is winners[-1]. Prior tested invariant proves len==1.
+  tests:
+  - TestSealMutationHardening::test_zero_winners_refuses
+  - TestSealMutationHardening::test_three_winners_refuses
+  - TestExtraction::test_pre_june_winner_extracts
+  approved_by: founder
+- id: l8_evidence/tennis_outcomes.py::core/RemoveDecorator::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 104
+  klass: §2C @unique on distinct-valued Enum
+  mutation: '@unique removed from OutcomeAccessScope'
+  proof: '@unique only raises at class creation if two members share a value; OutcomeAccessScope has two statically-distinct
+    values and cannot be dynamically extended; removal changes no value, equality, serialization or control flow.'
+  tests:
+  - TestAuthorisationRecord::test_scope_vocabulary_is_exactly_pre_june_and_the_one_authorised_june_scope
+  approved_by: founder
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Gt_GtE::0
+  module: l8_evidence/june_m1_harness.py
+  line: 85
+  klass: §2D idempotent equality branch
+  mutation: _M1_SEVERITY.index(v) > _M1_SEVERITY.index(verdict)  ->  >=
+  proof: the equality case (index(v)==index(verdict) iff v==verdict, since severities are distinct) performs verdict=v —
+    an idempotent assignment of the exact value already held. No property setter, callback, counter, timestamp, event, or
+    persisted-state difference.
+  tests:
+  - TestVerdictSeverityTruthTable::test_repeated_same_severity_is_idempotent
+  - TestVerdictOrderingAndControlFlow::test_worse_never_downgrades_severity
+  approved_by: founder
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Eq_LtE::4
+  module: l8_evidence/june_m1_harness.py
+  line: 316
+  klass: §10 domain-invariant
+  mutation: if n == 0  ->  if n <= 0   (n = len(pairs))
+  proof: n = len(pairs); len() is non-negative for every input, so n>=0 and (n==0) <=> (n<=0) on the whole reachable domain.
+    No reliance on interning or corpus values.
+  tests:
+  - TestMetricsDomainInvariants::test_n_equals_len_and_is_nonnegative
+  approved_by: founder
+structural_proof_pending:
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_NotEq::3
+  module: l8_evidence/june_m1_harness.py
+  line: 287
+  klass: unreachable-cap
+  mutation: while iterations < 60  ->  while iterations != 60
+  proof: 'The cap is a non-binding safety backstop: the fit provably exits via convergence or singularity in <=27 iterations
+    across the designed + 20,000-fixture adversarial sweep; fit_status is NEVER ''max_iterations'' (TestOptimiserConvergenceDiagnostics::test_no_valid_fixture_reaches_the_iteration_cap).
+    Since `iterations` monotonically increments 0->..->(<=27) and never reaches 60, `< 60` and `!= 60` are identical on
+    every reachable path. NO distinguishing input exists.'
+  tests:
+  - TestOptimiserConvergenceDiagnostics::test_no_valid_fixture_reaches_the_iteration_cap
+  approved_by: null
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::3
+  module: l8_evidence/june_m1_harness.py
+  line: 287
+  klass: unreachable-cap
+  mutation: while iterations < 60  ->  while iterations <= 60
+  proof: 'Same as above: the cap (60 vs 61 via <=) is never reached, so `< 60` and `<= 60` produce identical iteration counts,
+    coefficients and status. NO distinguishing input.'
+  tests:
+  - TestOptimiserConvergenceDiagnostics::test_no_valid_fixture_reaches_the_iteration_cap
+  approved_by: null
+- id: l8_evidence/june_m1_harness.py::core/NumberReplacer::42
+  module: l8_evidence/june_m1_harness.py
+  line: 287
+  klass: unreachable-cap
+  mutation: while iterations < 60  ->  < 59
+  proof: 'The cap value is inert: max observed iterations is 27 (20k-fixture sweep); 59 vs 60 is never the exit path. fit_iterations/fit_status/cal_slope
+    identical. NO distinguishing input.'
+  tests:
+  - TestOptimiserConvergenceDiagnostics::test_no_valid_fixture_reaches_the_iteration_cap
+  approved_by: null
+- id: l8_evidence/june_m1_harness.py::core/NumberReplacer::43
+  module: l8_evidence/june_m1_harness.py
+  line: 287
+  klass: unreachable-cap
+  mutation: while iterations < 60  ->  < 61
+  proof: As above; 61 vs 60 never reached. NO distinguishing input.
+  tests:
+  - TestOptimiserConvergenceDiagnostics::test_no_valid_fixture_reaches_the_iteration_cap
+  approved_by: null
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_LtE_Lt::2
+  module: l8_evidence/june_m1_harness.py
+  line: 299
+  klass: measure-zero-boundary
+  mutation: det <= 1e-12  ->  det < 1e-12  (singular-Hessian guard)
+  proof: '`<=` and `<` differ ONLY when det is bit-exactly 1e-12. det = haa*hbb - hab*hab is a product-difference of float
+    sums; 1e-12 is not producible exactly from that arithmetic (never observed in the 20k sweep). The guard IS reachable
+    and tested (separable goldens exit ''singular''); only the == knife-edge is not. A `<`/`<=` mutant at an unreachable
+    exact value has NO distinguishing input — this is not a weak ''measure-zero of the optimum'' claim but non-distinguishability
+    of the two expressions. NO input can kill it; no float-threshold guard can avoid an irreducible </<= boundary.'
+  tests:
+  - TestOptimiserDifferentialFixtures::test_separable_all_positive
+  - TestOptimiserConvergenceDiagnostics::test_singular_exit_path_is_pinned
+  approved_by: null
+- id: l8_evidence/june_m1_harness.py::core/ReplaceComparisonOperator_Lt_LtE::4
+  module: l8_evidence/june_m1_harness.py
+  line: 306
+  klass: measure-zero-boundary
+  mutation: abs(da)+abs(db) < 1e-11  ->  <= 1e-11  (convergence break)
+  proof: '`<` and `<=` differ only when abs(da)+abs(db) is bit-exactly 1e-11 — unconstructible from the Newton step arithmetic.
+    The convergence break fires at the same iteration for every non-knife-edge input (simulation confirms identical slope/iterations/status).
+    The sibling `< -> ==` and `1e-11 -> negative` mutants DISABLE the break and were KILLED via the retained fit diagnostics;
+    only the measure-zero `<=` remains. NO distinguishing input.'
+  tests:
+  - TestOptimiserConvergenceDiagnostics::test_converged_exit_path_is_pinned
+  approved_by: null
+- id: l8_evidence/tennis_outcomes.py::core/NumberReplacer::2
+  module: l8_evidence/tennis_outcomes.py
+  line: 264
+  klass: iso-date-slice
+  mutation: market_time[:10] >= _SCOPE_BOUNDARY  ->  market_time[:11] >= ...
+  proof: '_SCOPE_BOUNDARY is exactly 10 chars (''2026-06-01''). For s10=market_time[:10], s11=market_time[:11], and boundary
+    B (10 chars): if s10>B then s11>B (shared 10-char prefix); if s10==B then s11=B+char>B (both satisfy >=); if s10<B then
+    s11<B. So (s10>=B)==(s11>=B) for EVERY ISO-8601 value (UTC ''Z'', numeric offset, space separator, date-only). The 11th
+    char (the ISO ''T''/'' '' separator or absent) can never change a comparison against a 10-char boundary. The killed
+    sibling [:10]->[:9] IS behavioural (drops a date digit) and is covered by test_market_time_exactly_at_boundary_refuses.
+    NO input distinguishes [:10] from [:11]. Refactor option (date.fromisoformat) available on request — it changes error
+    handling on malformed marketTime.'
+  tests:
+  - TestSealMutationHardening::test_market_time_exactly_at_boundary_refuses
+  approved_by: null
+- id: l8_evidence/tennis_outcomes.py::core/ReplaceComparisonOperator_Eq_Is::0
+  module: l8_evidence/tennis_outcomes.py
+  line: 117
+  klass: §8 environment-bound (interned int)
+  mutation: len(value) == len('sha256:') + 64  ->  len(value) is 71
+  proof: 'The compared value is always the built-in int from len(value), checked against 71. CPython caches every int in
+    [-5,256], so all int-71 objects are identical: `len(value) is 71` == `len(value) == 71` on this interpreter. The contract
+    structurally requires the length to equal the built-in int 71 (a sha256 hex string is exactly 71 chars incl. prefix);
+    no valid input yields a non-interned 71, so the founder-sanctioned kill-with-a-runtime-distinct-71 is not constructible.
+    ENVIRONMENT-BOUND PROOF (founder §8): holds on all supported CPython (3.11+); RECLASSIFY on a non-CPython interpreter
+    without small-int caching.'
+  tests:
+  - TestSealMutationHardening::test_sha256_of_wrong_length_refused_both_directions
+  approved_by: null
