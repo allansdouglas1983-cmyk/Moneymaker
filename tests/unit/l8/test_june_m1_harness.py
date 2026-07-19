@@ -346,3 +346,37 @@ class TestOptimiserDifferentialFixtures:
     def test_imbalanced_rare_positive(self) -> None:
         assert self._m([(0.1, 0)] * 20 + [(0.9, 1)]) == {
             "n": 21, "log_loss": 0.105361, "brier": 0.01, "cal_in_large": -1.164531, "cal_slope": 7.903299}
+
+
+class TestClampReachabilityAndFrozen:
+    """§6: the clamp branch IS reachable via valid FrozenPrediction probabilities (0<p<1 allows
+    p<=1e-12) and via my in {0,1}; boundary goldens pin the epsilon on both sides. §7: dataclass
+    frozen-immutability + equality kill @dataclass decorator removal."""
+
+    def _m(self, pairs):
+        from l8_evidence.june_m1_harness import _metrics
+        return _metrics(pairs)
+
+    def test_clamp_probability_below_epsilon(self) -> None:
+        assert self._m([(1e-15, 1), (0.5, 0)]) == {
+            "n": 2, "log_loss": 14.162084, "brier": 0.625, "cal_in_large": 1.098612, "cal_slope": -7.663012}
+
+    def test_clamp_probability_above_one_minus_epsilon(self) -> None:
+        assert self._m([(1 - 1e-15, 0), (0.5, 1)]) == {
+            "n": 2, "log_loss": 14.162084, "brier": 0.625, "cal_in_large": -1.098612, "cal_slope": -7.748069}
+
+    def test_frozen_prediction_is_frozen_and_has_value_equality(self) -> None:
+        import dataclasses
+        p = _pred("1.1")
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            p.p_cal_designated = 0.9   # type: ignore[misc]
+        assert _pred("1.1") == _pred("1.1")           # value equality (generated __eq__)
+        assert _pred("1.1") != _pred("1.2")
+
+    def test_scored_row_is_frozen_and_equal_by_value(self) -> None:
+        import dataclasses
+        r = score_market(_pred("1.1", sel_des=11, sel_oth=22), _outcome("1.1", 11))
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            r.y_designated = 0   # type: ignore[misc]
+        r2 = score_market(_pred("1.1", sel_des=11, sel_oth=22), _outcome("1.1", 11))
+        assert r == r2
