@@ -755,3 +755,92 @@ class TestTypedExceptionCoverage:
             s.artifact_path.write_text(bad, encoding="utf-8")
             with pytest.raises(RecoveryIncidentError):
                 load_recovery_artifact(s.artifact_path)
+
+
+class TestRoundTwoResidualKills:
+    """Round-2 targeted kills: wrong-length digests must fail AS MALFORMED (not as a downstream
+    mismatch), the mc scan must not absorb or truncate within a single message, and the canonical
+    content digest + every durable record's key order are pinned exactly."""
+
+    def test_wrong_length_digests_fail_as_malformed_lines(self, tmp_path: Path) -> None:
+        # 65-hex kills != -> < ; 63-hex kills != -> > : under either mutant the line is accepted
+        # and fails LATER as a file mismatch — a different message, so the pin distinguishes.
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "a.bz2").write_bytes(b"a")
+        for badlen in (63, 65):
+            manifest = root / "SHA256SUMS.txt"
+            manifest.write_text(("a" * badlen) + "  a.bz2\n", encoding="utf-8")
+            with pytest.raises(RecoveryIntegrityError, match="malformed"):
+                _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_foreign_higher_id_closed_def_not_counted_in_summary(self) -> None:
+        # foreign mc "1.90" > target "1.50": an id != -> < mutant would absorb the foreign CLOSED.
+        from l8_evidence.june_stage_a_recovery import _classify_exclusion
+        lines = [
+            _line("1.90", "CLOSED", [{"id": 9, "status": "REMOVED"}, {"id": 8, "status": "REMOVED"}]),
+            _line("1.50", "OPEN", [{"id": 1, "status": "ACTIVE"}, {"id": 2, "status": "ACTIVE"}]),
+        ]
+        e = _classify_exclusion(lines, "1.50", "1.50.bz2")
+        assert e.reason == "UNDETERMINED_SETTLEMENT:NO_CLOSED_DEFINITION"
+        assert "closed=no" in e.settlement_summary
+
+    def test_foreign_mc_in_same_message_does_not_break_the_scan(self) -> None:
+        # ONE message: [foreign mc, target CLOSED mc]. A continue -> break mutant on the
+        # id-mismatch skip would drop the target's CLOSED definition in the same message.
+        from l8_evidence.june_stage_a_recovery import _classify_exclusion
+        target_md = {"status": "CLOSED", "marketTime": _JUNE_TIME, "marketType": "MATCH_ODDS",
+                     "runners": [{"id": 1, "status": "REMOVED"}, {"id": 2, "status": "REMOVED"}]}
+        line = json.dumps({"op": "mcm", "pt": 1, "mc": [
+            {"id": "1.99", "marketDefinition": {"status": "OPEN", "marketTime": _JUNE_TIME,
+                                                "runners": []}},
+            {"id": "1.50", "marketDefinition": target_md},
+        ]})
+        e = _classify_exclusion([line], "1.50", "1.50.bz2")
+        assert e.reason == "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
+        assert "closed=yes" in e.settlement_summary
+
+    def test_md_less_target_mc_in_same_message_does_not_break_the_scan(self) -> None:
+        # ONE message: [target mc without marketDefinition, target CLOSED mc].
+        from l8_evidence.june_stage_a_recovery import _classify_exclusion
+        target_md = {"status": "CLOSED", "marketTime": _JUNE_TIME, "marketType": "MATCH_ODDS",
+                     "runners": [{"id": 1, "status": "REMOVED"}, {"id": 2, "status": "REMOVED"}]}
+        line = json.dumps({"op": "mcm", "pt": 1, "mc": [
+            {"id": "1.50"},
+            {"id": "1.50", "marketDefinition": target_md},
+        ]})
+        e = _classify_exclusion([line], "1.50", "1.50.bz2")
+        assert e.reason == "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
+        assert "closed=yes" in e.settlement_summary
+
+    def test_content_digest_golden_value(self) -> None:
+        # pins the exact canonical serialization (kills sort_keys and any field/order drift in
+        # the digest body — a mutated serialization is self-consistent, so only a golden catches it).
+        from l8_evidence.june_stage_a_extraction import MinimalOutcome
+        art = RecoveryOutcomeArtifact(
+            lockbox_id="lockbox-june-2026-tennis-v1",
+            bundle_digest="sha256:" + "11" * 32,
+            recovery_authorisation_digest="sha256:" + "22" * 32,
+            original_burn_record_digest="sha256:" + "33" * 32,
+            grant_at_utc="2026-07-19T18:00:00+00:00",
+            outcomes=(MinimalOutcome("1.10", 7),),
+            exclusions=(RecoveryExclusion("1.11", "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED",
+                                          "1.11.bz2", "closed=yes statuses={REMOVED:2}"),),
+        )
+        assert art.content_digest() == \
+            "sha256:8d628b12f154a5e08f510fd68a7f87670c362cfec8beb0fbcee6df2cbca619fa"
+
+    def test_temp_finalize_completion_record_has_sorted_keys(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+
+        def fault(step: str) -> None:
+            if step == "after_temp_artifact":
+                raise RuntimeError("crash:after_temp_artifact")
+        with pytest.raises(RuntimeError):
+            run_stage_a_recovery(**s.kwargs(_fault=fault))
+        import shutil
+        shutil.rmtree(s.corpus_root)
+        resume_stage_a_recovery(in_progress_path=s.in_progress_path,
+                                artifact_path=s.artifact_path, completed_path=s.completed_path)
+        assert s.completed_path.read_text(encoding="utf-8").startswith('{"artifact_digest":')
