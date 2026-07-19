@@ -127,3 +127,19 @@
   classification: equivalent-mutant
   rationale: "@unique removal on RetryRefusal: every member value is distinct (pinned by the refusal-reason tests), so the decorator's duplicate-detection has nothing to detect; removing it changes no behaviour"
   approved_by: allansdouglas1983-cmyk (chat directive, 2026-07-17)
+
+# 2026-07-19 (recovery green-gate): the l7 settlement-policy seam + tennis_rules survivors were
+# killed by TestPolicySeamStructuralContracts / TestTennisCaseIdentityChecks except the single
+# truly-equivalent entry below, approved under the founder's round-2 §2C delegated class
+# ("@unique removal on a frozen, distinct-valued Enum") — flagged for ratification in the
+# recovery return.
+- module_path: l7_settle/tennis_rules.py
+  operator_name: core/RemoveDecorator
+  occurrence: 0
+  classification: equivalent-mutant
+  rationale: "@unique removed from TennisMatchOutcome: all 9 member values are statically
+    distinct (asserted programmatically), the enum cannot be dynamically extended, and @unique's
+    only effect is a class-creation-time duplicate check that never fires — no value, equality,
+    serialization or control-flow change. Founder round-2 §2C conditions; vocabulary pinned by
+    test_tennis_settlement_contracts."
+  approved_by: founder (round-2 §2C delegated class approval, applied 2026-07-19; pending ratification)

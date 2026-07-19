@@ -159,3 +159,59 @@ def test_commission_on_smallest_positive_net() -> None:
     assert s.actual_net_market_pnl == 1
     assert s.actual_commission == 1
     assert s.final_net_pnl == 0
+
+
+class TestPolicySeamStructuralContracts:
+    """Recovery green-gate kills (2026-07-19): the settlement-policy seam's declared interface is
+    behaviour — Protocol members are properties, every settle() parameter is keyword-only, and the
+    policy objects are frozen dataclasses with value equality."""
+
+    def test_settlement_policy_protocol_members_are_properties(self) -> None:
+        import inspect
+
+        from l7_settle.policy import SettlementPolicy
+        assert isinstance(inspect.getattr_static(SettlementPolicy, "sport_id"), property)
+        assert isinstance(inspect.getattr_static(SettlementPolicy, "policy_version"), property)
+
+    def test_settle_parameters_are_keyword_only_on_all_policies(self) -> None:
+        import inspect
+
+        from l7_settle.policy import RacingSettlementPolicy, SettlementPolicy, TennisSettlementPolicy
+        for owner in (SettlementPolicy, RacingSettlementPolicy, TennisSettlementPolicy):
+            sig = inspect.signature(owner.settle)
+            kinds = {p.kind for name, p in sig.parameters.items() if name != "self"}
+            assert kinds == {inspect.Parameter.KEYWORD_ONLY}, owner
+
+    def test_policies_are_frozen_dataclasses_with_value_equality(self) -> None:
+        from l7_settle.policy import RacingSettlementPolicy, TennisSettlementPolicy
+        for cls in (RacingSettlementPolicy, TennisSettlementPolicy):
+            a, b = cls(), cls()
+            assert a == b                       # dataclass value equality (kills @dataclass removal)
+            with pytest.raises(dataclasses.FrozenInstanceError):
+                setattr(a, "marker", 1)
+
+
+class TestTennisCaseIdentityChecks:
+    """tennis_rules outcome checks are IDENTITY (`is` / `is not`) against the enum member: a
+    forged outcome whose __eq__ answers True must not change either validation branch."""
+
+    class _EvilEq:
+        name = "FORGED"
+
+        def __eq__(self, other: object) -> bool:
+            return True
+        __hash__ = None  # type: ignore[assignment]
+
+    def test_forged_equal_outcome_is_not_treated_as_completed(self) -> None:
+        from l7_settle.tennis_rules import TennisSettlementCase
+        # is-COMPLETED is False for the forgery and winner is None -> constructs fine.
+        # An == mutant would see 'COMPLETED' with no winner and raise.
+        case = TennisSettlementCase("m1", self._EvilEq(), None)   # type: ignore[arg-type]
+        assert case.winner_selection_id is None
+
+    def test_forged_equal_outcome_with_winner_still_refused(self) -> None:
+        from l7_settle.tennis_rules import TennisSettlementCase
+        # is-not-COMPLETED is True for the forgery and a winner is present -> refuse.
+        # A != mutant (defeated by __eq__ True) would skip the refusal.
+        with pytest.raises(ValueError):
+            TennisSettlementCase("m1", self._EvilEq(), 7)         # type: ignore[arg-type]
