@@ -1,0 +1,47 @@
+# Recovery-module mutation record (l8_evidence/june_stage_a_recovery.py) — founder Option B §4.
+# The NINE founder-mandated mutation classes are ALL KILLED by tests (exclusion->batch-failure,
+# silent skip, invented winner, denominator removal, continue-after-integrity, undetermined-as-loss,
+# original-token reuse, missing recovery linkage, second recovery access). The residual survivors
+# below are structural equivalents in five classes; approved_by is null pending founder ratification.
+module: l8_evidence/june_stage_a_recovery.py
+rounds:
+  - {round: 1, mutants: 393, killed: 305, survived: 87}
+  - {round: 2, mutants: 392, killed: 351, survived: 40}
+  - {round: 3, mutants: 392, killed_expected: 359, survived_expected: 33, note: "post message-pin/mc-scan/golden-digest kills"}
+mandated_kill_classes_status: ALL_KILLED
+residual_equivalence_classes:
+  - klass: hash-chunk-size
+    count: 9
+    site: "L139 _sha256_file: fh.read(1 << 20)"
+    proof: "sha256 over a stream is invariant to read-chunk size; every mutated expression
+      (1+20, 1*20, 1%20, 1**20, 1|20, 1^20, 2<<20, 1<<21, 1<<19) is a positive int, so the
+      digest of every file is byte-identical; only IO batching changes."
+    approved_by: null
+  - klass: stringified-annotation-union
+    count: 11
+    site: "L275 read_market_outcome_or_exclusion return annotation 'MinimalOutcome | RecoveryExclusion'"
+    proof: "The module uses `from __future__ import annotations`: every annotation is a lazily
+      stringified expression that is NEVER evaluated at runtime. The mutated operators live inside
+      a string; behaviour is bit-identical. (mypy --strict would reject every one of these forms;
+      mutation runs do not type-check.)"
+    approved_by: null
+  - klass: domain-guaranteed-comparison
+    count: 8
+    sites:
+      - "L161 len(parts) != 2 -> < 2  (parts in {1,2} after split(maxsplit=1) of a stripped non-empty line)"
+      - "L193 len(ids) != len(set(ids)) -> >  (a list is never shorter than its set — ratified §2A class)"
+      - "L260 n_winners > 1 -> >= 1 / > 0  (n_winners == 1 raised by the preceding conflict guard; reachable domain {0,2,3,...})"
+      - "L262 counts.get('REMOVED',0) == total -> >=  (a status count never exceeds the total, a subset sum)"
+      - "L262 total > 0 -> total != 0  (total is a sum of non-negative counts)"
+      - "L250/L262 get(...,0) -> get(...,-1)  (the default is observed only through ==1/>1/==total>0 tests where -1 and 0 fail identically)"
+    approved_by: null
+  - klass: unreachable-defensive-partition-guard
+    count: 5
+    sites:
+      - "L371 len(got) != len(set(got)) -> < / >  (< impossible; > is the != condition itself)"
+      - "L373 set(got) != bundle_market_ids(bundle) -> < / > / is  (got is built with exactly one
+         entry per bundle stream carrying the loop's own market id, so got == bundle always; the
+         guard is a crash-only backstop no constructible input fires)"
+    proof_note: "The is-not/identity variants that COULD fire on valid runs were killed by the
+      300-market batch (len values beyond the small-int cache)."
+    approved_by: null
