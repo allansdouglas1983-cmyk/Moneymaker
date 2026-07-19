@@ -644,3 +644,34 @@ class TestMetricsDomainInvariants:
         assert _metrics([])["n"] == 0
         for k in (1, 2, 5, 21):
             assert _metrics([(0.6, 1)] * k)["n"] == k   # n = len(pairs) >= 0 always
+
+
+class TestFitPredicateBoundaries:
+    """Founder round-3 §3: the Newton fit's boundary semantics are PURE, directly testable
+    predicates (iteration_allowed / hessian_is_singular / step_has_converged) with frozen
+    constants. Exact-boundary pins at the predicate seam kill every </<=/!=/== operator mutant
+    and every cap/epsilon value mutant — the five refused round-2 survivors close here."""
+
+    def test_iteration_allowed_exact_boundary(self) -> None:
+        from l8_evidence.june_m1_harness import MAX_NEWTON_ITERATIONS, iteration_allowed
+        assert MAX_NEWTON_ITERATIONS == 60             # frozen cap (kills 60 -> 59/61 at the definition)
+        assert iteration_allowed(0, 60) is True        # counter starts non-negative below the cap
+        assert iteration_allowed(59, 60) is True       # last permitted iteration (kills < -> < 59 shape)
+        assert iteration_allowed(60, 60) is False      # refused exactly at the cap (kills <= / < 61 shape)
+        assert iteration_allowed(61, 60) is False      # above the cap is refused (kills < -> !=)
+
+    def test_hessian_is_singular_exact_boundary(self) -> None:
+        from l8_evidence.june_m1_harness import DET_EPSILON, hessian_is_singular
+        assert DET_EPSILON == 1e-12                    # frozen epsilon (kills value mutants)
+        assert hessian_is_singular(DET_EPSILON) is True                        # <= INCLUDES the boundary (kills <)
+        assert hessian_is_singular(math.nextafter(DET_EPSILON, math.inf)) is False  # one ulp above is regular
+        assert hessian_is_singular(0.0) is True        # fully collapsed (kills ==)
+        assert hessian_is_singular(1.0) is False
+
+    def test_step_has_converged_exact_boundary(self) -> None:
+        from l8_evidence.june_m1_harness import STEP_EPSILON, step_has_converged
+        assert STEP_EPSILON == 1e-11                   # frozen epsilon (kills value mutants)
+        assert step_has_converged(STEP_EPSILON) is False                       # strict < EXCLUDES the boundary (kills <=)
+        assert step_has_converged(math.nextafter(STEP_EPSILON, 0.0)) is True   # one ulp below converges
+        assert step_has_converged(0.0) is True         # exact fixed point converges (kills ==, >)
+        assert step_has_converged(1.0) is False
