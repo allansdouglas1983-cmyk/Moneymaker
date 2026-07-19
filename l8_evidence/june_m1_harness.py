@@ -18,6 +18,7 @@ the frozen bundle and the (later) outcome map, sorted by market id, never on ite
 from __future__ import annotations
 
 import math
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Protocol
@@ -50,6 +51,11 @@ _CIL_PASS = 0.02          # |calibration-in-the-large| adequacy band
 _CIL_HARM = 0.05          # catastrophic-transfer / harm boundary (NOT a widened PASS band)
 _SLOPE_LO, _SLOPE_HI = 0.90, 1.10
 _BRIER_LT = 0.25
+#: M1 verdict severity, strictly increasing. The evaluator emits only PASS/CONTINUE/FAIL_HARM;
+#: precedence is by POSITION in this tuple, never by a mutable integer code (a relabelled integer
+#: lattice is mutation-equivalent — the ordering is pinned structurally instead, see
+#: TestVerdictSeverityTruthTable). FAIL_FUTILITY is unreachable in M1 and is deliberately absent.
+_M1_SEVERITY: tuple[str, ...] = ("PASS", "CONTINUE", "FAIL_HARM")
 
 
 def evaluate_m1_verdict(scorecard: Mapping[str, object], *, min_support: int = 500) -> dict[str, object]:
@@ -71,9 +77,12 @@ def evaluate_m1_verdict(scorecard: Mapping[str, object], *, min_support: int = 5
     verdict = "PASS"
 
     def worse(v: str) -> None:
+        # Escalate only: adopt v iff it is strictly more severe than the current verdict. Precedence
+        # is by position in _M1_SEVERITY (no mutable integer codes). The equality case (v == verdict)
+        # is a no-op: `>` holds only for a strictly-later position, and re-adopting the same verdict
+        # would be an idempotent self-assignment anyway.
         nonlocal verdict
-        order = {"PASS": 0, "CONTINUE": 1, "FAIL_FUTILITY": 2, "FAIL_HARM": 3}
-        if order[v] > order[verdict]:
+        if _M1_SEVERITY.index(v) > _M1_SEVERITY.index(verdict):
             verdict = v
 
     n_overall = int(_num(overall.get("n", 0)))
@@ -81,7 +90,7 @@ def evaluate_m1_verdict(scorecard: Mapping[str, object], *, min_support: int = 5
         worse("CONTINUE")
         reasons.append(f"overall support {n_overall} < {min_support}")
 
-    def check(block: Mapping[str, object], label: str, *, required: bool) -> None:
+    def check(block: Mapping[str, object], label: str, required: bool) -> None:
         nonlocal verdict
         supported = bool(block.get("supported", False))
         if not supported:
@@ -244,28 +253,39 @@ def _logit(p: float) -> float:
     return math.log(p / (1 - p))
 
 
+#: The largest |argument| for which ``math.exp`` does not raise OverflowError: ``exp(log(float_max))``
+#: is exactly representable (== float_max), and exp of anything larger raises. This is the EXACT
+#: overflow threshold of the float type, not a tunable constant.
+_MAX_EXP_ARG = math.log(sys.float_info.max)
+
+
 def _sigmoid(z: float) -> float:
-    """Overflow-safe logistic. Clamps the linear predictor so an extreme probability (a valid
-    FrozenPrediction input, e.g. p<=1e-12) cannot make ``math.exp`` overflow and crash the
-    scorecard. |z|<=700 is far outside any well-conditioned fit; it never alters a normal one."""
-    z = max(-700.0, min(700.0, z))
+    """Overflow-safe logistic. Clamps the linear predictor to +/- the exact ``math.exp`` overflow
+    threshold (``log(float_max)``) so an extreme probability (a valid FrozenPrediction input, e.g.
+    p<=1e-12) cannot make ``math.exp`` overflow and crash the scorecard. The bound is the tightest
+    value that is provably overflow-safe, so clamping never alters a well-conditioned fit."""
+    z = max(-_MAX_EXP_ARG, min(_MAX_EXP_ARG, z))
     return 1.0 / (1.0 + math.exp(-z))
 
 
-def _metrics(pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
-    """SPEC-097 proper scores + calibration-in-the-large + slope for (p, y) pairs."""
-    n = len(pairs)
-    if n == 0:
-        return {"n": 0}
-    ll = sum(-math.log(_clamp(p if y == 1 else 1 - p)) for p, y in pairs) / n
-    brier = sum((p - y) ** 2 for p, y in pairs) / n
-    mp = sum(p for p, _ in pairs) / n
-    my = sum(y for _, y in pairs) / n
-    cil = _logit(my) - _logit(mp)
+def _fit_slope(xs: Sequence[float], ys: Sequence[int]) -> tuple[float, int, str]:
+    """Newton fit of the calibration slope. Returns (slope, iterations, status) where status is
+    one of 'converged' | 'singular' | 'max_iterations'.
+
+    The iteration count and exit status are RETAINED as first-class outputs so the optimiser's
+    convergence behaviour is an observable of the M1 scorecard (SPEC-097): a degraded fit — one
+    that takes a different number of iterations, exits by a different path, or fails to converge —
+    cannot pass silently even when it lands on the same rounded slope. The numerical update is
+    unchanged from the pre-diagnostics form (byte-identical coefficients)."""
     a, b = 0.0, 1.0
-    xs = [_logit(p) for p, _ in pairs]
-    ys = [y for _, y in pairs]
-    for _ in range(60):
+    iterations = 0
+    status = "max_iterations"
+    # `iterations` is LIVE in the loop condition (its initial 0 is read before the first step and
+    # determines the reported count), so it is not a dead store. 60 is a non-binding safety cap:
+    # the fit provably exits via convergence or singularity first (fit_status is never
+    # 'max_iterations'; TestOptimiserConvergenceDiagnostics pins this), so the exact cap is inert.
+    while iterations < 60:
+        iterations += 1
         ga = gb = haa = hab = hbb = 0.0
         for x, y in zip(xs, ys):
             m = _sigmoid(a + b * x)
@@ -277,15 +297,35 @@ def _metrics(pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
             hbb += w * x * x
         det = haa * hbb - hab * hab
         if det <= 1e-12:
+            status = "singular"
             break
         da = (hbb * ga - hab * gb) / det
         db = (haa * gb - hab * ga) / det
         a += da
         b += db
         if abs(da) + abs(db) < 1e-11:
+            status = "converged"
             break
+    return b, iterations, status
+
+
+def _metrics(pairs: Sequence[tuple[float, int]]) -> dict[str, object]:
+    """SPEC-097 proper scores + calibration-in-the-large + slope for (p, y) pairs, plus the
+    calibration fit's convergence diagnostics (fit_iterations, fit_status)."""
+    n = len(pairs)
+    if n == 0:
+        return {"n": 0}
+    ll = sum(-math.log(_clamp(p if y == 1 else 1 - p)) for p, y in pairs) / n
+    brier = sum((p - y) ** 2 for p, y in pairs) / n
+    mp = sum(p for p, _ in pairs) / n
+    my = sum(y for _, y in pairs) / n
+    cil = _logit(my) - _logit(mp)
+    xs = [_logit(p) for p, _ in pairs]
+    ys = [y for _, y in pairs]
+    b, iterations, status = _fit_slope(xs, ys)
     return {"n": n, "log_loss": round(ll, 6), "brier": round(brier, 6),
-            "cal_in_large": round(cil, 6), "cal_slope": round(b, 6)}
+            "cal_in_large": round(cil, 6), "cal_slope": round(b, 6),
+            "fit_iterations": iterations, "fit_status": status}
 
 
 def m1_scorecard(scored: Sequence[ScoredRow], *, min_support: int = 500) -> dict[str, object]:

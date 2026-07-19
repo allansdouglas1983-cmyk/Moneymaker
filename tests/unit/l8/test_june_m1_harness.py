@@ -167,7 +167,8 @@ class TestMetricsGoldenValues:
         from l8_evidence.june_m1_harness import _metrics
         m = _metrics([(0.6, 1), (0.4, 0), (0.7, 0), (0.3, 1), (0.8, 1), (0.55, 0), (0.2, 0), (0.9, 1)])
         assert m == {"n": 8, "log_loss": 0.597469, "brier": 0.211563,
-                     "cal_in_large": -0.225956, "cal_slope": 0.931158}
+                     "cal_in_large": -0.225956, "cal_slope": 0.931158,
+                     "fit_iterations": 5, "fit_status": "converged"}
 
     def test_metrics_empty(self) -> None:
         from l8_evidence.june_m1_harness import _metrics
@@ -338,33 +339,82 @@ class TestOptimiserDifferentialFixtures:
     Hessian/iteration-limit mutant that changes an OBSERVABLE metric on ANY fixture is killed;
     the module exposes only these five metrics (no iteration count), so this is the full surface."""
 
-    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
+    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, object]:
         from l8_evidence.june_m1_harness import _metrics
         return _metrics(pairs)
 
     def test_weak_identification_flat_likelihood(self) -> None:
         assert self._m([(0.5, 1), (0.5, 0)] * 3) == {
-            "n": 6, "log_loss": 0.693147, "brier": 0.25, "cal_in_large": 0.0, "cal_slope": 1.0}
+            "n": 6, "log_loss": 0.693147, "brier": 0.25, "cal_in_large": 0.0, "cal_slope": 1.0,
+            "fit_iterations": 1, "fit_status": "singular"}
 
     def test_separable_all_positive(self) -> None:
         assert self._m([(0.6, 1), (0.7, 1), (0.8, 1), (0.55, 1), (0.9, 1)]) == {
-            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": 26.735659, "cal_slope": 0.54242}
+            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": 26.735659, "cal_slope": 0.54242,
+            "fit_iterations": 15, "fit_status": "singular"}
 
     def test_separable_all_negative(self) -> None:
         assert self._m([(0.4, 0), (0.3, 0), (0.2, 0), (0.45, 0), (0.1, 0)]) == {
-            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": -26.735637, "cal_slope": 0.54242}
+            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": -26.735637, "cal_slope": 0.54242,
+            "fit_iterations": 15, "fit_status": "singular"}
 
     def test_boundary_probabilities(self) -> None:
         assert self._m([(0.001, 1), (0.999, 0), (0.002, 0), (0.998, 1), (0.5, 1)]) == {
-            "n": 5, "log_loss": 2.902532, "brier": 0.449202, "cal_in_large": 0.405465, "cal_slope": -54.234543}
+            "n": 5, "log_loss": 2.902532, "brier": 0.449202, "cal_in_large": 0.405465, "cal_slope": -54.234543,
+            "fit_iterations": 2, "fit_status": "singular"}
 
     def test_min_n_one(self) -> None:
         assert self._m([(0.6, 1)]) == {
-            "n": 1, "log_loss": 0.510826, "brier": 0.16, "cal_in_large": 27.225578, "cal_slope": 1.0}
+            "n": 1, "log_loss": 0.510826, "brier": 0.16, "cal_in_large": 27.225578, "cal_slope": 1.0,
+            "fit_iterations": 1, "fit_status": "singular"}
 
     def test_imbalanced_rare_positive(self) -> None:
         assert self._m([(0.1, 0)] * 20 + [(0.9, 1)]) == {
-            "n": 21, "log_loss": 0.105361, "brier": 0.01, "cal_in_large": -1.164531, "cal_slope": 7.903299}
+            "n": 21, "log_loss": 0.105361, "brier": 0.01, "cal_in_large": -1.164531, "cal_slope": 7.903299,
+            "fit_iterations": 16, "fit_status": "singular"}
+
+
+class TestOptimiserConvergenceDiagnostics:
+    """The calibration fit RETAINS its iteration count and exit status (SPEC-097). Pinning them
+    makes the optimiser's convergence PATH an observable of the scorecard, killing the mutants that
+    change the exit path without changing the rounded slope:
+      - break -> continue (both singular and converged exits): would spin to fit_iterations=60;
+      - convergence tolerance `< 1e-11` -> `== 1e-11` / `< -0.99..`: disables the convergence break,
+        so a converging fit runs to the cap (fit_iterations=60, fit_status='max_iterations').
+    A degraded fit that lands on the same rounded slope therefore cannot pass silently."""
+
+    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, object]:
+        from l8_evidence.june_m1_harness import _metrics
+        return _metrics(pairs)
+
+    def test_converged_exit_path_is_pinned(self) -> None:
+        # well-identified, non-separable data: converges at iteration 7. Kills the converged
+        # break->continue and the disabled-convergence-tolerance mutants (both would reach the cap).
+        m = self._m([(0.9, 0), (0.31, 1), (0.67, 0), (0.36, 0), (0.17, 0), (0.39, 0)])
+        assert m["fit_status"] == "converged"
+        assert m["fit_iterations"] == 7
+        assert m["cal_slope"] == -0.842479
+
+    def test_singular_exit_path_is_pinned(self) -> None:
+        # perfectly balanced data: the information matrix is singular at iteration 1. Kills the
+        # singular-Hessian break->continue (which would spin to fit_iterations=60).
+        m = self._m([(0.5, 1), (0.5, 0)] * 3)
+        assert m["fit_status"] == "singular"
+        assert m["fit_iterations"] == 1
+
+    def test_no_valid_fixture_reaches_the_iteration_cap(self) -> None:
+        # Structural documentation for the range(60) cap: across the designed + a deterministic
+        # adversarial sweep, the fit ALWAYS exits via 'converged' or 'singular' well before the cap;
+        # fit_status is never 'max_iterations'. The cap is a non-binding safety backstop.
+        worst = 0
+        for seed in range(2000):
+            # deterministic pseudo-data (no RNG): vary probs and labels by seed
+            n = 2 + seed % 10
+            pairs = [(((seed * 7 + k * 13) % 997 + 1) / 999.0, (seed + k) % 2) for k in range(n)]
+            m = self._m(pairs)
+            assert m["fit_status"] in ("converged", "singular")   # never max_iterations
+            worst = max(worst, cast(int, m["fit_iterations"]))
+        assert worst < 60   # cap never reached
 
 
 class TestClampReachabilityAndFrozen:
@@ -372,7 +422,7 @@ class TestClampReachabilityAndFrozen:
     p<=1e-12) and via my in {0,1}; boundary goldens pin the epsilon on both sides. §7: dataclass
     frozen-immutability + equality kill @dataclass decorator removal."""
 
-    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
+    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, object]:
         from l8_evidence.june_m1_harness import _metrics
         return _metrics(pairs)
 
@@ -499,3 +549,97 @@ class TestSignatureAndDefaultContracts:
         r499 = rows(499)
         overall499 = cast(dict[str, object], m1_scorecard(score_bundle(r499, outs(r499))[0])["overall"])
         assert overall499["supported"] is False
+
+
+class TestVerdictSeverityTruthTable:
+    """Founder round-2 §5: exhaustive precedence + monotonicity over the M1 verdict lattice
+    (PASS < CONTINUE < FAIL_HARM). Precedence is by position in _M1_SEVERITY (no mutable integer
+    codes remain to relabel). FAIL_FUTILITY is unreachable in M1 and deliberately absent."""
+
+    def test_each_severity_in_isolation(self) -> None:
+        assert evaluate_m1_verdict(_card())["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(slope=0.5)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.03)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.06)))["verdict"] == "FAIL_HARM"
+        assert evaluate_m1_verdict(_card(overall=_block(ll=_LN2 + 0.01)))["verdict"] == "FAIL_HARM"
+
+    def test_precedence_max_severity_wins_both_orders(self) -> None:
+        # CONTINUE + FAIL_HARM -> FAIL_HARM, whichever component carries which.
+        assert evaluate_m1_verdict(_card(overall=_block(slope=0.5), atp=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.30), atp=_block(slope=0.5)))["verdict"] == "FAIL_HARM"
+        # PASS + CONTINUE -> CONTINUE ; PASS + FAIL_HARM -> FAIL_HARM
+        assert evaluate_m1_verdict(_card(atp=_block(slope=0.5)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(atp=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+
+    def test_monotonicity_adding_severity_never_lowers(self) -> None:
+        order = ("PASS", "CONTINUE", "FAIL_HARM")
+        base = evaluate_m1_verdict(_card(overall=_block(slope=0.5)))["verdict"]            # CONTINUE
+        more = evaluate_m1_verdict(_card(overall=_block(slope=0.5, brier=0.30)))["verdict"]  # + FAIL_HARM
+        assert order.index(more) >= order.index(base)
+
+    def test_repeated_same_severity_is_idempotent(self) -> None:
+        # §2D support: worse() re-adopting the SAME severity is a no-op; repetition never escalates.
+        assert evaluate_m1_verdict(
+            _card(overall=_block(slope=0.5), atp=_block(slope=0.5), wta=_block(slope=0.5)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(
+            _card(overall=_block(brier=0.30), atp=_block(brier=0.30), wta=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+
+    def test_only_the_three_reachable_verdicts_are_emitted(self) -> None:
+        import itertools
+        opts = [dict(), dict(slope=0.5), dict(cil=0.03), dict(cil=0.06), dict(brier=0.30),
+                dict(ll=_LN2 + 0.01), dict(n=100, supported=False)]
+        seen = set()
+        for o, a, w in itertools.product(opts, repeat=3):
+            v = evaluate_m1_verdict(_card(overall=_block(**o), atp=_block(**a), wta=_block(**w)))["verdict"]
+            seen.add(v)
+        assert seen <= {"PASS", "CONTINUE", "FAIL_HARM"}
+        assert "FAIL_FUTILITY" not in seen
+
+
+class TestMissingKeyDefaultsAndDomain:
+    """Kill the defensive-default NumberReplacers (get('n', 0) -> 1 / -1) via the reachable
+    missing-key path, and the outcome-label domain mutant (y == 1 -> y >= 1) via an unconstrained y."""
+
+    def test_missing_n_default_is_zero_not_one(self) -> None:
+        # 'n' absent, block otherwise PASS+supported, min_support=1: get('n',0)=0 -> 0<1 -> CONTINUE.
+        # Mutant get('n',1)=1 -> 1<1 False -> PASS.
+        blk = {"log_loss": 0.62, "brier": 0.21, "cal_in_large": 0.004, "cal_slope": 1.0, "supported": True}
+        card = {"overall": dict(blk), "per_tour": {"ATP": dict(blk), "WTA": dict(blk)}}
+        assert evaluate_m1_verdict(card, min_support=1)["verdict"] == "CONTINUE"
+
+    def test_missing_n_default_is_zero_not_negative(self) -> None:
+        # min_support=0: get('n',0)=0 -> 0<0 False -> PASS. Mutant get('n',-1)=-1 -> -1<0 -> CONTINUE.
+        blk = {"log_loss": 0.62, "brier": 0.21, "cal_in_large": 0.004, "cal_slope": 1.0, "supported": True}
+        card = {"overall": dict(blk), "per_tour": {"ATP": dict(blk), "WTA": dict(blk)}}
+        assert evaluate_m1_verdict(card, min_support=0)["verdict"] == "PASS"
+
+    def test_outcome_label_two_uses_the_loss_branch(self) -> None:
+        # y is an unconstrained int (ScoredRow.y_designated / _metrics accept any int). For y == 2 the
+        # exact-1 test picks the loss branch (1-p); the mutated y >= 1 would pick the win branch (p).
+        from l8_evidence.june_m1_harness import _metrics
+        m = _metrics([(0.6, 2), (0.5, 0)])
+        assert m["log_loss"] == 0.804719   # y==1 branch; mutant y>=1 gives 0.601986
+
+
+class TestProtocolMemberShape:
+    """§7: the _WinnerOutcome Protocol members are declared as properties. Kills RemoveDecorator on
+    @property (which would leave a plain function descriptor)."""
+
+    def test_winner_outcome_members_are_properties(self) -> None:
+        import inspect
+
+        from l8_evidence.june_m1_harness import _WinnerOutcome
+        assert isinstance(inspect.getattr_static(_WinnerOutcome, "market_id"), property)
+        assert isinstance(inspect.getattr_static(_WinnerOutcome, "winner_selection_id"), property)
+
+
+class TestMetricsDomainInvariants:
+    """Founder round-2 §10: n = len(pairs) is non-negative for every input, so `n == 0` and
+    `n <= 0` coincide on the whole reachable domain (the empty-input guard)."""
+
+    def test_n_equals_len_and_is_nonnegative(self) -> None:
+        from l8_evidence.june_m1_harness import _metrics
+        assert _metrics([])["n"] == 0
+        for k in (1, 2, 5, 21):
+            assert _metrics([(0.6, 1)] * k)["n"] == k   # n = len(pairs) >= 0 always

@@ -513,3 +513,24 @@ class TestKeywordOnlyAndTokenIdentity:
         with pytest.raises(StageBUnreachableError):
             open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                                 m1_attestation=forged)
+
+
+class TestDuplicateCardinalityInvariant:
+    """Founder round-2 §2A: len(ids) != len(set(ids)) is EQUIVALENT to len(ids) > len(set(ids))
+    because a list is never shorter than its de-duplicated set. Proven structurally + the guard
+    raises iff a duplicate exists (so both operators detect exactly the same condition)."""
+
+    def test_list_is_never_shorter_than_its_set(self) -> None:
+        # exhaustive over small multisets: len(list) >= len(set(list)) always.
+        import itertools
+        for n in range(6):
+            for combo in itertools.product("abc", repeat=n):
+                assert len(combo) >= len(set(combo))
+
+    def test_validate_raises_iff_duplicate_present(self) -> None:
+        from l8_evidence.june_stage_a_extraction import _validate_outcomes
+        # no duplicate -> passes the cardinality guard (reaches the bundle-subset check)
+        _validate_outcomes((MinimalOutcome("a", 1), MinimalOutcome("b", 2)), frozenset({"a", "b"}))
+        # duplicate -> raises; `!=` and `>` are identical here because len(list) >= len(set)
+        with pytest.raises(StageAIncidentError):
+            _validate_outcomes((MinimalOutcome("a", 1), MinimalOutcome("a", 2)), frozenset({"a"}))
