@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -49,7 +50,7 @@ def _registry() -> LockboxRegistry:
     return reg
 
 
-def test_end_to_end_dryrun_artifact_regenerates_scorecard_byte_identically(tmp_path) -> None:
+def test_end_to_end_dryrun_artifact_regenerates_scorecard_byte_identically(tmp_path: Path) -> None:
     preds = _bundle(40)
     ids = frozenset(p.market_id for p in preds)
     # synthetic winners: designated wins on even index
@@ -57,7 +58,7 @@ def test_end_to_end_dryrun_artifact_regenerates_scorecard_byte_identically(tmp_p
                for i, p in enumerate(preds)}
     reads = {"n": 0}
 
-    def read_outcomes():
+    def read_outcomes() -> list[MinimalOutcome]:
         reads["n"] += 1
         return [MinimalOutcome(mid, sid) for mid, sid in winners.items()]
 
@@ -88,7 +89,7 @@ def test_end_to_end_dryrun_artifact_regenerates_scorecard_byte_identically(tmp_p
     assert reads["n"] == 1
 
 
-def test_dryrun_leaves_a_fresh_seal_unspent(tmp_path) -> None:
+def test_dryrun_leaves_a_fresh_seal_unspent(tmp_path: Path) -> None:
     # The rehearsal uses its OWN registry; a separate, untouched registry stays SEALED/uncontaminated.
     reg = _registry()
     preds = _bundle(5)

@@ -8,6 +8,8 @@ deterministic regardless of input order.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
+from typing import cast
 
 import pytest
 
@@ -27,12 +29,14 @@ pytestmark = [pytest.mark.spec("SPEC-092"), pytest.mark.spec("SPEC-097")]
 _LN2 = math.log(2.0)
 
 
-def _block(*, n=600, ll=0.62, brier=0.21, cil=0.004, slope=1.0, supported=None):
+def _block(*, n: int = 600, ll: float = 0.62, brier: float = 0.21, cil: float = 0.004,
+           slope: float = 1.0, supported: bool | None = None) -> dict[str, object]:
     return {"n": n, "log_loss": ll, "brier": brier, "cal_in_large": cil, "cal_slope": slope,
             "supported": (n >= 500) if supported is None else supported}
 
 
-def _card(overall=None, atp=None, wta=None):
+def _card(overall: dict[str, object] | None = None, atp: dict[str, object] | None = None,
+          wta: dict[str, object] | None = None) -> dict[str, object]:
     return {"overall": overall or _block(), "per_tour": {"ATP": atp or _block(), "WTA": wta or _block()}}
 
 
@@ -119,9 +123,10 @@ class TestScorecard:
         scored, _ = score_bundle(preds, outs)
         card = m1_scorecard(scored, min_support=500)
         assert card["n_scored"] == 700
-        assert card["per_tour"]["ATP"]["supported"] is True
-        assert card["per_tour"]["WTA"]["supported"] is False   # 100 < 500 -> CONTINUE, not fabricated
-        assert card["overall"]["supported"] is True
+        per_tour = cast(dict[str, object], card["per_tour"])
+        assert cast(dict[str, object], per_tour["ATP"])["supported"] is True
+        assert cast(dict[str, object], per_tour["WTA"])["supported"] is False   # 100 < 500 -> CONTINUE, not fabricated
+        assert cast(dict[str, object], card["overall"])["supported"] is True
         # deterministic: same rows in any order -> identical card
         assert m1_scorecard(list(reversed(scored)), min_support=500) == card
 
@@ -176,9 +181,13 @@ class TestMetricsGoldenValues:
         card = m1_scorecard(scored, min_support=3)
         assert card["n_scored"] == 5
         assert card["n_utc_day_clusters"] == 5
-        assert card["per_tour"]["ATP"]["n"] == 3 and card["per_tour"]["ATP"]["supported"] is True
-        assert card["per_tour"]["WTA"]["n"] == 2 and card["per_tour"]["WTA"]["supported"] is False
-        assert set(card["prior_history_cohorts"]) == {"20+", "1-4"}
+        per_tour = cast(dict[str, object], card["per_tour"])
+        atp = cast(dict[str, object], per_tour["ATP"])
+        wta = cast(dict[str, object], per_tour["WTA"])
+        assert atp["n"] == 3 and atp["supported"] is True
+        assert wta["n"] == 2 and wta["supported"] is False
+        cohorts = cast(dict[str, object], card["prior_history_cohorts"])
+        assert set(cohorts) == {"20+", "1-4"}
 
 
 class TestJoinHardening:
@@ -227,15 +236,19 @@ class TestVerdictBoundaries:
         assert evaluate_m1_verdict(_card(overall=_block(ll=_LN2)))["verdict"] == "FAIL_HARM"
 
     def test_scorecard_support_boundary(self) -> None:
-        def rows(n):
+        def rows(n: int) -> list[FrozenPrediction]:
             return [_pred(f"1.{1000+i}", sel_des=1, sel_oth=2) for i in range(n)]
 
-        def outs(rs):
+        def outs(rs: list[FrozenPrediction]) -> dict[str, ExtractedMatchOutcome]:
             return {r.market_id: _outcome(r.market_id, 1) for r in rs}
         r500 = rows(500)
-        assert m1_scorecard(score_bundle(r500, outs(r500))[0], min_support=500)["overall"]["supported"] is True
+        overall500 = cast(dict[str, object],
+                           m1_scorecard(score_bundle(r500, outs(r500))[0], min_support=500)["overall"])
+        assert overall500["supported"] is True
         r499 = rows(499)
-        assert m1_scorecard(score_bundle(r499, outs(r499))[0], min_support=500)["overall"]["supported"] is False
+        overall499 = cast(dict[str, object],
+                           m1_scorecard(score_bundle(r499, outs(r499))[0], min_support=500)["overall"])
+        assert overall499["supported"] is False
 
 
 class TestValidationAndCohortHardening:
@@ -267,18 +280,20 @@ class TestValidationAndCohortHardening:
                 _pred("1.4", band="5-9")]
         outs = {r.market_id: _outcome(r.market_id, 11) for r in rows}
         card = m1_scorecard(score_bundle(rows, outs)[0], min_support=1)
-        cohorts = card["prior_history_cohorts"]
-        assert cohorts["20+"]["n"] == 2
-        assert cohorts["1-4"]["n"] == 1
-        assert cohorts["5-9"]["n"] == 1
+        cohorts = cast(dict[str, object], card["prior_history_cohorts"])
+        assert cast(dict[str, object], cohorts["20+"])["n"] == 2
+        assert cast(dict[str, object], cohorts["1-4"])["n"] == 1
+        assert cast(dict[str, object], cohorts["5-9"])["n"] == 1
 
     def test_scorecard_min_support_default_is_500(self) -> None:
         # 300 rows: default min_support=500 -> unsupported; explicit 250 -> supported.
         rows = [_pred(f"1.{2000+i}", sel_des=1, sel_oth=2) for i in range(300)]
         outs = {r.market_id: _outcome(r.market_id, 1) for r in rows}
         scored = score_bundle(rows, outs)[0]
-        assert m1_scorecard(scored)["overall"]["supported"] is False          # default 500
-        assert m1_scorecard(scored, min_support=250)["overall"]["supported"] is True
+        overall_default = cast(dict[str, object], m1_scorecard(scored)["overall"])
+        assert overall_default["supported"] is False          # default 500
+        overall_250 = cast(dict[str, object], m1_scorecard(scored, min_support=250)["overall"])
+        assert overall_250["supported"] is True
 
     def test_verdict_min_support_default_is_500(self) -> None:
         # overall n=300 with supported=True but default min_support=500 -> CONTINUE via the n check
@@ -323,7 +338,7 @@ class TestOptimiserDifferentialFixtures:
     Hessian/iteration-limit mutant that changes an OBSERVABLE metric on ANY fixture is killed;
     the module exposes only these five metrics (no iteration count), so this is the full surface."""
 
-    def _m(self, pairs):
+    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
         from l8_evidence.june_m1_harness import _metrics
         return _metrics(pairs)
 
@@ -357,7 +372,7 @@ class TestClampReachabilityAndFrozen:
     p<=1e-12) and via my in {0,1}; boundary goldens pin the epsilon on both sides. §7: dataclass
     frozen-immutability + equality kill @dataclass decorator removal."""
 
-    def _m(self, pairs):
+    def _m(self, pairs: Sequence[tuple[float, int]]) -> dict[str, float]:
         from l8_evidence.june_m1_harness import _metrics
         return _metrics(pairs)
 
@@ -440,7 +455,8 @@ class TestVerdictOrderingAndControlFlow:
         rows = [_pred("1.1", band=b1), _pred("1.2", band=b2), _pred("1.3", band="1-4")]
         outs = {r.market_id: _outcome(r.market_id, 11) for r in rows}
         card = m1_scorecard(score_bundle(rows, outs)[0], min_support=1)
-        assert card["prior_history_cohorts"]["20+"]["n"] == 2   # matched by value, not identity
+        cohorts = cast(dict[str, object], card["prior_history_cohorts"])
+        assert cast(dict[str, object], cohorts["20+"])["n"] == 2   # matched by value, not identity
 
     def test_score_bundle_early_missing_does_not_drop_later(self) -> None:
         # first (sorted) market missing outcome; later present -> must still score the later
@@ -459,11 +475,11 @@ class TestSignatureAndDefaultContracts:
         # `*, min_support` makes it keyword-only: passing it positionally MUST raise. The `* -> /`
         # mutant turns it positional-or-keyword, so this call would silently succeed.
         with pytest.raises(TypeError):
-            evaluate_m1_verdict(_card(), 500)   # type: ignore[misc]
+            evaluate_m1_verdict(_card(), 500)   # type: ignore[call-arg]
 
     def test_min_support_is_keyword_only_on_scorecard(self) -> None:
         with pytest.raises(TypeError):
-            m1_scorecard([], 500)   # type: ignore[misc]
+            m1_scorecard([], 500)   # type: ignore[call-arg]
 
     def test_overall_check_is_required(self) -> None:
         # overall UNSUPPORTED but n>=min_support (no n-check CONTINUE): required=True -> CONTINUE
@@ -472,12 +488,14 @@ class TestSignatureAndDefaultContracts:
         assert v["verdict"] == "CONTINUE"
 
     def test_scorecard_default_min_support_is_exactly_500(self) -> None:
-        def rows(n):
+        def rows(n: int) -> list[FrozenPrediction]:
             return [_pred(f"1.{7000+i}", sel_des=1, sel_oth=2) for i in range(n)]
 
-        def outs(rs):
+        def outs(rs: list[FrozenPrediction]) -> dict[str, ExtractedMatchOutcome]:
             return {r.market_id: _outcome(r.market_id, 1) for r in rs}
         r500 = rows(500)
-        assert m1_scorecard(score_bundle(r500, outs(r500))[0])["overall"]["supported"] is True  # default 500
+        overall500 = cast(dict[str, object], m1_scorecard(score_bundle(r500, outs(r500))[0])["overall"])
+        assert overall500["supported"] is True  # default 500
         r499 = rows(499)
-        assert m1_scorecard(score_bundle(r499, outs(r499))[0])["overall"]["supported"] is False
+        overall499 = cast(dict[str, object], m1_scorecard(score_bundle(r499, outs(r499))[0])["overall"])
+        assert overall499["supported"] is False

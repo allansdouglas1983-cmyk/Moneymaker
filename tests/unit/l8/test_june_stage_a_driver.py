@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from typing import cast
 
 import pytest
 
@@ -53,8 +54,9 @@ def test_real_bundle_is_scoring_ready_under_synthetic_winners() -> None:
     assert len(scored) == 1213 and excl == ()
     card = m1_scorecard(scored, min_support=500)
     assert card["n_scored"] == 1213
-    assert card["per_tour"]["ATP"]["supported"] is True   # 592 >= 500
-    assert card["per_tour"]["WTA"]["supported"] is True   # 621 >= 500
+    per_tour = cast("dict[str, dict[str, object]]", card["per_tour"])
+    assert per_tour["ATP"]["supported"] is True   # 592 >= 500
+    assert per_tour["WTA"]["supported"] is True   # 621 >= 500
     # deterministic: identical card from a reshuffled scored order
     assert json.dumps(m1_scorecard(list(reversed(scored)), min_support=500), sort_keys=True) == \
         json.dumps(card, sort_keys=True)

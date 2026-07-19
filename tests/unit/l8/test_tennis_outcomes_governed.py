@@ -364,7 +364,7 @@ def _dup(s: str) -> str:
     return d
 
 
-def _multi_mc_line(entries: list[dict], *, pt: int = 1) -> str:
+def _multi_mc_line(entries: list[dict[str, object]], *, pt: int = 1) -> str:
     """One stream message carrying several market-change (mc) entries verbatim."""
     return json.dumps({"op": "mcm", "pt": pt, "mc": entries})
 
@@ -373,7 +373,7 @@ class TestExtractControlFlowHardening:
     """Kill the L273 non-CLOSED comparison mutants (need a WINNER present), the exact-WINNER match
     (== -> >=), the keyword-only marker, the seal != -> is-not, and the three inner continue->break."""
 
-    def _ext(self):
+    def _ext(self) -> TennisOutcomeExtractor:
         return TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
 
     def test_open_with_winner_is_not_settled(self) -> None:
@@ -400,7 +400,7 @@ class TestExtractControlFlowHardening:
     def test_sealed_market_ids_is_keyword_only(self) -> None:
         # `*` -> `/` would make sealed_market_ids positional; it must stay keyword-only.
         with pytest.raises(TypeError):
-            TennisOutcomeExtractor(_auth(), frozenset())   # type: ignore[misc]
+            TennisOutcomeExtractor(_auth(), frozenset())   # type: ignore[call-arg]
 
     def test_june_seal_matches_by_value_not_identity(self) -> None:
         # seal digest checked by EQUALITY: a value-equal DIFFERENT-object seal (as loaded at runtime)

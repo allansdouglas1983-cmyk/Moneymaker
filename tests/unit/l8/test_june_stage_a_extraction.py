@@ -6,12 +6,16 @@ any non-PASS / mismatch is structurally unreachable). All synthetic — no real 
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
 import pytest
 
 from l8_evidence.june_stage_a_extraction import (
     JUNE_ARTIFACT_USE_POLICY_DIGEST,
+    ImmutableOutcomeArtifact,
     M1PassAttestation,
     MinimalOutcome,
     StageAIncidentError,
@@ -34,7 +38,7 @@ from l8_evidence.prediction_snapshots import DualClockTimestamp
 pytestmark = [pytest.mark.spec("SPEC-092")]
 
 
-def _probe_token():
+def _probe_token() -> object:
     import l8_evidence.june_stage_a_extraction as m
     return m._ATTEST_TOKEN
 
@@ -58,12 +62,18 @@ def _outcomes() -> list[MinimalOutcome]:
     return [MinimalOutcome("1.1", 11), MinimalOutcome("1.2", 44), MinimalOutcome("1.3", 55)]
 
 
-def _run(reg, tmp_path, *, reader=None, fault=None):
+def _run(
+    reg: LockboxRegistry,
+    tmp_path: Path,
+    *,
+    reader: Callable[[], Sequence[MinimalOutcome]] | None = None,
+    fault: Callable[[str], None] | None = None,
+) -> tuple[ImmutableOutcomeArtifact, dict[str, int]]:
     calls = {"n": 0}
-    def default_reader():
+    def default_reader() -> list[MinimalOutcome]:
         calls["n"] += 1
         return _outcomes()
-    kwargs = dict(
+    kwargs: dict[str, Any] = dict(
         registry=reg, lockbox_id=_LB, accessor="gate-1", at=_TS,
         bundle_market_ids=_BUNDLE_IDS, bundle_digest=_BUNDLE_DIGEST,
         authorisation_digest=_AUTH_DIGEST, read_outcomes=reader or default_reader,
@@ -76,7 +86,7 @@ def _run(reg, tmp_path, *, reader=None, fault=None):
 
 
 class TestHappyPath:
-    def test_extraction_produces_verified_artifact_and_burns_registry(self, tmp_path) -> None:
+    def test_extraction_produces_verified_artifact_and_burns_registry(self, tmp_path: Path) -> None:
         reg = _registry()
         art, calls = _run(reg, tmp_path)
         assert calls["n"] == 1
@@ -88,7 +98,7 @@ class TestHappyPath:
 
 
 class TestRequirementA_DurableBurnBeforeRead:
-    def test_burn_is_durable_before_any_outcome_read(self, tmp_path) -> None:
+    def test_burn_is_durable_before_any_outcome_read(self, tmp_path: Path) -> None:
         # Fault immediately after the durable burn record, before the read: the raw reader must
         # NOT have run, yet the burn record is already durable.
         reg = _registry()
@@ -100,7 +110,7 @@ class TestRequirementA_DurableBurnBeforeRead:
         assert (tmp_path / "burn.json").exists()          # durably opened
         assert not (tmp_path / "artifact.json").exists()
 
-    def test_crash_after_read_before_artifact_is_incident_no_reread(self, tmp_path) -> None:
+    def test_crash_after_read_before_artifact_is_incident_no_reread(self, tmp_path: Path) -> None:
         reg = _registry()
         def fault(step: str) -> None:
             if step == "after_raw_read":
@@ -112,7 +122,7 @@ class TestRequirementA_DurableBurnBeforeRead:
             recover_stage_a(burn_record_path=tmp_path / "burn.json",
                             artifact_path=tmp_path / "artifact.json")
 
-    def test_crash_after_artifact_recovers_by_finalizing_no_reread(self, tmp_path) -> None:
+    def test_crash_after_artifact_recovers_by_finalizing_no_reread(self, tmp_path: Path) -> None:
         reg = _registry()
         def fault(step: str) -> None:
             if step == "after_artifact":
@@ -124,35 +134,35 @@ class TestRequirementA_DurableBurnBeforeRead:
                               artifact_path=tmp_path / "artifact.json")
         assert {o.market_id for o in art.outcomes} == {"1.1", "1.2", "1.3"}
 
-    def test_a_second_fresh_run_is_refused(self, tmp_path) -> None:
+    def test_a_second_fresh_run_is_refused(self, tmp_path: Path) -> None:
         reg = _registry()
         _run(reg, tmp_path)
         # burn record + artifact exist -> a fresh run refuses (must recover instead).
         with pytest.raises(StageAIncidentError):
             _run(_registry(), tmp_path)
 
-    def test_registry_refuses_a_second_gate1_access(self, tmp_path) -> None:
+    def test_registry_refuses_a_second_gate1_access(self, tmp_path: Path) -> None:
         reg = _registry()
         _run(reg, tmp_path)
         with pytest.raises(LockboxBurnedError):
             reg.access(_LB, accessor="again", purpose="x", gate_id=GATE_1_ID, at=_TS)
 
-    def test_outcomes_outside_bundle_refuse(self, tmp_path) -> None:
+    def test_outcomes_outside_bundle_refuse(self, tmp_path: Path) -> None:
         with pytest.raises(StageAIncidentError):
             _run(_registry(), tmp_path, reader=lambda: [MinimalOutcome("1.999", 1)])
 
-    def test_duplicate_market_ids_refuse(self, tmp_path) -> None:
+    def test_duplicate_market_ids_refuse(self, tmp_path: Path) -> None:
         with pytest.raises(StageAIncidentError):
             _run(_registry(), tmp_path,
                  reader=lambda: [MinimalOutcome("1.1", 1), MinimalOutcome("1.1", 2)])
 
 
 class TestRequirementB_ConditionalStageB:
-    def _artifact(self, tmp_path):
+    def _artifact(self, tmp_path: Path) -> ImmutableOutcomeArtifact:
         art, _ = _run(_registry(), tmp_path)
         return art
 
-    def test_pass_attestation_unlocks_stage_b(self, tmp_path) -> None:
+    def test_pass_attestation_unlocks_stage_b(self, tmp_path: Path) -> None:
         art = self._artifact(tmp_path)
         att = attest_m1_pass(verdict="PASS", artifact=art,
                              use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
@@ -162,14 +172,14 @@ class TestRequirementB_ConditionalStageB:
         assert {o.market_id for o in rows} == {"1.1", "1.2", "1.3"}
 
     @pytest.mark.parametrize("verdict", ["CONTINUE", "FAIL_HARM", "FAIL_FUTILITY", "TECHNICAL_FAILURE"])
-    def test_non_pass_makes_stage_b_unreachable(self, tmp_path, verdict: str) -> None:
+    def test_non_pass_makes_stage_b_unreachable(self, tmp_path: Path, verdict: str) -> None:
         art = self._artifact(tmp_path)
         with pytest.raises(StageBUnreachableError):
             attest_m1_pass(verdict=verdict, artifact=art,
                            use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                            m1_gate_version="probability-m1")
 
-    def test_wrong_use_policy_digest_blocks_attestation_and_reader(self, tmp_path) -> None:
+    def test_wrong_use_policy_digest_blocks_attestation_and_reader(self, tmp_path: Path) -> None:
         art = self._artifact(tmp_path)
         with pytest.raises(StageBUnreachableError):
             attest_m1_pass(verdict="PASS", artifact=art,
@@ -179,7 +189,7 @@ class TestRequirementB_ConditionalStageB:
         with pytest.raises(StageBUnreachableError):
             open_stage_b_reader(art, use_policy_digest="sha256:" + "00" * 32, m1_attestation=good)
 
-    def test_forged_attestation_refused(self, tmp_path) -> None:
+    def test_forged_attestation_refused(self, tmp_path: Path) -> None:
         art = self._artifact(tmp_path)
         forged = M1PassAttestation(artifact_digest=art.content_digest(),
                                    use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
@@ -188,7 +198,7 @@ class TestRequirementB_ConditionalStageB:
             open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                                 m1_attestation=forged)
 
-    def test_attestation_bound_to_a_different_artifact_refused(self, tmp_path) -> None:
+    def test_attestation_bound_to_a_different_artifact_refused(self, tmp_path: Path) -> None:
         art = self._artifact(tmp_path)
         other = art.__class__(lockbox_id=art.lockbox_id, bundle_digest=art.bundle_digest,
                               authorisation_digest=art.authorisation_digest,
@@ -203,14 +213,14 @@ class TestRequirementB_ConditionalStageB:
 
 
 class TestExtractionMutationHardening:
-    def test_strict_subset_extraction_succeeds(self, tmp_path) -> None:
+    def test_strict_subset_extraction_succeeds(self, tmp_path: Path) -> None:
         # Outcomes a STRICT subset of the bundle must be accepted (kills <= -> == / < on the
         # subset check): a market can refuse at burn, leaving fewer outcomes than the bundle.
         reg = _registry()
         art, _ = _run(reg, tmp_path, reader=lambda: [MinimalOutcome("1.1", 11), MinimalOutcome("1.2", 44)])
         assert {o.market_id for o in art.outcomes} == {"1.1", "1.2"}  # 1.3 legitimately absent
 
-    def test_corrupt_artifact_on_disk_fails_digest_selfcheck(self, tmp_path) -> None:
+    def test_corrupt_artifact_on_disk_fails_digest_selfcheck(self, tmp_path: Path) -> None:
         reg = _registry()
         _run(reg, tmp_path)
         p = tmp_path / "artifact.json"
@@ -219,7 +229,7 @@ class TestExtractionMutationHardening:
         with pytest.raises(StageAIncidentError):
             load_artifact(p)
 
-    def test_recover_returns_bytewise_same_artifact(self, tmp_path) -> None:
+    def test_recover_returns_bytewise_same_artifact(self, tmp_path: Path) -> None:
         reg = _registry()
         art, _ = _run(reg, tmp_path)
         rec = recover_stage_a(burn_record_path=tmp_path / "burn.json",
@@ -236,18 +246,18 @@ class TestDigestDirectionHardening:
     _SMALLER = "sha256:" + "00" * 32   # < 84...
     _LARGER = "sha256:" + "ff" * 32    # > 84...
 
-    def _artifact(self, tmp_path):
+    def _artifact(self, tmp_path: Path) -> ImmutableOutcomeArtifact:
         art, _ = _run(_registry(), tmp_path)
         return art
 
     @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
-    def test_attest_rejects_wrong_use_policy_both_directions(self, tmp_path, wrong: str) -> None:
+    def test_attest_rejects_wrong_use_policy_both_directions(self, tmp_path: Path, wrong: str) -> None:
         with pytest.raises(StageBUnreachableError):
             attest_m1_pass(verdict="PASS", artifact=self._artifact(tmp_path),
                            use_policy_digest=wrong, m1_gate_version="x")
 
     @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
-    def test_reader_rejects_wrong_use_policy_both_directions(self, tmp_path, wrong: str) -> None:
+    def test_reader_rejects_wrong_use_policy_both_directions(self, tmp_path: Path, wrong: str) -> None:
         art = self._artifact(tmp_path)
         good = attest_m1_pass(verdict="PASS", artifact=art,
                               use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
@@ -255,7 +265,7 @@ class TestDigestDirectionHardening:
             open_stage_b_reader(art, use_policy_digest=wrong, m1_attestation=good)
 
     @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
-    def test_attestation_carrying_wrong_use_policy_both_directions_refused(self, tmp_path, wrong: str) -> None:
+    def test_attestation_carrying_wrong_use_policy_both_directions_refused(self, tmp_path: Path, wrong: str) -> None:
         art = self._artifact(tmp_path)
         # a genuine tokened attestation but with a tampered use_policy_digest field
         forged = M1PassAttestation(artifact_digest=art.content_digest(), use_policy_digest=wrong,
@@ -266,7 +276,7 @@ class TestDigestDirectionHardening:
 
 
 class TestLargeInputHardening:
-    def test_large_no_duplicate_extraction_succeeds(self, tmp_path) -> None:
+    def test_large_no_duplicate_extraction_succeeds(self, tmp_path: Path) -> None:
         # >256 markets, no dups: kills `len(ids) != len(set(ids))` -> `is not` (list lengths
         # above the small-int cache are distinct objects; `is not` would falsely flag a dup and
         # break the real 1,213-market burn).
@@ -290,8 +300,7 @@ def _dup(s: str) -> str:
     return d
 
 
-def _artifact_obj(winner: int):
-    from l8_evidence.june_stage_a_extraction import ImmutableOutcomeArtifact
+def _artifact_obj(winner: int) -> ImmutableOutcomeArtifact:
     return ImmutableOutcomeArtifact(lockbox_id=_LB, bundle_digest=_BUNDLE_DIGEST,
         authorisation_digest=_AUTH_DIGEST, grant_at_utc="2026-07-18T12:00:00+00:00",
         outcomes=(MinimalOutcome("1.1", winner),))
@@ -352,7 +361,7 @@ class TestDigestEqualityIsNotOrdering:
         assert len(open_stage_b_reader(_ART_LO, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
                                        m1_attestation=att)) == 1
 
-    def test_load_artifact_digest_equality_both_sides_and_identity(self, tmp_path) -> None:
+    def test_load_artifact_digest_equality_both_sides_and_identity(self, tmp_path: Path) -> None:
         reg = _registry()
         _run(reg, tmp_path)
         p = tmp_path / "artifact.json"
@@ -379,18 +388,18 @@ class TestDigestAndControlFlowHardening:
         payload = json.loads(_ART_LO.to_json())
         assert payload["content_digest"] == _ART_LO.content_digest()
 
-    def test_fresh_run_refuses_if_only_burn_record_present(self, tmp_path) -> None:
+    def test_fresh_run_refuses_if_only_burn_record_present(self, tmp_path: Path) -> None:
         # kills `or` -> `and` at the prior-state guard: a leftover burn record alone must refuse.
         (tmp_path / "burn.json").write_text("{}")
         with pytest.raises(StageAIncidentError):
             _run(_registry(), tmp_path)
 
-    def test_fresh_run_refuses_if_only_artifact_present(self, tmp_path) -> None:
+    def test_fresh_run_refuses_if_only_artifact_present(self, tmp_path: Path) -> None:
         (tmp_path / "artifact.json").write_text("{}")
         with pytest.raises(StageAIncidentError):
             _run(_registry(), tmp_path)
 
-    def test_recover_distinguishes_incident_from_never_opened(self, tmp_path) -> None:
+    def test_recover_distinguishes_incident_from_never_opened(self, tmp_path: Path) -> None:
         # kills the AddNot on `if burn_record_path.exists()`: the two cases raise DIFFERENT messages.
         (tmp_path / "burn.json").write_text("{}")
         with pytest.raises(StageAIncidentError, match="durable burn record exists"):
@@ -437,7 +446,7 @@ class TestDeterministicSerialization:
         assert keys == sorted(keys)
         assert s.startswith('{"authorisation_digest":')   # only sorted order yields this prefix
 
-    def test_burn_record_key_order_is_sorted(self, tmp_path) -> None:
+    def test_burn_record_key_order_is_sorted(self, tmp_path: Path) -> None:
         _run(_registry(), tmp_path)
         body = (tmp_path / "burn.json").read_text(encoding="utf-8")
         assert body.startswith('{"accessor":')   # sorted; insertion order would start with "lockbox_id"
@@ -488,15 +497,15 @@ class TestKeywordOnlyAndTokenIdentity:
         # keyword-only, so a positional call MUST NOT be accepted as those params.
         art = _artifact_obj(11)
         with pytest.raises(TypeError):
-            open_stage_b_reader(art, "x", "y")   # type: ignore[misc]
+            open_stage_b_reader(art, "x", "y")   # type: ignore[call-arg, arg-type]
 
     def test_forged_attestation_token_with_evil_eq_is_refused(self) -> None:
         # SECURITY: the attestation token is checked by IDENTITY (`is not`). A forged attestation
         # whose _token only __eq__-equals the sentinel defeats `!=` but not `is not`.
         class _EvilEq:
-            def __eq__(self, other):  # equals anything
+            def __eq__(self, other: object) -> bool:  # equals anything
                 return True
-            __hash__ = None
+            __hash__ = None  # type: ignore[assignment]
         art = _artifact_obj(11)
         forged = M1PassAttestation(artifact_digest=art.content_digest(),
                                    use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
