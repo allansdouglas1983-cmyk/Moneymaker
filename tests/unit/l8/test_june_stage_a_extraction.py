@@ -397,3 +397,110 @@ class TestDigestAndControlFlowHardening:
             recover_stage_a(burn_record_path=tmp_path / "burn.json", artifact_path=tmp_path / "none.json")
         with pytest.raises(StageAIncidentError, match="never durably opened"):
             recover_stage_a(burn_record_path=tmp_path / "absent.json", artifact_path=tmp_path / "none.json")
+
+
+class TestFrozenDataclassImmutability:
+    """§7: MinimalOutcome / ImmutableOutcomeArtifact / M1PassAttestation are frozen. Kills
+    ReplaceTrueWithFalse on @dataclass(frozen=True): frozen=False makes them mutable AND
+    (eq=True default) unhashable."""
+
+    def test_minimal_outcome_is_frozen_and_hashable(self) -> None:
+        import dataclasses
+        o = MinimalOutcome("1.1", 7)
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            o.market_id = "1.2"   # type: ignore[misc]
+        assert hash(o) == hash(MinimalOutcome("1.1", 7))
+
+    def test_artifact_is_frozen_and_hashable(self) -> None:
+        import dataclasses
+        a = _artifact_obj(11)
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            a.lockbox_id = "other"   # type: ignore[misc]
+        assert isinstance(hash(a), int)
+
+    def test_attestation_is_frozen_and_hashable(self) -> None:
+        import dataclasses
+        att = M1PassAttestation("sha256:" + "0" * 64, JUNE_ARTIFACT_USE_POLICY_DIGEST, "v1", _probe_token())
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            att.m1_gate_version = "v2"   # type: ignore[misc]
+        assert isinstance(hash(att), int)
+
+
+class TestDeterministicSerialization:
+    """Kill ReplaceTrueWithFalse on sort_keys=True in to_json and the durable burn record: stable
+    key order is an evidence-integrity requirement for the durable artifact bytes."""
+
+    def test_to_json_key_order_is_sorted(self) -> None:
+        import json
+        s = _artifact_obj(11).to_json()
+        keys = list(json.loads(s).keys())
+        assert keys == sorted(keys)
+        assert s.startswith('{"authorisation_digest":')   # only sorted order yields this prefix
+
+    def test_burn_record_key_order_is_sorted(self, tmp_path) -> None:
+        _run(_registry(), tmp_path)
+        body = (tmp_path / "burn.json").read_text(encoding="utf-8")
+        assert body.startswith('{"accessor":')   # sorted; insertion order would start with "lockbox_id"
+
+
+class TestAttestationContentDigest:
+    """Kill the 11 arithmetic/bitwise mutants of `"sha256:" + hexdigest` AND sort_keys=True in
+    M1PassAttestation.content_digest (an uncalled-but-public evidence method): any str OP str
+    raises TypeError; sort_keys=False changes the digest. Pin the exact value."""
+
+    def test_attestation_content_digest_exact_value(self) -> None:
+        att = M1PassAttestation(artifact_digest=_ART_LO.content_digest(),
+                                use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                m1_gate_version="x", _token=_probe_token())
+        assert att.content_digest() == "sha256:bd3c631d1fc43d43aa61767fc27b29922698ec279417f70105eebe7051baab21"
+
+
+class TestValidationMessageIsSetDifference:
+    """Kill ReplaceBinaryOperator_Sub_* on (got - bundle_market_ids) in the error message and the
+    `[:5]` truncation: the message names exactly the out-of-bundle ids (difference), nothing in-bundle."""
+
+    def test_message_shows_only_out_of_bundle_ids(self) -> None:
+        from l8_evidence.june_stage_a_extraction import _validate_outcomes
+        with pytest.raises(StageAIncidentError) as ei:
+            _validate_outcomes(
+                (MinimalOutcome("good1", 1), MinimalOutcome("bad1", 2)),
+                frozenset({"good1", "good2"}),
+            )
+        msg = str(ei.value)
+        assert "bad1" in msg          # difference contains the offender
+        assert "good1" not in msg     # & (intersection) would show good1
+        assert "good2" not in msg     # | / ^ would show good2
+
+    def test_message_truncates_at_five_offenders(self) -> None:
+        from l8_evidence.june_stage_a_extraction import _validate_outcomes
+        # six out-of-bundle ids b0..b5 (sorted): [:5] shows b0..b4, hides b5. Kills [:6] (would show
+        # b5) and [:4] (would hide b4).
+        offenders = tuple(MinimalOutcome(f"b{i}", i) for i in range(6))
+        with pytest.raises(StageAIncidentError) as ei:
+            _validate_outcomes(offenders, frozenset())
+        msg = str(ei.value)
+        assert "b4" in msg and "b5" not in msg
+
+
+class TestKeywordOnlyAndTokenIdentity:
+    def test_reader_use_policy_is_keyword_only(self) -> None:
+        # `*` -> `/` makes use_policy_digest/m1_attestation positional; original keeps them
+        # keyword-only, so a positional call MUST NOT be accepted as those params.
+        art = _artifact_obj(11)
+        with pytest.raises(TypeError):
+            open_stage_b_reader(art, "x", "y")   # type: ignore[misc]
+
+    def test_forged_attestation_token_with_evil_eq_is_refused(self) -> None:
+        # SECURITY: the attestation token is checked by IDENTITY (`is not`). A forged attestation
+        # whose _token only __eq__-equals the sentinel defeats `!=` but not `is not`.
+        class _EvilEq:
+            def __eq__(self, other):  # equals anything
+                return True
+            __hash__ = None
+        art = _artifact_obj(11)
+        forged = M1PassAttestation(artifact_digest=art.content_digest(),
+                                   use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                   m1_gate_version="v1", _token=_EvilEq())
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                m1_attestation=forged)

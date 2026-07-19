@@ -306,11 +306,15 @@ class TestFrozenPredictionIdentityChecks:
         same_sel = int("70000000")
         with pytest.raises(ValueError):   # value-equal DIFFERENT-object selection ids -> reject
             _pred("1.1", sel_des=same_sel, sel_oth=int("7000" + "0000"))
-        comp = "td:x|" + "z"
-        with pytest.raises(ValueError):   # value-equal DIFFERENT-object competitor ids -> reject
+        # RUNTIME concat (chr) so the two ids are value-equal DIFFERENT objects — a literal
+        # "td:x|"+"z" is constant-folded to one interned object and would NOT distinguish == from is.
+        comp = "td:x|" + chr(122)          # 'z' at runtime
+        other = "td:x|" + chr(122)
+        assert comp == other and comp is not other
+        with pytest.raises(ValueError):   # value-equal DIFFERENT-object competitor ids -> reject (kills == -> is)
             FrozenPrediction(market_id="1.1", tour="ATP", cohort="STRICT", prior_band="20+",
                              cluster_day="2026-06-10", competitor_designated=comp,
-                             competitor_other="td:x|" + "z", selection_id_designated=1,
+                             competitor_other=other, selection_id_designated=1,
                              selection_id_other=2, p_raw_designated=0.5, p_cal_designated=0.5)
 
 
@@ -427,11 +431,16 @@ class TestVerdictOrderingAndControlFlow:
         assert evaluate_m1_verdict({"overall": blk, "per_tour": {"ATP": blk, "WTA": blk}})["verdict"] == "CONTINUE"
 
     def test_scorecard_band_membership_distinct_objects(self) -> None:
-        band = "2" + "0+"          # value "20+" as a distinct object from other rows' literal
-        rows = [_pred("1.1", band=band), _pred("1.2", band="1-4")]
+        # TWO rows share the band VALUE "20+" as DIFFERENT objects (runtime chr concat, not a
+        # constant-folded literal). Value grouping -> n==2; identity grouping (`is`) would drop the
+        # second row (the set keeps one representative) -> n==1. Kills prior_band == -> is.
+        b1 = "20" + chr(43)        # '+' at runtime
+        b2 = "20" + chr(43)
+        assert b1 == b2 and b1 is not b2
+        rows = [_pred("1.1", band=b1), _pred("1.2", band=b2), _pred("1.3", band="1-4")]
         outs = {r.market_id: _outcome(r.market_id, 11) for r in rows}
         card = m1_scorecard(score_bundle(rows, outs)[0], min_support=1)
-        assert card["prior_history_cohorts"]["20+"]["n"] == 1   # matched by value, not identity
+        assert card["prior_history_cohorts"]["20+"]["n"] == 2   # matched by value, not identity
 
     def test_score_bundle_early_missing_does_not_drop_later(self) -> None:
         # first (sorted) market missing outcome; later present -> must still score the later
@@ -440,3 +449,35 @@ class TestVerdictOrderingAndControlFlow:
         scored, excl = score_bundle(preds, {"1.2": _outcome("1.2", 33)})
         assert {r.market_id for r in scored} == {"1.2"}
         assert dict(excl) == {"1.1": "NO_OUTCOME_IN_ARTIFACT"}
+
+
+class TestSignatureAndDefaultContracts:
+    """Kill the keyword-only-marker mutation (`*` -> `/`, i.e. keyword-only -> positional-only),
+    the overall `required=True` -> `False`, and the m1_scorecard min_support=500 default."""
+
+    def test_min_support_is_keyword_only_on_verdict(self) -> None:
+        # `*, min_support` makes it keyword-only: passing it positionally MUST raise. The `* -> /`
+        # mutant turns it positional-or-keyword, so this call would silently succeed.
+        with pytest.raises(TypeError):
+            evaluate_m1_verdict(_card(), 500)   # type: ignore[misc]
+
+    def test_min_support_is_keyword_only_on_scorecard(self) -> None:
+        with pytest.raises(TypeError):
+            m1_scorecard([], 500)   # type: ignore[misc]
+
+    def test_overall_check_is_required(self) -> None:
+        # overall UNSUPPORTED but n>=min_support (no n-check CONTINUE): required=True -> CONTINUE
+        # via the unsupported branch; required=False (mutant) -> that branch returns -> PASS.
+        v = evaluate_m1_verdict(_card(overall=_block(n=600, supported=False)))
+        assert v["verdict"] == "CONTINUE"
+
+    def test_scorecard_default_min_support_is_exactly_500(self) -> None:
+        def rows(n):
+            return [_pred(f"1.{7000+i}", sel_des=1, sel_oth=2) for i in range(n)]
+
+        def outs(rs):
+            return {r.market_id: _outcome(r.market_id, 1) for r in rs}
+        r500 = rows(500)
+        assert m1_scorecard(score_bundle(r500, outs(r500))[0])["overall"]["supported"] is True  # default 500
+        r499 = rows(499)
+        assert m1_scorecard(score_bundle(r499, outs(r499))[0])["overall"]["supported"] is False

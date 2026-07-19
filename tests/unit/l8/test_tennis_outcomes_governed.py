@@ -355,3 +355,114 @@ class TestExtractControlFlow:
         lines = [_line("1.500", "OPEN", _PRE_JUNE, [{"id": 1, "status": "ACTIVE"}, {"id": 2, "status": "ACTIVE"}])]
         with pytest.raises(OutcomeUndeterminedError):
             ex.extract("1.500", lines)
+
+
+def _dup(s: str) -> str:
+    """Value-equal but guaranteed DIFFERENT string object (as a digest loaded at runtime)."""
+    d = s.encode("utf-8").decode("utf-8")
+    assert d == s and d is not s
+    return d
+
+
+def _multi_mc_line(entries: list[dict], *, pt: int = 1) -> str:
+    """One stream message carrying several market-change (mc) entries verbatim."""
+    return json.dumps({"op": "mcm", "pt": pt, "mc": entries})
+
+
+class TestExtractControlFlowHardening:
+    """Kill the L273 non-CLOSED comparison mutants (need a WINNER present), the exact-WINNER match
+    (== -> >=), the keyword-only marker, the seal != -> is-not, and the three inner continue->break."""
+
+    def _ext(self):
+        return TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+
+    def test_open_with_winner_is_not_settled(self) -> None:
+        # OPEN > "CLOSED" lexically: kills == -> >= and == -> is-not. A WINNER is present, so a mutant
+        # that treats OPEN as a settlement WOULD return; the exact == must refuse (undetermined).
+        lines = [_line("1.500", "OPEN", _PRE_JUNE, [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            self._ext().extract("1.500", lines)
+
+    def test_abandoned_with_winner_is_not_settled(self) -> None:
+        # "ABANDONED" < "CLOSED" lexically: kills == -> <=. WINNER present; only exact "CLOSED" settles.
+        lines = [_line("1.500", "ABANDONED", _PRE_JUNE, [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            self._ext().extract("1.500", lines)
+
+    def test_non_winner_status_lexically_after_winner_is_not_counted(self) -> None:
+        # A CLOSED market with one real WINNER and a runner whose status is lexically > "WINNER"
+        # ("ZED" > "WINNER"): kills st == "WINNER" -> st >= "WINNER" (mutant counts 2 -> undetermined).
+        lines = [_line("1.500", "CLOSED", _PRE_JUNE,
+                       [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "ZED"}])]
+        out = self._ext().extract("1.500", lines)
+        assert out.winner_selection_id == 1
+
+    def test_sealed_market_ids_is_keyword_only(self) -> None:
+        # `*` -> `/` would make sealed_market_ids positional; it must stay keyword-only.
+        with pytest.raises(TypeError):
+            TennisOutcomeExtractor(_auth(), frozenset())   # type: ignore[misc]
+
+    def test_june_seal_matches_by_value_not_identity(self) -> None:
+        # seal digest checked by EQUALITY: a value-equal DIFFERENT-object seal (as loaded at runtime)
+        # MUST be accepted. Kills != -> is-not (which would reject the equal-but-distinct digest).
+        ex = TennisOutcomeExtractor(
+            _june_auth(seal_digest=_dup(JUNE_M1_SEAL_AUTHORISATION_DIGEST)),
+            sealed_market_ids=frozenset({"1.900"}),
+            june_authorised_market_ids=frozenset({"1.900"}),
+        )
+        assert ex is not None   # construction succeeded past the seal-equality guard
+
+    def test_auth_content_digest_exact_value(self) -> None:
+        # Kills sort_keys=True -> False in OutcomeAccessAuthorisation.content_digest (reorders keys).
+        assert _auth().content_digest() == "sha256:1438b957591bbfe7738ed20b19b92a89ae4d1a240b0e8a5a216c96e37323e4de"
+
+    def test_blank_line_before_closed_is_skipped_not_terminal(self) -> None:
+        # kills the empty-line `continue` -> `break`: a blank line must be skipped, not end the stream.
+        lines = ["", _line("1.500", "CLOSED", _PRE_JUNE,
+                           [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        assert self._ext().extract("1.500", lines).winner_selection_id == 1
+
+    def test_foreign_mc_before_target_mc_in_same_message(self) -> None:
+        # kills the id-mismatch `continue` -> `break`: a non-target mc ahead of the target mc in the
+        # SAME message must be skipped, not terminate the mc loop.
+        md_closed = {"status": "CLOSED", "marketTime": _PRE_JUNE, "marketType": "MATCH_ODDS",
+                     "runners": [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}]}
+        line = _multi_mc_line([
+            {"id": "1.OTHER", "marketDefinition": {"status": "CLOSED", "marketTime": _PRE_JUNE,
+                                                   "runners": [{"id": 9, "status": "WINNER"}]}},
+            {"id": "1.500", "marketDefinition": md_closed},
+        ])
+        assert self._ext().extract("1.500", [line]).winner_selection_id == 1
+
+    def test_mc_without_definition_before_defined_mc_in_same_message(self) -> None:
+        # kills the md-None `continue` -> `break`: a target mc with no marketDefinition ahead of the
+        # target mc WITH one must be skipped, not terminate the mc loop.
+        md_closed = {"status": "CLOSED", "marketTime": _PRE_JUNE, "marketType": "MATCH_ODDS",
+                     "runners": [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}]}
+        line = _multi_mc_line([
+            {"id": "1.500"},                                   # no marketDefinition
+            {"id": "1.500", "marketDefinition": md_closed},
+        ])
+        assert self._ext().extract("1.500", [line]).winner_selection_id == 1
+
+
+class TestFrozenTennisDataclasses:
+    """§7: OutcomeAccessAuthorisation and ExtractedMatchOutcome are frozen. Kills
+    ReplaceTrueWithFalse on @dataclass(frozen=True)."""
+
+    def test_authorisation_is_frozen(self) -> None:
+        import dataclasses
+        a = _auth()
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            a.experiment_id = "other"   # type: ignore[misc]
+        assert isinstance(hash(a), int)
+
+    def test_extracted_outcome_is_frozen(self) -> None:
+        import dataclasses
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        out = ex.extract("1.500", [_line("1.500", "CLOSED", _PRE_JUNE,
+                                          [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])])
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            out.winner_selection_id = 2   # type: ignore[misc]
+        # (ExtractedMatchOutcome carries a dict field -> intentionally unhashable; the frozen setattr
+        # guard above is the discriminator for frozen=True vs the mutated frozen=False.)
