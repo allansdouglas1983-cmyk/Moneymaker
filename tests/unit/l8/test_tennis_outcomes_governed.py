@@ -330,3 +330,28 @@ class TestSealMutationHardening:
         lines = [_line("1.OTHER", "CLOSED", _PRE_JUNE, [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
         with pytest.raises(OutcomeUndeterminedError):  # no CLOSED def for 1.555 -> undetermined
             ex.extract("1.555", lines)
+
+
+class TestExtractControlFlow:
+    """Kill extract() market-id skip (!=->>), non-CLOSED handling, and empty-status winner set."""
+
+    def test_smaller_id_closed_def_does_not_settle_target(self) -> None:
+        # target "1.500"; stream carries only a CLOSED def for the LEXICALLY-SMALLER "1.100".
+        # `!=` skips it -> undetermined; `>` (1.100 > 1.500 == False) would wrongly settle it.
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.100", "CLOSED", _PRE_JUNE, [{"id": 77, "status": "WINNER"}, {"id": 88, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.500", lines)
+
+    def test_larger_id_closed_def_does_not_settle_target(self) -> None:
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.900", "CLOSED", _PRE_JUNE, [{"id": 77, "status": "WINNER"}, {"id": 88, "status": "LOSER"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.500", lines)
+
+    def test_open_status_is_not_treated_as_settlement(self) -> None:
+        # kills == "CLOSED" -> >=/<=/is-not : an OPEN def (no WINNER) must not yield a winner.
+        ex = TennisOutcomeExtractor(_auth(), sealed_market_ids=frozenset())
+        lines = [_line("1.500", "OPEN", _PRE_JUNE, [{"id": 1, "status": "ACTIVE"}, {"id": 2, "status": "ACTIVE"}])]
+        with pytest.raises(OutcomeUndeterminedError):
+            ex.extract("1.500", lines)

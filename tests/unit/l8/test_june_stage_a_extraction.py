@@ -367,3 +367,33 @@ class TestDigestEqualityIsNotOrdering:
         # a value-equal different-object stored digest must LOAD (kills != -> is not).
         p.write_text(json.dumps({**payload, "content_digest": _dup(real)}))
         assert load_artifact(p).content_digest() == real
+
+
+class TestDigestAndControlFlowHardening:
+    def test_content_digest_exact_value(self) -> None:
+        # kills arithmetic/sort_keys mutants in content_digest/to_json (pinned exact string).
+        assert _ART_LO.content_digest() == "sha256:1bfc8ca6819c15bfd2bfcb82f8c98dd09a1775b943984aef4713f1a38ebe8c27"
+
+    def test_to_json_roundtrips_to_same_digest(self) -> None:
+        import json
+        payload = json.loads(_ART_LO.to_json())
+        assert payload["content_digest"] == _ART_LO.content_digest()
+
+    def test_fresh_run_refuses_if_only_burn_record_present(self, tmp_path) -> None:
+        # kills `or` -> `and` at the prior-state guard: a leftover burn record alone must refuse.
+        (tmp_path / "burn.json").write_text("{}")
+        with pytest.raises(StageAIncidentError):
+            _run(_registry(), tmp_path)
+
+    def test_fresh_run_refuses_if_only_artifact_present(self, tmp_path) -> None:
+        (tmp_path / "artifact.json").write_text("{}")
+        with pytest.raises(StageAIncidentError):
+            _run(_registry(), tmp_path)
+
+    def test_recover_distinguishes_incident_from_never_opened(self, tmp_path) -> None:
+        # kills the AddNot on `if burn_record_path.exists()`: the two cases raise DIFFERENT messages.
+        (tmp_path / "burn.json").write_text("{}")
+        with pytest.raises(StageAIncidentError, match="durable burn record exists"):
+            recover_stage_a(burn_record_path=tmp_path / "burn.json", artifact_path=tmp_path / "none.json")
+        with pytest.raises(StageAIncidentError, match="never durably opened"):
+            recover_stage_a(burn_record_path=tmp_path / "absent.json", artifact_path=tmp_path / "none.json")

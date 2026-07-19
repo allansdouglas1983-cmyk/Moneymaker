@@ -386,3 +386,57 @@ class TestClampReachabilityAndFrozen:
             r.y_designated = 0   # type: ignore[misc]
         r2 = score_market(_pred("1.1", sel_des=11, sel_oth=22), _outcome("1.1", 11))
         assert r == r2
+
+
+class TestVerdictOrderingAndControlFlow:
+    """Kill worse() severity-ordering (no downgrade), the n<min_support boundary, brier>= vs ==,
+    default flags, band-membership identity, and the score_bundle exclusion continue->break."""
+
+    def test_worse_never_downgrades_severity(self) -> None:
+        # overall FAIL_HARM (cil>0.05) AND a tour merely CONTINUE (slope) -> final stays FAIL_HARM.
+        v = evaluate_m1_verdict(_card(overall=_block(cil=0.06), wta=_block(slope=0.80)))
+        assert v["verdict"] == "FAIL_HARM"
+        # CONTINUE reached first (overall slope) then FAIL_HARM (tour brier) -> FAIL_HARM.
+        v2 = evaluate_m1_verdict(_card(overall=_block(slope=0.80), atp=_block(brier=0.30)))
+        assert v2["verdict"] == "FAIL_HARM"
+
+    def test_all_four_severity_levels_are_distinct_and_ordered(self) -> None:
+        assert evaluate_m1_verdict(_card())["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.03)))["verdict"] == "CONTINUE"
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+        # FAIL_HARM must dominate a co-occurring CONTINUE (ordering 3 > 1)
+        assert evaluate_m1_verdict(_card(overall=_block(cil=0.06, slope=0.5)))["verdict"] == "FAIL_HARM"
+
+    def test_n_overall_at_min_support_boundary(self) -> None:
+        # n exactly == min_support must NOT trip the n<min_support CONTINUE guard.
+        assert evaluate_m1_verdict(_card(overall=_block(n=500, supported=True)))["verdict"] == "PASS"
+        assert evaluate_m1_verdict(_card(overall=_block(n=499, supported=True)))["verdict"] == "CONTINUE"
+
+    def test_brier_strictly_above_band_fails_harm(self) -> None:
+        # kills >= -> == : brier 0.30 (> 0.25, not equal) must FAIL_HARM.
+        assert evaluate_m1_verdict(_card(overall=_block(brier=0.30)))["verdict"] == "FAIL_HARM"
+
+    def test_missing_supported_flag_defaults_unsupported(self) -> None:
+        blk = {"n": 600, "log_loss": 0.62, "brier": 0.21, "cal_in_large": 0.004, "cal_slope": 1.0}
+        # no 'supported' key -> defaults False -> CONTINUE (kills False->True default)
+        assert evaluate_m1_verdict({"overall": blk, "per_tour": {"ATP": blk, "WTA": blk}})["verdict"] == "CONTINUE"
+
+    def test_missing_n_defaults_zero_and_continues(self) -> None:
+        blk = {"log_loss": 0.62, "brier": 0.21, "cal_in_large": 0.004, "cal_slope": 1.0, "supported": True}
+        # no 'n' key -> default 0 < min_support -> CONTINUE (kills the 0 default replacer)
+        assert evaluate_m1_verdict({"overall": blk, "per_tour": {"ATP": blk, "WTA": blk}})["verdict"] == "CONTINUE"
+
+    def test_scorecard_band_membership_distinct_objects(self) -> None:
+        band = "2" + "0+"          # value "20+" as a distinct object from other rows' literal
+        rows = [_pred("1.1", band=band), _pred("1.2", band="1-4")]
+        outs = {r.market_id: _outcome(r.market_id, 11) for r in rows}
+        card = m1_scorecard(score_bundle(rows, outs)[0], min_support=1)
+        assert card["prior_history_cohorts"]["20+"]["n"] == 1   # matched by value, not identity
+
+    def test_score_bundle_early_missing_does_not_drop_later(self) -> None:
+        # first (sorted) market missing outcome; later present -> must still score the later
+        # (kills the exclusion `continue` -> `break`).
+        preds = [_pred("1.1", sel_des=11, sel_oth=22), _pred("1.2", sel_des=33, sel_oth=44)]
+        scored, excl = score_bundle(preds, {"1.2": _outcome("1.2", 33)})
+        assert {r.market_id for r in scored} == {"1.2"}
+        assert dict(excl) == {"1.1": "NO_OUTCOME_IN_ARTIFACT"}
