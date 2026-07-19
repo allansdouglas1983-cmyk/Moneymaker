@@ -1,0 +1,52 @@
+# GOVERNED RECOVERY AUTHORISATION — June Stage-A (founder instruction, 2026-07-19).
+# APPEND-ONLY. This authorises exactly ONE recovery raw access to the founder-retained June
+# corpus. It is a separately governed access; it is NOT a claim that the first burn never
+# occurred. The original burn record remains immutable and the original one-access token
+# remains spent. A second recovery attempt is prohibited.
+recovery_authorisation:
+  id: june-stage-a-recovery-v1
+  issued_by: founder
+  issued_on: "2026-07-19"
+  selects: "Incident Option B — founder-authorised governed recovery"
+  budget: "GBP 0 freeze remains in force; no purchase, download, paid storage, paid provider or
+    other expenditure is required or authorised"
+  single_use: true
+  second_recovery_attempt: PROHIBITED
+  incident_interpretation:
+    original_burn_record: docs/evidence/stage2e-june-m1-artifact/BURN_RECORD.json
+    original_burn_record_sha256: "sha256:bce61cd0051c894b4780e7285b92a48bae8d6ec77b23a998023474f977106009"
+    original_burn_record_status: "immutable; original one-access token permanently spent"
+    incident_record: docs/evidence/stage2e-june-m1-artifact/INCIDENT_2026-07-19.md
+    incident_record_sha256: "sha256:31c1f29355ca09fe557be152f3e0b02928079562ae7b2994b708dd6e7a8c1ccd"
+    outcome_artifact_produced: false
+    m1_scorecard_produced: false
+    winner_information_disclosed: "none to any person, model, evaluator, artifact or log"
+    disclosed_settlement_facts: "market 1.258760846 settled with both runners REMOVED (void; no winner exists)"
+    markets_never_read: 1210
+  driver_defect: >
+    l8_evidence/june_stage_a_driver.read_outcomes propagated a per-market
+    OutcomeUndeterminedError (a legitimate void settlement — both runners REMOVED) as a total
+    batch failure AFTER the durable burn record was written, instead of recording the market as
+    an explicit exclusion in the denominator. The governed extractor's refusal was correct; the
+    driver's batch control flow was the defect.
+  frozen_inputs:
+    retained_corpus_manifest: "pilot-data/SHA256SUMS.txt (20,482 per-file sha256 entries)"
+    retained_corpus_manifest_sha256: "sha256:d6d2f44b318aea425f3904ac83b8eb4a4bd067b7fe777c0375f107519162f9cc"
+    retained_corpus_archive_sha256: "sha256:bd69cd68fb5ac8cc6e1a0cb0d26d1fbf9b2e7179ff0fd9e1fdbdc8edb7b2c2ee (data.tar)"
+    prediction_bundle: docs/evidence/stage2e-june-m1-bundle/JUNE_M1_PREDICTION_BUNDLE.jsonl
+    prediction_bundle_sha256: "sha256:37e43f64a65fd89ac3ba03263f224f2c23acb9ee5a93f995367a951bc2906347"
+    m1_manifest: docs/evidence/stage2d-june-m1-transfer/JUNE_M1_TRANSFER_MANIFEST.jsonl
+    m1_manifest_sha256: "sha256:d192b4e3a3980fd3e2108a3efd68feb03d15e041a436569353178395f8b17b23"
+    seal_authorisation_digest: "sha256:f552c7bfafd8432693a26d01519ffac29e1d81d7554901041553952b2ddb88c8"
+    use_policy_digest: "sha256:84efd4a22cc4c778ff31867afc9a52a67718a22226aaefec97f942e279661338"
+  preconditions_for_the_one_access:
+    - tests-first driver correction committed and pushed
+    - targeted mutation + full make verify green
+    - complete raw-corpus checksum manifest verified
+    - frozen bundle / M1 manifest / seal / use-policy digests verified
+    - original incident record verified present and digest-exact
+    - no prior recovery artifact or completed recovery record exists
+    - durable RECOVERY_ACCESS_IN_PROGRESS record fsync'd BEFORE any raw read
+  after_finalization: "the raw corpus is never reopened; Stage A M1 runs from the immutable
+    recovery artifact only; continuation strictly per the frozen rule (PASS -> Stage B from the
+    artifact; CONTINUE -> stop; FAIL/FAIL_HARM -> stop permanently)"
