@@ -33,6 +33,11 @@ from l8_evidence.prediction_snapshots import DualClockTimestamp
 
 pytestmark = [pytest.mark.spec("SPEC-092")]
 
+
+def _probe_token():
+    import l8_evidence.june_stage_a_extraction as m
+    return m._ATTEST_TOKEN
+
 _TS = DualClockTimestamp(wall_utc=datetime(2026, 7, 18, 12, 0, tzinfo=timezone.utc), monotonic_ns=1)
 _LB = "lockbox-june-2026-tennis-v1"
 _BUNDLE_IDS = frozenset({"1.1", "1.2", "1.3"})
@@ -222,3 +227,39 @@ class TestExtractionMutationHardening:
         assert rec.content_digest() == art.content_digest()
         assert tuple((o.market_id, o.winner_selection_id) for o in rec.outcomes) == \
             tuple((o.market_id, o.winner_selection_id) for o in art.outcomes)
+
+
+class TestDigestDirectionHardening:
+    """Kill != -> < / > / is-not on digest EQUALITY checks: a wrong digest on EITHER lexical
+    side of the real one must reject (real use-policy digest starts '84...')."""
+
+    _SMALLER = "sha256:" + "00" * 32   # < 84...
+    _LARGER = "sha256:" + "ff" * 32    # > 84...
+
+    def _artifact(self, tmp_path):
+        art, _ = _run(_registry(), tmp_path)
+        return art
+
+    @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
+    def test_attest_rejects_wrong_use_policy_both_directions(self, tmp_path, wrong: str) -> None:
+        with pytest.raises(StageBUnreachableError):
+            attest_m1_pass(verdict="PASS", artifact=self._artifact(tmp_path),
+                           use_policy_digest=wrong, m1_gate_version="x")
+
+    @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
+    def test_reader_rejects_wrong_use_policy_both_directions(self, tmp_path, wrong: str) -> None:
+        art = self._artifact(tmp_path)
+        good = attest_m1_pass(verdict="PASS", artifact=art,
+                              use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest=wrong, m1_attestation=good)
+
+    @pytest.mark.parametrize("wrong", [_SMALLER, _LARGER])
+    def test_attestation_carrying_wrong_use_policy_both_directions_refused(self, tmp_path, wrong: str) -> None:
+        art = self._artifact(tmp_path)
+        # a genuine tokened attestation but with a tampered use_policy_digest field
+        forged = M1PassAttestation(artifact_digest=art.content_digest(), use_policy_digest=wrong,
+                                   m1_gate_version="x", _token=_probe_token())
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(art, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                m1_attestation=forged)

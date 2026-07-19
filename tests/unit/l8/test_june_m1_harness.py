@@ -283,3 +283,19 @@ class TestValidationAndCohortHardening:
     def test_verdict_min_support_default_is_500(self) -> None:
         # overall n=300 with supported=True but default min_support=500 -> CONTINUE via the n check
         assert evaluate_m1_verdict(_card(overall=_block(n=300, supported=True)))["verdict"] == "CONTINUE"
+
+
+class TestJoinIdentityVsEquality:
+    """Kill == -> is on the selection-id join: winner and stored id are value-equal but DIFFERENT
+    objects (as in production, where both come from separate int() parses). `is` would refuse."""
+
+    def test_join_matches_by_value_not_object_identity(self) -> None:
+        des = int("9632014")            # distinct object
+        oth = int("24966308")
+        p = _pred("1.1", sel_des=des, sel_oth=oth)
+        win_des = int("9632" + "014")   # same VALUE as des, different object
+        assert win_des is not des and win_des == des
+        assert score_market(p, _outcome("1.1", win_des)).y_designated == 1
+        win_oth = 24000000 + 966308     # runtime-computed, distinct object, == oth
+        assert win_oth is not oth and win_oth == oth
+        assert score_market(p, _outcome("1.1", win_oth)).y_designated == 0
