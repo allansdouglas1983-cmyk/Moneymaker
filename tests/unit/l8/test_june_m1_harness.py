@@ -432,13 +432,13 @@ class TestClampReachabilityAndFrozen:
         import math
         m = self._m([(1e-15, 1), (0.5, 0)])
         assert (m["n"], m["log_loss"], m["brier"], m["cal_in_large"]) == (2, 14.162084, 0.625, 1.098612)
-        assert math.isfinite(m["cal_slope"])
+        assert math.isfinite(cast(float, m["cal_slope"]))
 
     def test_clamp_probability_above_one_minus_epsilon_does_not_overflow(self) -> None:
         import math
         m = self._m([(1 - 1e-15, 0), (0.5, 1)])   # would OverflowError without the guard
         assert (m["n"], m["log_loss"], m["brier"], m["cal_in_large"]) == (2, 14.162084, 0.625, -1.098612)
-        assert math.isfinite(m["cal_slope"])
+        assert math.isfinite(cast(float, m["cal_slope"]))
 
     def test_frozen_prediction_is_frozen_and_has_value_equality(self) -> None:
         import dataclasses
@@ -587,11 +587,12 @@ class TestVerdictSeverityTruthTable:
 
     def test_only_the_three_reachable_verdicts_are_emitted(self) -> None:
         import itertools
-        opts = [dict(), dict(slope=0.5), dict(cil=0.03), dict(cil=0.06), dict(brier=0.30),
-                dict(ll=_LN2 + 0.01), dict(n=100, supported=False)]
+        opts: list[dict[str, object]] = [dict(), dict(slope=0.5), dict(cil=0.03), dict(cil=0.06),
+                dict(brier=0.30), dict(ll=_LN2 + 0.01), dict(n=100, supported=False)]
         seen = set()
         for o, a, w in itertools.product(opts, repeat=3):
-            v = evaluate_m1_verdict(_card(overall=_block(**o), atp=_block(**a), wta=_block(**w)))["verdict"]
+            v = evaluate_m1_verdict(_card(overall=_block(**o), atp=_block(**a),  # type: ignore[arg-type]
+                                          wta=_block(**w)))["verdict"]  # type: ignore[arg-type]
             seen.add(v)
         assert seen <= {"PASS", "CONTINUE", "FAIL_HARM"}
         assert "FAIL_FUTILITY" not in seen
