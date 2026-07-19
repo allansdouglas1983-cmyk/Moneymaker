@@ -251,9 +251,16 @@ def _classify_exclusion(lines: Sequence[str], market_id: str, source: str) -> Re
     total = sum(counts.values())
     if not saw_closed:
         reason = "UNDETERMINED_SETTLEMENT:NO_CLOSED_DEFINITION"
+    elif n_winners == 1:
+        # exactly-one-winner is the governed extractor's SETTLED pattern: extraction refused yet
+        # the same buffered data classifies as settled — a conflict, never an exclusion.
+        raise RecoveryIntegrityError(
+            f"stream {source}: extraction and classification conflict for market {market_id} "
+            "(single-winner pattern reached the exclusion classifier)")
     elif n_winners > 1:
         reason = "UNDETERMINED_SETTLEMENT:MULTIPLE_WINNERS"
-    elif n_winners == 0 and total > 0 and counts.get("REMOVED", 0) == total:
+    elif total > 0 and counts.get("REMOVED", 0) == total:
+        # n_winners == 0 is guaranteed here (the two branches above cover >= 1).
         reason = "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
     else:
         reason = "UNDETERMINED_SETTLEMENT:NO_WINNER"
