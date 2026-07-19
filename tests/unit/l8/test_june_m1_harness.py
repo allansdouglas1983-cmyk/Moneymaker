@@ -656,6 +656,7 @@ class TestFitPredicateBoundaries:
         from l8_evidence.june_m1_harness import MAX_NEWTON_ITERATIONS, iteration_allowed
         assert MAX_NEWTON_ITERATIONS == 60             # frozen cap (kills 60 -> 59/61 at the definition)
         assert iteration_allowed(0, 60) is True        # counter starts non-negative below the cap
+        assert iteration_allowed(58, 60) is True       # founder round-3 §3 pin: 58 -> allowed
         assert iteration_allowed(59, 60) is True       # last permitted iteration (kills < -> < 59 shape)
         assert iteration_allowed(60, 60) is False      # refused exactly at the cap (kills <= / < 61 shape)
         assert iteration_allowed(61, 60) is False      # above the cap is refused (kills < -> !=)
@@ -663,15 +664,17 @@ class TestFitPredicateBoundaries:
     def test_hessian_is_singular_exact_boundary(self) -> None:
         from l8_evidence.june_m1_harness import DET_EPSILON, hessian_is_singular
         assert DET_EPSILON == 1e-12                    # frozen epsilon (kills value mutants)
+        assert hessian_is_singular(math.nextafter(DET_EPSILON, 0.0)) is True   # immediately below -> singular
         assert hessian_is_singular(DET_EPSILON) is True                        # <= INCLUDES the boundary (kills <)
-        assert hessian_is_singular(math.nextafter(DET_EPSILON, math.inf)) is False  # one ulp above is regular
+        assert hessian_is_singular(math.nextafter(DET_EPSILON, math.inf)) is False  # immediately above -> regular
         assert hessian_is_singular(0.0) is True        # fully collapsed (kills ==)
         assert hessian_is_singular(1.0) is False
 
     def test_step_has_converged_exact_boundary(self) -> None:
         from l8_evidence.june_m1_harness import STEP_EPSILON, step_has_converged
         assert STEP_EPSILON == 1e-11                   # frozen epsilon (kills value mutants)
+        assert step_has_converged(math.nextafter(STEP_EPSILON, 0.0)) is True   # immediately below -> converged
         assert step_has_converged(STEP_EPSILON) is False                       # strict < EXCLUDES the boundary (kills <=)
-        assert step_has_converged(math.nextafter(STEP_EPSILON, 0.0)) is True   # one ulp below converges
+        assert step_has_converged(math.nextafter(STEP_EPSILON, math.inf)) is False  # immediately above -> not converged
         assert step_has_converged(0.0) is True         # exact fixed point converges (kills ==, >)
         assert step_has_converged(1.0) is False
