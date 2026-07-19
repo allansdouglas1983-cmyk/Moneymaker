@@ -457,3 +457,301 @@ class TestExclusionRecordShape:
         assert "REMOVED" in e.settlement_summary          # pattern summary...
         assert "selection" not in e.settlement_summary    # ...without unnecessary raw fields
         assert not hasattr(e, "winner_selection_id")      # structurally cannot carry a winner
+
+
+class TestVerificationGuardsAreEquality:
+    """Digest guards are EQUALITY, never ordering (founder doctrine): kill != -> < / > / is."""
+
+    def test_require_file_digest_rejects_both_lexical_directions(self, tmp_path: Path) -> None:
+        from l8_evidence.june_stage_a_recovery import _require_file_digest
+        f = tmp_path / "x.bin"
+        f.write_bytes(b"payload")
+        actual = _sha256_file(f)
+        for wrong in ("sha256:" + "0" * 64, "sha256:" + "f" * 64):   # below AND above
+            with pytest.raises(RecoveryIntegrityError):
+                _require_file_digest("thing", f, wrong)
+        _require_file_digest("thing", f, actual)                      # exact passes
+        _require_file_digest("thing", f, actual.encode().decode())    # equal distinct object passes
+
+    def test_corpus_entry_digest_lexically_lower_than_actual_is_refused(self, tmp_path: Path) -> None:
+        # kills actual != expected -> actual < expected on the per-file corpus check.
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "f.bz2").write_bytes(b"data")
+        manifest = root / "SHA256SUMS.txt"
+        manifest.write_text(("0" * 64) + "  f.bz2\n", encoding="utf-8")   # recorded digest BELOW actual
+        with pytest.raises(RecoveryIntegrityError):
+            _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_final_artifact_digest_tamper_both_directions_refused(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        run_stage_a_recovery(**s.kwargs())
+        payload = json.loads(s.artifact_path.read_text(encoding="utf-8"))
+        for wrong in ("sha256:" + "0" * 64, "sha256:" + "f" * 64):
+            s.artifact_path.write_text(json.dumps({**payload, "content_digest": wrong}),
+                                       encoding="utf-8")
+            with pytest.raises(RecoveryIncidentError):
+                load_recovery_artifact(s.artifact_path)
+
+    def test_temp_artifact_digest_tamper_both_directions_refused(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+
+        def fault(step: str) -> None:
+            if step == "after_temp_artifact":
+                raise RuntimeError("crash:after_temp_artifact")
+        with pytest.raises(RuntimeError):
+            run_stage_a_recovery(**s.kwargs(_fault=fault))
+        tmp = s.artifact_path.with_suffix(s.artifact_path.suffix + ".part")
+        payload = json.loads(tmp.read_text(encoding="utf-8"))
+        for wrong in ("sha256:" + "0" * 64, "sha256:" + "f" * 64):
+            tmp.write_text(json.dumps({**payload, "content_digest": wrong}), encoding="utf-8")
+            with pytest.raises(RecoveryIncidentError):
+                resume_stage_a_recovery(in_progress_path=s.in_progress_path,
+                                        artifact_path=s.artifact_path,
+                                        completed_path=s.completed_path)
+            assert not s.artifact_path.exists()
+
+    def test_large_batch_length_checks_compare_by_value_not_identity(self, tmp_path: Path) -> None:
+        # 300 markets: len() values exceed CPython's small-int cache, so a len(a) is-not len(b)
+        # mutant on the uniqueness/partition guards would spuriously raise. Must succeed.
+        markets = {f"1.{5000 + i}": _settled(f"1.{5000 + i}", 11, 22) for i in range(300)}
+        s = _Setup(tmp_path, markets, [_pred(m) for m in markets])
+        art = run_stage_a_recovery(**s.kwargs())
+        assert len(art.outcomes) == 300 and art.exclusions == ()
+
+
+class TestManifestParsingHardening:
+    def test_malformed_second_line_reports_its_line_number(self, tmp_path: Path) -> None:
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "a.bz2").write_bytes(b"a")
+        good = hashlib.sha256(b"a").hexdigest()
+        manifest = root / "SHA256SUMS.txt"
+        manifest.write_text(f"{good}  a.bz2\nnot-a-manifest-line\n", encoding="utf-8")
+        with pytest.raises(RecoveryIntegrityError, match="line 2"):
+            _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_blank_manifest_line_is_skipped_not_terminal(self, tmp_path: Path) -> None:
+        # a blank line between entries must not stop verification: corrupt the SECOND file.
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "a.bz2").write_bytes(b"a")
+        (root / "b.bz2").write_bytes(b"b")
+        ha, hb = hashlib.sha256(b"a").hexdigest(), hashlib.sha256(b"b").hexdigest()
+        manifest = root / "SHA256SUMS.txt"
+        manifest.write_text(f"{ha}  a.bz2\n\n{hb}  b.bz2\n", encoding="utf-8")
+        (root / "b.bz2").write_bytes(b"tampered")
+        with pytest.raises(RecoveryIntegrityError, match="b.bz2"):
+            _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_single_token_line_is_malformed_even_if_64_hex(self, tmp_path: Path) -> None:
+        # kills `or` -> `and` on the malformed-line guard.
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        manifest = root / "SHA256SUMS.txt"
+        manifest.write_text(("a" * 64) + "\n", encoding="utf-8")
+        with pytest.raises(RecoveryIntegrityError):
+            _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_digest_of_wrong_length_refused_both_directions(self, tmp_path: Path) -> None:
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "a.bz2").write_bytes(b"a")
+        for badlen in (63, 65):
+            manifest = root / "SHA256SUMS.txt"
+            manifest.write_text(("a" * badlen) + "  a.bz2\n", encoding="utf-8")
+            with pytest.raises(RecoveryIntegrityError):
+                _verify_corpus_manifest(root, manifest, _sha256_file(manifest))
+
+    def test_manifest_path_with_spaces_verifies(self, tmp_path: Path) -> None:
+        # maxsplit=1 keeps a spaced path intact; a higher maxsplit would mangle it.
+        from l8_evidence.june_stage_a_recovery import _verify_corpus_manifest
+        root = tmp_path / "c"
+        root.mkdir()
+        (root / "a b.bz2").write_bytes(b"ab")
+        h = hashlib.sha256(b"ab").hexdigest()
+        manifest = root / "SHA256SUMS.txt"
+        manifest.write_text(f"{h}  a b.bz2\n", encoding="utf-8")
+        _verify_corpus_manifest(root, manifest, _sha256_file(manifest))   # must pass
+
+    def test_missing_streams_message_names_exactly_three_examples(self, tmp_path: Path) -> None:
+        markets = {"1.10": _settled("1.10", 11, 22)}
+        preds = [_pred(m) for m in ("1.10", "1.20", "1.21", "1.22", "1.23")]
+        s = _Setup(tmp_path, markets, preds)
+        with pytest.raises(RecoveryIntegrityError) as ei:
+            run_stage_a_recovery(**s.kwargs())
+        msg = str(ei.value)
+        assert "1.22" in msg and "1.23" not in msg    # [:3] shows the 3rd, hides the 4th
+
+    def test_malformed_bundle_lines_raise_typed_integrity_errors(self, tmp_path: Path) -> None:
+        from l8_evidence.june_stage_a_recovery import _load_bundle
+        for bad in ("{not json", '{"market_id": "1.1"}', '"just a string"'):
+            p = tmp_path / "b.jsonl"
+            p.write_text(bad + "\n", encoding="utf-8")
+            with pytest.raises(RecoveryIntegrityError):
+                _load_bundle(p, _sha256_file(p))
+
+    def test_blank_bundle_line_does_not_truncate_the_bundle(self, tmp_path: Path) -> None:
+        markets = {"1.10": _settled("1.10", 11, 22), "1.11": _settled("1.11", 11, 22)}
+        s = _Setup(tmp_path, markets, [_pred("1.10"), _pred("1.11")])
+        s.bundle_path.write_text(
+            _bundle_line(_pred("1.10")) + "\n\n" + _bundle_line(_pred("1.11")) + "\n",
+            encoding="utf-8")
+        art = run_stage_a_recovery(**s.kwargs(bundle_sha256=_sha256_file(s.bundle_path)))
+        assert len(art.outcomes) + len(art.exclusions) == 2   # nothing silently dropped
+
+
+class TestClassifierHardening:
+    def _classify(self, lines: list[str], mid: str = "1.50") -> RecoveryExclusion:
+        from l8_evidence.june_stage_a_recovery import _classify_exclusion
+        return _classify_exclusion(lines, mid, f"{mid}.bz2")
+
+    def test_single_winner_pattern_is_a_conflict_not_an_exclusion(self) -> None:
+        # the governed extractor settles exactly-one-winner markets; if the classifier ever sees
+        # one, extraction and classification CONFLICT -> typed integrity failure, never a guess.
+        from l8_evidence.june_stage_a_recovery import RecoveryIntegrityError as RIE
+        lines = [_line("1.50", "CLOSED", [{"id": 1, "status": "WINNER"}, {"id": 2, "status": "LOSER"}])]
+        with pytest.raises(RIE, match="conflict"):
+            self._classify(lines)
+
+    def test_abandoned_definition_is_not_a_settlement(self) -> None:
+        # "ABANDONED" < "CLOSED" lexically: a <= mutant would treat it as CLOSED and misclassify.
+        lines = [_line("1.50", "ABANDONED", [{"id": 1, "status": "REMOVED"}, {"id": 2, "status": "REMOVED"}])]
+        e = self._classify(lines)
+        assert e.reason == "UNDETERMINED_SETTLEMENT:NO_CLOSED_DEFINITION"
+        assert "closed=no" in e.settlement_summary
+
+    def test_foreign_smaller_id_closed_def_not_counted_in_summary(self) -> None:
+        # foreign mc "1.10" < target "1.50": an id != -> > mutant would absorb the foreign CLOSED.
+        lines = [
+            "",
+            _line("1.10", "CLOSED", [{"id": 9, "status": "REMOVED"}, {"id": 8, "status": "REMOVED"}]),
+            json.dumps({"op": "mcm", "pt": 1, "mc": [{"id": "1.50"}]}),          # target mc, no md
+            _line("1.50", "OPEN", [{"id": 1, "status": "ACTIVE"}, {"id": 2, "status": "ACTIVE"}]),
+        ]
+        e = self._classify(lines)
+        assert e.reason == "UNDETERMINED_SETTLEMENT:NO_CLOSED_DEFINITION"
+        assert "closed=no" in e.settlement_summary and "REMOVED" not in e.settlement_summary
+
+    def test_closed_with_no_runners_is_no_winner_not_void(self) -> None:
+        lines = [_line("1.50", "CLOSED", [])]
+        e = self._classify(lines)
+        assert e.reason == "UNDETERMINED_SETTLEMENT:NO_WINNER"
+
+    def test_single_removed_runner_is_all_removed(self) -> None:
+        lines = [_line("1.50", "CLOSED", [{"id": 1, "status": "REMOVED"}])]
+        assert self._classify(lines).reason == "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
+
+    def test_single_loser_runner_is_no_winner(self) -> None:
+        lines = [_line("1.50", "CLOSED", [{"id": 1, "status": "LOSER"}])]
+        assert self._classify(lines).reason == "UNDETERMINED_SETTLEMENT:NO_WINNER"
+
+    def test_many_removed_runners_beyond_int_cache_still_all_removed(self) -> None:
+        # 300 REMOVED runners: count and total exceed the small-int cache, killing an
+        # `== total` -> `is total` mutant that only works on interned ints.
+        runners: list[dict[str, object]] = [{"id": i + 1, "status": "REMOVED"} for i in range(300)]
+        lines = [_line("1.50", "CLOSED", runners)]
+        assert self._classify(lines).reason == "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
+
+    def test_incident_summary_pins_exact_status_counts(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        art = run_stage_a_recovery(**s.kwargs())
+        assert art.exclusions[0].settlement_summary == "closed=yes statuses={REMOVED:2}"
+
+
+class TestArtifactDeterminismAndRecords:
+    def test_artifact_json_key_order_is_sorted_and_digest_stable(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        art = run_stage_a_recovery(**s.kwargs())
+        body = s.artifact_path.read_text(encoding="utf-8")
+        assert body.startswith('{"bundle_digest":')            # sorted keys, not insertion order
+        keys = list(json.loads(body).keys())
+        assert keys == sorted(keys)
+        assert art.content_digest() == json.loads(body)["content_digest"]
+
+    def test_in_progress_and_completed_records_have_sorted_keys(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        run_stage_a_recovery(**s.kwargs())
+        assert s.in_progress_path.read_text(encoding="utf-8").startswith('{"bundle_digest":')
+        assert s.completed_path.read_text(encoding="utf-8").startswith('{"artifact_digest":')
+
+    def test_resume_written_completion_record_has_sorted_keys(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        run_stage_a_recovery(**s.kwargs())
+        s.completed_path.unlink()
+        resume_stage_a_recovery(in_progress_path=s.in_progress_path,
+                                artifact_path=s.artifact_path, completed_path=s.completed_path)
+        assert s.completed_path.read_text(encoding="utf-8").startswith('{"artifact_digest":')
+
+    def test_recovery_dataclasses_are_frozen(self, tmp_path: Path) -> None:
+        import dataclasses
+        s = _incident_shaped(tmp_path)
+        art = run_stage_a_recovery(**s.kwargs())
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            art.lockbox_id = "other"                          # type: ignore[misc]
+        e = art.exclusions[0]
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            e.reason = "other"                                # type: ignore[misc]
+
+    def test_artifact_only_prior_state_refuses_a_fresh_run(self, tmp_path: Path) -> None:
+        # kills `or` -> `and` on the single-use guard: an artifact ALONE must refuse.
+        s = _incident_shaped(tmp_path)
+        s.artifact_path.write_text("{}", encoding="utf-8")
+        with pytest.raises(RecoverySingleUseError):
+            run_stage_a_recovery(**s.kwargs())
+
+    def test_resume_distinguishes_in_progress_from_never_started(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        with pytest.raises(RecoveryIncidentError, match="never started"):
+            resume_stage_a_recovery(in_progress_path=s.in_progress_path,
+                                    artifact_path=s.artifact_path, completed_path=s.completed_path)
+        s.in_progress_path.write_text("{}", encoding="utf-8")
+        with pytest.raises(RecoveryIncidentError, match="in progress"):
+            resume_stage_a_recovery(in_progress_path=s.in_progress_path,
+                                    artifact_path=s.artifact_path, completed_path=s.completed_path)
+
+
+class TestTypedExceptionCoverage:
+    def test_stream_that_is_a_directory_is_integrity_failure(self, tmp_path: Path) -> None:
+        markets = {"1.10": _settled("1.10", 11, 22)}
+        s = _Setup(tmp_path, markets, [_pred("1.10"), _pred("1.11")])
+        d = s.streams_root / "1.11.bz2"
+        d.mkdir()                                             # a DIRECTORY named like a stream
+        with pytest.raises(RecoveryIntegrityError):
+            run_stage_a_recovery(**s.kwargs())
+
+    def test_truncated_bz2_stream_is_integrity_failure(self, tmp_path: Path) -> None:
+        markets = {"1.10": _settled("1.10", 11, 22), "1.11": _settled("1.11", 11, 22)}
+        s = _Setup(tmp_path, markets, [_pred(m) for m in markets])
+        f = s.streams_root / "1.11.bz2"
+        f.write_bytes(f.read_bytes()[:10])                    # torn compressed stream (EOFError)
+        with pytest.raises(RecoveryIntegrityError):
+            run_stage_a_recovery(**s.kwargs(corpus_manifest_sha256=self._remanifest(s)))
+
+    def test_plain_text_masquerading_as_bz2_is_integrity_failure(self, tmp_path: Path) -> None:
+        markets = {"1.10": _settled("1.10", 11, 22), "1.11": _settled("1.11", 11, 22)}
+        s = _Setup(tmp_path, markets, [_pred(m) for m in markets])
+        (s.streams_root / "1.11.bz2").write_bytes(b"not a bz2 stream")
+        with pytest.raises(RecoveryIntegrityError):
+            run_stage_a_recovery(**s.kwargs(corpus_manifest_sha256=self._remanifest(s)))
+
+    def _remanifest(self, s: _Setup) -> str:
+        entries = []
+        for f in sorted(s.streams_root.rglob("*.bz2")):
+            entries.append(f"{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.relative_to(s.corpus_root)}")
+        s.manifest_path.write_text("\n".join(entries) + "\n", encoding="utf-8")
+        return _sha256_file(s.manifest_path)
+
+    def test_artifact_corruptions_raise_typed_incidents(self, tmp_path: Path) -> None:
+        s = _incident_shaped(tmp_path)
+        run_stage_a_recovery(**s.kwargs())
+        good = s.artifact_path.read_text(encoding="utf-8")
+        for bad in ("{not json", '{"lockbox_id": "x"}', json.dumps({**json.loads(good), "outcomes": 5})):
+            s.artifact_path.write_text(bad, encoding="utf-8")
+            with pytest.raises(RecoveryIncidentError):
+                load_recovery_artifact(s.artifact_path)
