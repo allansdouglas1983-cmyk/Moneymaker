@@ -281,3 +281,89 @@ class TestLargeInputHardening:
             read_outcomes=lambda: [MinimalOutcome(f"1.{1000+i}", i + 1) for i in range(n)],
             burn_record_path=tmp_path / "b.json", artifact_path=tmp_path / "a.json")
         assert len(art.outcomes) == n
+
+
+def _dup(s: str) -> str:
+    """A value-equal but guaranteed DIFFERENT string object (as a digest loaded at runtime)."""
+    d = s.encode("utf-8").decode("utf-8")
+    assert d == s and d is not s
+    return d
+
+
+def _artifact_obj(winner: int):
+    from l8_evidence.june_stage_a_extraction import ImmutableOutcomeArtifact
+    return ImmutableOutcomeArtifact(lockbox_id=_LB, bundle_digest=_BUNDLE_DIGEST,
+        authorisation_digest=_AUTH_DIGEST, grant_at_utc="2026-07-18T12:00:00+00:00",
+        outcomes=(MinimalOutcome("1.1", winner),))
+
+
+# deterministic digest ordering: winner 22 -> lowest content_digest, winner 11 -> highest
+_ART_LO = _artifact_obj(22)
+_ART_HI = _artifact_obj(11)
+assert _ART_LO.content_digest() < _ART_HI.content_digest()
+
+
+class TestDigestEqualityIsNotOrdering:
+    """§3: `actual != expected` is EQUALITY. Kill mutants to `<`, `>`, and `is not` — with wrong
+    digests on BOTH lexical sides AND a value-equal different-object correct digest (match path)."""
+
+    def test_attest_verdict_equality_not_identity(self) -> None:
+        # verdict != "PASS" -> is not : a value-equal different-object 'PASS' must still PASS.
+        att = attest_m1_pass(verdict=_dup("PASS"), artifact=_ART_LO,
+                             use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        assert isinstance(att, M1PassAttestation)
+
+    def test_attest_use_policy_equality_not_identity(self) -> None:
+        att = attest_m1_pass(verdict="PASS", artifact=_ART_LO,
+                             use_policy_digest=_dup(JUNE_ARTIFACT_USE_POLICY_DIGEST), m1_gate_version="x")
+        assert isinstance(att, M1PassAttestation)
+
+    def test_reader_use_policy_equality_not_identity(self) -> None:
+        att = attest_m1_pass(verdict="PASS", artifact=_ART_LO,
+                             use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        rows = open_stage_b_reader(_ART_LO, use_policy_digest=_dup(JUNE_ARTIFACT_USE_POLICY_DIGEST),
+                                   m1_attestation=att)
+        assert len(rows) == 1
+
+    def test_reader_attestation_use_policy_equality_not_identity(self) -> None:
+        att = M1PassAttestation(artifact_digest=_ART_LO.content_digest(),
+                                use_policy_digest=_dup(JUNE_ARTIFACT_USE_POLICY_DIGEST),
+                                m1_gate_version="x", _token=_probe_token())
+        rows = open_stage_b_reader(_ART_LO, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                   m1_attestation=att)
+        assert len(rows) == 1
+
+    def test_reader_artifact_binding_rejects_both_orderings(self) -> None:
+        # attestation bound to the LOW-digest artifact, applied to the HIGH-digest one, and vice
+        # versa: != rejects both; < and > each accept exactly one ordering -> both killed.
+        att_lo = attest_m1_pass(verdict="PASS", artifact=_ART_LO,
+                                use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        att_hi = attest_m1_pass(verdict="PASS", artifact=_ART_HI,
+                                use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(_ART_HI, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_attestation=att_lo)
+        with pytest.raises(StageBUnreachableError):
+            open_stage_b_reader(_ART_LO, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_attestation=att_hi)
+
+    def test_reader_artifact_binding_accepts_equal_value_recomputed_digest(self) -> None:
+        # content_digest() is recomputed fresh (different object) at open time: is-not would wrongly reject.
+        att = attest_m1_pass(verdict="PASS", artifact=_ART_LO,
+                             use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST, m1_gate_version="x")
+        assert len(open_stage_b_reader(_ART_LO, use_policy_digest=JUNE_ARTIFACT_USE_POLICY_DIGEST,
+                                       m1_attestation=att)) == 1
+
+    def test_load_artifact_digest_equality_both_sides_and_identity(self, tmp_path) -> None:
+        reg = _registry()
+        _run(reg, tmp_path)
+        p = tmp_path / "artifact.json"
+        import json
+        payload = json.loads(p.read_text())
+        real = payload["content_digest"]
+        # tamper the stored digest to a value LOWER and HIGHER than the real -> both must fail.
+        for wrong in ("sha256:" + "00" * 32, "sha256:" + "ff" * 32):
+            p.write_text(json.dumps({**payload, "content_digest": wrong}))
+            with pytest.raises(StageAIncidentError):
+                load_artifact(p)
+        # a value-equal different-object stored digest must LOAD (kills != -> is not).
+        p.write_text(json.dumps({**payload, "content_digest": _dup(real)}))
+        assert load_artifact(p).content_digest() == real
