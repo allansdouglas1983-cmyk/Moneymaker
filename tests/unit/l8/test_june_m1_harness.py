@@ -236,3 +236,50 @@ class TestVerdictBoundaries:
         assert m1_scorecard(score_bundle(r500, outs(r500))[0], min_support=500)["overall"]["supported"] is True
         r499 = rows(499)
         assert m1_scorecard(score_bundle(r499, outs(r499))[0], min_support=500)["overall"]["supported"] is False
+
+
+class TestValidationAndCohortHardening:
+    def test_frozen_prediction_rejects_probabilities_at_the_open_interval_edges(self) -> None:
+        for bad in (0.0, 1.0, -0.1, 1.1):
+            with pytest.raises(ValueError):
+                _pred("1.1", p_cal=bad)
+        with pytest.raises(ValueError):
+            FrozenPrediction(market_id="1.1", tour="ATP", cohort="STRICT", prior_band="20+",
+                             cluster_day="2026-06-10", competitor_designated="a", competitor_other="b",
+                             selection_id_designated=1, selection_id_other=2,
+                             p_raw_designated=0.0, p_cal_designated=0.5)  # p_raw at edge
+
+    def test_frozen_prediction_rejects_bad_market_tour_and_equal_ids(self) -> None:
+        with pytest.raises(ValueError):
+            _pred("")                                   # empty market_id
+        with pytest.raises(ValueError):
+            _pred("1.1", tour="MIXED")                  # tour not ATP/WTA
+        with pytest.raises(ValueError):
+            _pred("1.1", sel_des=7, sel_oth=7)          # equal selection ids
+        with pytest.raises(ValueError):
+            FrozenPrediction(market_id="1.1", tour="ATP", cohort="STRICT", prior_band="20+",
+                             cluster_day="2026-06-10", competitor_designated="same",
+                             competitor_other="same", selection_id_designated=1, selection_id_other=2,
+                             p_raw_designated=0.5, p_cal_designated=0.5)  # equal competitor ids
+
+    def test_scorecard_cohort_membership_is_exact(self) -> None:
+        rows = [_pred("1.1", band="20+"), _pred("1.2", band="20+"), _pred("1.3", band="1-4"),
+                _pred("1.4", band="5-9")]
+        outs = {r.market_id: _outcome(r.market_id, 11) for r in rows}
+        card = m1_scorecard(score_bundle(rows, outs)[0], min_support=1)
+        cohorts = card["prior_history_cohorts"]
+        assert cohorts["20+"]["n"] == 2
+        assert cohorts["1-4"]["n"] == 1
+        assert cohorts["5-9"]["n"] == 1
+
+    def test_scorecard_min_support_default_is_500(self) -> None:
+        # 300 rows: default min_support=500 -> unsupported; explicit 250 -> supported.
+        rows = [_pred(f"1.{2000+i}", sel_des=1, sel_oth=2) for i in range(300)]
+        outs = {r.market_id: _outcome(r.market_id, 1) for r in rows}
+        scored = score_bundle(rows, outs)[0]
+        assert m1_scorecard(scored)["overall"]["supported"] is False          # default 500
+        assert m1_scorecard(scored, min_support=250)["overall"]["supported"] is True
+
+    def test_verdict_min_support_default_is_500(self) -> None:
+        # overall n=300 with supported=True but default min_support=500 -> CONTINUE via the n check
+        assert evaluate_m1_verdict(_card(overall=_block(n=300, supported=True)))["verdict"] == "CONTINUE"
