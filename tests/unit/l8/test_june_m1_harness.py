@@ -312,3 +312,37 @@ class TestFrozenPredictionIdentityChecks:
                              cluster_day="2026-06-10", competitor_designated=comp,
                              competitor_other="td:x|" + "z", selection_id_designated=1,
                              selection_id_other=2, p_raw_designated=0.5, p_cal_designated=0.5)
+
+
+class TestOptimiserDifferentialFixtures:
+    """§4/§5: difficult-convergence golden values across the constructible domain. Any optimiser/
+    Hessian/iteration-limit mutant that changes an OBSERVABLE metric on ANY fixture is killed;
+    the module exposes only these five metrics (no iteration count), so this is the full surface."""
+
+    def _m(self, pairs):
+        from l8_evidence.june_m1_harness import _metrics
+        return _metrics(pairs)
+
+    def test_weak_identification_flat_likelihood(self) -> None:
+        assert self._m([(0.5, 1), (0.5, 0)] * 3) == {
+            "n": 6, "log_loss": 0.693147, "brier": 0.25, "cal_in_large": 0.0, "cal_slope": 1.0}
+
+    def test_separable_all_positive(self) -> None:
+        assert self._m([(0.6, 1), (0.7, 1), (0.8, 1), (0.55, 1), (0.9, 1)]) == {
+            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": 26.735659, "cal_slope": 0.54242}
+
+    def test_separable_all_negative(self) -> None:
+        assert self._m([(0.4, 0), (0.3, 0), (0.2, 0), (0.45, 0), (0.1, 0)]) == {
+            "n": 5, "log_loss": 0.358768, "brier": 0.1005, "cal_in_large": -26.735637, "cal_slope": 0.54242}
+
+    def test_boundary_probabilities(self) -> None:
+        assert self._m([(0.001, 1), (0.999, 0), (0.002, 0), (0.998, 1), (0.5, 1)]) == {
+            "n": 5, "log_loss": 2.902532, "brier": 0.449202, "cal_in_large": 0.405465, "cal_slope": -54.234543}
+
+    def test_min_n_one(self) -> None:
+        assert self._m([(0.6, 1)]) == {
+            "n": 1, "log_loss": 0.510826, "brier": 0.16, "cal_in_large": 27.225578, "cal_slope": 1.0}
+
+    def test_imbalanced_rare_positive(self) -> None:
+        assert self._m([(0.1, 0)] * 20 + [(0.9, 1)]) == {
+            "n": 21, "log_loss": 0.105361, "brier": 0.01, "cal_in_large": -1.164531, "cal_slope": 7.903299}
