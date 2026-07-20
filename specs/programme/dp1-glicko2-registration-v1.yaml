@@ -1,0 +1,63 @@
+# DP1 — DYNAMIC_GLICKO2_V1 mathematical registration (Stage 2G Slice 1; SPEC-105/106).
+# FROZEN before any scoring. Constants are founder-directed (§5) and are NOT tunable against
+# model performance. Primary source pinned below; every equation recorded; deviations: none.
+dp1_registration:
+  id: DYNAMIC_GLICKO2_V1
+  experiment_id: EXP-STAGE2G-DP1-GLICKO2-001
+  frozen_on: "2026-07-20"
+  primary_source:
+    reference: "Mark E. Glickman, 'Example of the Glicko-2 system', glicko.net/glicko/glicko2.pdf"
+    role: "canonical equations; any ambiguity stops the parameterisation step and raises ONE
+      narrow research request (founder §5) — no broad search"
+  constants:
+    initial_rating: 1500.0
+    initial_rating_deviation: 350.0
+    initial_volatility: 0.06
+    tau: 0.5
+    convergence_tolerance: 1.0e-6
+    glicko2_scale: 173.7178
+    rating_period: "one UTC calendar day"
+    populations: "ATP and WTA fully separate"
+    same_day_rule: "all matches in a UTC day are predicted from start-of-day state, then batch-updated"
+    eligible_outcomes: "normally completed singles only; retirements/walkovers/awarded/
+      disqualifications/ambiguous/duplicate-conflicts are visible exclusions (label-policy-v1
+      reader semantics)"
+  equations:  # exact Glickman steps; r=display rating, RD=display deviation, sigma=volatility
+    step2_scale: "mu = (r - 1500)/173.7178 ; phi = RD/173.7178"
+    g: "g(phi) = 1/sqrt(1 + 3*phi^2/pi^2)"
+    E: "E(mu, mu_j, phi_j) = 1/(1 + exp(-g(phi_j)*(mu - mu_j)))"
+    step3_v: "v = [ sum_j g(phi_j)^2 * E_j * (1 - E_j) ]^-1"
+    step4_delta: "Delta = v * sum_j g(phi_j) * (s_j - E_j)   (s_j in {0,1})"
+    step5_volatility: "sigma' from the Illinois-algorithm iteration on
+      f(x) = [e^x (Delta^2 - phi^2 - v - e^x)] / [2(phi^2 + v + e^x)^2] - (x - ln sigma^2)/tau^2,
+      a = ln sigma^2; B per the paper's two cases (Delta^2 > phi^2 + v, else k-search with
+      f(a - k*tau) < 0); iterate until |b - a| <= 1e-6; sigma' = e^(A/2)"
+    step6_prerating: "phi* = sqrt(phi^2 + sigma'^2)"
+    step7_update: "phi' = 1/sqrt(1/phi*^2 + 1/v) ; mu' = mu + phi'^2 * sum_j g(phi_j)*(s_j - E_j)"
+    step8_unscale: "r' = 173.7178*mu' + 1500 ; RD' = 173.7178*phi'"
+    inactivity: "for each rating period with no matches: phi <- sqrt(phi^2 + sigma^2), sigma and mu
+      unchanged (the paper's no-game rule), applied once per elapsed UTC-day period; RD therefore
+      NEVER decreases without new evidence"
+  prediction:  # distinct from the update equations; frozen (SPEC-106)
+    pairwise_delta: "delta = mu_A - mu_B ; s = sqrt(phi_A^2 + phi_B^2)"
+    central_probability: "deterministic 20-node Gauss-Hermite quadrature of
+      sigmoid(delta + s*sqrt(2)*x) over N(0,1) (equivalently the posterior mean of
+      sigmoid(theta_A - theta_B) with theta independent normals) — nodes/weights frozen at 20"
+    uncertainty_method: "ANALYTIC_PROPAGATION: sigmoid is monotone, so the interval is exact:
+      lower = sigmoid(delta - z*s), upper = sigmoid(delta + z*s), z = 1.644854 (two-sided 90%)"
+    coherence: "P(B beats A) = 1 - P(A beats B) exactly (both from the same delta, s)"
+    bounds: "all probabilities finite and strictly within (1e-12, 1 - 1e-12)"
+  outputs_per_player:  # WinProbabilityDistribution (founder §6)
+    [central_win_probability, lower_probability_bound, upper_probability_bound,
+     uncertainty_method, rating, rating_deviation, volatility, prior_match_count,
+     last_active_date, data_quality_status, model_version, state_digest, feature_input_digest]
+  calibration:  # SPEC-107 — part of this registration (founder §7)
+    id: AFFINE_LOGIT_CALIBRATION_FOR_DP1
+    form: "z = logit(p_raw); z_cal = intercept + z/temperature; p_cal = sigmoid(z_cal)"
+    fit: "leakage-safe out-of-fold DP1 predictions only; ATP/WTA separate (mirrors the governed
+      separate-tour policy); raw and calibrated both retained; no method contest; no isotonic;
+      no band/surface correction; no retrospective change"
+  prohibited_inputs: "Tennis-Data bookmaker odds; post-match fields of the predicted match; June
+    or future results before prediction; invented strengths; LLM probabilities or feature values;
+    surface (F3 showed the registered surface design harmful); rankings/seedings/round/age/etc.
+    (deferred, founder §4)"
