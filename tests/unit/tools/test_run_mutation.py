@@ -109,6 +109,12 @@ def test_real_survivors_file_is_valid() -> None:
     equivalence classifications join the pinned set — the `make mutants-f13` gate
     requires every retry.py survivor killed or classified, and this pin keeps the
     classification set human-controlled exactly as before.
+
+    TEST CORRECTION (founder round-2 §2C delegated class approval, applied 2026-07-19
+    in commit 6d155d9, pin update omitted there by mistake): the single
+    l7_settle/tennis_rules.py @unique-removal equivalent — approved under the
+    delegated "@unique on a frozen, distinct-valued Enum" class and flagged for
+    ratification in the recovery return — joins the pinned set. No other change.
     """
     repo = Path(__file__).resolve().parents[3]
     classifications = rm.load_classifications(repo / "specs" / "mutation-survivors.yaml")
@@ -128,6 +134,7 @@ def test_real_survivors_file_is_valid() -> None:
         "l7_settle/settlement.py::core/ReplaceComparisonOperator_Eq_Is::3",
         "l7_settle/settlement.py::core/ReplaceComparisonOperator_LtE_Lt::0",
         "l7_settle/settlement.py::core/NumberReplacer::1",
+        "l7_settle/tennis_rules.py::core/RemoveDecorator::0",
     }
     for key, entry in classifications.items():
         assert entry.get("classification") == "equivalent-mutant", key
