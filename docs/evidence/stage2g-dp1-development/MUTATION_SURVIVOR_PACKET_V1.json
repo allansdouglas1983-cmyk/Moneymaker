@@ -1,0 +1,2666 @@
+{
+ "packet": "STAGE2G-SLICE2-MUTATION-SURVIVOR-PACKET-V1",
+ "round": 3,
+ "session_dbs_sha256": {
+  "glicko2_family": "c07b4c0a62ba3f3b95573771dddcf764fd85fa454b1d58619284cb48133bef41",
+  "dp1_distribution": "c510690ee19fc082ff5179667c8435e99c7135378296f56333f92e36ae130ee1"
+ },
+ "entries_digest_sha256": "ce99eea27bbb962e1516e02b3b2ec4b229b571c5309f8809549b770b217faa3d",
+ "n": 175,
+ "entries": [
+  {
+   "survivor_id": "glicko2_family.py::core/AddNot::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "<module>",
+   "source_line": 31,
+   "original_expression": "if TYPE_CHECKING:",
+   "mutated_expression": "if not TYPE_CHECKING:",
+   "mutation_operator": "core/AddNot",
+   "proposed_class": "I_type_checking_import",
+   "associated_tests": [
+    "module imports succeed eagerly; no import cycle on the path (make verify import graph)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Gt_Eq::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 126,
+   "original_expression": "if delta_sq > phi_sq + v:",
+   "mutated_expression": "if delta_sq == phi_sq + v:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Gt_Eq",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Gt_GtE::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 126,
+   "original_expression": "if delta_sq > phi_sq + v:",
+   "mutated_expression": "if delta_sq >= phi_sq + v:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Gt_GtE",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Gt_Is::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 126,
+   "original_expression": "if delta_sq > phi_sq + v:",
+   "mutated_expression": "if delta_sq is phi_sq + v:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Gt_Is",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Add::6",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 127,
+   "original_expression": "big_b = math.log(delta_sq - phi_sq - v)",
+   "mutated_expression": "big_b = math.log(delta_sq + phi_sq - v)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Add::7",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 127,
+   "original_expression": "big_b = math.log(delta_sq - phi_sq - v)",
+   "mutated_expression": "big_b = math.log(delta_sq - phi_sq + v)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Div::7",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 127,
+   "original_expression": "big_b = math.log(delta_sq - phi_sq - v)",
+   "mutated_expression": "big_b = math.log(delta_sq - phi_sq / v)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Div",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_FloorDiv::7",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 127,
+   "original_expression": "big_b = math.log(delta_sq - phi_sq - v)",
+   "mutated_expression": "big_b = math.log(delta_sq - phi_sq // v)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_FloorDiv",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mod::7",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 127,
+   "original_expression": "big_b = math.log(delta_sq - phi_sq - v)",
+   "mutated_expression": "big_b = math.log(delta_sq - phi_sq % v)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::30",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 129,
+   "original_expression": "k = 1",
+   "mutated_expression": "k = 2",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::31",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 129,
+   "original_expression": "k = 1",
+   "mutated_expression": "k = 0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::32",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k * tau) < 1.0:",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::33",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k * tau) < -1.0:",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Add::13",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k + tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Div::13",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k / tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Div",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_FloorDiv::13",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k // tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_FloorDiv",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Pow::13",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k ** tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Pow",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Sub::13",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k - tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Sub",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mul::8",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a * k * tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mul",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Pow::8",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a ** k * tau) < 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Pow",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Lt_Eq::1",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k * tau) == 0.0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Lt_Eq",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Lt_LtE::1",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 130,
+   "original_expression": "while f(a - k * tau) < 0.0:",
+   "mutated_expression": "while f(a - k * tau) <= 0.0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Lt_LtE",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::34",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 131,
+   "original_expression": "k += 1",
+   "mutated_expression": "k += 2",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::35",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 131,
+   "original_expression": "k += 1",
+   "mutated_expression": "k += 0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Add::14",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a - k + tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Div::14",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a - k / tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Div",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_FloorDiv::14",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a - k // tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_FloorDiv",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Pow::14",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a - k ** tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Pow",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Sub::14",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a - k - tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Sub",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Add::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a + k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Div::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a / k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Div",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_FloorDiv::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a // k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_FloorDiv",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mod::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a % k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mul::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a * k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mul",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Pow::9",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 132,
+   "original_expression": "big_b = a - k * tau",
+   "mutated_expression": "big_b = a ** k * tau",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Pow",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::36",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 136,
+   "original_expression": "iterations = 0",
+   "mutated_expression": "iterations = 1",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::37",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 136,
+   "original_expression": "iterations = 0",
+   "mutated_expression": "iterations = -1",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mod::10",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 137,
+   "original_expression": "while not volatility_converged(abs(big_b - big_a), tolerance):",
+   "mutated_expression": "while not volatility_converged(abs(big_b % big_a), tolerance):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Add::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b + big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Div::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b / big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Div",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_FloorDiv::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b // big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_FloorDiv",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mod::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b % big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mul::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b * big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mul",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Pow::11",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 141,
+   "original_expression": "f\"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutated_expression": "f\"(|b-a|={abs(big_b ** big_a)!r}, tolerance={tolerance!r}) \u2014 refusing, \"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Pow",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Add::16",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 146,
+   "original_expression": "if f_c * f_b <= 0.0:",
+   "mutated_expression": "if f_c + f_b <= 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Add",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_Div::16",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 146,
+   "original_expression": "if f_c * f_b <= 0.0:",
+   "mutated_expression": "if f_c / f_b <= 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Div",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Mul_FloorDiv::16",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 146,
+   "original_expression": "if f_c * f_b <= 0.0:",
+   "mutated_expression": "if f_c // f_b <= 0.0:",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_FloorDiv",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_LtE_Lt::1",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 146,
+   "original_expression": "if f_c * f_b <= 0.0:",
+   "mutated_expression": "if f_c * f_b < 0.0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_LtE_Lt",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::40",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 149,
+   "original_expression": "f_a = f_a / 2.0",
+   "mutated_expression": "f_a = f_a / 3.0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::42",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "f",
+   "source_line": 151,
+   "original_expression": "iterations += 1",
+   "mutated_expression": "iterations += 2",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "E_PENDING_KILL_OR_REFACTOR",
+   "associated_tests": [
+    "round-4 planned: initial_bracket pure-seam refactor + exact-output grid pins (incl. synthetic k>1 inputs) + golden new_volatility grid"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/NumberReplacer::61",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "_advance_to",
+   "source_line": 212,
+   "original_expression": "for _ in range(max(0, target_day - current_through - 1)):",
+   "mutated_expression": "for _ in range(max( -1, target_day - current_through - 1)):",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "H_domain_bound_identity",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_predict_equals_manual_reconstruction (gaps 1,2,3,11,40 exact)",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact",
+    "TestValidationBoundaries::test_text_fields_reject_untrimmed"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceBinaryOperator_Sub_Mod::16",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "_advance_to",
+   "source_line": 212,
+   "original_expression": "for _ in range(max(0, target_day - current_through - 1)):",
+   "mutated_expression": "for _ in range(max(0, target_day % current_through - 1)):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "H_domain_bound_identity",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_predict_equals_manual_reconstruction (gaps 1,2,3,11,40 exact)",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact",
+    "TestValidationBoundaries::test_text_fields_reject_untrimmed"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_NotEq_Gt::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "fit",
+   "source_line": 251,
+   "original_expression": "if len(active) != 2:",
+   "mutated_expression": "if len(active) > 2:",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_Gt",
+   "proposed_class": "D_unreachable_branch_race_invariant",
+   "associated_tests": [
+    "TestFitSeam::test_fit_refuses_non_two_player",
+    "TestStructuralContracts::test_predict_refuses_three_active_with_the_typed_message",
+    "RACE-INVARIANT-PIN-PENDING (this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_Eq_LtE::0",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "fit",
+   "source_line": 270,
+   "original_expression": "score_a = 1.0 if race.winner_id == a else 0.0",
+   "mutated_expression": "score_a = 1.0 if race.winner_id <= a else 0.0",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "C2_dominated_comparison_sorted_invariant",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_winner_identity_not_used_for_score",
+    "TestFitSeam::test_winner_direction",
+    "l4_pricing/races.py Race._validate (winner in active set)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "glicko2_family.py::core/ReplaceComparisonOperator_NotEq_Gt::1",
+   "module": "sport_tennis/glicko2_family.py",
+   "symbol": "predict",
+   "source_line": 292,
+   "original_expression": "if len(active) != 2:",
+   "mutated_expression": "if len(active) > 2:",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_Gt",
+   "proposed_class": "D_unreachable_branch_race_invariant",
+   "associated_tests": [
+    "TestFitSeam::test_fit_refuses_non_two_player",
+    "TestStructuralContracts::test_predict_refuses_three_active_with_the_typed_message",
+    "RACE-INVARIANT-PIN-PENDING (this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "<module>",
+   "source_line": 48,
+   "original_expression": "_NEWTON_STEPS = 64  # fixed, deterministic polish budget per root",
+   "mutated_expression": "_NEWTON_STEPS = 65  # fixed, deterministic polish budget per root",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::7",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "<module>",
+   "source_line": 48,
+   "original_expression": "_NEWTON_STEPS = 64  # fixed, deterministic polish budget per root",
+   "mutated_expression": "_NEWTON_STEPS = 63  # fixed, deterministic polish budget per root",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_GtE_Gt::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_sigmoid",
+   "source_line": 57,
+   "original_expression": "if x >= 0.0:",
+   "mutated_expression": "if x > 0.0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_GtE_Gt",
+   "proposed_class": "H_domain_bound_identity",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_predict_equals_manual_reconstruction (gaps 1,2,3,11,40 exact)",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact",
+    "TestValidationBoundaries::test_text_fields_reject_untrimmed"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::20",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 70,
+   "original_expression": "p2 = 0.0",
+   "mutated_expression": "p2 = 1.0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::21",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 70,
+   "original_expression": "p2 = 0.0",
+   "mutated_expression": "p2 = -1.0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_BitOr::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 71,
+   "original_expression": "for j in range(1, n + 1):",
+   "mutated_expression": "for j in range(1, n | 1):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_BitOr",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_BitXor::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 71,
+   "original_expression": "for j in range(1, n + 1):",
+   "mutated_expression": "for j in range(1, n ^ 1):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_BitXor",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::30",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 78,
+   "original_expression": "@lru_cache(maxsize=4)",
+   "mutated_expression": "@lru_cache(maxsize= 5)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::31",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 78,
+   "original_expression": "@lru_cache(maxsize=4)",
+   "mutated_expression": "@lru_cache(maxsize= 3)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/RemoveDecorator::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_hermite_value_and_prev",
+   "source_line": 78,
+   "original_expression": "",
+   "mutated_expression": "",
+   "mutation_operator": "core/RemoveDecorator",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::33",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 82,
+   "original_expression": "if n < 2 or n % 2 != 0:",
+   "mutated_expression": "if n < 1 or n % 2 != 0:",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_NotEq_Gt::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 82,
+   "original_expression": "if n < 2 or n % 2 != 0:",
+   "mutated_expression": "if n < 2 or n % 2 > 0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_Gt",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::40",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 86,
+   "original_expression": "x = 0.0",
+   "mutated_expression": "x = 1.0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::41",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 86,
+   "original_expression": "x = 0.0",
+   "mutated_expression": "x = -1.0",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_LtE::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 89,
+   "original_expression": "if i == 0:",
+   "mutated_expression": "if i <= 0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::44",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt( 3.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::46",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 2.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::47",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 0.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::49",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 0.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::50",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * ( 3.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::51",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * ( 1.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::52",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 2.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::53",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 0.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::54",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (- 2.0 / 6.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::56",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 7.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::57",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 5.0)",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Div::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n / 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Div",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Div::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n / 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Div",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_FloorDiv::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n // 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_FloorDiv",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_FloorDiv::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n // 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_FloorDiv",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Mul::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n * 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Mul",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Mul::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n * 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Mul",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Pow::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n ** 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Pow::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n ** 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Sub::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n - 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Sub",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Sub::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n - 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Sub",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Div_FloorDiv::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 // 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Div_FloorDiv",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Div_Mul::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 * 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Div_Mul",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Div_Pow::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 ** 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Div_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Div_Sub::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 - 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Div_Sub",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Add::5",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 + n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Add",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_FloorDiv::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 // n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_FloorDiv",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Mod::4",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 % (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Mod",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Pow::5",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 ** n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Pow_Mod::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) % (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Pow_Mod",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Pow_Mul::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) * (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Pow_Mul",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Add::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) + 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Mul::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) * 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mul",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Pow::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 90,
+   "original_expression": "x = math.sqrt(2.0 * n + 1.0) - 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutated_expression": "x = math.sqrt(2.0 * n + 1.0) ** 1.85575 * (2.0 * n + 1.0) ** (-1.0 / 6.0)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_LtE::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 91,
+   "original_expression": "elif i == 1:",
+   "mutated_expression": "elif i <= 1:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Mod::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 92,
+   "original_expression": "x -= 1.14 * n**0.426 / x",
+   "mutated_expression": "x -= 1.14 % n**0.426 / x",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Mod",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Pow::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 92,
+   "original_expression": "x -= 1.14 * n**0.426 / x",
+   "mutated_expression": "x -= 1.14 ** n**0.426 / x",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Pow",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Sub::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 92,
+   "original_expression": "x -= 1.14 * n**0.426 / x",
+   "mutated_expression": "x -= 1.14 - n**0.426 / x",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Sub",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::65",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 93,
+   "original_expression": "elif i == 2:",
+   "mutated_expression": "elif i == 1:",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_Lt::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 93,
+   "original_expression": "elif i == 2:",
+   "mutated_expression": "elif i < 2:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_Lt",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_LtE::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 93,
+   "original_expression": "elif i == 2:",
+   "mutated_expression": "elif i <= 2:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::75",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 95,
+   "original_expression": "elif i == 3:",
+   "mutated_expression": "elif i == 2:",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_Lt::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 95,
+   "original_expression": "elif i == 3:",
+   "mutated_expression": "elif i < 3:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_Lt",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_LtE::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 95,
+   "original_expression": "elif i == 3:",
+   "mutated_expression": "elif i <= 3:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Mod::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 98,
+   "original_expression": "x = 2.0 * x - positive[i - 2][0]",
+   "mutated_expression": "x = 2.0 * x % positive[i - 2][0]",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::94",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 104,
+   "original_expression": "if abs(dx) <= 1e-15 * max(1.0, abs(x)):",
+   "mutated_expression": "if abs(dx) <= 1e-15 * max( 2.0, abs(x)):",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::95",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 104,
+   "original_expression": "if abs(dx) <= 1e-15 * max(1.0, abs(x)):",
+   "mutated_expression": "if abs(dx) <= 1e-15 * max( 0.0, abs(x)):",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Div::14",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 104,
+   "original_expression": "if abs(dx) <= 1e-15 * max(1.0, abs(x)):",
+   "mutated_expression": "if abs(dx) <= 1e-15 / max(1.0, abs(x)):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Div",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Mul_Mod::14",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 104,
+   "original_expression": "if abs(dx) <= 1e-15 * max(1.0, abs(x)):",
+   "mutated_expression": "if abs(dx) <= 1e-15 % max(1.0, abs(x)):",
+   "mutation_operator": "core/ReplaceBinaryOperator_Mul_Mod",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_LtE_Lt::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "gauss_hermite_nodes",
+   "source_line": 104,
+   "original_expression": "if abs(dx) <= 1e-15 * max(1.0, abs(x)):",
+   "mutated_expression": "if abs(dx) < 1e-15 * max(1.0, abs(x)):",
+   "mutation_operator": "core/ReplaceComparisonOperator_LtE_Lt",
+   "proposed_class": "B_byte_identical_rule_construction",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule (symmetry/weights/exactness/determinism)",
+    "TestCentralAgainstIndependentIntegral"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_Eq_LtE::5",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "central_win_probability",
+   "source_line": 123,
+   "original_expression": "if s == 0.0:",
+   "mutated_expression": "if s <= 0.0:",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_LtE",
+   "proposed_class": "H_domain_bound_identity",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_predict_equals_manual_reconstruction (gaps 1,2,3,11,40 exact)",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact",
+    "TestValidationBoundaries::test_text_fields_reject_untrimmed"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Add_Sub::6",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "central_win_probability",
+   "source_line": 127,
+   "original_expression": "integral = math.fsum(w * _sigmoid(delta + scale * x) for x, w in rule)",
+   "mutated_expression": "integral = math.fsum(w * _sigmoid(delta - scale * x) for x, w in rule)",
+   "mutation_operator": "core/ReplaceBinaryOperator_Add_Sub",
+   "proposed_class": "C_symmetric_quadrature_reflection",
+   "associated_tests": [
+    "TestNumericalEdges::test_golden_rule_digest_pinned",
+    "TestGaussHermiteRule::test_node_count_and_symmetry",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::116",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, { 2.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/NumberReplacer::117",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, { 0.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/NumberReplacer",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Add::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 + PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Add",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Div::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 / PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Div",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_FloorDiv::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 // PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_FloorDiv",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Mod::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 % PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mod",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Mul::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 * PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Mul",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_Sub_Pow::10",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 176,
+   "original_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 - PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutated_expression": "f\"{name} must lie in [{PROBABILITY_FLOOR}, {1.0 ** PROBABILITY_FLOOR}], got {p!r}\"",
+   "mutation_operator": "core/ReplaceBinaryOperator_Sub_Pow",
+   "proposed_class": "G_diagnostic_prose",
+   "associated_tests": [
+    "TestVolatilityIterationSeam::test_exhausted_iteration_raises_typed_refusal (type+trigger pinned)",
+    "TestValidationBoundaries (types pinned via DistributionValidationError)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceComparisonOperator_NotEq_IsNot::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "__post_init__",
+   "source_line": 204,
+   "original_expression": "if not text or text != text.strip():",
+   "mutated_expression": "if not text or text is not text.strip():",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "proposed_class": "H_domain_bound_identity",
+   "associated_tests": [
+    "TestExactPredictionReconstruction::test_predict_equals_manual_reconstruction (gaps 1,2,3,11,40 exact)",
+    "TestGuardKills::test_s_zero_shortcut_is_bit_exact",
+    "TestValidationBoundaries::test_text_fields_reject_untrimmed"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Add::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date + None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Add",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitAnd::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date & None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitAnd",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitXor::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date ^ None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitXor",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Div::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date / None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Div",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_FloorDiv::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date // None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_FloorDiv",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_LShift::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date << None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_LShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mod::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date % None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mod",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mul::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date * None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mul",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Pow::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date ** None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Pow",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_RShift::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date >> None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_RShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Sub::0",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 213,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date - None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Sub",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Add::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date + None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Add",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitAnd::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date & None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitAnd",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitXor::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date ^ None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitXor",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Div::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date / None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Div",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_FloorDiv::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date // None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_FloorDiv",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_LShift::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date << None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_LShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mod::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date % None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mod",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mul::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date * None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mul",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Pow::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date ** None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Pow",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_RShift::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date >> None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_RShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Sub::1",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "_pair_state_digest",
+   "source_line": 214,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date - None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Sub",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Add::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date + None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Add",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitAnd::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date & None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitAnd",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitXor::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date ^ None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitXor",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Div::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date / None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Div",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_FloorDiv::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date // None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_FloorDiv",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_LShift::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date << None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_LShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mod::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date % None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mod",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mul::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date * None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mul",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Pow::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date ** None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Pow",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_RShift::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date >> None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_RShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Sub::2",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 240,
+   "original_expression": "last_active_date_a: date | None,",
+   "mutated_expression": "last_active_date_a: date - None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Sub",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Add::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date + None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Add",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitAnd::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date & None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitAnd",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_BitXor::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date ^ None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_BitXor",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Div::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date / None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Div",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_FloorDiv::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date // None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_FloorDiv",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_LShift::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date << None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_LShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mod::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date % None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mod",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Mul::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date * None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Mul",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Pow::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date ** None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Pow",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_RShift::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date >> None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_RShift",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  },
+  {
+   "survivor_id": "dp1_distribution.py::core/ReplaceBinaryOperator_BitOr_Sub::3",
+   "module": "sport_tennis/dp1_distribution.py",
+   "symbol": "win_probability_distributions",
+   "source_line": 241,
+   "original_expression": "last_active_date_b: date | None,",
+   "mutated_expression": "last_active_date_b: date - None,",
+   "mutation_operator": "core/ReplaceBinaryOperator_BitOr_Sub",
+   "proposed_class": "A_pep563_annotation",
+   "associated_tests": [
+    "tests/unit/sport_tennis/test_dp1_distribution.py::TestPairSignatureContract",
+    "ARCH-TEST-PENDING (no-runtime-annotation-consumer pin, this packet)"
+   ],
+   "approved_by": null
+  }
+ ]
+}
