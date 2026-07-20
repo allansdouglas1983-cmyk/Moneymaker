@@ -338,3 +338,124 @@ class TestExactPredictionReconstruction:
             model, _race("p", date(2025, 2, 5), big_a, big_b, None), horizon=_HORIZON
         )
         assert probs[big_a] > 0.5  # the winner must have been credited
+
+
+class TestIndependentRatePlayerWitness:
+    """Kill class: any deviation in rate_player's composition of steps 3-8 (including
+    what it PASSES to the volatility solver, e.g. Delta = v * sum) diverges from a
+    test-side reimplementation of the primary source using bisection for step 5."""
+
+    @staticmethod
+    def _reference(state: PlayerState, results: list[tuple[PlayerState, float]]) -> PlayerState:
+        def g(phi: float) -> float:
+            return 1.0 / math.sqrt(1.0 + 3.0 * phi * phi / (math.pi * math.pi))
+
+        def e_fn(mu: float, mu_j: float, phi_j: float) -> float:
+            return 1.0 / (1.0 + math.exp(-g(phi_j) * (mu - mu_j)))
+
+        v = 1.0 / math.fsum(
+            g(o.phi) ** 2 * e_fn(state.mu, o.mu, o.phi) * (1.0 - e_fn(state.mu, o.mu, o.phi))
+            for o, _s in results
+        )
+        imp = math.fsum(g(o.phi) * (sc - e_fn(state.mu, o.mu, o.phi)) for o, sc in results)
+        delta = v * imp
+        a = math.log(state.sigma**2)
+
+        def f(x: float) -> float:
+            ex = math.exp(x)
+            return (ex * (delta**2 - state.phi**2 - v - ex)) / (
+                2.0 * (state.phi**2 + v + ex) ** 2
+            ) - (x - a) / (GLICKO2_TAU**2)
+
+        lo, hi = a - 40.0, a + 40.0
+        if f(lo) * f(hi) > 0:  # widen until bracketed (f -> +inf at -inf, -inf at +inf)
+            raise AssertionError("reference bracket failed")
+        for _ in range(200):
+            mid = (lo + hi) / 2.0
+            if f(lo) * f(mid) <= 0:
+                hi = mid
+            else:
+                lo = mid
+        sigma_prime = math.exp((lo + hi) / 4.0)
+        phi_star = math.sqrt(state.phi**2 + sigma_prime**2)
+        phi_prime = 1.0 / math.sqrt(1.0 / phi_star**2 + 1.0 / v)
+        mu_prime = state.mu + phi_prime**2 * imp
+        return PlayerState(mu=mu_prime, phi=phi_prime, sigma=sigma_prime)
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            # calm case
+            [(PlayerState(mu=0.2, phi=0.8, sigma=0.06), 1.0)],
+            # the paper's shape
+            [
+                (PlayerState(mu=-0.5756, phi=0.1727, sigma=0.06), 1.0),
+                (PlayerState(mu=0.2878, phi=0.5756, sigma=0.06), 0.0),
+                (PlayerState(mu=1.1513, phi=1.7269, sigma=0.06), 0.0),
+            ],
+            # HIGH-SURPRISE: strong opponent set, all lost, high own phi — the
+            # volatility must move materially; Delta mutants shift sigma' visibly
+            [
+                (PlayerState(mu=2.5, phi=0.2, sigma=0.06), 1.0),
+                (PlayerState(mu=2.6, phi=0.2, sigma=0.06), 1.0),
+                (PlayerState(mu=2.4, phi=0.2, sigma=0.06), 1.0),
+                (PlayerState(mu=2.7, phi=0.2, sigma=0.06), 1.0),
+            ],
+        ],
+    )
+    def test_rate_player_matches_reference(
+        self, case: list[tuple[PlayerState, float]]
+    ) -> None:
+        state = PlayerState(mu=0.0, phi=1.1513, sigma=0.06)
+        got = rate_player(state, case)
+        ref = self._reference(state, case)
+        assert got.mu == pytest.approx(ref.mu, abs=1e-9)
+        assert got.phi == pytest.approx(ref.phi, abs=1e-9)
+        assert got.sigma == pytest.approx(ref.sigma, abs=1e-7)
+
+
+class TestStructuralContracts:
+    def test_player_state_is_frozen(self) -> None:
+        import dataclasses
+
+        state = PlayerState(mu=0.0, phi=1.0, sigma=0.06)
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            state.mu = 1.0  # type: ignore[misc]
+
+    def test_fitted_artefact_is_frozen(self) -> None:
+        import dataclasses
+
+        fam = Glicko2Family()
+        model = fam.fit(
+            [_race("t", date(2025, 1, 1), 1, 2, winner=1)], _SCHEMA, horizon=_HORIZON, max_iter=10
+        )
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            model.states = {}  # type: ignore[misc]
+
+    def test_seam_parameters_are_keyword_only(self) -> None:
+        """The `*` markers are contractual: horizon can never be passed positionally."""
+        import inspect
+
+        fit_params = inspect.signature(Glicko2Family.fit).parameters
+        assert fit_params["horizon"].kind is inspect.Parameter.KEYWORD_ONLY
+        assert fit_params["max_iter"].kind is inspect.Parameter.KEYWORD_ONLY
+        predict_params = inspect.signature(Glicko2Family.predict).parameters
+        assert predict_params["horizon"].kind is inspect.Parameter.KEYWORD_ONLY
+
+    def test_predict_refuses_three_active_with_the_typed_message(self) -> None:
+        fam = Glicko2Family()
+        model = fam.fit(
+            [_race("t", date(2025, 1, 1), 1, 2, winner=1)], _SCHEMA, horizon=_HORIZON, max_iter=10
+        )
+        race = Race(
+            race_id="r3p",
+            cluster=calendar_day_assignment("tennis", date(2025, 1, 2)),
+            runners=(
+                RunnerRow(runner_id=1, features={"placeholder": _D0}),
+                RunnerRow(runner_id=2, features={"placeholder": _D0}),
+                RunnerRow(runner_id=3, features={"placeholder": _D0}),
+            ),
+            winner_id=None,
+        )
+        with pytest.raises(ValueError, match="two-player"):
+            fam.predict(model, race, horizon=_HORIZON)

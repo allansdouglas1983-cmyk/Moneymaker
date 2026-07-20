@@ -323,3 +323,168 @@ class TestValidationBoundaries:
 
     def test_prior_count_boundary(self) -> None:
         _dist(prior_match_count=0)  # zero is a valid cold start
+
+
+class TestPairExactReconstruction:
+    """Kill class: the pair function's delta/s composition and complements are
+    reconstructed manually and compared EXACTLY, including a central < 0.5 case
+    (which separates `1.0 - x` from `1.0 % x`)."""
+
+    @staticmethod
+    def _pair(a: PlayerState, b: PlayerState) -> tuple[WinProbabilityDistribution, WinProbabilityDistribution]:
+        return win_probability_distributions(
+            a,
+            b,
+            prior_match_count_a=5,
+            prior_match_count_b=7,
+            last_active_date_a=date(2026, 5, 1),
+            last_active_date_b=date(2026, 4, 1),
+            data_quality_status_a="OK",
+            data_quality_status_b="OK",
+            feature_input_digest="d" * 64,
+        )
+
+    @pytest.mark.parametrize(
+        ("a", "b"),
+        [
+            (PlayerState(mu=0.8, phi=0.6, sigma=0.06), PlayerState(mu=-0.1, phi=1.2, sigma=0.06)),
+            # underdog orientation: central_a < 0.5 and upper_a < 0.5
+            (PlayerState(mu=-1.6, phi=0.3, sigma=0.06), PlayerState(mu=0.9, phi=0.4, sigma=0.06)),
+        ],
+    )
+    def test_matches_manual_composition(self, a: PlayerState, b: PlayerState) -> None:
+        da, db = self._pair(a, b)
+        delta = a.mu - b.mu
+        s = math.sqrt(a.phi * a.phi + b.phi * b.phi)
+        lower, upper = interval_bounds(delta, s)
+        central = central_win_probability(delta, s)
+        assert da.central_win_probability == central
+        assert (da.lower_probability_bound, da.upper_probability_bound) == (lower, upper)
+        assert db.central_win_probability == 1.0 - central
+        assert db.lower_probability_bound == 1.0 - upper
+        assert db.upper_probability_bound == 1.0 - lower
+
+    def test_none_last_active_is_representable(self) -> None:
+        a = PlayerState(mu=0.2, phi=1.9, sigma=0.06)
+        b = PlayerState(mu=0.0, phi=2.0, sigma=0.06)
+        da, _db = win_probability_distributions(
+            a, b,
+            prior_match_count_a=0, prior_match_count_b=0,
+            last_active_date_a=None, last_active_date_b=None,
+            data_quality_status_a="COLD_START", data_quality_status_b="COLD_START",
+            feature_input_digest="e" * 64,
+        )
+        assert da.last_active_date is None
+
+    def test_digest_varies_with_last_active_date(self) -> None:
+        a = PlayerState(mu=0.2, phi=0.9, sigma=0.06)
+        b = PlayerState(mu=0.0, phi=1.0, sigma=0.06)
+        kw: dict[str, object] = {
+            "prior_match_count_a": 5, "prior_match_count_b": 7,
+            "data_quality_status_a": "OK", "data_quality_status_b": "OK",
+            "feature_input_digest": "d" * 64,
+        }
+        d1, _ = win_probability_distributions(
+            a, b, last_active_date_a=date(2026, 5, 1), last_active_date_b=date(2026, 4, 1), **kw  # type: ignore[arg-type]
+        )
+        d2, _ = win_probability_distributions(
+            a, b, last_active_date_a=date(2026, 5, 2), last_active_date_b=date(2026, 4, 1), **kw  # type: ignore[arg-type]
+        )
+        d3, _ = win_probability_distributions(
+            a, b, last_active_date_a=None, last_active_date_b=date(2026, 4, 1), **kw  # type: ignore[arg-type]
+        )
+        assert len({d1.state_digest, d2.state_digest, d3.state_digest}) == 3
+
+    def test_state_digest_golden_pin(self) -> None:
+        """Canonical-JSON stability pin: any change to key ordering or content moves it."""
+        a = PlayerState(mu=0.5, phi=0.75, sigma=0.06)
+        b = PlayerState(mu=-0.25, phi=1.25, sigma=0.06)
+        da, _ = win_probability_distributions(
+            a, b,
+            prior_match_count_a=3, prior_match_count_b=9,
+            last_active_date_a=date(2026, 5, 15), last_active_date_b=None,
+            data_quality_status_a="OK", data_quality_status_b="OK",
+            feature_input_digest="f" * 64,
+        )
+        import hashlib
+        import json
+
+        expected = hashlib.sha256(
+            json.dumps(
+                {
+                    "model_version": DP1_MODEL_VERSION,
+                    "a": [repr(0.5), repr(0.75), repr(0.06)],
+                    "b": [repr(-0.25), repr(1.25), repr(0.06)],
+                    "last_active_a": "2026-05-15",
+                    "last_active_b": None,
+                    "prior_a": 3,
+                    "prior_b": 9,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        assert da.state_digest == expected
+
+
+class TestGuardKills:
+    def test_single_nan_arguments_are_refused(self) -> None:
+        nan = float("nan")
+        for delta, s in ((nan, 1.0), (1.0, nan), (nan, nan)):
+            with pytest.raises(DistributionValidationError):
+                central_win_probability(delta, s)
+            with pytest.raises(DistributionValidationError):
+                interval_bounds(delta, s)
+
+    def test_moderately_negative_s_is_refused(self) -> None:
+        with pytest.raises(DistributionValidationError):
+            central_win_probability(0.5, -0.5)
+        with pytest.raises(DistributionValidationError):
+            interval_bounds(0.5, -0.5)
+
+    def test_negative_rating_deviation_and_volatility_refused(self) -> None:
+        with pytest.raises(DistributionValidationError):
+            _dist(rating_deviation=-5.0)
+        with pytest.raises(DistributionValidationError):
+            _dist(volatility=-0.06)
+
+    def test_non_float_probability_refused(self) -> None:
+        from decimal import Decimal
+
+        with pytest.raises(DistributionValidationError):
+            _dist(central_win_probability=Decimal("0.6"))
+
+    def test_equal_bounds_are_valid(self) -> None:
+        d = _dist(
+            lower_probability_bound=0.6,
+            central_win_probability=0.6,
+            upper_probability_bound=0.6,
+        )
+        assert d.lower_probability_bound == d.upper_probability_bound == 0.6
+
+    def test_trailing_space_text_refused(self) -> None:
+        with pytest.raises(DistributionValidationError):
+            _dist(uncertainty_method="padded ")
+
+    def test_s_zero_shortcut_is_bit_exact(self) -> None:
+        """Pins the s==0 fast path bitwise (the quadrature-at-zero route differs in
+        the last ulp — a mutant diverting the branch dies here)."""
+        assert central_win_probability(0.7, 0.0) == 0.6681877721681662
+        assert central_win_probability(-0.3, 0.0) == 0.425557483188341
+
+    def test_sigmoid_branch_split_is_bit_exact(self) -> None:
+        """The stable two-branch sigmoid is pinned at points where the two algebraic
+        forms differ in the final bit, on both sides of zero."""
+        assert interval_bounds(-0.998, 0.0) == (0.26933482690479027, 0.26933482690479027)
+        assert interval_bounds(0.007, 0.0) == (0.5017499928542016, 0.5017499928542016)
+
+
+class TestPairSignatureContract:
+    def test_pair_parameters_are_keyword_only(self) -> None:
+        import inspect
+
+        params = inspect.signature(win_probability_distributions).parameters
+        for name, p in params.items():
+            if name in ("state_a", "state_b"):
+                continue
+            assert p.kind is inspect.Parameter.KEYWORD_ONLY, name
