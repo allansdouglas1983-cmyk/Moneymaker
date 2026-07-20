@@ -1,0 +1,72 @@
+# specs/programme/stage2g-field-use-policy-v1.yaml — FROZEN under founder directive
+# Stage 2G §4 (2026-07-20). Human-owned (specs/**). This is a versioned OVERLAY on
+# specs/evidence/tennis-data-field-registry-v1.yaml — it NEVER relaxes that registry
+# (Tennis-Data bookmaker odds stay QUARANTINED here exactly as there). Anything not
+# listed in a class below is UNCLASSIFIED => not usable (fail closed). Applies to
+# SPEC-105/106/107 (DP1, DYNAMIC_GLICKO2_V1). Market probability enters ONLY via the
+# separately governed SPEC-108 market anchor using the frozen Betfair info-price —
+# never provider odds. Moving a field between classes is a governed v2 + founder
+# review; nothing moves by convenience.
+
+version: stage2g-field-use-policy-v1
+overlay_of: tennis-data-field-registry-v1
+applies_to: [SPEC-105, SPEC-106, SPEC-107]
+
+APPROVED_CENTRAL_MODEL_INPUTS:
+  note: may drive the central win probability
+  fields:
+    - governed competitor identity
+    - tour namespace ATP|WTA
+    - completed historical match outcome
+    - match date
+    - chronology
+    - same-day batch membership
+    - number of prior completed matches
+    - time since last completed match
+    - rating state
+    - rating uncertainty state
+    - inactivity state derived solely from prior dates
+
+APPROVED_DIAGNOSTIC_QUALITY_INPUTS:
+  note: MUST NOT alter the central win probability unless a separate registered model
+    explicitly authorises it. May initially affect only uncertainty, data-quality
+    status, reason codes and abstention.
+  fields:
+    - matches played in trailing 7 / 14 / 28 / 90 days
+    - long-inactivity flag
+    - source-coverage quality
+    - identity-resolution quality
+    - market-tier / strict-versus-primary-only cohort
+    - market freshness and availability
+
+DEFERRED:
+  note: not usable in Stage 2G; moving one out is a governed v2 + founder review
+  fields:
+    - rankings
+    - seedings
+    - tournament category
+    - round
+    - age
+    - injury/news
+    - travel
+    - altitude
+    - indoor/outdoor
+    - serve/return statistics
+    - surface adjustment
+    - best-of format adjustment
+
+PROHIBITED:
+  note: never usable
+  fields:
+    - field: Tennis-Data bookmaker odds
+      note: remain QUARANTINED per tennis-data-field-registry-v1
+    - field: post-match fields from the match being predicted
+    - field: June or future results before prediction
+    - field: manually invented player strength
+    - field: LLM probabilities
+    - field: LLM feature values
+    - field: retrospective "this feature would have helped" additions
+    - field: SURFACE as a rating input
+      note: F3 demonstrated the registered surface-rating design was harmful
+        (FAIL_HARM, specs/programme/f3-closure-record-v1.yaml); do not reintroduce
+        surface into DP1

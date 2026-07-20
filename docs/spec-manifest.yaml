@@ -996,3 +996,253 @@
   status_source: ci
   introduced_in_phase: 3
   enforcement_state: planned
+# --- STAGE 2G — PERSONAL PREDICTOR & TIP ASSISTANT V1 (ADR 0019; founder directive
+#     2026-07-20). New programme; new IDs; old F2/F3/M1 identifiers never reused.
+#     All entries enter as `planned`; the planned->active flip happens inside the slice
+#     that lands the enforcement (repo convention, cf. SPEC-037 note). Phase 9 = Stage 2G.
+- id: SPEC-105
+  component: dp1_model
+  title: DYNAMIC_GLICKO2_V1 fundamental family
+  requirement: 'Canonical Glicko-2 exactly as pinned in specs/programme/dp1-glicko2-registration-v1.yaml.
+    Constants FROZEN (initial 1500 / RD 350 / volatility 0.06 / tau 0.5 / tolerance 1e-6 /
+    scale 173.7178; one UTC-calendar-day rating period; ATP and WTA fully separate; same-day
+    matches predicted from start-of-day state then batch-updated; normally completed singles
+    only with visible typed exclusions). Constants MUST NOT be tuned against model
+    performance. Inactivity inflates phi once per empty period and NEVER reduces it.
+    Prohibited inputs: bookmaker odds, surface, post-match fields of the predicted match,
+    LLM-generated values (stage2g-field-use-policy-v1).
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - prior_rating_state
+  - opponent_rating_state
+  - rating_deviation
+  - volatility
+  - same_day_outcome_batch
+  - elapsed_inactive_periods
+  - tour_namespace
+  metamorphic_properties:
+  - raising a player's rating at a fixed opponent must not decrease that player's win probability
+  - inactivity never reduces rating deviation without new match evidence
+  - reversing winner and loser reverses the update direction; reversal mutants must die
+  - permuting row order within a UTC day changes neither predictions nor end-of-day state
+  - a same-day outcome never contributes to the state that predicts it
+- id: SPEC-106
+  component: dp1_model
+  title: WinProbabilityDistribution output with analytic uncertainty
+  requirement: 'DP1 outputs a governed WinProbabilityDistribution per player: central win
+    probability (frozen 20-node Gauss-Hermite posterior mean of sigmoid over the pairwise
+    rating difference), lower/upper bounds via ANALYTIC_PROPAGATION (exact sigmoid image of
+    delta +/- 1.644854*s), uncertainty method, rating, rating deviation, volatility,
+    prior-match count, last-active date, data-quality status, model version, state digest,
+    feature/input digest. Uncertainty derives from the dynamic rating state — NEVER a
+    fabricated percentage around the point estimate. Both players form a coherent
+    two-player choice set; probabilities finite and strictly inside (1e-12, 1-1e-12).
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - mu_difference
+  - combined_phi
+  - quadrature_nodes
+  - interval_quantile
+  metamorphic_properties:
+  - P(B beats A) equals 1 - P(A beats B) exactly
+  - lower <= central <= upper, all strictly inside the governed bounds
+  - increasing either rating deviation at fixed ratings widens the interval
+  - an implementation that ignores rating deviation must fail (contexts differing only in RD produce different intervals)
+- id: SPEC-107
+  component: dp1_model
+  title: AFFINE_LOGIT_CALIBRATION_FOR_DP1
+  requirement: 'The ONLY registered calibration: z = logit(p_raw); z_cal = intercept +
+    z/temperature; p_cal = sigmoid(z_cal). Fitted only on leakage-safe out-of-fold DP1
+    predictions; ATP/WTA separate (mirrors the governed separate-tour policy); raw and
+    calibrated probabilities both retained; no method contest; no isotonic; no band- or
+    surface-specific correction; no retrospective method change after seeing future
+    evidence. Part of the DP1 registration.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - out_of_fold_dp1_predictions
+  - intercept
+  - temperature
+  - tour_namespace
+  metamorphic_properties:
+  - identity parameters (intercept 0, temperature 1) reproduce raw probabilities exactly
+  - output varies with both intercept and temperature
+  - a training row whose prediction saw its own match is refused, never down-weighted
+  - calibrated values never overwrite raw values; both are retained
+- id: SPEC-108
+  component: mp1
+  title: MARKET_ANCHORED_RESIDUAL_V1
+  requirement: 'The ONLY market-anchor formula: z_anchored = z_market + lambda*(z_model -
+    z_market); p_anchored = sigmoid(z_anchored). One POOLED lambda in [0,1]; no per-tour
+    lambda; no surface/tournament/price-band interactions; no alternative formula; no broad
+    regularisation search; no bookmaker odds; no LLM adjustment. Developed on the June
+    F0-intersection development data via expanding UTC-day folds (no day fits its own
+    lambda); one final lambda frozen on the complete approved intersection; never refit
+    during the first prospective evidence programme. lambda=0 preserved honestly if fitted.
+    DP1 uncertainty is propagated through the anchor.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - p_market_info
+  - p_dp1_calibrated
+  - lambda_weight
+  metamorphic_properties:
+  - lambda=0 reproduces the market probability exactly
+  - lambda=1 reproduces the calibrated DP1 probability exactly
+  - the anchored logit always lies between the market and model logits
+  - lambda outside [0,1] is refused
+  - when model and market differ the output varies with lambda; a lambda-ignoring implementation must fail
+- id: SPEC-109
+  component: tp1
+  title: Tipping-policy status contract with structurally disabled BET_CANDIDATE
+  requirement: 'Deterministic status mapping with EXACTLY the statuses INSUFFICIENT_DATA,
+    MARKET_UNAVAILABLE, MODEL_VIEW_ONLY, LEAN, NO_BET, BET_CANDIDATE_DISABLED,
+    BET_CANDIDATE, mapped per founder directive Stage 2G section 12. BET_CANDIDATE is
+    STRUCTURALLY unreachable (module-private token gate, by construction not policy) until
+    gates P1, P2 and T1 pass AND the founder explicitly activates T2. An LLM never sets or
+    overrides a status. Automated execution is out of scope even after T2.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - anchored_distribution
+  - quoted_odds
+  - commission_rate
+  - market_state_validity
+  - data_quality_status
+  - t2_activation_token
+  metamorphic_properties:
+  - BET_CANDIDATE is unreachable for every input while the T2 activation token is absent
+  - absence of a valid executable price never yields a BET-family status
+  - informational metadata changes never turn a refusal into a recommendation
+  - a candidate-shaped opportunity maps to BET_CANDIDATE_DISABLED pre-gate, never BET_CANDIDATE
+- id: SPEC-110
+  component: tp1
+  title: Commission-aware break-even and EV in exact arithmetic
+  requirement: 'p_break_even = 1/(1 + (O-1)*(1-c)) for a quoted Betfair back price O and
+    commission c; central edge = p_anchored_central - p_break_even; conservative edge =
+    p_anchored_lower - p_break_even; central and conservative EV per unit stake. Decimal or
+    governed exact types ONLY — no float money arithmetic. SHADOW display only: these
+    numbers authorise no staking and no betting. No economic buffer or minimum edge without
+    founder approval.
+
+    '
+  criticality: money
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+  relevant_inputs:
+  - quoted_odds
+  - commission_rate
+  - anchored_lower
+  - anchored_central
+  metamorphic_properties:
+  - worsening quoted odds never improves conservative EV
+  - increasing commission never improves any EV
+  - conservative EV consumes the anchored lower bound; substituting the central value must fail
+  - float representations of money are refused
+- id: SPEC-111
+  component: ps1
+  title: Personal prediction snapshot (append-only, outcome-free pre-match)
+  requirement: 'Immutable personal-prediction snapshot with the full founder section-11
+    field list (identifiers, competitors, tour, times, feed/source type, market-state
+    digest, raw and calibrated DP1 distributions, market probability, anchored
+    distribution, central and conservative fair odds, contract/model/calibration/lambda/
+    vintage/identity versions, reason-code digest, recommendation-status type,
+    eligibility/refusal reason, provenance digest). NO outcome, winner, P&L, CLV or future
+    field is representable pre-match. Append-only; never rewritten after the match.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+- id: SPEC-112
+  component: ps1
+  title: Prospective shadow capture (manual entry / delayed-key observation only)
+  requirement: 'Market acquisition is (a) manual Betfair price entry — odds, timestamp,
+    side, source=MANUAL_BETFAIR_UI, optional displayed size; immutable record; no
+    retrospective entry after the match — and/or (b) an already-available free Delayed App
+    Key for shadow OBSERVATION only (SPEC-102 makes real money impossible on it by
+    construction), recording publish/receive times and staleness, refusing overly stale
+    state under a separately frozen rule. No orders; no fill-quality claims; no purchases
+    or account actions (budget freeze).
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+- id: SPEC-113
+  component: ps1
+  title: Prospective grading and gates P0/P1/P2/T1/T2
+  requirement: 'Prospective grading joins outcomes ONLY through the governed outcome path
+    after settlement: predictor quality (log loss, Brier, calibration, interval coverage,
+    cohorts, coverage/refusals), market-relative quality (market-only vs anchored log loss,
+    paired day-clustered differences; lambda never re-estimated), and tip-policy shadow
+    quality (status counts, quoted price, conservative EV, captured-price hypothetical
+    result; no fill claims; no retrospective price substitution). Shadow P&L is SECONDARY
+    evaluation of the frozen policy only — never tunes anything in-period. Gates P0, P1,
+    P2, T1, T2 are prepared as SPEC-093 evaluator specs, each a single question, inactive
+    until explicit founder approval; no permissive thresholds invented from observed
+    results.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+- id: SPEC-114
+  component: ui1
+  title: Private local single-user interface with no execution path
+  requirement: 'Local-only single-user service: no public registration, subscriptions,
+    billing, friend access, social sharing, order-placement button, credential display, or
+    repository secrets. Shows upcoming matches, prediction view (raw/calibrated/market/
+    anchored, bounds, fair odds, break-even, status, deterministic reasons, staleness),
+    shadow ledger and performance with an explicit research/shadow-only banner. Lightest
+    proportionate implementation; the numerical core stays separate; an import quarantine
+    proves the interface cannot reach l6_broker or any execution path.
+
+    '
+  criticality: support
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned
+- id: SPEC-115
+  component: governance
+  title: Deterministic reason-code registry
+  requirement: 'Frozen registry of deterministic, numeric-core-derived reason codes
+    (RATING_ADVANTAGE, HIGH_RATING_UNCERTAINTY, LOW_HISTORY, LONG_INACTIVITY,
+    HEAVY_RECENT_WORKLOAD, MARKET_DISAGREEMENT, MARKET_AGREEMENT,
+    PRICE_BELOW_CONSERVATIVE_FAIR, PRICE_ABOVE_CONSERVATIVE_FAIR, STALE_MARKET,
+    ONE_SIDED_BOOK, IDENTITY_UNRESOLVED, SOURCE_COVERAGE_THIN, MARKET_ONLY_WEIGHT,
+    TIPPING_GATE_DISABLED). Reasons are sign/rank/threshold explanations only; no causal
+    language; no "certain"/"safe bet"/"guaranteed". The LLM may render approved codes into
+    plain language but never invents a reason or a numeric claim.
+
+    '
+  criticality: evidence
+  status_source: ci
+  introduced_in_phase: 9
+  enforcement_state: planned

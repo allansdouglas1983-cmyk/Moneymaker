@@ -1,0 +1,92 @@
+# specs/programme/stage2g-trial-ledger-registration-v1.yaml — IMMUTABLE Stage 2G
+# registration (founder directive §1, 2026-07-20: "Create a new trial ledger and
+# programme registration"). Human-owned. Changing ANYTHING here after the first
+# outcome-scored run is a new registration with multiplicity debited (SPEC-091).
+
+registration_id: EXP-STAGE2G-DP1-GLICKO2-001
+experiment_id: EXP-STAGE2G-DP1-GLICKO2-001
+registered_on: "2026-07-20"
+
+programme: STAGE 2G — PERSONAL PREDICTOR & TIP ASSISTANT V1 (new programme; founder
+  directive 2026-07-20; ADR 0019
+  docs/decisions/0019-personal-predictor-tip-assistant-v1.md). This is a NEW
+  programme, distinct from the closed Stage 2 F-family programme.
+
+hypothesis: "DYNAMIC_GLICKO2_V1 (canonical Glicko-2, frozen constants) produces
+  coherent, calibrated, uncertainty-aware pre-match win probabilities on lawful
+  development history with better calibration transfer than the closed F2-v1
+  baseline, without material proper-score harm."
+
+decision_unit: match  # the two-player Match Odds choice set; matches
+  # PERMITTED_DECISION_UNITS in l8_evidence/trial_ledger.py — never the individual
+  # player/selection (evidence.md)
+
+primary_endpoint: mean out-of-fold choice-set log loss (nats), computed via
+  l4_pricing.crossfit.cross_fit (the model-independent orchestrator — no special
+  path), both raw and calibrated, evaluated against the frozen F2-v1 baseline
+  replay AND the structural null (ln 2)
+
+secondary_endpoints:
+  - binary Brier
+  - calibration-in-the-large
+  - calibration slope
+  - reliability by band (with counts and CIs; SPEC-097)
+  - uncertainty-interval coverage
+  - ATP/WTA cohort breakdown
+  - yearly cohort breakdown
+  - prior-history (cold-start) cohort breakdown
+  - inactivity cohort breakdown
+  - workload cohort breakdown
+  - coverage plus the full exclusion funnel
+  - parameter/state stability across the development window
+
+windows:  # cite specs/programme/stage2g-data-boundary-v1.yaml for full definitions
+  development_training: lawful completed singles Date < 2026-06-01 (tennis-data.co.uk
+    vintage-2026-07-18) + June 2026 recovery-artifact outcomes (DEVELOPMENT evidence
+    forever — never promoted to confirmatory) + 2026-07-01..2026-07-02 rows (development)
+  external_holdout: STAGE2G-HOLDOUT-JULY-V1, 2026-07-03..2026-07-12, predictor-only,
+    one-shot, opened ONLY after DP1 + calibration freeze; NO market/odds comparison
+  prospective_stream: begins only after DP1 + calibration + lambda + snapshot + tip
+    policy freeze; no backdating (stage2g-data-boundary-v1.yaml prospective_stream)
+
+exclusion_policy:  # label-policy-v1 reader semantics; every exclusion visible, never guessed
+  exclude_with_reasons: retirement, walkover, awarded, disqualified, ambiguous
+    outcome, duplicate/conflicting rows
+  permanent_exclusion: June OUTCOME_SOURCE_CONFLICT market 1.259522098 permanently
+    excluded from this and every future registration (founder ruling)
+  accounting: universe in = evaluated rows + typed exclusions (orchestrator invariant;
+    full funnel reported)
+
+model_registration_ref: specs/programme/dp1-glicko2-registration-v1.yaml
+  # constants frozen there: initial_rating 1500 / initial_rd 350 / initial_vol 0.06 /
+  # tau 0.5 / convergence eps 1e-6 / glicko2_scale 173.7178 / UTC-day rating periods /
+  # ATP and WTA rated separately / same-day matches applied as one batch;
+  # AFFINE_LOGIT_CALIBRATION_FOR_DP1 is part of that registration, not this one
+
+number_of_prior_trials: 2
+  # honest programme history for multiplicity accounting:
+  #   1. F3-vs-F2 confirmatory comparison — FAIL_HARM, 2026-07-18
+  #   2. June M1 external transfer test — FAIL_HARM, 2026-07-19
+  # "no old alpha or significance claim transfers automatically into this new
+  # programme" (founder §1, verbatim). The OLD programme's alpha ledger
+  # (specs/programme/alpha-consumption-ledger-v1.yaml) remains CLOSED and UNTOUCHED.
+
+alpha_budget: DEFERRED
+  # Development evaluation under this registration consumes NO alpha — development
+  # only, no confirmatory claim. Confirmatory alpha for the prospective gates
+  # (P0/P1/P2/T1/T2) is a FOUNDER decision at gate activation (SPEC-113, planned).
+  # This registration reserves no numeric alpha figure and invents no threshold.
+
+stopping_rule: founder §8 continuation conditions — coherent deterministic
+  outputs; no leakage; better calibration transfer than F2-v1; no material
+  proper-score harm vs F2-v1 overall; sensible uncertainty widening for
+  cold-start/inactive players; no catastrophic ATP/WTA cohort failure — together
+  with founder §22 stop conditions. Any new numeric threshold required beyond
+  those declared here triggers a founder decision packet, never an inferred
+  number.
+
+forbidden: ROI / P&L / CLV / betting simulation as model-selection criteria; June
+  confirmatory claims of any kind; bookmaker/exchange odds as a feature or
+  criterion; surface as a feature (DP1 v1 scope); LLM-generated numbers of any
+  kind (probability, stake, or threshold); any expenditure — budget freeze £0
+  under this registration.

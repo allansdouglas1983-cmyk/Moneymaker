@@ -28,3 +28,4 @@ Note: ADRs are ordinary docs. Only the specific paths in `CODEOWNERS` are human-
 | [0016](0016-tennis-pivot-proposal.md) | (superseded by 0017) Tennis pivot proposal: impact assessment, migration plan |
 | [0017](0017-sport-agnostic-transition.md) | Tennis-first sport-agnostic transition program (founder 12-phase directive); supersedes ADR 0016 scope; racing preserved as sport adapter |
 | [0018](0018-june-tennis-market-feasibility-review.md) | Stage-1 closure: June-2026 tennis market-feasibility review; Gate M0 PASS; programme baseline frozen (`specs/programme/baseline-v1.yaml`); Stage-2 probability programme defined; critical failure-mode review |
+| [0019](0019-personal-predictor-tip-assistant-v1.md) | Stage 2G: personal tennis predictor & tip assistant V1 (SPEC-105..115; DP1 Glicko-2; BET_CANDIDATE structurally disabled; £0 budget freeze) |
