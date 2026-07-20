@@ -36,13 +36,25 @@ def test_registered_form_exact(p: float, intercept: float, temperature: float) -
     intercept=_intercept,
     temperature=_temperature,
 )
-def test_calibration_is_strictly_monotone(
+def test_calibration_is_order_preserving(
     p_lo: float, bump: float, intercept: float, temperature: float
 ) -> None:
     """temperature > 0 makes the registered map order-preserving: calibration can
-    reshape probabilities but never reverse a ranking."""
+    reshape probabilities but never reverse a ranking.
+
+    TEST CORRECTION (same slice, before any evaluation read): the original strict
+    inequality contradicted the governed-bounds property — any map clamped into
+    [1e-12, 1 - 1e-12] is necessarily non-strict where both inputs saturate past the
+    floor (e.g. temperature 0.2 sends p ~ 2e-3 to ~3e-14, clamped). Order preservation
+    is non-strict globally and strict wherever neither output sits on a clamp bound.
+    """
     cal = AffineLogitCalibration(intercept=intercept, temperature=temperature, tour="wta", n_rows=1)
-    assert cal.apply(p_lo + bump) > cal.apply(p_lo)
+    lo = cal.apply(p_lo)
+    hi = cal.apply(p_lo + bump)
+    assert hi >= lo
+    floor, ceiling = 1e-12, 1.0 - 1e-12
+    if floor < lo < ceiling and floor < hi < ceiling:
+        assert hi > lo
 
 
 @given(p=_p, intercept=_intercept, temperature=_temperature)
