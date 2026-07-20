@@ -1,0 +1,33 @@
+# specs/programme/dp1-calibration-clamp-amendment-v1.yaml — APPEND-ONLY amendment to
+# the DP1 registration's calibration block (dp1-glicko2-registration-v1.yaml;
+# SPEC-107). Founder-approved 2026-07-20 ("the calibrated-probability clamp correction
+# is approved because it was discovered and fixed before any result was inspected").
+# Human-owned. The original registration text is NOT edited; this amendment extends it.
+
+amendment_id: DP1-CALIBRATION-CLAMP-AMENDMENT-V1
+amends: AFFINE_LOGIT_CALIBRATION_FOR_DP1 (specs/programme/dp1-glicko2-registration-v1.yaml)
+approved_on: "2026-07-20"
+discovered: by the SPEC-107 property suite BEFORE any evaluation result was inspected
+  (hypothesis counterexample: extreme parameters saturate sigmoid to exactly 1.0)
+
+clamp:
+  lower_bound: 1.0e-12          # exact; mirrors SPEC-106's governed probability floor
+  upper_bound: "1.0 - 1.0e-12"  # exact
+  applied_by: sport_tennis.dp1_calibration.AffineLogitCalibration.apply — the ONLY
+    calibrated-probability path; every consumer (DP1 and the F2 evaluation calibrator
+    alike) calls this method, so comparator and challenger share ONE clipping rule by
+    construction
+  guarantees:
+    - output always finite
+    - output never exactly 0.0 and never exactly 1.0
+    - identical application to F2 and DP1 calibrated outputs (same method, same bounds)
+    - non-strict monotonicity ONLY where an output sits on a clamp bound (saturation)
+    - strict monotonicity everywhere neither output is clamped
+    - identity parameters (intercept 0, temperature 1) still reproduce raw exactly
+      (the identity path returns before the clamp; raw inputs are already governed)
+  pinned_by:
+    - tests/unit/sport_tennis/test_dp1_calibration.py (unit boundary pins)
+    - tests/properties/sport_tennis/test_dp1_calibration_props.py (bounds + ordering)
+regeneration: every calibrated evaluation artifact produced before this amendment is
+  superseded; the single final governed evidence run regenerates all calibrated
+  sections through the amended method.

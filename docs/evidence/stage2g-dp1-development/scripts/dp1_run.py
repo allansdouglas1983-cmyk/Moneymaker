@@ -726,21 +726,18 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _affine_apply(p: float, intercept: float, temperature: float) -> float:
-    """The registered affine map, a-side canonical + exact complement downstream."""
-    p = min(max(p, 1e-12), 1 - 1e-12)
-    z = math.log(p / (1.0 - p))
-    zc = intercept + z / temperature
-    return 1.0 / (1.0 + math.exp(-max(-700.0, min(700.0, zc))))
-
-
 def _calibrated_rows(
-    rows: Sequence[ScoredRow], intercept: float, temperature: float
+    rows: Sequence[ScoredRow], intercept: float, temperature: float, tour: str
 ) -> list[ScoredRow]:
-    return [
-        ScoredRow(r.race_id, r.date, _affine_apply(r.p_a, intercept, temperature), r.y_a)
-        for r in rows
-    ]
+    """SINGLE clipping rule for comparator and challenger alike: every calibrated
+    probability flows through the registered AffineLogitCalibration.apply (SPEC-107 +
+    DP1-CALIBRATION-CLAMP-AMENDMENT-V1). No script-local affine variant exists."""
+    from sport_tennis.dp1_calibration import AffineLogitCalibration
+
+    cal = AffineLogitCalibration(
+        intercept=intercept, temperature=temperature, tour=tour, n_rows=len(rows)
+    )
+    return [ScoredRow(r.race_id, r.date, cal.apply(r.p_a), r.y_a) for r in rows]
 
 
 def paired_delta(
@@ -932,12 +929,12 @@ def main() -> None:
         dp1_cal = fit_affine_logit_calibration(
             dev_races, cf_results["dp1_raw"].oof, horizon=HORIZON, tour=tour.lower()
         )
-        dp1_cal_oof_rows = _calibrated_rows(dp1_oof_rows, dp1_cal.intercept, dp1_cal.temperature)
-        dp1_cal_val_rows = _calibrated_rows(dp1_val_rows, dp1_cal.intercept, dp1_cal.temperature)
+        dp1_cal_oof_rows = _calibrated_rows(dp1_oof_rows, dp1_cal.intercept, dp1_cal.temperature, tour.lower())
+        dp1_cal_val_rows = _calibrated_rows(dp1_val_rows, dp1_cal.intercept, dp1_cal.temperature, tour.lower())
         f2_cal = fit_affine_logit_calibration(
             dev_races, cf_results["f2_v1_frozen"].oof, horizon=HORIZON, tour=tour.lower()
         )
-        f2_cal_val_rows = _calibrated_rows(f2_val_rows, f2_cal.intercept, f2_cal.temperature)
+        f2_cal_val_rows = _calibrated_rows(f2_val_rows, f2_cal.intercept, f2_cal.temperature, tour.lower())
 
         families_report = {
             "dp1_raw": {"evidence_role": EVIDENCE_ROLES["dp1_raw"], **block(dp1_oof_rows, dp1_val_rows)},

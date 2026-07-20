@@ -187,3 +187,45 @@ class TestFit:
         before = [(r.race_id, r.runner_id, r.p_fundamental) for r in rows]
         fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
         assert [(r.race_id, r.runner_id, r.p_fundamental) for r in rows] == before
+
+
+class TestGovernedClampAmendment:
+    """DP1-CALIBRATION-CLAMP-AMENDMENT-V1 pins (founder §2/§4 kill classes: allow
+    exact zero or one; clamp only one side; substitute raw for calibrated)."""
+
+    def test_saturation_clamps_to_exact_bounds_both_sides(self) -> None:
+        sharp = AffineLogitCalibration(intercept=0.0, temperature=0.01, tour="atp", n_rows=1)
+        assert sharp.apply(0.9) == 1.0 - 1e-12  # upper clamp, exactly
+        assert sharp.apply(0.1) == 1e-12  # lower clamp, exactly
+        shifted = AffineLogitCalibration(intercept=50.0, temperature=1.0, tour="atp", n_rows=1)
+        assert shifted.apply(0.5) == 1.0 - 1e-12
+        shifted_dn = AffineLogitCalibration(intercept=-50.0, temperature=1.0, tour="atp", n_rows=1)
+        assert shifted_dn.apply(0.5) == 1e-12
+
+    def test_never_exactly_zero_or_one(self) -> None:
+        for intercept in (-800.0, 800.0):
+            cal = AffineLogitCalibration(intercept=intercept, temperature=0.05, tour="wta", n_rows=1)
+            for p in (1e-9, 0.5, 1.0 - 1e-9):
+                out = cal.apply(p)
+                assert 0.0 < out < 1.0
+                assert math.isfinite(out)
+
+    def test_calibrated_never_silently_raw(self) -> None:
+        """Non-identity parameters must actually transform (kills raw-substitution)."""
+        cal = AffineLogitCalibration(intercept=0.2, temperature=1.3, tour="atp", n_rows=1)
+        for p in (0.2, 0.5, 0.73):
+            assert cal.apply(p) != p
+
+    def test_temperature_direction_not_reversed(self) -> None:
+        """z/T vs z*T are distinguishable: T=2 must SHRINK the logit magnitude."""
+        cool = AffineLogitCalibration(intercept=0.0, temperature=2.0, tour="atp", n_rows=1)
+        assert 0.5 < cool.apply(0.9) < 0.9  # shrink toward half, never sharpen
+        expected = 1.0 / (1.0 + math.exp(-(math.log(0.9 / 0.1) / 2.0)))
+        assert cool.apply(0.9) == pytest.approx(expected, abs=1e-15)
+
+    def test_tour_is_pinned_on_the_object(self) -> None:
+        """Cross-tour application is structurally visible: the fitted object carries
+        its tour and callers must match it (script-level pairing is pinned by the
+        evidence-role tests)."""
+        cal = AffineLogitCalibration(intercept=0.1, temperature=1.1, tour="atp", n_rows=5)
+        assert cal.tour == "atp"
