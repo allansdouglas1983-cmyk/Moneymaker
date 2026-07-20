@@ -1,0 +1,1664 @@
+{
+ "ambiguous": [
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bergs|z",
+   "candidates": [
+    {
+     "comment": "Completed",
+     "date": "2026-06-28",
+     "winner_key": "td-atp:bergs|z"
+    },
+    {
+     "comment": "Completed",
+     "date": "2026-06-30",
+     "winner_key": "td-atp:bergs|z"
+    }
+   ],
+   "cluster_day": "2026-06-29",
+   "market_id": "1.259504385",
+   "reason": "MULTIPLE_TD_ROWS_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  }
+ ],
+ "conflicts": [
+  {
+   "agreement": "CONFLICT",
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:muchova|k",
+   "cluster_day": "2026-06-27",
+   "market_id": "1.259522098",
+   "td_comment": "Retired",
+   "td_date": "2026-06-27",
+   "td_winner_key": "td-wta:osaka|n",
+   "tour": "WTA"
+  }
+ ],
+ "counts": {
+  "agreement": 379,
+  "ambiguous": 1,
+  "conflict": 1,
+  "excluded_matched": 4,
+  "reconciled_matched": 383,
+  "scored_matched": 379,
+  "unmatched": 828
+ },
+ "date_delta_distribution": {
+  "0": 267,
+  "1": 117
+ },
+ "diagnostic": "OUTCOME_RECONCILIATION_V1",
+ "exclusion_td_comment_distribution": {
+  "Completed": 1,
+  "Walkover": 3
+ },
+ "inputs": {
+  "bundle_n": 1213,
+  "excluded_n": 59,
+  "scored_n": 1154
+ },
+ "join_rule": "exact td-norm-v1 pair equality + same tour + |td_date - cluster_day| <= 1 day",
+ "unmatched": [
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:hussey|g",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258760260",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:mayot|h",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258760477",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258760846",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:topo|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258761224",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:skatov|t",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258761278",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:schoenhaus|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258761340",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:tseng|ch",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258761357",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:den ouden|g",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258761561",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:molcan|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762087",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:midon|l",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762144",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shevchenko|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762228",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:boyer|t",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762237",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shimabukuro|s",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762561",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:lajal|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762614",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:vukic|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762619",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:hijikata|r",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762638",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bu|y",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762698",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:mcdonald|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762704",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762784",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:fery|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762788",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bolt|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258762864",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shimizu|y",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258770969",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:butvilas|e",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258770971",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258771012",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:searle|h",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258771094",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:walton|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258771195",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:stojsavljevic|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258774762",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:stoiana|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258774763",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:bartunkova|n",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258774944",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:day|k",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258774945",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:eala|a",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258774946",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:maria|t",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258775276",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:swan|k",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258775559",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:kalieva|e",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258775560",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:watt|j",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258775978",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sawangkaew|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258778984",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:naef|c",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779162",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:pedone|g",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779411",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sherif|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779500",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:prozorova|t",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779667",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:grant|tc",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779674",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:romero gormaz|l",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258779937",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:lepchenko|v",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258780262",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:bronzetti|l",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258780266",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:paquet|c",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258780670",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:monnet|c",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258780837",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:chidekh|c",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258781288",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:krueger|a",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258781663",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:tjen|j",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258781664",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:masarova|r",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258781676",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:charaeva|a",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258781955",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:moeller|m",
+   "cluster_day": "2026-06-01",
+   "market_id": "1.258800057",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:donski|a",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258807415",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:radisic|n",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258808326",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:andreeva|e",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258808743",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:boskovic|l",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258808798",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:kabbaj|y",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258808803",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:royer|v",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258809024",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:nardi|l",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258809028",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:broady|l",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258809032",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:pellegrino|a",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258809104",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:den ouden|g",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258810237",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sorribes tormo|s",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258812757",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:radivojevic|l",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258812851",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:salkova|d",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258813244",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:waltert|s",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258813497",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:palicova|b",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258813498",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258813751",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258813752",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:joint|m",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814198",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:daniel|t",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814507",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:ymer|e",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814561",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:gombos|n",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814637",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:majchrzak|k",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814718",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:squire|h",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814958",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:moeller|m",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258814960",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:pieri|t",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258816725",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:ren|y",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258816989",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:nava|e",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258817093",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:tikhonova|a",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258826922",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:baez|s",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258830432",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:skatov|t",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258830717",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:moro canas|a",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258830851",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:cecchinato|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258831274",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:stojsavljevic|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258831539",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:yamaguchi|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832308",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:plipuech|p",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832309",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:cheapchandej|p",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832313",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:squire|h",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832568",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:eala|a",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832623",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:daniel|t",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832751",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:fery|a",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258832856",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:monnet|c",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258834739",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bu|y",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258834970",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:mikrut|l",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258835247",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:midon|l",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258836715",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:paquet|c",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258836734",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:pedone|g",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258836916",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:sachko|v",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258838655",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:rocha|h",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258840500",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:avanesyan|e",
+   "cluster_day": "2026-06-02",
+   "market_id": "1.258840640",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:trungelliti|m",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258840821",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:timofeeva|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258840890",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:kabbaj|y",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258840891",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:boskovic|l",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258841068",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:moeller|m",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258841681",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:grant|tc",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258841747",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sawangkaew|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258842097",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bertola|r",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258843332",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:hijikata|r",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258843599",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:chiesa|d",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258844562",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:ce|g",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258844884",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:avanesyan|e",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258846555",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:zverev|a",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258848983",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:pellegrino|a",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258849186",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:rapolu|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258854168",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:okalova|m",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258854287",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:nava|e",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258866483",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:masarova|r",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258868336",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:stoiana|m",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258868859",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:krueger|a",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258869252",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258871429",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shimabukuro|s",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258871733",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:draxl|l",
+   "cluster_day": "2026-06-03",
+   "market_id": "1.258873925",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:squire|h",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258875141",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:grant|tc",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258875292",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:urgesi|f",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258875803",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:pigossi|l",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258875807",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:yao|x",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258876040",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:skatov|t",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258876964",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shimizu|y",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258878270",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:ku|y",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258884932",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:urhobo|a",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258888924",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:palicova|b",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258889722",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sorribes tormo|s",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258891598",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:majchrzak|k",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258892220",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:preston|t",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258892351",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:semenistaja|d",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258894441",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:molcan|a",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258894794",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:kabbaj|y",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258895031",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:dedura-palomero|d",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258895161",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:masarova|r",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258896019",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:eala|a",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258896108",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:romero gormaz|l",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258896780",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:krueger|a",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258897290",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:mikrut|l",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258897728",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:timofeeva|m",
+   "cluster_day": "2026-06-04",
+   "market_id": "1.258897881",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:bartunkova|n",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258898826",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:fery|a",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258899410",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bu|y",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258901842",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:timofeeva|m",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258901924",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:bronzetti|l",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258902114",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:avanesyan|e",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258902829",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sorribes tormo|s",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258902959",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:rocha|h",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258908528",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:chiesa|d",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258911322",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:schunk|n",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258911323",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:brace|c",
+   "cluster_day": "2026-06-05",
+   "market_id": "1.258918912",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:virtanen|o",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258918922",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bu|y",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258921390",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:minnen|g",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258921883",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:volynets|k",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258921927",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:vandewinkel|h",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258922002",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:koevermans|a",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258922022",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:seidel|e",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258922078",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:montgomery|r",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258922163",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:nava|e",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258922747",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:vekic|d",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924446",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:guo|h",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924448",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:kudermetova|p",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924480",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:hunter|s",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924501",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:blinkova|a",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924550",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:ruzic|a",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924565",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:inglis|m",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924633",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:rakhimova|k",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924651",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:zhang|s",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924718",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:charaeva|a",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924733",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:watson|h",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924800",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:maria|t",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258924878",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:bartunkova|n",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258924962",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:rocha|h",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258925146",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:galarneau|a",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258925459",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:shimabukuro|s",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258925628",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:semenistaja|d",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258926373",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258926831",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:bonzi|b",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258926911",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:eala|a",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258928097",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:mikrut|l",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258928509",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:timofeeva|m",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258930347",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:romero gormaz|l",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258930849",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:walton|a",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258931985",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:urgesi|f",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258932321",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:ren|y",
+   "cluster_day": "2026-06-06",
+   "market_id": "1.258932324",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:minnen|g",
+   "cluster_day": "2026-06-08",
+   "market_id": "1.258943770",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:vandewinkel|h",
+   "cluster_day": "2026-06-08",
+   "market_id": "1.258944638",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:tomljanovic|a",
+   "cluster_day": "2026-06-08",
+   "market_id": "1.258944967",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:sierra|s",
+   "cluster_day": "2026-06-08",
+   "market_id": "1.258945720",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-wta:potapova|a",
+   "cluster_day": "2026-06-08",
+   "market_id": "1.258946105",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "WTA"
+  },
+  {
+   "betfair_status": "SCORED",
+   "betfair_winner_key": "td-atp:baez|s",
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258946236",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  },
+  {
+   "betfair_status": "EXCLUDED",
+   "betfair_winner_key": null,
+   "cluster_day": "2026-06-07",
+   "market_id": "1.258946350",
+   "reason": "NO_TD_ROW_FOR_PAIR_WITHIN_1_DAY",
+   "tour": "ATP"
+  }
+ ],
+ "unmatched_total": 828
+}
