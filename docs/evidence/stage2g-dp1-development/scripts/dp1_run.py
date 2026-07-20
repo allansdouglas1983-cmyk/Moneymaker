@@ -785,7 +785,10 @@ def paired_delta(
     }
 
 
-def main() -> None:
+def main(tours: tuple[str, ...] = ("ATP", "WTA")) -> None:
+    """Per-tour process isolation (OOM remedy): pass a single tour per invocation to
+    bound peak memory; the manifest is per-invocation and names its tours. Purely an
+    execution-shape change — per-tour computation is untouched."""
     assert_frozen_comparator()
     OUTDIR.mkdir(parents=True, exist_ok=True)
     generated_at = datetime.now(timezone.utc).isoformat()
@@ -804,7 +807,7 @@ def main() -> None:
         "tours": {},
     }
 
-    for tour in ("ATP", "WTA"):
+    for tour in tours:
         matches, load_excl = load_tour(tour)
         races_dated, _ids = build_races(matches, tour)
         races_dated.sort(key=lambda t: (t[0], t[1].race_id))
@@ -1076,10 +1079,16 @@ def main() -> None:
         )
 
     manifest_body["output_file_sha256"] = {name: sha256_file(p) for name, p in output_paths.items()}
-    manifest_path = OUTDIR / "DP1G2_MANIFEST.json"
+    manifest_path = OUTDIR / f"DP1G2_MANIFEST_{'_'.join(tours)}.json"
     manifest_path.write_text(json.dumps(manifest_body, indent=1, sort_keys=True, default=str))
     print(f"wrote manifest: {manifest_path}")
 
 
 if __name__ == "__main__":
-    main()
+    _args = sys.argv[1:]
+    if _args and _args[0] in ("ATP", "WTA"):
+        main((_args[0],))
+    elif _args:
+        raise SystemExit(f"usage: dp1_run.py [ATP|WTA]  (got {_args!r})")
+    else:
+        main()
