@@ -1072,7 +1072,7 @@
   criticality: money
   status_source: ci
   introduced_in_phase: 9
-  enforcement_state: planned
+  enforcement_state: active
   relevant_inputs:
   - out_of_fold_dp1_predictions
   - intercept
