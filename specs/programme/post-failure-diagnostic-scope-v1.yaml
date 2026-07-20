@@ -1,0 +1,40 @@
+# STAGE 2F — POST_FAILURE_DIAGNOSTIC governed scope (founder directive, 2026-07-20).
+# June is development evidence now; it may NEVER again be represented as independent
+# confirmation of any model designed from it. GBP 0 freeze remains in force.
+post_failure_diagnostic_scope:
+  id: POST_FAILURE_DIAGNOSTIC
+  created: "2026-07-20"
+  authorised_by: founder
+  may_consume_only:
+    - "immutable June recovery outcome artifact (sha256:f603b183...b066d06d8bdf1)"
+    - "frozen F2 raw and calibrated predictions (bundle sha256:37e43f64...)"
+    - "frozen F0 market-probability snapshots (F0_MARKET_YARDSTICK_MANIFEST sha256:90b80100...)"
+    - "approved Tennis-Data June result and metadata rows (vintage-2026-07-18)"
+    - "existing identity (td-norm-v1) and cohort manifests"
+  must_not:
+    - reopen the raw June lockbox
+    - modify F2-v1
+    - change the existing M1 result
+    - consume confirmatory alpha
+    - evaluate M2
+    - authorize betting
+    - calculate ROI, P&L, EV, CLV, stakes or selections
+  stage_b_reachability: "structurally unreachable (M1 did not PASS); post-failure diagnosis is a
+    new development path, not a bypass of Stage B"
+  registered_diagnostics:
+    - {id: OUTCOME_RECONCILIATION_V1, section: 3}
+    - {id: INDEPENDENT_SCORECARD_REPRODUCTION_V1, section: 4,
+       tolerance: "abs diff <= 5e-6 per rounded metric; counts and memberships exact"}
+    - {id: RAW_TEMP_AFFINE_COMPARISON_V1, section: 5}
+    - {id: DISTRIBUTION_SHIFT_AUDIT_V1, section: 6}
+    - {id: JUNE_ORACLE_CALIBRATION, section: 7, deployable: false}
+    - {id: ROLLING_AFFINE_365D_V1, section: 8,
+       registration: "one window only (365 calendar days); no alternative windows compared;
+         same frozen two-parameter affine per ATP/WTA; same-day batch rule; strictly
+         preceding-days data; a June outcome never calibrates itself"}
+    - {id: SPEC032_POST_FAILURE_DIAGNOSTIC_V1, section: 9,
+       registration: "frozen formula only (alpha*log p_f + beta*log p_m -> softmax); expanding
+         UTC-day chronological folds; no day fits its own coefficients; explicit warm-up
+         refusals; no tour-specific coefficients, interactions, regularization search or
+         bookmaker odds; no final deployable alpha/beta declared from June"}
+  outputs_location: docs/evidence/stage2f-post-failure/

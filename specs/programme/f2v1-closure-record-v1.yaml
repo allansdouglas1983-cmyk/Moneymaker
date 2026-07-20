@@ -1,0 +1,54 @@
+# IMMUTABLE F2-v1 CLOSURE RECORD — founder acceptance, 2026-07-20. Append-only; never
+# overwritten or reinterpreted. Closing does NOT authorize changing F2-v1 or retrospectively
+# weakening M1.
+f2v1_closure:
+  accepted_by: founder
+  accepted_on: "2026-07-20"
+  selected_fundamental_family: "F2-v1 global Elo (F2-global-elo-v1, same-day batch, cold-start 1500.0, K=24 both tours)"
+  m1_verdict: FAIL_HARM
+  m1_verdict_meaning: >
+    The probability model violated the frozen transfer requirements (calibration slope and
+    ATP calibration-in-the-large bands). It does NOT mean the model was worse than a 50/50
+    null (log loss 0.671649 < ln2 and Brier 0.239676 < 0.25 on every supported block) and it
+    does NOT mean economic harm was measured: no P&L test occurred.
+  stage_b: "NOT AUTHORIZED and permanently not run (frozen continuation rule on FAIL_HARM)"
+  betting_or_expenditure_justified: false
+  registered_programme_status: CLOSED
+  evidence:
+    pre_june_development_and_validation:
+      f2_evaluation_report_sha256: "sha256:9c3af3ac3b8214bd1f1915038e4fe5c0de2141884b5e5bb277131a29b2c08efe"
+      f3_closure: "specs/programme/f3-closure-record-v1.yaml (FAIL_HARM, permanently closed)"
+      selected_model_record: "specs/programme/selected-model-record-v1.yaml"
+      calibration_policy_v2_sha256: "sha256:08f33c6c546bdad29ccca6bbc0abdc143b3134944ba53d825587f6b3fd0d47ec"
+      frozen_params: {ATP: {intercept: 0.025399, temperature: 1.218638},
+                      WTA: {intercept: 0.029204, temperature: 1.150681}}
+    june_prospective_manifest:
+      bundle: docs/evidence/stage2e-june-m1-bundle/JUNE_M1_PREDICTION_BUNDLE.jsonl
+      bundle_sha256: "sha256:37e43f64a65fd89ac3ba03263f224f2c23acb9ee5a93f995367a951bc2906347"
+      m1_transfer_manifest_sha256: "sha256:d192b4e3a3980fd3e2108a3efd68feb03d15e041a436569353178395f8b17b23"
+    recovery_outcome_artifact:
+      content_digest: "sha256:f603b1832d40c99e9a04b60ad59ebcf78f19318bb10dfd0db33b066d06d8bdf1"
+      file_sha256: "sha256:ea43938fa8bd4ff598a81260a30cc25d3da9918e694f78d302815c5190ad4051"
+      scored_count: 1154
+      explicit_exclusions: 59
+      exclusion_reason_all: "UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED"
+    june_m1_scorecard:
+      file: docs/evidence/stage2e-june-m1-artifact/STAGE_A_RESULT.json
+      file_sha256: "sha256:7e2c90fbd029433ab6eaa169eebc9792250b53f0633dd45b2b7cb6451b19280b"
+      overall: {n: 1154, log_loss: 0.671649, brier: 0.239676, cal_in_large: -0.004574, cal_slope: 0.790754}
+      ATP: {n: 556, log_loss: 0.671875, brier: 0.240001, cal_in_large: -0.050718, cal_slope: 0.841219}
+      WTA: {n: 598, log_loss: 0.671438, brier: 0.239374, cal_in_large: 0.038327, cal_slope: 0.759694}
+      fail_harm_reasons:
+        - "overall slope 0.790754 outside [0.9,1.1]"
+        - "ATP |cal_in_large| 0.050718 > 0.05 (harm)"
+        - "ATP slope 0.841219 outside [0.9,1.1]"
+        - "WTA |cal_in_large| 0.038327 in (0.02,0.05] -> CONTINUE"
+        - "WTA slope 0.759694 outside [0.9,1.1]"
+    digests:
+      code_commit: "11f314f9d6640a98ed8bba408b9412c3ca0e4d15"
+      evaluator_module_sha256: "sha256:de43739c3d38700f1d29a27c24ffb62447ea43774e744eadbd05b2dbc197e949"
+      data_corpus_manifest_sha256: "sha256:d6d2f44b318aea425f3904ac83b8eb4a4bd067b7fe777c0375f107519162f9cc"
+      tennis_data_vintage: {atp_2026_xlsx: "sha256:14b4451ed20801b79d9b5a30ea05be7fe7eab0c8669cbf3a1de7202d5bd7c00f",
+                            wta_2026_xlsx: "sha256:f4753f06eb5899e68180a2735e5bf70cd044e9bd06fc5d2868313664e2d9a79b"}
+      f0_yardstick_manifest_sha256: "sha256:90b80100dc0d141a6b39fa5f18df17a1d627366d827e9d3a48acaa6ed9cec828"
+      m2_intersection_manifest_sha256: "sha256:9f747bfae843401d44ce9c7388e20f95718f955a8e2fbac69424d5c736ddc885"
