@@ -1,0 +1,94 @@
+# specs/programme/stage2g-dp1-continuation-rule-v1.yaml — FROZEN Slice-3 continuation
+# rule (founder pre-result controls §3, 2026-07-20). Human-owned. Frozen BEFORE any
+# numerical result of the DP1 development evaluation was read by anyone or anything in
+# the operating session (the only prior run is quarantined INVALID_COMPARATOR_
+# CONFIGURATION with its stdout verified as 0 bytes seen). The four outcomes below are
+# exhaustive; no other outcome may be returned.
+
+rule_id: STAGE2G-DP1-CONTINUATION-RULE-V1
+frozen_on: "2026-07-20"
+applies_to: EXP-STAGE2G-DP1-GLICKO2-001 (Slice 3 -> Slice 4 progression)
+
+comparator:
+  family: frozen F2-v1 (EXP-STAGE2-F2-GLOBAL-ELO-001)
+  configuration: ATP K=24.0; WTA K=32.0 (per-tour selected_k, F2_EVALUATION_REPORT.json);
+    frozen same-day batch, 1500.0 initialization, label-policy-v1 exclusions, td-norm-v1
+    identity; calibrated-F2 comparisons use the frozen calibration-policy-v2 affine vintage
+    (ATP intercept 0.025399 / T 1.218638; WTA intercept 0.029204 / T 1.150681)
+  invalid_run_policy: a run with any other comparator configuration is
+    INVALID_COMPARATOR_CONFIGURATION — quarantined, never read, never evidence
+
+requirements:
+  A_integrity:
+    - deterministic replay passes
+    - crossfit-versus-replay reconciliation passes
+    - no outcome leakage
+    - same-day permutation invariance passes
+    - all exclusions remain visible
+    - no unresolved behavioural mutation remains
+    - all remaining mutation survivors are founder-approved equivalents
+  B_proper_score_non_harm:
+    statement: "mean_log_loss_DP1 - mean_log_loss_F2v1 <= 0.0007 nats on the exact
+      paired development population; paired, chronology-aware reporting; an unpaired
+      aggregate may not be substituted"
+    note: the existing programme delta 0.0007 used symmetrically as the maximum
+      tolerated development harm; DP1 need not beat F2-v1 by it
+  C_overall_calibrated_adequacy:
+    - log loss < ln(2)
+    - Brier < 0.25
+    - calibration-in-the-large in [-0.02, +0.02]
+    - calibration slope in [0.90, 1.10]
+    - valid prediction coverage >= 95% of the pre-registered eligible population
+  D_tour_level_adequacy:
+    support_threshold: 500
+    per_supported_tour:
+      - log loss < ln(2)
+      - Brier < 0.25
+      - calibration-in-the-large in [-0.03, +0.03]
+      - calibration slope in [0.85, 1.15]
+      - valid prediction coverage >= 90%
+    supported_tour_failure: blocks progression
+    unsupported_tour: returns CONTINUE_GOVERNANCE, never pooled away after results
+  E_calibration_improvement_over_f2v1:
+    - absolute overall calibration-slope error from 1.0 smaller than F2-v1's on the
+      same paired cohort
+    - no supported tour's calibration-slope error larger than F2-v1's by more than 0.02
+    - no supported cohort crosses the existing FAIL_HARM calibration-in-the-large
+      boundary of absolute 0.05
+  F_temporal_transfer:
+    - final chronological validation log loss <= DP1 outer-fold log loss + 0.01 nats
+    - no annual block with >= 1000 predictions has log loss >= ln(2)
+    - no late-period block has calibration slope outside [0.80, 1.20]
+  G_uncertainty_integrity:
+    definition_check: "before empirical coverage is used as a gate, the registration
+      must define the exact uncertainty quantity, nominal level, uncertainty type
+      (parameter / latent-strength / predictive) and the exact empirical coverage
+      test; a probability interval is not treated as containing a binary outcome
+      unless mathematically valid"
+    registration_status: "the DP1 registration defines ANALYTIC_PROPAGATION as the
+      two-sided 90% interval on the WIN PROBABILITY induced by the latent rating
+      difference N(delta, s^2) — LATENT-STRENGTH uncertainty on the probability
+      scale, NOT a predictive interval for the binary outcome. No frozen empirical
+      coverage test exists for it; per this rule, empirical coverage is therefore
+      reported DIAGNOSTICALLY ONLY and a governance gap is returned rather than a
+      post-result threshold invented."
+    structural_minimums:
+      - uncertainty widens with higher rating deviation
+      - uncertainty does not shrink solely through inactivity
+      - uncertainty shrinks only through governed evidence
+      - cold-start uncertainty exceeds established-player uncertainty under
+        otherwise equal conditions
+      - interval ordering and finiteness always hold
+  H_outcomes:
+    PROCEED_TO_MARKET_ANCHOR: all requirements pass
+    CONTINUE_GOVERNANCE: integrity passes, proper-score harm not material, but a
+      pre-existing threshold is undefined or a supported metric is inconclusive
+    STOP_DP1_HARM: paired log-loss harm > +0.0007; or supported-tour catastrophic
+      probability-quality failure; or incoherent uncertainty
+    STOP_INTEGRITY: leakage, non-determinism, reconciliation failure, invalid
+      comparator, or unresolved behavioural mutation
+    no_other_outcome_permitted: true
+
+result_read_barrier: outputs are written immutably and hashed with execution
+  code/data/model digests BEFORE any inspection; this rule file is committed first;
+  the scorecard is inspected only afterwards and only through this rule.
