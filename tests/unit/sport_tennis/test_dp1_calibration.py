@@ -22,9 +22,15 @@ from l4_pricing.races import FeatureSchema, Race, RunnerRow
 from sport_core.clustering import ChronologyKey, calendar_day_assignment
 from sport_tennis.dp1_calibration import (
     AFFINE_CALIBRATION_VERSION,
+    DET_EPSILON,
+    MAX_NEWTON_ITERATIONS,
+    STEP_EPSILON,
     AffineLogitCalibration,
     CalibrationFitError,
     fit_affine_logit_calibration,
+    hessian_is_singular,
+    newton_iteration_allowed,
+    step_has_converged,
 )
 
 pytestmark = pytest.mark.spec("SPEC-107")
@@ -345,3 +351,54 @@ class TestFitGuardKills:
         races, rows = _golden_corpus(0.2, 1.3, 80, 90000)
         cal = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
         assert cal.n_rows == 80  # exactly one canonical row per match
+
+
+class TestCalibrationPredicateSeams:
+    """Exact-boundary kills for the Newton predicate seams (founder round-3 pattern
+    applied to the calibration solver): the < vs <= vs != boundary is pinned with
+    math.nextafter so a one-ULP boundary shift dies."""
+
+    def test_newton_iteration_allowed_boundary(self) -> None:
+        m = MAX_NEWTON_ITERATIONS
+        assert newton_iteration_allowed(m - 1, m)
+        assert not newton_iteration_allowed(m, m)
+        assert not newton_iteration_allowed(m + 1, m)
+
+    def test_hessian_singular_boundary_exact(self) -> None:
+        eps = DET_EPSILON
+        assert hessian_is_singular(eps)  # <= boundary included
+        assert hessian_is_singular(-eps)
+        assert hessian_is_singular(math.nextafter(eps, 0.0))
+        assert not hessian_is_singular(math.nextafter(eps, math.inf))
+
+    def test_step_converged_boundary_exact(self) -> None:
+        eps = STEP_EPSILON
+        assert step_has_converged(eps)
+        assert step_has_converged(math.nextafter(eps, 0.0))
+        assert not step_has_converged(math.nextafter(eps, math.inf))
+
+
+class TestConstructorAndSignatureKills:
+    def test_zero_n_rows_is_valid_metadata(self) -> None:
+        """L98 kill: only a NEGATIVE count is invalid; zero is a representable count
+        (kills n_rows < 1, <= 0, == 0)."""
+        cal = AffineLogitCalibration(intercept=0.0, temperature=1.0, tour="atp", n_rows=0)
+        assert cal.n_rows == 0
+        with pytest.raises(CalibrationFitError):
+            AffineLogitCalibration(intercept=0.0, temperature=1.0, tour="atp", n_rows=-1)
+
+    def test_tour_rejects_leading_and_trailing_whitespace(self) -> None:
+        """L96 kill: untrimmed tour is refused on BOTH sides (kills > and <, which each
+        miss one side because the space char sorts below letters)."""
+        with pytest.raises(CalibrationFitError):
+            AffineLogitCalibration(intercept=0.0, temperature=1.0, tour=" atp", n_rows=1)
+        with pytest.raises(CalibrationFitError):
+            AffineLogitCalibration(intercept=0.0, temperature=1.0, tour="atp ", n_rows=1)
+
+    def test_fit_horizon_and_tour_are_keyword_only(self) -> None:
+        """L122 kill: the `*` marker makes horizon and tour keyword-only."""
+        import inspect
+
+        params = inspect.signature(fit_affine_logit_calibration).parameters
+        assert params["horizon"].kind is inspect.Parameter.KEYWORD_ONLY
+        assert params["tour"].kind is inspect.Parameter.KEYWORD_ONLY
