@@ -1,0 +1,30 @@
+{
+ "diagnostic": "DISTRIBUTION_SHIFT_AUDIT_V1",
+ "june_cohort": "diagnostic cohort n=1153",
+ "june_only_composition": {
+  "cohort_tier": {
+   "PRIMARY_ONLY_TIER": 62,
+   "STRICT": 1091
+  },
+  "cold_start_share_prior0": 0.0,
+  "prior_bands": {
+   "1-4": 404,
+   "10-19": 125,
+   "20+": 490,
+   "5-9": 134
+  }
+ },
+ "labels": "retrospective diagnostics; ranking fields unavailable in either cohort's lawful feature set and are omitted; surface/tournament/round/level/best-of exist only for the 379 TD-matched June markets and the pre-June TD rows",
+ "pre_cohort": "regenerated prequential validation window 2025-06-01..2026-05-31 (n=4935)",
+ "pre_only_composition": {
+  "june_prior_min_median": 12.0,
+  "prior_min_median": 72
+ },
+ "smd": {
+  "abs_logit_rating_diff": -0.5632,
+  "favourite_p_raw": -0.6159,
+  "min_prior_matches": -0.5547,
+  "min_rest_days_capped60": 1.7967,
+  "wta_share": 0.0573
+ }
+}

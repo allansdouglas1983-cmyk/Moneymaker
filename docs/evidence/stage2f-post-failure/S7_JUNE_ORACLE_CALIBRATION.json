@@ -1,0 +1,44 @@
+{
+ "ATP": {
+  "delta_intercept": -0.051145,
+  "delta_temperature": 0.230019,
+  "frozen_intercept": 0.025399,
+  "frozen_temperature": 1.218638,
+  "implied_logit_shrinkage_vs_frozen": 0.841219,
+  "in_sample_after_oracle": {
+   "brier": 0.239442,
+   "cal_in_large": 0.0,
+   "cal_intercept": 0.0,
+   "cal_slope": 1.0,
+   "log_loss": 0.670845,
+   "n": 556,
+   "slope_converged": true
+  },
+  "oracle_intercept": -0.025746,
+  "oracle_temperature": 1.448657
+ },
+ "WTA": {
+  "delta_intercept": 0.028182,
+  "delta_temperature": 0.369455,
+  "frozen_intercept": 0.029204,
+  "frozen_temperature": 1.150681,
+  "implied_logit_shrinkage_vs_frozen": 0.756959,
+  "in_sample_after_oracle": {
+   "brier": 0.238751,
+   "cal_in_large": -0.0,
+   "cal_intercept": 0.0,
+   "cal_slope": 1.0,
+   "log_loss": 0.669438,
+   "n": 597,
+   "slope_converged": true
+  },
+  "oracle_intercept": 0.057386,
+  "oracle_temperature": 1.520136
+ },
+ "frozen_affine_june_slopes": {
+  "ATP": 0.841219,
+  "WTA": 0.756959
+ },
+ "label": "JUNE_ORACLE_CALIBRATION \u2014 NON-DEPLOYABLE",
+ "recalibration_alone_note": "compare in_sample_after_oracle (slope=1 by construction) log_loss/brier against the affine_frozen variant in S5 to judge how much of the failure recalibration would repair"
+}

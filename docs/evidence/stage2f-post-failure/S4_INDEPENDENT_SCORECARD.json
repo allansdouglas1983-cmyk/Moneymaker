@@ -1,0 +1,269 @@
+{
+ "blocks": {
+  "ATP": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.240001,
+    "cal_in_large": -0.050718,
+    "cal_slope": 0.841219,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.671875,
+    "n": 556,
+    "supported": true
+   },
+   "independent": {
+    "brier": 0.240001,
+    "cal_in_large": -0.050718,
+    "cal_intercept": -0.047112,
+    "cal_slope": 0.841219,
+    "log_loss": 0.671875,
+    "n": 556,
+    "slope_converged": true
+   }
+  },
+  "WTA": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.239374,
+    "cal_in_large": 0.038327,
+    "cal_slope": 0.759694,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.671438,
+    "n": 598,
+    "supported": true
+   },
+   "independent": {
+    "brier": 0.239374,
+    "cal_in_large": 0.038327,
+    "cal_intercept": 0.038427,
+    "cal_slope": 0.759694,
+    "log_loss": 0.671438,
+    "n": 598,
+    "slope_converged": true
+   }
+  },
+  "band:1-4": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.239754,
+    "cal_in_large": -0.133195,
+    "cal_slope": 1.445887,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.670865,
+    "n": 404,
+    "supported": false
+   },
+   "independent": {
+    "brier": 0.239754,
+    "cal_in_large": -0.133195,
+    "cal_intercept": -0.158507,
+    "cal_slope": 1.445887,
+    "log_loss": 0.670865,
+    "n": 404,
+    "slope_converged": true
+   }
+  },
+  "band:10-19": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.248109,
+    "cal_in_large": -0.169961,
+    "cal_slope": 0.574993,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.689671,
+    "n": 125,
+    "supported": false
+   },
+   "independent": {
+    "brier": 0.248109,
+    "cal_in_large": -0.169961,
+    "cal_intercept": -0.164116,
+    "cal_slope": 0.574993,
+    "log_loss": 0.689671,
+    "n": 125,
+    "slope_converged": true
+   }
+  },
+  "band:20+": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.237757,
+    "cal_in_large": 0.157121,
+    "cal_slope": 0.704775,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.668454,
+    "n": 491,
+    "supported": false
+   },
+   "independent": {
+    "brier": 0.237757,
+    "cal_in_large": 0.157121,
+    "cal_intercept": 0.155775,
+    "cal_slope": 0.704775,
+    "log_loss": 0.668454,
+    "n": 491,
+    "slope_converged": true
+   }
+  },
+  "band:5-9": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.238609,
+    "cal_in_large": -0.05509,
+    "cal_slope": 1.321639,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.668909,
+    "n": 134,
+    "supported": false
+   },
+   "independent": {
+    "brier": 0.238609,
+    "cal_in_large": -0.05509,
+    "cal_intercept": -0.088112,
+    "cal_slope": 1.321639,
+    "log_loss": 0.668909,
+    "n": 134,
+    "slope_converged": true
+   }
+  },
+  "overall": {
+   "abs_deltas": {
+    "brier": 0.0,
+    "cal_in_large": 0.0,
+    "cal_slope": 0.0,
+    "log_loss": 0.0
+   },
+   "agree": true,
+   "frozen": {
+    "brier": 0.239676,
+    "cal_in_large": -0.004574,
+    "cal_slope": 0.790754,
+    "fit_iterations": 5,
+    "fit_status": "converged",
+    "log_loss": 0.671649,
+    "n": 1154,
+    "supported": true
+   },
+   "independent": {
+    "brier": 0.239676,
+    "cal_in_large": -0.004574,
+    "cal_intercept": -0.001786,
+    "cal_slope": 0.790754,
+    "log_loss": 0.671649,
+    "n": 1154,
+    "slope_converged": true
+   }
+  }
+ },
+ "coverage": {
+  "exclusions": 59,
+  "scored": 1154
+ },
+ "diagnostic": "INDEPENDENT_SCORECARD_REPRODUCTION_V1",
+ "reliability_deciles": [
+  {
+   "bin": 1,
+   "mean_p": 0.255,
+   "mean_y": 0.3652,
+   "n": 115
+  },
+  {
+   "bin": 2,
+   "mean_p": 0.3929,
+   "mean_y": 0.4435,
+   "n": 115
+  },
+  {
+   "bin": 3,
+   "mean_p": 0.4449,
+   "mean_y": 0.4655,
+   "n": 116
+  },
+  {
+   "bin": 4,
+   "mean_p": 0.4749,
+   "mean_y": 0.4696,
+   "n": 115
+  },
+  {
+   "bin": 5,
+   "mean_p": 0.4977,
+   "mean_y": 0.3707,
+   "n": 116
+  },
+  {
+   "bin": 6,
+   "mean_p": 0.5153,
+   "mean_y": 0.5043,
+   "n": 115
+  },
+  {
+   "bin": 7,
+   "mean_p": 0.5342,
+   "mean_y": 0.487,
+   "n": 115
+  },
+  {
+   "bin": 8,
+   "mean_p": 0.5618,
+   "mean_y": 0.5259,
+   "n": 116
+  },
+  {
+   "bin": 9,
+   "mean_p": 0.6125,
+   "mean_y": 0.6435,
+   "n": 115
+  },
+  {
+   "bin": 10,
+   "mean_p": 0.7376,
+   "mean_y": 0.7414,
+   "n": 116
+  }
+ ],
+ "scorecards_agree": true,
+ "tolerance": "abs diff <= 5e-6 per metric; counts exact"
+}

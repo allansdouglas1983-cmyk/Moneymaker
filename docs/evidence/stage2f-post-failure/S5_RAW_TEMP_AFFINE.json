@@ -1,0 +1,601 @@
+{
+ "diagnostic": "RAW_TEMP_AFFINE_COMPARISON_V1",
+ "temp_only_reconstruction": {
+  "fit_set": "regenerated pre-June prequential (mirrored pairs)",
+  "label": "RECONSTRUCTED \u2014 no frozen temp-only vintage exists",
+  "params_T": {
+   "ATP": 1.095817,
+   "WTA": 1.041862
+  }
+ },
+ "variants": {
+  "affine_frozen": {
+   "ATP": {
+    "brier": 0.240001,
+    "cal_in_large": -0.050718,
+    "cal_intercept": -0.047112,
+    "cal_slope": 0.841219,
+    "log_loss": 0.671875,
+    "n": 556,
+    "slope_converged": true
+   },
+   "WTA": {
+    "brier": 0.239454,
+    "cal_in_large": 0.035456,
+    "cal_intercept": 0.03528,
+    "cal_slope": 0.756959,
+    "log_loss": 0.671598,
+    "n": 597,
+    "slope_converged": true
+   },
+   "cohort_tier": {
+    "PRIMARY_ONLY_TIER": {
+     "brier": 0.244336,
+     "cal_in_large": 0.422953,
+     "cal_intercept": 0.421846,
+     "cal_slope": 1.22763,
+     "log_loss": 0.681713,
+     "n": 62,
+     "slope_converged": true
+    },
+    "STRICT": {
+     "brier": 0.239455,
+     "cal_in_large": -0.030031,
+     "cal_intercept": -0.028686,
+     "cal_slope": 0.783728,
+     "log_loss": 0.671164,
+     "n": 1091,
+     "slope_converged": true
+    }
+   },
+   "overall": {
+    "brier": 0.239718,
+    "cal_in_large": -0.006097,
+    "cal_intercept": -0.003403,
+    "cal_slope": 0.789312,
+    "log_loss": 0.671732,
+    "n": 1153,
+    "slope_converged": true
+   },
+   "prior_bands": {
+    "1-4": {
+     "brier": 0.239754,
+     "cal_in_large": -0.133195,
+     "cal_intercept": -0.158507,
+     "cal_slope": 1.445887,
+     "log_loss": 0.670865,
+     "n": 404,
+     "slope_converged": true
+    },
+    "10-19": {
+     "brier": 0.248109,
+     "cal_in_large": -0.169961,
+     "cal_intercept": -0.164116,
+     "cal_slope": 0.574993,
+     "log_loss": 0.689671,
+     "n": 125,
+     "slope_converged": true
+    },
+    "20+": {
+     "brier": 0.23785,
+     "cal_in_large": 0.153855,
+     "cal_intercept": 0.151969,
+     "cal_slope": 0.702363,
+     "log_loss": 0.668642,
+     "n": 490,
+     "slope_converged": true
+    },
+    "5-9": {
+     "brier": 0.238609,
+     "cal_in_large": -0.05509,
+     "cal_intercept": -0.088112,
+     "cal_slope": 1.321639,
+     "log_loss": 0.668909,
+     "n": 134,
+     "slope_converged": true
+    }
+   },
+   "reliability": [
+    {
+     "bin": 1,
+     "mean_p": 0.255,
+     "mean_y": 0.3652,
+     "n": 115
+    },
+    {
+     "bin": 2,
+     "mean_p": 0.3929,
+     "mean_y": 0.4435,
+     "n": 115
+    },
+    {
+     "bin": 3,
+     "mean_p": 0.4447,
+     "mean_y": 0.4609,
+     "n": 115
+    },
+    {
+     "bin": 4,
+     "mean_p": 0.4748,
+     "mean_y": 0.4741,
+     "n": 116
+    },
+    {
+     "bin": 5,
+     "mean_p": 0.4977,
+     "mean_y": 0.3652,
+     "n": 115
+    },
+    {
+     "bin": 6,
+     "mean_p": 0.5151,
+     "mean_y": 0.513,
+     "n": 115
+    },
+    {
+     "bin": 7,
+     "mean_p": 0.5341,
+     "mean_y": 0.4828,
+     "n": 116
+    },
+    {
+     "bin": 8,
+     "mean_p": 0.5618,
+     "mean_y": 0.5217,
+     "n": 115
+    },
+    {
+     "bin": 9,
+     "mean_p": 0.6125,
+     "mean_y": 0.6435,
+     "n": 115
+    },
+    {
+     "bin": 10,
+     "mean_p": 0.7376,
+     "mean_y": 0.7414,
+     "n": 116
+    }
+   ],
+   "weekly": {
+    "W1": {
+     "brier": 0.240745,
+     "cal_in_large": 0.000729,
+     "cal_intercept": -0.001902,
+     "cal_slope": 1.118739,
+     "log_loss": 0.6752,
+     "n": 221,
+     "slope_converged": true
+    },
+    "W2": {
+     "brier": 0.242747,
+     "cal_in_large": -0.103133,
+     "cal_intercept": -0.09817,
+     "cal_slope": 0.720025,
+     "log_loss": 0.678506,
+     "n": 301,
+     "slope_converged": true
+    },
+    "W3": {
+     "brier": 0.245332,
+     "cal_in_large": 0.053102,
+     "cal_intercept": 0.047342,
+     "cal_slope": 0.581988,
+     "log_loss": 0.68531,
+     "n": 233,
+     "slope_converged": true
+    },
+    "W4": {
+     "brier": 0.243686,
+     "cal_in_large": -0.013243,
+     "cal_intercept": -0.014745,
+     "cal_slope": 0.739546,
+     "log_loss": 0.679563,
+     "n": 270,
+     "slope_converged": true
+    },
+    "W5": {
+     "brier": 0.212229,
+     "cal_in_large": 0.117853,
+     "cal_intercept": 0.13848,
+     "cal_slope": 1.013762,
+     "log_loss": 0.608578,
+     "n": 128,
+     "slope_converged": true
+    }
+   }
+  },
+  "raw": {
+   "ATP": {
+    "brier": 0.241198,
+    "cal_in_large": -0.029681,
+    "cal_intercept": -0.025746,
+    "cal_slope": 0.690294,
+    "log_loss": 0.67472,
+    "n": 556,
+    "slope_converged": true
+   },
+   "WTA": {
+    "brier": 0.240518,
+    "cal_in_large": 0.066954,
+    "cal_intercept": 0.057386,
+    "cal_slope": 0.657836,
+    "log_loss": 0.675102,
+    "n": 597,
+    "slope_converged": true
+   },
+   "cohort_tier": {
+    "PRIMARY_ONLY_TIER": {
+     "brier": 0.245756,
+     "cal_in_large": 0.450736,
+     "cal_intercept": 0.457697,
+     "cal_slope": 1.066873,
+     "log_loss": 0.684576,
+     "n": 62,
+     "slope_converged": true
+    },
+    "STRICT": {
+     "brier": 0.240567,
+     "cal_in_large": -0.003657,
+     "cal_intercept": -0.007899,
+     "cal_slope": 0.664448,
+     "log_loss": 0.674369,
+     "n": 1091,
+     "slope_converged": true
+    }
+   },
+   "overall": {
+    "brier": 0.240846,
+    "cal_in_large": 0.020351,
+    "cal_intercept": 0.017659,
+    "cal_slope": 0.66904,
+    "log_loss": 0.674918,
+    "n": 1153,
+    "slope_converged": true
+   },
+   "prior_bands": {
+    "1-4": {
+     "brier": 0.238964,
+     "cal_in_large": -0.110086,
+     "cal_intercept": -0.119563,
+     "cal_slope": 1.215723,
+     "log_loss": 0.668868,
+     "n": 404,
+     "slope_converged": true
+    },
+    "10-19": {
+     "brier": 0.250068,
+     "cal_in_large": -0.142731,
+     "cal_intercept": -0.148234,
+     "cal_slope": 0.465424,
+     "log_loss": 0.694823,
+     "n": 125,
+     "slope_converged": true
+    },
+    "20+": {
+     "brier": 0.240794,
+     "cal_in_large": 0.186508,
+     "cal_intercept": 0.171038,
+     "cal_slope": 0.599066,
+     "log_loss": 0.676774,
+     "n": 490,
+     "slope_converged": true
+    },
+    "5-9": {
+     "brier": 0.23811,
+     "cal_in_large": -0.04181,
+     "cal_intercept": -0.05206,
+     "cal_slope": 1.105621,
+     "log_loss": 0.6678,
+     "n": 134,
+     "slope_converged": true
+    }
+   },
+   "reliability": [
+    {
+     "bin": 1,
+     "mean_p": 0.2176,
+     "mean_y": 0.3652,
+     "n": 115
+    },
+    {
+     "bin": 2,
+     "mean_p": 0.3672,
+     "mean_y": 0.4348,
+     "n": 115
+    },
+    {
+     "bin": 3,
+     "mean_p": 0.427,
+     "mean_y": 0.4783,
+     "n": 115
+    },
+    {
+     "bin": 4,
+     "mean_p": 0.4621,
+     "mean_y": 0.4655,
+     "n": 116
+    },
+    {
+     "bin": 5,
+     "mean_p": 0.4892,
+     "mean_y": 0.3739,
+     "n": 115
+    },
+    {
+     "bin": 6,
+     "mean_p": 0.5098,
+     "mean_y": 0.5217,
+     "n": 115
+    },
+    {
+     "bin": 7,
+     "mean_p": 0.5325,
+     "mean_y": 0.431,
+     "n": 116
+    },
+    {
+     "bin": 8,
+     "mean_p": 0.5651,
+     "mean_y": 0.5652,
+     "n": 115
+    },
+    {
+     "bin": 9,
+     "mean_p": 0.624,
+     "mean_y": 0.6348,
+     "n": 115
+    },
+    {
+     "bin": 10,
+     "mean_p": 0.7654,
+     "mean_y": 0.7414,
+     "n": 116
+    }
+   ],
+   "weekly": {
+    "W1": {
+     "brier": 0.240381,
+     "cal_in_large": 0.027122,
+     "cal_intercept": 0.027976,
+     "cal_slope": 0.961464,
+     "log_loss": 0.674785,
+     "n": 221,
+     "slope_converged": true
+    },
+    "W2": {
+     "brier": 0.243958,
+     "cal_in_large": -0.07724,
+     "cal_intercept": -0.077624,
+     "cal_slope": 0.604958,
+     "log_loss": 0.681995,
+     "n": 301,
+     "slope_converged": true
+    },
+    "W3": {
+     "brier": 0.247622,
+     "cal_in_large": 0.082107,
+     "cal_intercept": 0.062365,
+     "cal_slope": 0.493324,
+     "log_loss": 0.692341,
+     "n": 233,
+     "slope_converged": true
+    },
+    "W4": {
+     "brier": 0.244882,
+     "cal_in_large": 0.016253,
+     "cal_intercept": 0.004298,
+     "cal_slope": 0.629332,
+     "log_loss": 0.682424,
+     "n": 270,
+     "slope_converged": true
+    },
+    "W5": {
+     "brier": 0.213482,
+     "cal_in_large": 0.134663,
+     "cal_intercept": 0.164768,
+     "cal_slope": 0.85924,
+     "log_loss": 0.610954,
+     "n": 128,
+     "slope_converged": true
+    }
+   }
+  },
+  "temp_only_reconstructed": {
+   "ATP": {
+    "brier": 0.240453,
+    "cal_in_large": -0.02828,
+    "cal_intercept": -0.025746,
+    "cal_slope": 0.756436,
+    "log_loss": 0.672921,
+    "n": 556,
+    "slope_converged": true
+   },
+   "WTA": {
+    "brier": 0.240179,
+    "cal_in_large": 0.065659,
+    "cal_intercept": 0.057386,
+    "cal_slope": 0.685374,
+    "log_loss": 0.674,
+    "n": 597,
+    "slope_converged": true
+   },
+   "cohort_tier": {
+    "PRIMARY_ONLY_TIER": {
+     "brier": 0.245783,
+     "cal_in_large": 0.451069,
+     "cal_intercept": 0.457697,
+     "cal_slope": 1.111534,
+     "log_loss": 0.684633,
+     "n": 62,
+     "slope_converged": true
+    },
+    "STRICT": {
+     "brier": 0.24,
+     "cal_in_large": -0.003671,
+     "cal_intercept": -0.007399,
+     "cal_slope": 0.70738,
+     "log_loss": 0.672846,
+     "n": 1091,
+     "slope_converged": true
+    }
+   },
+   "overall": {
+    "brier": 0.240311,
+    "cal_in_large": 0.020357,
+    "cal_intercept": 0.018124,
+    "cal_slope": 0.712268,
+    "log_loss": 0.673479,
+    "n": 1153,
+    "slope_converged": true
+   },
+   "prior_bands": {
+    "1-4": {
+     "brier": 0.239079,
+     "cal_in_large": -0.10853,
+     "cal_intercept": -0.119177,
+     "cal_slope": 1.301859,
+     "log_loss": 0.669263,
+     "n": 404,
+     "slope_converged": true
+    },
+    "10-19": {
+     "brier": 0.248646,
+     "cal_in_large": -0.143042,
+     "cal_intercept": -0.148303,
+     "cal_slope": 0.517142,
+     "log_loss": 0.691279,
+     "n": 125,
+     "slope_converged": true
+    },
+    "20+": {
+     "brier": 0.239781,
+     "cal_in_large": 0.183788,
+     "cal_intercept": 0.17124,
+     "cal_slope": 0.634375,
+     "log_loss": 0.673924,
+     "n": 490,
+     "slope_converged": true
+    },
+    "5-9": {
+     "brier": 0.238191,
+     "cal_in_large": -0.036224,
+     "cal_intercept": -0.052143,
+     "cal_slope": 1.191523,
+     "log_loss": 0.667961,
+     "n": 134,
+     "slope_converged": true
+    }
+   },
+   "reliability": [
+    {
+     "bin": 1,
+     "mean_p": 0.2301,
+     "mean_y": 0.3652,
+     "n": 115
+    },
+    {
+     "bin": 2,
+     "mean_p": 0.3746,
+     "mean_y": 0.4435,
+     "n": 115
+    },
+    {
+     "bin": 3,
+     "mean_p": 0.4314,
+     "mean_y": 0.4609,
+     "n": 115
+    },
+    {
+     "bin": 4,
+     "mean_p": 0.4646,
+     "mean_y": 0.4655,
+     "n": 116
+    },
+    {
+     "bin": 5,
+     "mean_p": 0.4899,
+     "mean_y": 0.3826,
+     "n": 115
+    },
+    {
+     "bin": 6,
+     "mean_p": 0.5092,
+     "mean_y": 0.513,
+     "n": 115
+    },
+    {
+     "bin": 7,
+     "mean_p": 0.5303,
+     "mean_y": 0.4569,
+     "n": 116
+    },
+    {
+     "bin": 8,
+     "mean_p": 0.5609,
+     "mean_y": 0.5391,
+     "n": 115
+    },
+    {
+     "bin": 9,
+     "mean_p": 0.6169,
+     "mean_y": 0.6348,
+     "n": 115
+    },
+    {
+     "bin": 10,
+     "mean_p": 0.752,
+     "mean_y": 0.75,
+     "n": 116
+    }
+   ],
+   "weekly": {
+    "W1": {
+     "brier": 0.240524,
+     "cal_in_large": 0.02781,
+     "cal_intercept": 0.028877,
+     "cal_slope": 1.012989,
+     "log_loss": 0.675016,
+     "n": 221,
+     "slope_converged": true
+    },
+    "W2": {
+     "brier": 0.243219,
+     "cal_in_large": -0.077972,
+     "cal_intercept": -0.078406,
+     "cal_slope": 0.649442,
+     "log_loss": 0.680002,
+     "n": 301,
+     "slope_converged": true
+    },
+    "W3": {
+     "brier": 0.246681,
+     "cal_in_large": 0.081442,
+     "cal_intercept": 0.063072,
+     "cal_slope": 0.524506,
+     "log_loss": 0.68955,
+     "n": 233,
+     "slope_converged": true
+    },
+    "W4": {
+     "brier": 0.244382,
+     "cal_in_large": 0.015627,
+     "cal_intercept": 0.005305,
+     "cal_slope": 0.666743,
+     "log_loss": 0.681224,
+     "n": 270,
+     "slope_converged": true
+    },
+    "W5": {
+     "brier": 0.212924,
+     "cal_in_large": 0.137771,
+     "cal_intercept": 0.165839,
+     "cal_slope": 0.915168,
+     "log_loss": 0.609898,
+     "n": 128,
+     "slope_converged": true
+    }
+   }
+  }
+ }
+}

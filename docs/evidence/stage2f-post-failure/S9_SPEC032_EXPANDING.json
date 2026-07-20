@@ -1,0 +1,337 @@
+{
+ "coefficient_stability": {
+  "alpha_first_last": [
+   -0.4569,
+   -0.0416
+  ],
+  "alpha_range": [
+   -0.4569,
+   0.6782
+  ],
+  "beta_first_last": [
+   0.7107,
+   0.9372
+  ],
+  "beta_range": [
+   0.2698,
+   0.9372
+  ]
+ },
+ "day_cluster_bootstrap_2p5_97p5": [
+  -0.016506,
+  0.001413
+ ],
+ "diagnostic": "SPEC032_POST_FAILURE_DIAGNOSTIC_V1 (development evidence only; no alpha consumed; M2 not evaluated; no deployable coefficients declared)",
+ "folds": {
+  "2026-06-01": {
+   "n_train": 0,
+   "refused": 47
+  },
+  "2026-06-02": {
+   "n_train": 47,
+   "refused": 26
+  },
+  "2026-06-03": {
+   "alpha": -0.4569,
+   "alpha_roll": -0.4833,
+   "beta": 0.7107,
+   "beta_roll": 0.7194,
+   "converged": true,
+   "n_test": 37,
+   "n_train": 73
+  },
+  "2026-06-04": {
+   "alpha": 0.5707,
+   "alpha_roll": 0.514,
+   "beta": 0.2961,
+   "beta_roll": 0.3045,
+   "converged": true,
+   "n_test": 22,
+   "n_train": 110
+  },
+  "2026-06-05": {
+   "alpha": 0.4913,
+   "alpha_roll": 0.4547,
+   "beta": 0.2698,
+   "beta_roll": 0.2747,
+   "converged": true,
+   "n_test": 22,
+   "n_train": 132
+  },
+  "2026-06-06": {
+   "alpha": 0.6782,
+   "alpha_roll": 0.6381,
+   "beta": 0.4417,
+   "beta_roll": 0.447,
+   "converged": true,
+   "n_test": 17,
+   "n_train": 154
+  },
+  "2026-06-07": {
+   "alpha": 0.5341,
+   "alpha_roll": 0.4953,
+   "beta": 0.5371,
+   "beta_roll": 0.5431,
+   "converged": true,
+   "n_test": 40,
+   "n_train": 171
+  },
+  "2026-06-08": {
+   "alpha": 0.6018,
+   "alpha_roll": 0.5539,
+   "beta": 0.5831,
+   "beta_roll": 0.5899,
+   "converged": true,
+   "n_test": 67,
+   "n_train": 211
+  },
+  "2026-06-09": {
+   "alpha": -0.0719,
+   "alpha_roll": -0.1062,
+   "beta": 0.8088,
+   "beta_roll": 0.8171,
+   "converged": true,
+   "n_test": 28,
+   "n_train": 278
+  },
+  "2026-06-10": {
+   "alpha": -0.0624,
+   "alpha_roll": -0.0835,
+   "beta": 0.8069,
+   "beta_roll": 0.8123,
+   "converged": true,
+   "n_test": 38,
+   "n_train": 306
+  },
+  "2026-06-11": {
+   "alpha": 0.073,
+   "alpha_roll": 0.0523,
+   "beta": 0.8077,
+   "beta_roll": 0.813,
+   "converged": true,
+   "n_test": 24,
+   "n_train": 344
+  },
+  "2026-06-12": {
+   "alpha": 0.0737,
+   "alpha_roll": 0.0537,
+   "beta": 0.7444,
+   "beta_roll": 0.7499,
+   "converged": true,
+   "n_test": 27,
+   "n_train": 368
+  },
+  "2026-06-13": {
+   "alpha": 0.0886,
+   "alpha_roll": 0.0642,
+   "beta": 0.754,
+   "beta_roll": 0.7613,
+   "converged": true,
+   "n_test": 35,
+   "n_train": 395
+  },
+  "2026-06-14": {
+   "alpha": 0.0725,
+   "alpha_roll": 0.0522,
+   "beta": 0.7799,
+   "beta_roll": 0.786,
+   "converged": true,
+   "n_test": 64,
+   "n_train": 430
+  },
+  "2026-06-15": {
+   "alpha": 0.054,
+   "alpha_roll": 0.0388,
+   "beta": 0.8175,
+   "beta_roll": 0.8224,
+   "converged": true,
+   "n_test": 46,
+   "n_train": 494
+  },
+  "2026-06-16": {
+   "alpha": 0.073,
+   "alpha_roll": 0.0566,
+   "beta": 0.8288,
+   "beta_roll": 0.834,
+   "converged": true,
+   "n_test": 27,
+   "n_train": 540
+  },
+  "2026-06-17": {
+   "alpha": 0.1058,
+   "alpha_roll": 0.0936,
+   "beta": 0.7898,
+   "beta_roll": 0.7937,
+   "converged": true,
+   "n_test": 39,
+   "n_train": 567
+  },
+  "2026-06-18": {
+   "alpha": 0.1115,
+   "alpha_roll": 0.0939,
+   "beta": 0.7646,
+   "beta_roll": 0.7704,
+   "converged": true,
+   "n_test": 23,
+   "n_train": 606
+  },
+  "2026-06-19": {
+   "alpha": 0.021,
+   "alpha_roll": 0.0052,
+   "beta": 0.7666,
+   "beta_roll": 0.7723,
+   "converged": true,
+   "n_test": 22,
+   "n_train": 629
+  },
+  "2026-06-20": {
+   "alpha": 0.0186,
+   "alpha_roll": 0.0045,
+   "beta": 0.7978,
+   "beta_roll": 0.8031,
+   "converged": true,
+   "n_test": 22,
+   "n_train": 651
+  },
+  "2026-06-21": {
+   "alpha": 0.0543,
+   "alpha_roll": 0.0412,
+   "beta": 0.7783,
+   "beta_roll": 0.7831,
+   "converged": true,
+   "n_test": 37,
+   "n_train": 673
+  },
+  "2026-06-22": {
+   "alpha": 0.085,
+   "alpha_roll": 0.0711,
+   "beta": 0.7265,
+   "beta_roll": 0.7314,
+   "converged": true,
+   "n_test": 52,
+   "n_train": 710
+  },
+  "2026-06-23": {
+   "alpha": 0.0327,
+   "alpha_roll": 0.0204,
+   "beta": 0.765,
+   "beta_roll": 0.7696,
+   "converged": true,
+   "n_test": 60,
+   "n_train": 762
+  },
+  "2026-06-24": {
+   "alpha": 0.0439,
+   "alpha_roll": 0.0295,
+   "beta": 0.8014,
+   "beta_roll": 0.8065,
+   "converged": true,
+   "n_test": 44,
+   "n_train": 822
+  },
+  "2026-06-25": {
+   "alpha": -0.0296,
+   "alpha_roll": -0.0436,
+   "beta": 0.8617,
+   "beta_roll": 0.8669,
+   "converged": true,
+   "n_test": 29,
+   "n_train": 866
+  },
+  "2026-06-26": {
+   "alpha": -0.0277,
+   "alpha_roll": -0.0409,
+   "beta": 0.8885,
+   "beta_roll": 0.8935,
+   "converged": true,
+   "n_test": 11,
+   "n_train": 895
+  },
+  "2026-06-27": {
+   "alpha": -0.0305,
+   "alpha_roll": -0.0411,
+   "beta": 0.8842,
+   "beta_roll": 0.8882,
+   "converged": true,
+   "n_test": 4,
+   "n_train": 906
+  },
+  "2026-06-28": {
+   "alpha": -0.0105,
+   "alpha_roll": -0.0222,
+   "beta": 0.8775,
+   "beta_roll": 0.8819,
+   "converged": true,
+   "n_test": 3,
+   "n_train": 910
+  },
+  "2026-06-29": {
+   "alpha": -0.0165,
+   "alpha_roll": -0.028,
+   "beta": 0.8836,
+   "beta_roll": 0.888,
+   "converged": true,
+   "n_test": 84,
+   "n_train": 913
+  },
+  "2026-06-30": {
+   "alpha": -0.0416,
+   "alpha_roll": -0.0542,
+   "beta": 0.9372,
+   "beta_roll": 0.9423,
+   "converged": true,
+   "n_test": 7,
+   "n_train": 997
+  }
+ },
+ "forward_log_loss": {
+  "combined": 0.629436,
+  "combined_with_rolling_f2": 0.629332,
+  "f2_affine_only": 0.670919,
+  "market_only": 0.622805
+ },
+ "intersection": {
+  "eligible": 1004,
+  "refused_warmup": 73,
+  "scored_forward": 931,
+  "warmup_rule": "n_train >= 50"
+ },
+ "paired_market_minus_combined_mean": -0.006631,
+ "per_tour_secondary": {
+  "ATP": {
+   "combined": 0.631413,
+   "market_only": 0.627399
+  },
+  "WTA": {
+   "combined": 0.627747,
+   "market_only": 0.61888
+  }
+ },
+ "weekly_stability": {
+  "W1": {
+   "combined": 0.661606,
+   "market_only": 0.650618,
+   "n": 138
+  },
+  "W2": {
+   "combined": 0.640005,
+   "market_only": 0.628381,
+   "n": 283
+  },
+  "W3": {
+   "combined": 0.675861,
+   "market_only": 0.682619,
+   "n": 216
+  },
+  "W4": {
+   "combined": 0.594446,
+   "market_only": 0.583545,
+   "n": 203
+  },
+  "W5": {
+   "combined": 0.515645,
+   "market_only": 0.508893,
+   "n": 91
+  }
+ }
+}

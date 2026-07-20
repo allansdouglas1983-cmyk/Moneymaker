@@ -1,0 +1,33 @@
+{
+ "ledger": "stage2f-diagnostic-exclusion-ledger-v1",
+ "founder_ruling": "2026-07-20: the outcome-source conflict is classified OUTCOME_SOURCE_CONFLICT and permanently excluded from score calculations, calibration, model diagnostics, distribution-shift analysis, rolling calibration and SPEC-032 diagnostics. It stays visible here. No real-world adjudication of the outcome was or will be performed. The conflict is evidence about source disagreement, not about model quality.",
+ "recorded_counts": {
+  "reconciled_agreement": 379,
+  "outcome_source_conflicts": 1,
+  "ambiguous": 1,
+  "structural_unmatched": 828
+ },
+ "outcome_source_conflict": [
+  {
+   "market_id": "1.259522098",
+   "tour": "WTA",
+   "cluster_day": "2026-06-27",
+   "betfair_winner_key": "td-wta:muchova|k",
+   "td_winner_key": "td-wta:osaka|n",
+   "td_comment": "Retired",
+   "classification": "OUTCOME_SOURCE_CONFLICT",
+   "excluded_from": ["scores", "calibration", "model_diagnostics", "distribution_shift", "rolling_calibration", "spec032_diagnostics"],
+   "note": "Included ONLY in the section-4 independent reproduction of the frozen 1,154-row Stage-A scorecard, because that section verifies the already-recorded arithmetic and the original M1 scorecard must not be altered."
+  }
+ ],
+ "ambiguous_non_integrity": [
+  {
+   "market_id": "1.259504385",
+   "reason": "MULTIPLE_TD_ROWS_FOR_PAIR_WITHIN_1_DAY",
+   "note": "same pair played 2026-06-28 and 2026-06-30 around cluster 2026-06-29; all candidates and Betfair agree on the winner; remains scored in the diagnostic cohort"
+  }
+ ],
+ "structural_unmatched_note": "828 markets have no Tennis-Data row (TD covers main-tour only; 491 TD June rows exist vs 1,213 markets); coverage difference, not integrity failure; they remain scored.",
+ "settlement_void_exclusions": "the 59 UNDETERMINED_SETTLEMENT:BOTH_RUNNERS_REMOVED recovery exclusions continue unchanged (see RECOVERY_OUTCOME_ARTIFACT.json)",
+ "diagnostic_cohort": {"scored_for_diagnostics": 1153, "derivation": "1154 scored minus 1 OUTCOME_SOURCE_CONFLICT"}
+}

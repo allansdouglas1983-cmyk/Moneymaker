@@ -1,0 +1,40 @@
+{
+ "diagnostic": "Stage 2F §10 ranked root-cause + §11 next-programme recommendation (development evidence)",
+ "ranked_root_cause": [
+  {"rank": 1, "cause": "STATIC_CALIBRATION_DRIFT + COHORT_OR_REGIME_SHIFT (joint dominant, inseparable)",
+   "evidence_for": [
+    "June required oracle temperatures ATP 1.4487 / WTA 1.5201 vs frozen 1.2186 / 1.1507 — 19-32% additional logit shrinkage (S7)",
+    "frozen-affine June slopes 0.841/0.760 (S5); even the RAW model is overconfident on June (slope 0.669)",
+    "the June diagnostic cohort differs sharply from the pre-June validation year: favourite-strength SMD -0.62, |rating-difference| SMD -0.56, min prior matches SMD -0.55, TD-coverage-thin population (rest-proxy SMD +1.80) — the Betfair June universe is broader and information-thinner than the TD main-tour cohort the calibration was fit on (S6)",
+    "ROLLING_AFFINE_365D_V1 parameters barely move (ATP T 1.24->1.27, WTA ~1.12) and never approach the oracle values — the drift is cohort-composition-driven, not temporal, so trailing-window recalibration cannot learn it (S8)"],
+   "evidence_against": ["pure temporal drift would appear in the rolling parameter path; it does not"]},
+  {"rank": 2, "cause": "MARKET_ALREADY_SUBSUMES_MODEL (confirmed on the F0 intersection)",
+   "evidence_for": [
+    "forward log loss market-only 0.6228 vs combined 0.6294 vs F2-only 0.6709 (931 forward markets, 73 warm-up refusals) — the frozen combination never beats the market out-of-sample (S9)",
+    "paired market-minus-combined mean -0.0066 with day-cluster bootstrap [-0.0165, +0.0014] — centred negative, includes zero",
+    "alpha path unstable (-0.457 -> -0.042, range [-0.457, +0.678]) collapsing toward zero while beta -> 0.937 (~pure market); the rolling-F2 secondary is materially identical (0.6293)"],
+   "evidence_against": ["the intersection covers 931 of 1,153 diagnostic markets, not the full universe"]},
+  {"rank": 3, "cause": "TOUR_SPECIFIC_DRIFT (real, secondary)",
+   "evidence_for": ["opposite-sign oracle intercepts (ATP -0.026, WTA +0.057); ATP cal-in-large -0.0507 breached the harm boundary while WTA sat in the CONTINUE band; WTA needed more shrinkage than ATP"],
+   "evidence_against": ["magnitudes are small next to the shared shrinkage failure"]},
+  {"rank": 4, "cause": "GLOBAL_ELO_DISCRIMINATION_FAILURE (contributing, not dominant)",
+   "evidence_for": ["even ORACLE-calibrated June log loss is only 0.6708/0.6694 (ATP/WTA) vs market 0.6228 on the intersection — after perfect in-sample calibration the model retains little discriminative signal on this cohort"],
+   "evidence_against": ["log loss and Brier beat the null on every supported block, so discrimination is weak, not absent"]},
+  {"rank": 5, "cause": "OUTCOME_OR_IDENTITY_INTEGRITY (ruled out as a driver)",
+   "evidence_for": ["379/380 scored reconciliation agreement; the single OUTCOME_SOURCE_CONFLICT is excluded and visible; §4 independent scorecard reproduction agreed within 5e-6 on every block with exact counts"],
+   "evidence_against": []}
+ ],
+ "not_selected": ["INSUFFICIENT_EVIDENCE (coverage and integrity were adequate)", "OTHER_WITH_EVIDENCE (none surfaced)"],
+ "recommendation": {
+  "selected": "A. TERMINATE THE TENNIS BETTING MODEL",
+  "conditions_met": {
+   "outcome_reconciliation_clean": "yes (379/380 agree; single source-conflict excluded per founder ruling)",
+   "calibration_repair_unstable": "yes — the required June recalibration (oracle T 1.45/1.52) is cohort-driven and NOT learnable prospectively: the registered rolling-365d hypothesis produced log loss 0.671867 vs static 0.671732 (no improvement) and slope 0.7866 vs 0.7893 (band unrepaired)",
+   "no_stable_incremental_market_information": "yes — combined is worse than market-only forward (0.6294 vs 0.6228); paired difference centred negative; alpha unstable and collapsing to zero"
+  },
+  "option_b_rejected_because": "ROLLING_AFFINE_365D_V1 shows no prequential improvement whatsoever",
+  "option_c_rejected_because": "the expanding chronological diagnostic shows consistently NON-positive incremental information beyond the market",
+  "option_d_rejected_because": "no integrity or coverage issue prevents a reliable conclusion",
+  "standing_note": "This is the platform's expected outcome working as designed: no exploitable edge was found, established cheaply and honestly. June may never become an untouched test again; any hypothetical future confirmation would need strictly post-freeze matches."
+ }
+}

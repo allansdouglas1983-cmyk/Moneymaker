@@ -1,0 +1,395 @@
+{
+ "coverage": {
+  "refusal_rule": "refuse if a tour window held < 200 rows (never triggered; min window ~15k rows)",
+  "refusals": 0,
+  "scored": 1153
+ },
+ "diagnostic": "ROLLING_AFFINE_365D_V1 (development evidence only)",
+ "parameter_path_first_mid_last": {
+  "2026-06-01": {
+   "ATP": {
+    "intercept": 0.006804,
+    "temperature": 1.241711
+   },
+   "WTA": {
+    "intercept": 0.028294,
+    "temperature": 1.122152
+   }
+  },
+  "2026-06-16": {
+   "ATP": {
+    "intercept": -0.003589,
+    "temperature": 1.254477
+   },
+   "WTA": {
+    "intercept": 0.012142,
+    "temperature": 1.106467
+   }
+  },
+  "2026-06-30": {
+   "ATP": {
+    "intercept": -0.012369,
+    "temperature": 1.268762
+   },
+   "WTA": {
+    "intercept": 0.050113,
+    "temperature": 1.120733
+   }
+  }
+ },
+ "parameter_path_full": {
+  "2026-06-01": {
+   "ATP": {
+    "intercept": 0.006804,
+    "temperature": 1.241711
+   },
+   "WTA": {
+    "intercept": 0.028294,
+    "temperature": 1.122152
+   }
+  },
+  "2026-06-02": {
+   "ATP": {
+    "intercept": 0.002455,
+    "temperature": 1.243162
+   },
+   "WTA": {
+    "intercept": 0.033884,
+    "temperature": 1.128734
+   }
+  },
+  "2026-06-03": {
+   "ATP": {
+    "intercept": 0.001545,
+    "temperature": 1.241834
+   },
+   "WTA": {
+    "intercept": 0.030598,
+    "temperature": 1.131292
+   }
+  },
+  "2026-06-04": {
+   "ATP": {
+    "intercept": 0.006674,
+    "temperature": 1.240669
+   },
+   "WTA": {
+    "intercept": 0.03282,
+    "temperature": 1.13048
+   }
+  },
+  "2026-06-05": {
+   "ATP": {
+    "intercept": 0.002976,
+    "temperature": 1.244207
+   },
+   "WTA": {
+    "intercept": 0.029576,
+    "temperature": 1.125885
+   }
+  },
+  "2026-06-06": {
+   "ATP": {
+    "intercept": 0.005095,
+    "temperature": 1.243166
+   },
+   "WTA": {
+    "intercept": 0.032557,
+    "temperature": 1.123098
+   }
+  },
+  "2026-06-07": {
+   "ATP": {
+    "intercept": 0.006055,
+    "temperature": 1.243823
+   },
+   "WTA": {
+    "intercept": 0.03158,
+    "temperature": 1.1241
+   }
+  },
+  "2026-06-08": {
+   "ATP": {
+    "intercept": 0.010293,
+    "temperature": 1.241475
+   },
+   "WTA": {
+    "intercept": 0.022594,
+    "temperature": 1.120788
+   }
+  },
+  "2026-06-09": {
+   "ATP": {
+    "intercept": 0.008693,
+    "temperature": 1.242805
+   },
+   "WTA": {
+    "intercept": 0.011012,
+    "temperature": 1.128331
+   }
+  },
+  "2026-06-10": {
+   "ATP": {
+    "intercept": 0.010244,
+    "temperature": 1.249705
+   },
+   "WTA": {
+    "intercept": 0.00684,
+    "temperature": 1.12264
+   }
+  },
+  "2026-06-11": {
+   "ATP": {
+    "intercept": 0.014565,
+    "temperature": 1.245797
+   },
+   "WTA": {
+    "intercept": 0.010434,
+    "temperature": 1.116854
+   }
+  },
+  "2026-06-12": {
+   "ATP": {
+    "intercept": 0.005952,
+    "temperature": 1.250165
+   },
+   "WTA": {
+    "intercept": 0.008552,
+    "temperature": 1.115738
+   }
+  },
+  "2026-06-13": {
+   "ATP": {
+    "intercept": 0.003399,
+    "temperature": 1.250752
+   },
+   "WTA": {
+    "intercept": 0.012297,
+    "temperature": 1.126198
+   }
+  },
+  "2026-06-14": {
+   "ATP": {
+    "intercept": 0.002426,
+    "temperature": 1.253
+   },
+   "WTA": {
+    "intercept": 0.011375,
+    "temperature": 1.11988
+   }
+  },
+  "2026-06-15": {
+   "ATP": {
+    "intercept": 0.000543,
+    "temperature": 1.258203
+   },
+   "WTA": {
+    "intercept": 0.011327,
+    "temperature": 1.106215
+   }
+  },
+  "2026-06-16": {
+   "ATP": {
+    "intercept": -0.003589,
+    "temperature": 1.254477
+   },
+   "WTA": {
+    "intercept": 0.012142,
+    "temperature": 1.106467
+   }
+  },
+  "2026-06-17": {
+   "ATP": {
+    "intercept": -0.004161,
+    "temperature": 1.262919
+   },
+   "WTA": {
+    "intercept": 0.017499,
+    "temperature": 1.10084
+   }
+  },
+  "2026-06-18": {
+   "ATP": {
+    "intercept": -0.001017,
+    "temperature": 1.255646
+   },
+   "WTA": {
+    "intercept": 0.028527,
+    "temperature": 1.111094
+   }
+  },
+  "2026-06-19": {
+   "ATP": {
+    "intercept": -0.004054,
+    "temperature": 1.263053
+   },
+   "WTA": {
+    "intercept": 0.035463,
+    "temperature": 1.119183
+   }
+  },
+  "2026-06-20": {
+   "ATP": {
+    "intercept": -0.00959,
+    "temperature": 1.256828
+   },
+   "WTA": {
+    "intercept": 0.037306,
+    "temperature": 1.121976
+   }
+  },
+  "2026-06-21": {
+   "ATP": {
+    "intercept": -0.012027,
+    "temperature": 1.258665
+   },
+   "WTA": {
+    "intercept": 0.040671,
+    "temperature": 1.119812
+   }
+  },
+  "2026-06-22": {
+   "ATP": {
+    "intercept": -0.010743,
+    "temperature": 1.258835
+   },
+   "WTA": {
+    "intercept": 0.045726,
+    "temperature": 1.115346
+   }
+  },
+  "2026-06-23": {
+   "ATP": {
+    "intercept": -0.017209,
+    "temperature": 1.265161
+   },
+   "WTA": {
+    "intercept": 0.045967,
+    "temperature": 1.119319
+   }
+  },
+  "2026-06-24": {
+   "ATP": {
+    "intercept": -0.015985,
+    "temperature": 1.263193
+   },
+   "WTA": {
+    "intercept": 0.05286,
+    "temperature": 1.113881
+   }
+  },
+  "2026-06-25": {
+   "ATP": {
+    "intercept": -0.021914,
+    "temperature": 1.261536
+   },
+   "WTA": {
+    "intercept": 0.046955,
+    "temperature": 1.123544
+   }
+  },
+  "2026-06-26": {
+   "ATP": {
+    "intercept": -0.019138,
+    "temperature": 1.258723
+   },
+   "WTA": {
+    "intercept": 0.045324,
+    "temperature": 1.119674
+   }
+  },
+  "2026-06-27": {
+   "ATP": {
+    "intercept": -0.021541,
+    "temperature": 1.265798
+   },
+   "WTA": {
+    "intercept": 0.04995,
+    "temperature": 1.121187
+   }
+  },
+  "2026-06-28": {
+   "ATP": {
+    "intercept": -0.018793,
+    "temperature": 1.266491
+   },
+   "WTA": {
+    "intercept": 0.048657,
+    "temperature": 1.120273
+   }
+  },
+  "2026-06-29": {
+   "ATP": {
+    "intercept": -0.01794,
+    "temperature": 1.268438
+   },
+   "WTA": {
+    "intercept": 0.048111,
+    "temperature": 1.118848
+   }
+  },
+  "2026-06-30": {
+   "ATP": {
+    "intercept": -0.012369,
+    "temperature": 1.268762
+   },
+   "WTA": {
+    "intercept": 0.050113,
+    "temperature": 1.120733
+   }
+  }
+ },
+ "prequential_scorecard": {
+  "ATP": {
+   "brier": 0.239826,
+   "cal_in_large": -0.022712,
+   "log_loss": 0.67154,
+   "n": 556
+  },
+  "WTA": {
+   "brier": 0.239662,
+   "cal_in_large": 0.034935,
+   "log_loss": 0.672171,
+   "n": 597
+  },
+  "overall": {
+   "brier": 0.239741,
+   "cal_in_large": 0.007136,
+   "cal_slope": 0.786643,
+   "log_loss": 0.671867,
+   "n": 1153
+  }
+ },
+ "static_affine_comparison": {
+  "overall": {
+   "brier": 0.239718,
+   "cal_in_large": -0.006097,
+   "cal_slope": 0.789312,
+   "log_loss": 0.671732,
+   "n": 1153
+  }
+ },
+ "weekly_log_loss_rolling_vs_static": {
+  "W1": {
+   "rolling": 0.68,
+   "static": 0.6752
+  },
+  "W2": {
+   "rolling": 0.669092,
+   "static": 0.678506
+  },
+  "W3": {
+   "rolling": 0.683959,
+   "static": 0.68531
+  },
+  "W4": {
+   "rolling": 0.690618,
+   "static": 0.679563
+  },
+  "W5": {
+   "rolling": 0.602785,
+   "static": 0.608578
+  }
+ },
+ "window": "single registered window: [D-365, D-1]; same-day batch preserved; no June outcome calibrates itself; OUTCOME_SOURCE_CONFLICT excluded everywhere"
+}
