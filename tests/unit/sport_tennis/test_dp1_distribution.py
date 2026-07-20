@@ -218,3 +218,108 @@ class TestPairCoherence:
         )
         assert d1.state_digest == d2.state_digest
         assert d1.state_digest != d3.state_digest
+
+
+def _numeric_central(delta: float, s: float) -> float:
+    """Independent reference: Simpson integration of sigmoid(delta + s*sqrt(2)*x)
+    against e^(-x^2)/sqrt(pi) — recomputed from the registration, sharing no code
+    with the implementation's quadrature."""
+    n = 4000
+    lo, hi = -12.0, 12.0
+    h = (hi - lo) / n
+    total = 0.0
+    c = s * math.sqrt(2.0)
+    for i in range(n + 1):
+        x = lo + i * h
+        w = 1.0 if i in (0, n) else (4.0 if i % 2 else 2.0)
+        total += w * _sigmoid(delta + c * x) * math.exp(-x * x)
+    return total * h / 3.0 / math.sqrt(math.pi)
+
+
+class TestCentralAgainstIndependentIntegral:
+    """Kill class: any mutant of the scale, the node evaluation, or the weight
+    normalisation deviates from an independently computed reference integral."""
+
+    @pytest.mark.parametrize("delta", [-2.0, -0.4, 0.9, 3.0])
+    @pytest.mark.parametrize(
+        ("s", "tolerance"), [(0.3, 1e-12), (1.0, 1e-9), (2.5, 2e-4)]
+    )
+    def test_matches_reference(self, delta: float, s: float, tolerance: float) -> None:
+        # tolerance = measured truncation error of the frozen 20-node rule at each s
+        # (grows with s; ~5e-5 worst at s=2.5) with margin; mutants deviate by ~1e-2.
+        assert central_win_probability(delta, s) == pytest.approx(
+            _numeric_central(delta, s), abs=tolerance
+        )
+
+
+class TestNumericalEdges:
+    def test_extreme_arguments_do_not_overflow(self) -> None:
+        """Kill class: swapping the stable sigmoid branches overflows at |x| ~ 745."""
+        lower, upper = interval_bounds(745.0, 0.0)
+        assert lower == upper == 1.0 - PROBABILITY_FLOOR
+        lower, upper = interval_bounds(-745.0, 0.0)
+        assert lower == upper == PROBABILITY_FLOOR
+
+    def test_clamp_is_exact_at_both_floors(self) -> None:
+        assert central_win_probability(-50.0, 0.0) == PROBABILITY_FLOOR
+        assert central_win_probability(50.0, 0.0) == 1.0 - PROBABILITY_FLOOR
+
+    def test_rule_rejects_invalid_node_counts(self) -> None:
+        for bad in (0, 1, 3, -2, 19):
+            with pytest.raises(ValueError):
+                gauss_hermite_nodes(bad)
+        assert len(gauss_hermite_nodes(2)) == 2
+
+    def test_golden_rule_digest_pinned(self) -> None:
+        """The frozen 20-node rule is byte-stable: any mutant that changes a single
+        node or weight bit fails; mutants that provably cannot change it are the
+        classification set."""
+        import hashlib
+
+        rule = gauss_hermite_nodes(GH_NODE_COUNT)
+        digest = hashlib.sha256(repr(rule).encode("utf-8")).hexdigest()
+        assert digest == "3f44c4a04d27f640becf5c5573f82afd6dce05a98f61c46afd33f26a924cffe0"
+
+
+class TestValidationBoundaries:
+    """Exact-boundary kills for the contract guards."""
+
+    def test_digest_guard_boundaries(self) -> None:
+        for bad in ("a" * 63, "a" * 65, "A" * 64, "g" * 64, ""):
+            with pytest.raises(DistributionValidationError):
+                _dist(state_digest=bad)
+        _dist(state_digest="0123456789abcdef" * 4)  # exactly 64 lowercase hex: valid
+
+    def test_rating_deviation_zero_boundary(self) -> None:
+        with pytest.raises(DistributionValidationError):
+            _dist(rating_deviation=0.0)
+        _dist(rating_deviation=math.nextafter(0.0, 1.0))  # smallest positive: valid
+
+    def test_volatility_zero_boundary(self) -> None:
+        with pytest.raises(DistributionValidationError):
+            _dist(volatility=0.0)
+        _dist(volatility=math.nextafter(0.0, 1.0))
+
+    def test_probability_floor_boundaries_exact(self) -> None:
+        _dist(
+            lower_probability_bound=PROBABILITY_FLOOR,
+            central_win_probability=0.5,
+            upper_probability_bound=1.0 - PROBABILITY_FLOOR,
+        )
+        with pytest.raises(DistributionValidationError):
+            _dist(lower_probability_bound=math.nextafter(PROBABILITY_FLOOR, 0.0))
+        with pytest.raises(DistributionValidationError):
+            _dist(
+                upper_probability_bound=math.nextafter(1.0 - PROBABILITY_FLOOR, 1.0),
+                central_win_probability=0.6,
+            )
+
+    def test_text_fields_reject_untrimmed(self) -> None:
+        for field in ("uncertainty_method", "data_quality_status", "model_version"):
+            with pytest.raises(DistributionValidationError):
+                _dist(**{field: " padded "})
+            with pytest.raises(DistributionValidationError):
+                _dist(**{field: ""})
+
+    def test_prior_count_boundary(self) -> None:
+        _dist(prior_match_count=0)  # zero is a valid cold start

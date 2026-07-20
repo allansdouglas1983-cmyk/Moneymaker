@@ -9,7 +9,7 @@ verbatim as the canonical correctness witness.
 from __future__ import annotations
 
 import math
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
@@ -242,3 +242,99 @@ class TestFitSeam:
         probs = fam.predict(model, _race("p1", date(2025, 1, 5), 8, 9, winner=None), horizon=_HORIZON)
         assert probs[8] == 0.5
         assert probs[9] == 0.5
+
+
+class TestVolatilityRootCondition:
+    """Kill class: any mutant of the paper's f(x) converges to the WRONG root.
+
+    The test recomputes f from the primary source independently and asserts the
+    solver's returned sigma' zeroes the TRUE f. Grid spans both initialisation
+    branches (Delta^2 > phi^2 + v and the k-search branch)."""
+
+    @staticmethod
+    def _paper_f(x: float, phi: float, v: float, delta: float, sigma: float, tau: float) -> float:
+        ex = math.exp(x)
+        first = (ex * (delta * delta - phi * phi - v - ex)) / (2.0 * (phi * phi + v + ex) ** 2)
+        return first - (x - math.log(sigma * sigma)) / (tau * tau)
+
+    @pytest.mark.parametrize(
+        ("phi", "v", "delta", "sigma"),
+        [
+            (0.5, 1.2, 0.3, 0.06),
+            (1.5, 0.8, 1.2, 0.06),
+            (0.2, 0.5, 0.6, 0.1),
+            (2.0, 4.0, 2.0, 0.03),
+            (1.1547, 1.7785, -0.4834, 0.06),  # the paper's worked-example magnitudes
+            (0.9, 1.0, 1.3, 0.2),
+            (0.5, 0.4, 0.9, 0.3),  # exercises the Delta^2 > phi^2 + v branch
+            (0.3, 0.2, 1.1, 0.05),  # also the B = log(...) branch
+        ],
+    )
+    def test_returned_volatility_zeroes_the_true_f(
+        self, phi: float, v: float, delta: float, sigma: float
+    ) -> None:
+        sigma_prime = new_volatility(
+            phi=phi, v=v, delta=delta, sigma=sigma, tau=GLICKO2_TAU,
+            tolerance=GLICKO2_CONVERGENCE_TOLERANCE,
+        )
+        x_star = 2.0 * math.log(sigma_prime)
+        assert abs(self._paper_f(x_star, phi, v, delta, sigma, GLICKO2_TAU)) < 1e-3
+
+    def test_iteration_cap_constant_pinned(self) -> None:
+        assert MAX_VOLATILITY_ITERATIONS == 100
+
+
+class TestExactPredictionReconstruction:
+    """Kill class: inactivity step-count off-by-ones and the s-formula in predict.
+
+    The family's prediction is reconstructed manually from the PUBLIC primitives with
+    the registered rule (a player last active on day L, predicted on day D, takes
+    exactly D - L - 1 inactivity steps), then compared EXACTLY — any deviation in the
+    step count, the delta, or the s combination changes the float and fails."""
+
+    @pytest.mark.parametrize("gap_days", [1, 2, 3, 11, 40])
+    def test_predict_equals_manual_reconstruction(self, gap_days: int) -> None:
+        from sport_tennis.dp1_distribution import central_win_probability
+
+        fam = Glicko2Family()
+        d1, d2 = date(2025, 2, 1), date(2025, 2, 2)
+        train = [
+            _race("t1", d1, 1, 2, winner=1),
+            _race("t2", d2, 1, 2, winner=1),
+        ]
+        model = fam.fit(train, _SCHEMA, horizon=_HORIZON, max_iter=10)
+        pred_day = d2 + timedelta(days=gap_days)
+        got = fam.predict(model, _race("p", pred_day, 1, 2, winner=None), horizon=_HORIZON)
+
+        # manual replay from public primitives
+        s1 = rate_player(INITIAL_PLAYER_STATE, [(INITIAL_PLAYER_STATE, 1.0)])
+        s2_opp = rate_player(INITIAL_PLAYER_STATE, [(INITIAL_PLAYER_STATE, 0.0)])
+        sa = rate_player(s1, [(s2_opp, 1.0)])
+        sb = rate_player(s2_opp, [(s1, 0.0)])
+        for _ in range(gap_days - 1):  # the registered D - L - 1 rule
+            sa = inactivity_step(sa)
+            sb = inactivity_step(sb)
+        delta = sa.mu - sb.mu
+        s = math.sqrt(sa.phi * sa.phi + sb.phi * sb.phi)
+        expected = central_win_probability(delta, s)
+        assert got[1] == expected  # exact float equality
+        assert got[2] == 1.0 - expected
+
+    def test_winner_identity_not_used_for_score(self) -> None:
+        """Kill class: `winner_id is a` — non-interned equal ints must still score."""
+        fam = Glicko2Family()
+        big_a, big_b = 100000, 100001
+        race = Race(
+            race_id="big",
+            cluster=calendar_day_assignment("tennis", date(2025, 2, 1)),
+            runners=(
+                RunnerRow(runner_id=big_a, features={"placeholder": _D0}),
+                RunnerRow(runner_id=big_b, features={"placeholder": _D0}),
+            ),
+            winner_id=int("100000"),  # equal to big_a, distinct object
+        )
+        model = fam.fit([race], _SCHEMA, horizon=_HORIZON, max_iter=10)
+        probs = fam.predict(
+            model, _race("p", date(2025, 2, 5), big_a, big_b, None), horizon=_HORIZON
+        )
+        assert probs[big_a] > 0.5  # the winner must have been credited
