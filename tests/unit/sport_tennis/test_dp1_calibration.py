@@ -291,9 +291,9 @@ class TestGoldenFitExactPins:
         assert cal.temperature == exp_t
         assert cal.n_rows == n
 
-    @pytest.mark.parametrize(("true_a", "true_t", "n", "base", "exp_i", "exp_t"), GOLDEN)
+    @pytest.mark.parametrize(("true_a", "true_t", "n", "base"), [g[:4] for g in GOLDEN])
     def test_returned_point_satisfies_the_mle_gradient_condition(
-        self, true_a: float, true_t: float, n: int, base: int, exp_i: float, exp_t: float
+        self, true_a: float, true_t: float, n: int, base: int
     ) -> None:
         """Solver-path-independent semantic contract: the returned (intercept, 1/temperature)
         is the MLE, i.e. the canonical-row score-equation gradient is ~0. A mutant that
