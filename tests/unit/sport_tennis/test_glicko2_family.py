@@ -31,6 +31,7 @@ from sport_tennis.glicko2_family import (
     Glicko2Family,
     PlayerState,
     inactivity_step,
+    initial_bracket,
     new_volatility,
     rate_player,
     volatility_converged,
@@ -459,3 +460,91 @@ class TestStructuralContracts:
         )
         with pytest.raises(ValueError, match="two-player"):
             fam.predict(model, race, horizon=_HORIZON)
+
+
+class TestVolatilityGoldenGrid:
+    """Finite-execution pins (founder §2E): exact float reprs of new_volatility over the
+    extreme grid (tiny/large sigma, phi extremes, surprising and near-expected outcomes,
+    weak/strong information, both bracket branches, near-boundary inputs). A convergence-
+    path mutant that shifts the returned value by ONE ULP anywhere here dies. Values were
+    generated from the pre-refactor implementation, so this grid also proves the
+    initial_bracket seam extraction is bit-identical."""
+
+    GRID = [
+        (0.05, 0.1, 0.02, 0.01, 0.009999393289421026),
+        (0.05, 0.1, 1.5, 0.01, 0.010012790291663744),
+        (2.0148, 50.0, 0.1, 0.06, 0.05999975033975754),
+        (0.1727, 1.7785, -0.4834, 0.06, 0.05999351169008403),
+        (1.0, 0.5, 2.5, 0.06, 0.060028375534275126),
+        (0.5, 0.4, 0.9, 0.3, 0.3002156262253414),
+        (3.0, 10.0, 0.5, 1.0, 0.996936714724098),
+        (0.02, 0.05, 0.0, 0.06, 0.05975243473796183),
+        (1.5, 2.0, -2.1, 0.8, 0.7993600303613275),
+        (0.8, 0.6, 1.1832159566199232, 0.06, 0.06000136531614448),
+        (5.0, 30.0, 4.0, 19.0, 18.0511825754742),
+        (0.3, 0.2, 1.05, 0.05, 0.050074234028394726),
+    ]
+
+    @pytest.mark.parametrize(("phi", "v", "delta", "sigma", "expected"), GRID)
+    def test_exact_bitwise_pin(
+        self, phi: float, v: float, delta: float, sigma: float, expected: float
+    ) -> None:
+        got = new_volatility(
+            phi=phi, v=v, delta=delta, sigma=sigma,
+            tau=GLICKO2_TAU, tolerance=GLICKO2_CONVERGENCE_TOLERANCE,
+        )
+        assert got == expected  # exact — one ULP is behavioural (founder ruling)
+
+
+class TestInitialBracketSeam:
+    """Pure-seam contract for the paper's step-5 bracket initialisation (founder §2
+    option A/B/C resolution).
+
+    Registered pure domain (module docstring): finite inputs, phi > 0, v > 0,
+    sigma > 0, tau > 0 — the mathematical domain of the paper's algorithm; callers
+    (rate_player) construct values inside it by construction. The public model API's
+    accepted domain is unchanged by the seam."""
+
+    def test_b_branch_exact(self) -> None:
+        # Delta^2 > phi^2 + v: B = ln(Delta^2 - phi^2 - v)
+        a, b = initial_bracket(phi=0.5, v=0.4, delta=0.9, sigma=0.3, tau=GLICKO2_TAU)
+        assert a == math.log(0.3 * 0.3)
+        assert b == math.log(0.9 * 0.9 - 0.5 * 0.5 - 0.4)
+
+    def test_k_branch_exact(self) -> None:
+        # Delta^2 <= phi^2 + v: k-search; the loop body is unreachable (see below), so
+        # B = a - tau exactly.
+        a, b = initial_bracket(phi=0.5, v=1.2, delta=0.3, sigma=0.06, tau=GLICKO2_TAU)
+        assert a == math.log(0.06 * 0.06)
+        assert b == a - GLICKO2_TAU
+
+    def test_exact_equality_takes_the_k_branch(self) -> None:
+        """The paper's case split is STRICT Delta^2 > phi^2 + v; equality must use the
+        k-branch (the B-branch would be ln(0)). Paper-fidelity pin, not a mutant hack."""
+        phi, v = 0.6, 0.28
+        delta = math.sqrt(phi * phi + v)
+        assert delta * delta <= phi * phi + v  # constructed at/below exact equality
+        a, b = initial_bracket(phi=phi, v=v, delta=delta, sigma=0.06, tau=GLICKO2_TAU)
+        assert b == a - GLICKO2_TAU  # k-branch, never ln(~0)
+
+    def test_k_search_body_is_structurally_unreachable(self) -> None:
+        """Analytic invariant (packet Class-E/B proof): on the k-branch D = Delta^2 -
+        phi^2 - v <= 0, so the first term of f at x = a - k*tau is bounded in
+        (-1/2, 1/2] in magnitude, while -(x - a)/tau^2 contributes +k/tau = +2k.
+        Hence f(a - k*tau) > 3/2 > 0 for every k >= 1 at tau = 0.5: the while
+        condition is False at k = 1 for EVERY input in the registered domain.
+        Verified numerically over a wide domain grid here; the algebraic bound is in
+        the survivor packet."""
+        for phi in (0.01, 0.1727, 0.5, 2.0148, 5.0, 50.0):
+            for v in (0.01, 0.5, 1.7785, 50.0, 1000.0):
+                for frac in (0.0, 0.3, 0.9, 1.0):
+                    delta = math.sqrt((phi * phi + v) * frac)
+                    for sigma in (1e-6, 0.06, 1.0, 19.0, 100.0):
+                        a = math.log(sigma * sigma)
+                        x = a - GLICKO2_TAU
+                        ex = math.exp(x)
+                        first = (ex * (delta * delta - phi * phi - v - ex)) / (
+                            2.0 * (phi * phi + v + ex) ** 2
+                        )
+                        f_val = first - (x - a) / (GLICKO2_TAU * GLICKO2_TAU)
+                        assert f_val > 0.0, (phi, v, delta, sigma)
