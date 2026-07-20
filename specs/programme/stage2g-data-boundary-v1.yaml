@@ -1,0 +1,32 @@
+# STAGE 2G — development-data boundary + post-June holdout decision (Slice 1; frozen BEFORE
+# any DP1 scoring). Founder directive §3.
+stage2g_data_boundary:
+  frozen_on: "2026-07-20"
+  development_corpus:
+    - "all lawful completed singles outcomes with Date < 2026-06-01 (Tennis-Data vintage-2026-07-18)"
+    - "June 2026 opened outcomes (immutable recovery artifact sha256:f603b183...; DEVELOPMENT evidence forever)"
+    - "Tennis-Data rows with Date in [2026-07-01, 2026-07-02] — classified DEVELOPMENT because the
+       Stage 2F reconciliation script parsed winner keys for all rows in its 2026-05-31..2026-07-02
+       join window; outcome-unread status is NOT provable for them"
+  post_june_holdout_audit:
+    vintage: "tennis-data vintage-2026-07-18 (atp sha256:14b4451e..., wta sha256:f4753f06...)"
+    post_june_rows_found: {ATP: 66, WTA: 63, date_range: "2026-07-01..2026-07-12"}
+    read_paths_audited:
+      - "f2_run.load_tour: BOUNDARY excludes Date >= 2026-06-01 (never read July)"
+      - "stage2f_core/stage2f_seq: consume load_tour only (never read July)"
+      - "reconcile_outcomes: read rows in 2026-05-31..2026-07-02 only (July 1-2 parsed; 3-12 untouched)"
+      - "no July winner value was ever surfaced to any output, model, or the operating LLM"
+  predictor_only_external_holdout:
+    id: STAGE2G-HOLDOUT-JULY-V1
+    definition: "ALL completed singles rows of vintage-2026-07-18 with Date in [2026-07-03, 2026-07-12];
+      membership is frozen BY DATE RANGE against the pinned vintage file digests — it is deliberately
+      NOT enumerated row-by-row, because in Tennis-Data the player pair is expressed only through the
+      Winner/Loser columns and enumeration would read outcomes"
+    audit_note: "the row count (subset of the 129 post-June rows) was established by a Date-column
+      scan that tested Winner-field PRESENCE only, never its value"
+    permitted_use: "one-shot DP1 predictor-quality scoring AFTER DP1 + calibration are frozen"
+    prohibited_use: "model design, parameter selection, calibration selection, market comparison
+      (no Betfair market snapshots exist for these matches — no market data may be implied)"
+    burned_if: "any read of a holdout Winner value before DP1 freeze -> reclassify as development"
+  prospective_stream: "begins only after DP1, calibration, lambda, snapshot and tip policies are
+    frozen; observations strictly after the freeze; no backdating"
