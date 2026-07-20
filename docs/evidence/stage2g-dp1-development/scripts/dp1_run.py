@@ -116,6 +116,24 @@ FROZEN_F2_AFFINE_BY_TOUR: dict[str, dict[str, float]] = {
     "ATP": {"intercept": 0.025399, "temperature": 1.218638},
     "WTA": {"intercept": 0.029204, "temperature": 1.150681},
 }
+# ROW-TIME VALIDITY (founder control): the vintage above was fitted on ALL pre-June
+# outcomes for June deployment. Applying it to any historical evaluation row would be
+# retrospective; it therefore appears in reports as reference metadata only.
+F2_FROZEN_VINTAGE_APPLICATION = "COMPARATOR_REFERENCE_ONLY_NEVER_APPLIED_TO_HISTORICAL_ROWS"
+
+# Frozen evidence roles for every scorecard table (founder control §1).
+EVIDENCE_ROLES: dict[str, str] = {
+    "dp1_raw": "RAW_HONEST",
+    "f2_v1_frozen_baseline": "RAW_HONEST",
+    "structural_null_baseline": "RAW_HONEST",
+    "dp1_calibrated_oof": "IN_SAMPLE_CALIBRATION_DIAGNOSTIC",
+    "dp1_calibrated_validation": "CALIBRATED_HONEST",
+    "f2_calibrated_oof": "QUARANTINED_NOT_PRODUCED (no row-time-valid cheap reproduction of the outer-fold F2 calibration exists; omitted rather than faked)",
+    "f2_calibrated_validation": "CALIBRATED_HONEST (affine fitted on F2 OOF-window predictions only, strictly before the validation block; same split as DP1)",
+    "paired_oof": "RAW_HONEST (raw-vs-raw only)",
+    "paired_validation_raw": "RAW_HONEST",
+    "paired_validation_calibrated": "CALIBRATED_HONEST",
+}
 
 
 def assert_frozen_comparator() -> None:
@@ -900,10 +918,15 @@ def main() -> None:
                 "validation_workload_cohorts": cohort_metrics(val_enriched, "workload_band"),
             }
 
-        # ---- SPEC-107 calibration: fitted ONLY on leakage-safe crossfit OOF rows,
-        # per tour; applied to the OOF window (IN-SAMPLE for the calibration fit —
-        # labelled as such) and prequentially to the validation window. F2's
-        # calibrated series uses the FROZEN calibration-policy-v2 vintage, never refit.
+        # ---- ROW-TIME-VALID calibration (founder control §1). The June-deployment
+        # frozen vintage is COMPARATOR REFERENCE ONLY — it was fitted on all pre-June
+        # outcomes and may not touch any historical row. Both models are calibrated
+        # the same honest way: affine fitted ONLY on that model's leakage-safe
+        # crossfit OOF-window predictions (all strictly before 2025-06-01), applied
+        # (a) back onto those same OOF rows = IN_SAMPLE_CALIBRATION_DIAGNOSTIC and
+        # (b) forward onto the untouched validation block = CALIBRATED_HONEST.
+        # There is NO row-time-valid cheap reproduction of F2's historical outer-fold
+        # calibration, so no F2-calibrated OOF table is produced at all.
         from sport_tennis.dp1_calibration import fit_affine_logit_calibration
 
         dp1_cal = fit_affine_logit_calibration(
@@ -911,43 +934,64 @@ def main() -> None:
         )
         dp1_cal_oof_rows = _calibrated_rows(dp1_oof_rows, dp1_cal.intercept, dp1_cal.temperature)
         dp1_cal_val_rows = _calibrated_rows(dp1_val_rows, dp1_cal.intercept, dp1_cal.temperature)
-        f2_aff = FROZEN_F2_AFFINE_BY_TOUR[tour]
-        f2_cal_oof_rows = _calibrated_rows(
-            oof_by_label["f2_v1_frozen"], f2_aff["intercept"], f2_aff["temperature"]
+        f2_cal = fit_affine_logit_calibration(
+            dev_races, cf_results["f2_v1_frozen"].oof, horizon=HORIZON, tour=tour.lower()
         )
-        f2_cal_val_rows = _calibrated_rows(f2_val_rows, f2_aff["intercept"], f2_aff["temperature"])
+        f2_cal_val_rows = _calibrated_rows(f2_val_rows, f2_cal.intercept, f2_cal.temperature)
 
         families_report = {
-            "dp1_raw": block(dp1_oof_rows, dp1_val_rows),
-            "dp1_calibrated": block(dp1_cal_oof_rows, dp1_cal_val_rows),
-            "f2_v1_frozen_baseline": block(oof_by_label["f2_v1_frozen"], f2_val_rows),
-            "f2_v1_frozen_calibrated": block(f2_cal_oof_rows, f2_cal_val_rows),
-            "structural_null_baseline": block(oof_by_label["structural_null"], null_val_rows),
+            "dp1_raw": {"evidence_role": EVIDENCE_ROLES["dp1_raw"], **block(dp1_oof_rows, dp1_val_rows)},
+            "dp1_calibrated": {
+                "evidence_role_oof": EVIDENCE_ROLES["dp1_calibrated_oof"],
+                "evidence_role_validation": EVIDENCE_ROLES["dp1_calibrated_validation"],
+                **block(dp1_cal_oof_rows, dp1_cal_val_rows),
+            },
+            "f2_v1_frozen_baseline": {
+                "evidence_role": EVIDENCE_ROLES["f2_v1_frozen_baseline"],
+                **block(oof_by_label["f2_v1_frozen"], f2_val_rows),
+            },
+            "f2_v1_calibrated_validation_only": {
+                "evidence_role": EVIDENCE_ROLES["f2_calibrated_validation"],
+                "oof_omitted": EVIDENCE_ROLES["f2_calibrated_oof"],
+                **block([], f2_cal_val_rows),
+            },
+            "structural_null_baseline": {
+                "evidence_role": EVIDENCE_ROLES["structural_null_baseline"],
+                **block(oof_by_label["structural_null"], null_val_rows),
+            },
         }
         calibration_block = {
             "dp1_affine": {
                 "version": "affine-logit-dp1-v1",
-                "fit_on": "leakage-safe crossfit OOF rows only (SPEC-031 re-verified at consumption)",
+                "fit_on": "DP1 leakage-safe crossfit OOF rows only (SPEC-031 re-verified; all < 2025-06-01)",
                 "intercept": dp1_cal.intercept,
                 "temperature": dp1_cal.temperature,
                 "n_rows": dp1_cal.n_rows,
-                "oof_metrics_are_in_sample_for_this_fit": True,
             },
-            "f2_affine_frozen_vintage": f2_aff,
+            "f2_affine_evaluation_calibrator": {
+                "fit_on": "F2 leakage-safe crossfit OOF rows only (same split as DP1; validation-only application)",
+                "intercept": f2_cal.intercept,
+                "temperature": f2_cal.temperature,
+                "n_rows": f2_cal.n_rows,
+            },
+            "row_time_validity": F2_FROZEN_VINTAGE_APPLICATION,
         }
         paired = {
-            "oof_raw_dp1_minus_f2": paired_delta(
-                dp1_oof_rows, oof_by_label["f2_v1_frozen"], "OOF: DP1 raw - F2 raw"
-            ),
-            "oof_calibrated_dp1_minus_f2": paired_delta(
-                dp1_cal_oof_rows, f2_cal_oof_rows, "OOF: DP1 cal - F2 cal (DP1 cal in-sample)"
-            ),
-            "validation_raw_dp1_minus_f2": paired_delta(
-                dp1_val_rows, f2_val_rows, "VAL: DP1 raw - F2 raw"
-            ),
-            "validation_calibrated_dp1_minus_f2": paired_delta(
-                dp1_cal_val_rows, f2_cal_val_rows, "VAL: DP1 cal - F2 cal (both frozen-from-OOF)"
-            ),
+            "oof_raw_dp1_minus_f2": {
+                "evidence_role": EVIDENCE_ROLES["paired_oof"],
+                **paired_delta(dp1_oof_rows, oof_by_label["f2_v1_frozen"], "OOF: DP1 raw - F2 raw"),
+            },
+            "validation_raw_dp1_minus_f2": {
+                "evidence_role": EVIDENCE_ROLES["paired_validation_raw"],
+                **paired_delta(dp1_val_rows, f2_val_rows, "VAL: DP1 raw - F2 raw"),
+            },
+            "validation_calibrated_dp1_minus_f2": {
+                "evidence_role": EVIDENCE_ROLES["paired_validation_calibrated"],
+                **paired_delta(
+                    dp1_cal_val_rows, f2_cal_val_rows,
+                    "VAL: DP1 cal - F2 cal (both affines frozen-from-own-OOF, applied forward only)",
+                ),
+            },
         }
 
         # ---- DP1 uncertainty-interval coverage diagnostic (item 4) ----
@@ -1002,7 +1046,8 @@ def main() -> None:
             "comparator": {
                 "f2_k_by_tour": FROZEN_F2_K_BY_TOUR,
                 "f2_k_this_tour": FROZEN_F2_K_BY_TOUR[tour],
-                "f2_affine_frozen_vintage": FROZEN_F2_AFFINE_BY_TOUR[tour],
+                "f2_affine_frozen_vintage_reference": FROZEN_F2_AFFINE_BY_TOUR[tour],
+                "f2_affine_frozen_vintage_application": F2_FROZEN_VINTAGE_APPLICATION,
             },
             "calibration": calibration_block,
             "paired_chronology_aware_deltas": paired,
