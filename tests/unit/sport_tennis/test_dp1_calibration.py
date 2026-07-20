@@ -229,3 +229,119 @@ class TestGovernedClampAmendment:
         evidence-role tests)."""
         cal = AffineLogitCalibration(intercept=0.1, temperature=1.1, tour="atp", n_rows=5)
         assert cal.tour == "atp"
+
+
+def _golden_corpus(
+    true_a: float, true_t: float, n: int, base: int
+) -> tuple[list[Race], list[OOFFundamental]]:
+    """Deterministic corpus with LARGE non-interned runner ids (base+), so canonical
+    selection and the win label cannot pass via int interning; winner is sometimes the
+    higher id so `==` is distinguishable from `<=`."""
+    races: list[Race] = []
+    rows: list[OOFFundamental] = []
+    for i in range(n):
+        z = -2.5 + 5.0 * i / (n - 1)
+        p_raw = _sigmoid(z)
+        p_true = _sigmoid(true_a + z / true_t)
+        frac = ((i + base) * 0.6180339887498949) % 1.0
+        a_id, b_id = base + i * 2, base + i * 2 + 1
+        winner = a_id if frac < p_true else b_id
+        race = Race(
+            race_id=f"c{base}_{i}",
+            cluster=calendar_day_assignment("tennis", date(2024, 1, 1)),
+            runners=(
+                RunnerRow(runner_id=a_id, features={"placeholder": _D0}),
+                RunnerRow(runner_id=b_id, features={"placeholder": _D0}),
+            ),
+            winner_id=winner,
+        )
+        races.append(race)
+        prov = StageOneProvenance(
+            trained_through=ChronologyKey(ordinal=date(2024, 1, 1).toordinal() - 1),
+            training_race_ids=frozenset(),
+            training_race_ids_digest="0" * 64,
+            horizon=_HORIZON,
+        )
+        rows.append(OOFFundamental(race_id=race.race_id, runner_id=a_id, p_fundamental=p_raw, provenance=prov))
+        rows.append(OOFFundamental(race_id=race.race_id, runner_id=b_id, p_fundamental=1.0 - p_raw, provenance=prov))
+    return races, rows
+
+
+class TestGoldenFitExactPins:
+    """Kill class (founder §3, applied to the calibration Newton solver): exact
+    bitwise pins of the fitted (intercept, temperature) across THREE corpora with
+    distinct true parameters. Any solver-path mutant that shifts the result by one ULP,
+    changes the fixed point, or diverges dies here; a mutant that lands bit-identical on
+    all three is exact-output evidence of genuine equivalence. Large non-interned ids
+    also kill the canonical/label `is` and `<=` comparison mutants (L150/L164)."""
+
+    GOLDEN = [
+        (0.4, 1.5, 1500, 1000, 0.41019734330464014, 1.5010428385138586),
+        (-0.3, 0.9, 1200, 20000, -0.3075516829965659, 0.8877951096351528),
+        (0.0, 1.0, 800, 50000, 0.007361634153820743, 1.0026883507633426),
+    ]
+
+    @pytest.mark.parametrize(("true_a", "true_t", "n", "base", "exp_i", "exp_t"), GOLDEN)
+    def test_exact_fit_pin(
+        self, true_a: float, true_t: float, n: int, base: int, exp_i: float, exp_t: float
+    ) -> None:
+        races, rows = _golden_corpus(true_a, true_t, n, base)
+        cal = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
+        assert cal.intercept == exp_i  # exact — one ULP is behavioural
+        assert cal.temperature == exp_t
+        assert cal.n_rows == n
+
+    @pytest.mark.parametrize(("true_a", "true_t", "n", "base", "exp_i", "exp_t"), GOLDEN)
+    def test_returned_point_satisfies_the_mle_gradient_condition(
+        self, true_a: float, true_t: float, n: int, base: int, exp_i: float, exp_t: float
+    ) -> None:
+        """Solver-path-independent semantic contract: the returned (intercept, 1/temperature)
+        is the MLE, i.e. the canonical-row score-equation gradient is ~0. A mutant that
+        converges to a non-optimal point fails regardless of its path."""
+        races, rows = _golden_corpus(true_a, true_t, n, base)
+        cal = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
+        a, b = cal.intercept, 1.0 / cal.temperature
+        by_id = {r.race_id: r for r in races}
+        low_row = {}
+        for row in rows:
+            race = by_id[row.race_id]
+            low = min(rr.runner_id for rr in race.runners if not rr.non_runner)
+            if row.runner_id == low:
+                low_row[row.race_id] = row
+        g_a: list[float] = []
+        g_b: list[float] = []
+        for race_id, row in low_row.items():
+            race = by_id[race_id]
+            y = 1.0 if race.winner_id == row.runner_id else 0.0
+            z = math.log(row.p_fundamental / (1.0 - row.p_fundamental))
+            p = _sigmoid(a + b * z)
+            g_a.append(y - p)
+            g_b.append((y - p) * z)
+        assert abs(math.fsum(g_a)) < 1e-6
+        assert abs(math.fsum(g_b)) < 1e-6
+
+
+class TestFitGuardKills:
+    def test_horizon_guard_uses_value_equality_not_identity(self) -> None:
+        """L143 kill: an equal-but-non-identical horizon must be ACCEPTED (kills the
+        `is not` mutant), and a lexicographically-smaller foreign horizon must be
+        REFUSED (kills the `>` mutant)."""
+        races, rows = _golden_corpus(0.0, 1.0, 60, 70000)
+        # equal-but-forced-distinct horizon object
+        other_equal = HorizonLabel("pre-off-tennis" + "")
+        assert other_equal == _HORIZON
+        cal = fit_affine_logit_calibration(races, rows, horizon=other_equal, tour="atp")
+        assert cal.n_rows == 60  # accepted despite non-identity
+        # a foreign horizon that sorts BEFORE the rows' horizon must still be refused
+        smaller = HorizonLabel("aaa-earlier")
+        assert smaller < _HORIZON
+        with pytest.raises(CrossFitViolation):
+            fit_affine_logit_calibration(races, rows, horizon=smaller, tour="atp")
+
+    def test_canonical_selection_rejects_duplicate_and_missing(self) -> None:
+        """L150 kill: `<=` would mark BOTH rows canonical (duplicate → refuse); `is`
+        with large ids would mark NONE canonical (no rows → refuse). The correct `==`
+        selects exactly one per match and fits."""
+        races, rows = _golden_corpus(0.2, 1.3, 80, 90000)
+        cal = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
+        assert cal.n_rows == 80  # exactly one canonical row per match
