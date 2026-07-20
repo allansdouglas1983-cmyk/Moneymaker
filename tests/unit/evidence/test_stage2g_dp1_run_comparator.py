@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -21,7 +22,11 @@ def _load_script() -> ModuleType:
     spec = importlib.util.spec_from_file_location("dp1_run", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    sys.modules["dp1_run"] = module  # dataclasses resolve cls.__module__ via sys.modules
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.modules.pop("dp1_run", None)
     return module
 
 

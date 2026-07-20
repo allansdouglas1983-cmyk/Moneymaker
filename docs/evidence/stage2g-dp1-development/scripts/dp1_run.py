@@ -102,12 +102,43 @@ SCRATCH = Path("/tmp/claude-0/-home-user-Moneymaker/b09554bc-9729-5d86-bb7c-43d4
 RAW = SCRATCH / "tennis-data" / "raw" / "vintage-2026-07-18"
 OUTDIR = SCRATCH / "stage2g-slice3" / "out"
 
-SCRIPT_VERSION = "stage2g-dp1-run-v1"
+SCRIPT_VERSION = "stage2g-dp1-run-v2"
 BOUNDARY = date(2026, 6, 1)
 WARMUP_THROUGH = date(2018, 12, 31)
 OOF_LO, OOF_HI = date(2019, 1, 1), date(2025, 5, 31)
 VAL_LO, VAL_HI = date(2025, 6, 1), date(2026, 5, 31)
-FROZEN_F2_K = 24.0
+# The EXACT frozen F2-v1 comparator (founder pre-result controls §1): per-tour selected_k
+# from F2_EVALUATION_REPORT.json under the frozen selection rule; the affine vintage is
+# calibration-policy-v2 frozen_parameters. K=24 applied to WTA is
+# INVALID_COMPARATOR_CONFIGURATION, never a simplification.
+FROZEN_F2_K_BY_TOUR: dict[str, float] = {"ATP": 24.0, "WTA": 32.0}
+FROZEN_F2_AFFINE_BY_TOUR: dict[str, dict[str, float]] = {
+    "ATP": {"intercept": 0.025399, "temperature": 1.218638},
+    "WTA": {"intercept": 0.029204, "temperature": 1.150681},
+}
+
+
+def assert_frozen_comparator() -> None:
+    """Self-refusal: the comparator constants must match the frozen records on disk."""
+    repo = Path(__file__).resolve().parents[4]
+    frozen = json.loads(
+        (repo / "docs/evidence/stage2b-f0-f2-runs/F2_EVALUATION_REPORT.json").read_text()
+    )
+    for tour in ("ATP", "WTA"):
+        recorded = float(frozen[tour]["selected_k"])
+        if FROZEN_F2_K_BY_TOUR[tour] != recorded:
+            raise AssertionError(
+                f"INVALID_COMPARATOR_CONFIGURATION: {tour} K {FROZEN_F2_K_BY_TOUR[tour]!r} "
+                f"!= frozen selected_k {recorded!r}"
+            )
+    policy = (repo / "specs/programme/calibration-policy-v2.yaml").read_text()
+    for tour, params in FROZEN_F2_AFFINE_BY_TOUR.items():
+        for name, value in params.items():
+            if f"{name}: {value!r}" not in policy:
+                raise AssertionError(
+                    f"INVALID_COMPARATOR_CONFIGURATION: {tour} affine {name}={value!r} not "
+                    "found in calibration-policy-v2 frozen_parameters"
+                )
 SCHEMA = FeatureSchema(names=("unit",))
 HORIZON = HorizonLabel("T-5m")
 _UNIT_FEATURES: Mapping[str, Decimal] = {"unit": Decimal(1)}
@@ -677,7 +708,70 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _affine_apply(p: float, intercept: float, temperature: float) -> float:
+    """The registered affine map, a-side canonical + exact complement downstream."""
+    p = min(max(p, 1e-12), 1 - 1e-12)
+    z = math.log(p / (1.0 - p))
+    zc = intercept + z / temperature
+    return 1.0 / (1.0 + math.exp(-max(-700.0, min(700.0, zc))))
+
+
+def _calibrated_rows(
+    rows: Sequence[ScoredRow], intercept: float, temperature: float
+) -> list[ScoredRow]:
+    return [
+        ScoredRow(r.race_id, r.date, _affine_apply(r.p_a, intercept, temperature), r.y_a)
+        for r in rows
+    ]
+
+
+def paired_delta(
+    left: Sequence[ScoredRow], right: Sequence[ScoredRow], label: str
+) -> dict[str, Any]:
+    """§3.B paired, chronology-aware log-loss delta (left minus right) on the EXACT
+    paired population, with a UTC-day-clustered block bootstrap CI (deterministic
+    seed). Never an unpaired aggregate."""
+    right_by_id = {r.race_id: r for r in right}
+    per_day: dict[date, list[float]] = defaultdict(list)
+    for row in left:
+        other = right_by_id.get(row.race_id)
+        if other is None:
+            continue
+        d_r = -math.log(_clamp(row.p_a) if row.y_a == 1.0 else _clamp(1.0 - row.p_a)) - (
+            -math.log(_clamp(other.p_a) if other.y_a == 1.0 else _clamp(1.0 - other.p_a))
+        )
+        per_day[row.date].append(d_r)
+    days = sorted(per_day)
+    all_d = [d for day in days for d in per_day[day]]
+    n = len(all_d)
+    if n == 0:
+        return {"label": label, "n_paired": 0}
+    mean = math.fsum(all_d) / n
+    import random as _random
+
+    rng = _random.Random(20260720)  # frozen seed: deterministic CI
+    boots: list[float] = []
+    for _ in range(2000):
+        sample: list[float] = []
+        for _ in range(len(days)):
+            sample.extend(per_day[days[rng.randrange(len(days))]])
+        boots.append(math.fsum(sample) / len(sample))
+    boots.sort()
+    return {
+        "label": label,
+        "n_paired": n,
+        "n_days": len(days),
+        "mean_paired_delta_nats": round(mean, 8),
+        "day_cluster_bootstrap_ci_95": [
+            round(quantile(boots, 0.025), 8),
+            round(quantile(boots, 0.975), 8),
+        ],
+        "note": "left minus right; negative favours left",
+    }
+
+
 def main() -> None:
+    assert_frozen_comparator()
     OUTDIR.mkdir(parents=True, exist_ok=True)
     generated_at = datetime.now(timezone.utc).isoformat()
     input_hashes = {fn: sha256_file(RAW / fn) for fn in sorted(os.listdir(RAW))}
@@ -706,18 +800,18 @@ def main() -> None:
 
         # ---- three families through the SAME model-independent orchestrator ----
         dp1_family = Glicko2Family()
-        f2_family = GlobalEloFamily(k_factor=FROZEN_F2_K)
+        f2_family = GlobalEloFamily(k_factor=FROZEN_F2_K_BY_TOUR[tour])
         null_family = StructuralNullFamily()
         threshold = ChronologyKey.from_date(WARMUP_THROUGH)
 
         cf_results: dict[str, CrossFitResult] = {
             "dp1_raw": cross_fit(dev_races, SCHEMA, horizon=HORIZON, family=dp1_family, score_only_after=threshold),
-            "f2_v1_k24": cross_fit(dev_races, SCHEMA, horizon=HORIZON, family=f2_family, score_only_after=threshold),
+            "f2_v1_frozen": cross_fit(dev_races, SCHEMA, horizon=HORIZON, family=f2_family, score_only_after=threshold),
             "structural_null": cross_fit(dev_races, SCHEMA, horizon=HORIZON, family=null_family, score_only_after=threshold),
         }
-        manifest_body["family_ids"] = {
+        manifest_body["family_ids"][tour] = {
             "dp1_raw": dp1_family.family_id,
-            "f2_v1_k24": f2_family.family_id,
+            "f2_v1_frozen": f2_family.family_id,
             "structural_null": null_family.family_id,
         }
 
@@ -783,8 +877,10 @@ def main() -> None:
         }
 
         # ---- validation windows for F2 and null (DP1's own replay already covers it) ----
-        f2_deployment = cf_results["f2_v1_k24"].deployment_model
-        f2_val_rows = f2_validation_replay(races_dated, f2_deployment.ratings, FROZEN_F2_K)  # type: ignore[attr-defined]
+        f2_deployment = cf_results["f2_v1_frozen"].deployment_model
+        f2_val_rows = f2_validation_replay(
+            races_dated, f2_deployment.ratings, FROZEN_F2_K_BY_TOUR[tour]  # type: ignore[attr-defined]
+        )
         null_val_rows = null_validation_rows(races_dated)
 
         # ---- assemble per-family OOF + validation reports ----
@@ -804,10 +900,54 @@ def main() -> None:
                 "validation_workload_cohorts": cohort_metrics(val_enriched, "workload_band"),
             }
 
+        # ---- SPEC-107 calibration: fitted ONLY on leakage-safe crossfit OOF rows,
+        # per tour; applied to the OOF window (IN-SAMPLE for the calibration fit —
+        # labelled as such) and prequentially to the validation window. F2's
+        # calibrated series uses the FROZEN calibration-policy-v2 vintage, never refit.
+        from sport_tennis.dp1_calibration import fit_affine_logit_calibration
+
+        dp1_cal = fit_affine_logit_calibration(
+            dev_races, cf_results["dp1_raw"].oof, horizon=HORIZON, tour=tour.lower()
+        )
+        dp1_cal_oof_rows = _calibrated_rows(dp1_oof_rows, dp1_cal.intercept, dp1_cal.temperature)
+        dp1_cal_val_rows = _calibrated_rows(dp1_val_rows, dp1_cal.intercept, dp1_cal.temperature)
+        f2_aff = FROZEN_F2_AFFINE_BY_TOUR[tour]
+        f2_cal_oof_rows = _calibrated_rows(
+            oof_by_label["f2_v1_frozen"], f2_aff["intercept"], f2_aff["temperature"]
+        )
+        f2_cal_val_rows = _calibrated_rows(f2_val_rows, f2_aff["intercept"], f2_aff["temperature"])
+
         families_report = {
             "dp1_raw": block(dp1_oof_rows, dp1_val_rows),
-            "f2_v1_k24_frozen_baseline": block(oof_by_label["f2_v1_k24"], f2_val_rows),
+            "dp1_calibrated": block(dp1_cal_oof_rows, dp1_cal_val_rows),
+            "f2_v1_frozen_baseline": block(oof_by_label["f2_v1_frozen"], f2_val_rows),
+            "f2_v1_frozen_calibrated": block(f2_cal_oof_rows, f2_cal_val_rows),
             "structural_null_baseline": block(oof_by_label["structural_null"], null_val_rows),
+        }
+        calibration_block = {
+            "dp1_affine": {
+                "version": "affine-logit-dp1-v1",
+                "fit_on": "leakage-safe crossfit OOF rows only (SPEC-031 re-verified at consumption)",
+                "intercept": dp1_cal.intercept,
+                "temperature": dp1_cal.temperature,
+                "n_rows": dp1_cal.n_rows,
+                "oof_metrics_are_in_sample_for_this_fit": True,
+            },
+            "f2_affine_frozen_vintage": f2_aff,
+        }
+        paired = {
+            "oof_raw_dp1_minus_f2": paired_delta(
+                dp1_oof_rows, oof_by_label["f2_v1_frozen"], "OOF: DP1 raw - F2 raw"
+            ),
+            "oof_calibrated_dp1_minus_f2": paired_delta(
+                dp1_cal_oof_rows, f2_cal_oof_rows, "OOF: DP1 cal - F2 cal (DP1 cal in-sample)"
+            ),
+            "validation_raw_dp1_minus_f2": paired_delta(
+                dp1_val_rows, f2_val_rows, "VAL: DP1 raw - F2 raw"
+            ),
+            "validation_calibrated_dp1_minus_f2": paired_delta(
+                dp1_cal_val_rows, f2_cal_val_rows, "VAL: DP1 cal - F2 cal (both frozen-from-OOF)"
+            ),
         }
 
         # ---- DP1 uncertainty-interval coverage diagnostic (item 4) ----
@@ -859,6 +999,13 @@ def main() -> None:
             "validation_window": [VAL_LO.isoformat(), VAL_HI.isoformat()],
             "universe": universe,
             "families": families_report,
+            "comparator": {
+                "f2_k_by_tour": FROZEN_F2_K_BY_TOUR,
+                "f2_k_this_tour": FROZEN_F2_K_BY_TOUR[tour],
+                "f2_affine_frozen_vintage": FROZEN_F2_AFFINE_BY_TOUR[tour],
+            },
+            "calibration": calibration_block,
+            "paired_chronology_aware_deltas": paired,
             "crossfit_vs_replay_reconciliation": reconciliation,
             "dp1_uncertainty_interval_coverage": coverage,
             "dp1_state_stability": stability,
@@ -879,8 +1026,10 @@ def main() -> None:
         print(
             f"[{tour}] dev={len(dev_races)} oof_dp1={len(dp1_oof_rows)} "
             f"val_dp1={len(dp1_val_rows)} recon={reconciliation['verdict']} "
-            f"oof_ll_dp1={families_report['dp1_raw']['oof_metrics'].get('log_loss')} "
-            f"val_ll_dp1={families_report['dp1_raw']['validation_metrics'].get('log_loss')}",
+            # RESULT-READ BARRIER (founder §4): no numerical result value on stdout —
+            # results live only in the hashed artifact files, opened only after the
+            # frozen continuation rule is applied.
+            "results=WRITTEN_TO_ARTIFACT_ONLY",
             flush=True,
         )
 
