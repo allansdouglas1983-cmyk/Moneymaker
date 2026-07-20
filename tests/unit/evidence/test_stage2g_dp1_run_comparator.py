@@ -62,3 +62,38 @@ def test_script_asserts_the_comparator_at_runtime() -> None:
         "any evaluation work"
     )
     module.assert_frozen_comparator()  # must pass against the frozen report
+
+
+def test_frozen_vintage_is_never_applied_to_historical_rows() -> None:
+    """Founder row-time-validity control: the June-deployment affine vintage (fitted on
+    all pre-June outcomes) may exist only as comparator REFERENCE; applying it to any
+    historical evaluation row is retrospective and forbidden."""
+    module = _load_script()
+    assert getattr(module, "F2_FROZEN_VINTAGE_APPLICATION", None) == (
+        "COMPARATOR_REFERENCE_ONLY_NEVER_APPLIED_TO_HISTORICAL_ROWS"
+    )
+    source = (
+        _REPO / "docs/evidence/stage2g-dp1-development/scripts/dp1_run.py"
+    ).read_text()
+    body = source.split("def main(", 1)[1]
+    assert "FROZEN_F2_AFFINE_BY_TOUR[tour]" not in body.replace(
+        '"f2_affine_frozen_vintage_reference": FROZEN_F2_AFFINE_BY_TOUR[tour],', ""
+    ), "the frozen vintage must not reach any row-level calibration inside main()"
+
+
+def test_evidence_roles_are_declared_and_exhaustive() -> None:
+    """Every scorecard table must carry one of the three frozen evidence roles."""
+    module = _load_script()
+    roles = getattr(module, "EVIDENCE_ROLES", None)
+    assert roles == {
+        "dp1_raw": "RAW_HONEST",
+        "f2_v1_frozen_baseline": "RAW_HONEST",
+        "structural_null_baseline": "RAW_HONEST",
+        "dp1_calibrated_oof": "IN_SAMPLE_CALIBRATION_DIAGNOSTIC",
+        "dp1_calibrated_validation": "CALIBRATED_HONEST",
+        "f2_calibrated_oof": "QUARANTINED_NOT_PRODUCED (no row-time-valid cheap reproduction of the outer-fold F2 calibration exists; omitted rather than faked)",
+        "f2_calibrated_validation": "CALIBRATED_HONEST (affine fitted on F2 OOF-window predictions only, strictly before the validation block; same split as DP1)",
+        "paired_oof": "RAW_HONEST (raw-vs-raw only)",
+        "paired_validation_raw": "RAW_HONEST",
+        "paired_validation_calibrated": "CALIBRATED_HONEST",
+    }
