@@ -521,9 +521,9 @@ class TestInitialBracketSeam:
     def test_exact_equality_takes_the_k_branch(self) -> None:
         """The paper's case split is STRICT Delta^2 > phi^2 + v; equality must use the
         k-branch (the B-branch would be ln(0)). Paper-fidelity pin, not a mutant hack."""
-        phi, v = 0.6, 0.28
-        delta = math.sqrt(phi * phi + v)
-        assert delta * delta <= phi * phi + v  # constructed at/below exact equality
+        # exactly-representable floats: delta^2 = 0.25 = phi^2 + v bit-exactly
+        phi, v, delta = 0.375, 0.109375, 0.5
+        assert delta * delta == phi * phi + v  # exact equality, no rounding
         a, b = initial_bracket(phi=phi, v=v, delta=delta, sigma=0.06, tau=GLICKO2_TAU)
         assert b == a - GLICKO2_TAU  # k-branch, never ln(~0)
 

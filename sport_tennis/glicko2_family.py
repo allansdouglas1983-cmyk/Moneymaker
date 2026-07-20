@@ -45,6 +45,7 @@ __all__ = [
     "Glicko2Family",
     "PlayerState",
     "inactivity_step",
+    "initial_bracket",
     "new_volatility",
     "rate_player",
     "volatility_converged",
@@ -108,6 +109,43 @@ def _expected(mu: float, mu_j: float, phi_j: float) -> float:
     return 1.0 / (1.0 + math.exp(-_g(phi_j) * (mu - mu_j)))
 
 
+def initial_bracket(
+    *, phi: float, v: float, delta: float, sigma: float, tau: float
+) -> tuple[float, float]:
+    """The paper's step-5 bracket initialisation as a PURE seam.
+
+    Registered pure domain: finite inputs with phi > 0, v > 0, sigma > 0, tau > 0
+    (the mathematical domain of the paper's algorithm). ``rate_player`` constructs
+    values inside it by construction; the public model API's accepted domain is
+    unchanged by this seam. The case split is STRICT ``Delta^2 > phi^2 + v``; exact
+    equality takes the k-branch (the B-branch would be ln(0)).
+
+    Structural invariant (analytic; pinned by tests and proven in the Slice-2
+    survivor packet): on the k-branch D = Delta^2 - phi^2 - v <= 0, the first term
+    of f at x = a - k*tau has magnitude < 1/2 while -(x - a)/tau^2 contributes
+    +k/tau >= +2 at tau = 0.5, so f(a - k*tau) > 3/2 > 0 for every k >= 1 — the
+    while-loop body below never executes for ANY input in the registered domain.
+    The paper-faithful loop is retained rather than simplified so the code matches
+    the pinned primary source line for line.
+    """
+    a = math.log(sigma * sigma)
+    delta_sq = delta * delta
+    phi_sq = phi * phi
+
+    def f(x: float) -> float:
+        ex = math.exp(x)
+        num = ex * (delta_sq - phi_sq - v - ex)
+        den = 2.0 * (phi_sq + v + ex) ** 2
+        return num / den - (x - a) / (tau * tau)
+
+    if delta_sq > phi_sq + v:
+        return a, math.log(delta_sq - phi_sq - v)
+    k = 1
+    while f(a - k * tau) < 0.0:  # structurally unreachable body — see docstring
+        k += 1
+    return a, a - k * tau
+
+
 def new_volatility(
     *, phi: float, v: float, delta: float, sigma: float, tau: float, tolerance: float
 ) -> float:
@@ -122,14 +160,7 @@ def new_volatility(
         den = 2.0 * (phi_sq + v + ex) ** 2
         return num / den - (x - a) / (tau * tau)
 
-    big_a = a
-    if delta_sq > phi_sq + v:
-        big_b = math.log(delta_sq - phi_sq - v)
-    else:
-        k = 1
-        while f(a - k * tau) < 0.0:
-            k += 1
-        big_b = a - k * tau
+    big_a, big_b = initial_bracket(phi=phi, v=v, delta=delta, sigma=sigma, tau=tau)
 
     f_a = f(big_a)
     f_b = f(big_b)

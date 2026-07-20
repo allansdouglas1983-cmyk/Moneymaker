@@ -104,7 +104,10 @@ class AffineLogitCalibration:
             raise CalibrationFitError(f"p_raw must be strictly inside (0, 1), got {p_raw!r}")
         if self.intercept == 0.0 and self.temperature == 1.0:
             return p_raw
-        return _sigmoid(self.intercept + _logit(p_raw) / self.temperature)
+        calibrated = _sigmoid(self.intercept + _logit(p_raw) / self.temperature)
+        # Governed probability bounds (mirrors SPEC-106's floor): float saturation at
+        # extreme parameters must not emit 0.0/1.0 — those are not valid probabilities.
+        return min(1.0 - 1e-12, max(1e-12, calibrated))
 
     def apply_pair(self, p_raw_canonical: float) -> tuple[float, float]:
         """Calibrate the canonical (lower runner id) orientation; the opponent is the
