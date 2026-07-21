@@ -488,3 +488,14 @@ class TestPairSignatureContract:
             if name in ("state_a", "state_b"):
                 continue
             assert p.kind is inspect.Parameter.KEYWORD_ONLY, name
+
+
+class TestQuadraturePolishBudgetPinned:
+    """Founder §5: the quadrature Newton polish budget is a registered constant (64).
+    Pin its exact value so a NumberReplacer (63/65) dies, even though it does not change
+    the byte-identical rule output on convergent roots."""
+
+    def test_newton_steps_constant_pinned(self) -> None:
+        from sport_tennis.dp1_distribution import _NEWTON_STEPS
+
+        assert _NEWTON_STEPS == 64

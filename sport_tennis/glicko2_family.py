@@ -155,9 +155,22 @@ def initial_bracket(
 
 
 def new_volatility(
-    *, phi: float, v: float, delta: float, sigma: float, tau: float, tolerance: float
+    *,
+    phi: float,
+    v: float,
+    delta: float,
+    sigma: float,
+    tau: float,
+    tolerance: float,
+    maximum: int = MAX_VOLATILITY_ITERATIONS,
 ) -> float:
-    """Step 5 of the paper: sigma' via the Illinois-algorithm iteration on f(x)."""
+    """Step 5 of the paper: sigma' via the Illinois-algorithm iteration on f(x).
+
+    ``maximum`` defaults to the registered MAX_VOLATILITY_ITERATIONS and is injectable
+    ONLY so the iteration-budget seam (start=0, +1, cap boundary) is directly testable
+    with synthetic small budgets (founder §5); rate_player always uses the default, so
+    production output is unchanged.
+    """
     a = math.log(sigma * sigma)
     delta_sq = delta * delta
     phi_sq = phi * phi
@@ -174,9 +187,9 @@ def new_volatility(
     f_b = f(big_b)
     iterations = 0
     while not volatility_converged(abs(big_b - big_a), tolerance):
-        if not volatility_iteration_allowed(iterations, MAX_VOLATILITY_ITERATIONS):
+        if not volatility_iteration_allowed(iterations, maximum):
             raise Glicko2ConvergenceError(
-                f"volatility iteration exhausted {MAX_VOLATILITY_ITERATIONS} steps "
+                f"volatility iteration exhausted {maximum} steps "
                 f"(|b-a|={abs(big_b - big_a)!r}, tolerance={tolerance!r}) — refusing, "
                 "never substituting an unconverged value"
             )

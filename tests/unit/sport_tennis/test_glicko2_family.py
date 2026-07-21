@@ -11,6 +11,9 @@ from __future__ import annotations
 import math
 from datetime import date, timedelta
 from decimal import Decimal
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 import pytest
 
@@ -590,3 +593,104 @@ class TestIllinoisSignPredicate:
         # kills Mul_Div: f_b == 0.0 must return (not raise ZeroDivisionError)
         assert brackets_root_or_touches_zero(3.0, 0.0) is True
         assert brackets_root_or_touches_zero(-3.0, 0.0) is True
+
+
+class TestVolatilityIterationBudgetSeam:
+    """Founder §5: directly testable iteration-budget behaviour via an injected small
+    maximum (the registered default MAX_VOLATILITY_ITERATIONS is unchanged). A known
+    input converges in exactly K=3 Illinois iterations. Kills counter start / increment
+    and cap-boundary mutants; forced non-convergence reaches the typed refusal."""
+
+    K = 3
+
+    @staticmethod
+    def _fit(maximum: int | None = None, tolerance: float = GLICKO2_CONVERGENCE_TOLERANCE) -> float:
+        if maximum is None:
+            return new_volatility(
+                phi=0.5, v=0.4, delta=0.9, sigma=0.3, tau=GLICKO2_TAU, tolerance=tolerance
+            )
+        return new_volatility(
+            phi=0.5, v=0.4, delta=0.9, sigma=0.3, tau=GLICKO2_TAU, tolerance=tolerance,
+            maximum=maximum,
+        )
+
+    def test_cap_equal_to_exact_count_permits_convergence(self) -> None:
+        assert self._fit(maximum=self.K) == self._fit()  # byte-identical to default run
+
+    def test_cap_below_exact_count_refuses(self) -> None:
+        # kills counter-start=1 (short budget) and +=0 (cap ineffective -> would converge)
+        with pytest.raises(Glicko2ConvergenceError):
+            self._fit(maximum=self.K - 1)
+
+    def test_cap_above_exact_count_still_converges_identically(self) -> None:
+        assert self._fit(maximum=self.K + 5) == self._fit()
+
+    def test_forced_non_convergence_reaches_typed_refusal(self) -> None:
+        with pytest.raises(Glicko2ConvergenceError, match="exhausted"):
+            self._fit(maximum=5, tolerance=0.0)
+
+    def test_registered_default_cap_pinned(self) -> None:
+        assert MAX_VOLATILITY_ITERATIONS == 100
+
+
+class TestInactivityAdvanceModulo:
+    """Founder §8: kill the subtraction->modulo mutant in the inactivity-advance count.
+    `target % current` equals `target - current` ONLY when current <= target < 2*current,
+    which is NOT a general ordinal invariant. Uses small ordinals where they differ."""
+
+    def test_advance_step_count_uses_subtraction_not_modulo(self) -> None:
+        from sport_tennis.glicko2_family import _advance_to
+
+        base = PlayerState(mu=0.0, phi=0.5, sigma=0.06)
+        # ordinals 3 and 7: 7 - 3 - 1 = 3 steps; but 7 % 3 - 1 = 0 steps (they DIFFER).
+        advanced = _advance_to(base, 3, 7)
+        expected = base
+        for _ in range(3):  # exactly target - current - 1 = 3 inflations
+            expected = inactivity_step(expected)
+        assert advanced.phi == expected.phi
+        # a modulo implementation would inflate 0 times, leaving phi unchanged:
+        assert advanced.phi != base.phi
+
+    def test_widely_separated_ordinals_differ(self) -> None:
+        from sport_tennis.glicko2_family import _advance_to
+
+        base = PlayerState(mu=0.0, phi=0.5, sigma=0.06)
+        # current=5, target=13: 13-5-1 = 7 steps; 13%5-1 = 2 steps -> different phi
+        got = _advance_to(base, 5, 13)
+        expected = base
+        for _ in range(7):
+            expected = inactivity_step(expected)
+        assert got.phi == expected.phi
+
+
+class TestRegisteredTauObjectIdentity:
+    """Kill the tau-guard `is not` mutant introduced by the §3 refactor: an equal-but-
+    distinct 0.5 object must be ACCEPTED (value equality, not identity)."""
+
+    def test_distinct_equal_tau_object_accepted(self) -> None:
+        distinct = float("0.5")  # a fresh float object, == GLICKO2_TAU but not `is`
+        assert distinct == GLICKO2_TAU
+        a, b = initial_bracket(phi=0.5, v=1.2, delta=0.3, sigma=0.06, tau=distinct)
+        assert b == a - GLICKO2_TAU
+
+
+class TestTypeCheckingRuntimeImport:
+    """Founder §7: prove in a clean subprocess that importing glicko2_family does NOT
+    runtime-import the type-only dependency; kills `if not TYPE_CHECKING`."""
+
+    def test_type_only_import_not_executed_at_runtime(self) -> None:
+        import subprocess
+        import sys
+
+        code = (
+            "import sys; import sport_tennis.glicko2_family as g; "
+            "assert 'l4_pricing.horizon' not in sys.modules, "
+            "'type-only import leaked into runtime (if not TYPE_CHECKING mutant)'; "
+            "assert 'l4_pricing.races' not in sys.modules; print('clean')"
+        )
+        proc = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True,
+            cwd=str(_REPO_ROOT),
+        )
+        assert proc.returncode == 0, proc.stderr
+        assert "clean" in proc.stdout

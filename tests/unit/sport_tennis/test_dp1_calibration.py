@@ -30,6 +30,8 @@ from sport_tennis.dp1_calibration import (
     fit_affine_logit_calibration,
     hessian_is_singular,
     newton_iteration_allowed,
+    parameters_finite,
+    slope_is_valid,
     step_has_converged,
 )
 
@@ -407,3 +409,116 @@ class TestConstructorAndSignatureKills:
         params = inspect.signature(fit_affine_logit_calibration).parameters
         assert params["horizon"].kind is inspect.Parameter.KEYWORD_ONLY
         assert params["tour"].kind is inspect.Parameter.KEYWORD_ONLY
+
+
+class TestCalibrationBudgetSeam:
+    """Founder §5: iteration-budget behaviour via an injected small maximum (registered
+    default MAX_NEWTON_ITERATIONS unchanged). A known corpus converges in exactly K=6
+    Newton steps. Kills counter start/increment and cap-boundary mutants."""
+
+    K = 6
+
+    def _corpus(self) -> tuple[list[Race], list[OOFFundamental]]:
+        return _golden_corpus(0.4, 1.5, 400, 80000)
+
+    def test_cap_equal_to_exact_count_permits_convergence(self) -> None:
+        races, rows = self._corpus()
+        got = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp", maximum=self.K)
+        default = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
+        assert (got.intercept, got.temperature) == (default.intercept, default.temperature)
+
+    def test_cap_below_exact_count_refuses(self) -> None:
+        races, rows = self._corpus()
+        with pytest.raises(CalibrationFitError, match="did not converge"):
+            fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp", maximum=self.K - 1)
+
+    def test_registered_default_cap_pinned(self) -> None:
+        assert MAX_NEWTON_ITERATIONS == 100
+
+
+class TestSingularityPredicateAbsoluteBoundary:
+    """Founder §9: pin hessian_is_singular against the LITERAL 1e-12 boundary (not the
+    DET_EPSILON symbol), so a NumberReplacer on DET_EPSILON (1e-12 -> ~1.0) dies."""
+
+    def test_exact_boundary(self) -> None:
+        assert hessian_is_singular(1e-12) is True
+        assert hessian_is_singular(-1e-12) is True
+        assert hessian_is_singular(math.nextafter(1e-12, 0.0)) is True
+        assert hessian_is_singular(math.nextafter(1e-12, math.inf)) is False
+
+    def test_well_conditioned_determinants_are_not_singular(self) -> None:
+        # kills DET_EPSILON -> ~1.0: these would be wrongly flagged singular under the mutant
+        for det in (1e-6, 1e-3, 0.5, 1.0, 42.0):
+            assert hessian_is_singular(det) is False
+            assert hessian_is_singular(-det) is False
+
+
+class TestFiniteParameterPredicate:
+    """Founder §10: BOTH parameters must be finite; a one-sided non-finite is refused."""
+
+    def test_one_sided_non_finite_is_not_finite(self) -> None:
+        nan, inf = float("nan"), float("inf")
+        assert parameters_finite(0.1, 0.2) is True
+        assert parameters_finite(0.1, nan) is False   # finite / NaN
+        assert parameters_finite(nan, 0.2) is False   # NaN / finite
+        assert parameters_finite(0.1, inf) is False   # finite / +inf
+        assert parameters_finite(-inf, 0.2) is False  # -inf / finite
+        assert parameters_finite(nan, inf) is False
+
+
+class TestSlopeValidator:
+    """Founder §11: every non-positive OR non-finite slope is refused before the
+    reciprocal temperature is computed."""
+
+    def test_slope_boundary_cases(self) -> None:
+        assert slope_is_valid(1.0) is True
+        assert slope_is_valid(math.nextafter(0.0, 1.0)) is True  # smallest positive
+        assert slope_is_valid(0.0) is False
+        assert slope_is_valid(-0.0) is False
+        assert slope_is_valid(-1e-9) is False
+        assert slope_is_valid(-3.0) is False
+        assert slope_is_valid(float("nan")) is False
+        assert slope_is_valid(float("inf")) is False   # inf slope -> temperature 0, invalid
+        assert slope_is_valid(float("-inf")) is False
+
+
+class TestCanonicalDistinctObjectIdentity:
+    """Founder §6: equality (not object identity) must control canonical-row selection
+    and the win label. Uses runtime-distinct but equal competitor ids parsed
+    independently (int(str(...)) for values > 256 that are never interned)."""
+
+    def _distinct(self, n: int) -> int:
+        return int(str(n))  # a fresh int object, equal to n but not `is` n
+
+    def test_equal_but_distinct_ids_still_fit(self) -> None:
+        races: list[Race] = []
+        rows: list[OOFFundamental] = []
+        for i in range(60):
+            base = 100000 + i * 2
+            # Race carries one set of id objects; the OOF rows carry INDEPENDENT equal objects.
+            a_race, b_race = self._distinct(base), self._distinct(base + 1)
+            a_oof, b_oof = self._distinct(base), self._distinct(base + 1)
+            assert a_race is not a_oof and a_race == a_oof  # equal, distinct objects
+            z = -1.5 + 3.0 * i / 59
+            p = _sigmoid(z)
+            frac = (i * 0.6180339887498949) % 1.0
+            a_wins = frac < p  # label correlated with the canonical raw prob -> positive slope
+            race = Race(
+                race_id=f"d{i}",
+                cluster=calendar_day_assignment("tennis", date(2024, 1, 1)),
+                runners=(
+                    RunnerRow(runner_id=a_race, features={"placeholder": _D0}),
+                    RunnerRow(runner_id=b_race, features={"placeholder": _D0}),
+                ),
+                winner_id=self._distinct(base) if a_wins else self._distinct(base + 1),
+            )
+            races.append(race)
+            prov = StageOneProvenance(
+                trained_through=ChronologyKey(ordinal=date(2024, 1, 1).toordinal() - 1),
+                training_race_ids=frozenset(), training_race_ids_digest="0" * 64, horizon=_HORIZON,
+            )
+            rows.append(OOFFundamental(race_id=race.race_id, runner_id=a_oof, p_fundamental=p, provenance=prov))
+            rows.append(OOFFundamental(race_id=race.race_id, runner_id=b_oof, p_fundamental=1.0 - p, provenance=prov))
+        # `is` mutants would select NO canonical row (identity fails) -> refuse; `==` fits.
+        cal = fit_affine_logit_calibration(races, rows, horizon=_HORIZON, tour="atp")
+        assert cal.n_rows == 60

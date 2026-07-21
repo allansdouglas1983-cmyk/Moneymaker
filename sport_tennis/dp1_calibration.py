@@ -31,9 +31,17 @@ from l4_pricing.races import Race
 
 __all__ = [
     "AFFINE_CALIBRATION_VERSION",
+    "DET_EPSILON",
+    "MAX_NEWTON_ITERATIONS",
+    "STEP_EPSILON",
     "AffineLogitCalibration",
     "CalibrationFitError",
     "fit_affine_logit_calibration",
+    "hessian_is_singular",
+    "newton_iteration_allowed",
+    "parameters_finite",
+    "slope_is_valid",
+    "step_has_converged",
 ]
 
 AFFINE_CALIBRATION_VERSION = "affine-logit-dp1-v1"
@@ -61,6 +69,19 @@ def hessian_is_singular(det: float) -> bool:
 def step_has_converged(step_norm: float) -> bool:
     """Predicate seam: has the Newton step's infinity norm converged?"""
     return step_norm <= STEP_EPSILON
+
+
+def parameters_finite(a: float, b: float) -> bool:
+    """Predicate seam (founder §10): BOTH fitted parameters must be finite. A one-sided
+    non-finite value must be refused immediately, never deferred downstream."""
+    return math.isfinite(a) and math.isfinite(b)
+
+
+def slope_is_valid(b: float) -> bool:
+    """Predicate seam (founder §11): the fitted slope must be finite AND strictly
+    positive (temperature = 1/slope must be finite and > 0). Every non-positive or
+    non-finite slope is refused before the reciprocal is ever computed."""
+    return math.isfinite(b) and b > 0.0
 
 
 def _sigmoid(x: float) -> float:
@@ -122,6 +143,7 @@ def fit_affine_logit_calibration(
     *,
     horizon: HorizonLabel,
     tour: str,
+    maximum: int = MAX_NEWTON_ITERATIONS,
 ) -> AffineLogitCalibration:
     """MLE for (intercept, temperature) on strictly out-of-fold DP1 predictions.
 
@@ -197,21 +219,21 @@ def fit_affine_logit_calibration(
         step_b = (h_aa * g_b - h_ab * g_a) / det
         a += step_a
         b += step_b
-        if not (math.isfinite(a) and math.isfinite(b)):
+        if not parameters_finite(a, b):
             raise CalibrationFitError("calibration fit diverged to non-finite parameters")
         if step_has_converged(max(abs(step_a), abs(step_b))):
             break
         iterations += 1
-        if not newton_iteration_allowed(iterations, MAX_NEWTON_ITERATIONS):
+        if not newton_iteration_allowed(iterations, maximum):
             raise CalibrationFitError(
-                f"calibration fit did not converge in {MAX_NEWTON_ITERATIONS} Newton "
+                f"calibration fit did not converge in {maximum} Newton "
                 "iterations — refused, never truncated"
             )
 
-    if b <= 0.0:
+    if not slope_is_valid(b):
         raise CalibrationFitError(
-            f"fitted slope {b!r} is not positive: the registered form (temperature = 1/slope) "
-            "cannot represent anti-informative predictions — refused"
+            f"fitted slope {b!r} is not finite and positive: the registered form "
+            "(temperature = 1/slope) cannot represent anti-informative predictions — refused"
         )
     return AffineLogitCalibration(
         intercept=a, temperature=1.0 / b, tour=tour, n_rows=len(points)
