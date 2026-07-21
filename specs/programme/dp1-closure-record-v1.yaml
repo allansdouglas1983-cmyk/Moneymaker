@@ -1,0 +1,48 @@
+# specs/programme/dp1-closure-record-v1.yaml — PERMANENT closure of the DP1 dynamic
+# Glicko-2 family (Stage 2G; founder directive STAGE3-0001). Human-owned (CODEOWNERS
+# specs/**). Append-only history: DP1 is not reopened, retuned, or rescued — no parameter
+# tuning, no volatility/RD experimentation, no calibration adjustment, no continuation.
+
+closure_id: DP1-CLOSURE-v1
+closed_on: "2026-07-21"
+registration_closed: EXP-STAGE2G-DP1-GLICKO2-001
+family: DYNAMIC_GLICKO2_V1 (canonical Glicko-2; sport_tennis.glicko2_family / dp1_distribution / dp1_calibration)
+selected_model_after_closure: F2 global Elo (EXP-STAGE2-F2-GLOBAL-ELO-001) — PROMOTED HISTORICAL BASELINE
+
+verdict: STOP_DP1_HARM
+authority: founder directive STAGE3-0001 (accepted without appeal)
+interpretation: >-
+  DP1's dynamic machinery (rating deviation, volatility, per-empty-period inactivity
+  inflation) produces a well-calibrated predictor that beats the uninformed null, but it
+  carries LESS discriminative information than the simpler frozen F2-v1 global Elo. On the
+  paired, chronology-aware development comparison it is materially WORSE on proper score
+  and exceeds the +0.0007 nats non-harm boundary on BOTH tours. A clean, informative
+  negative: added dynamic complexity did not buy an edge; it cost proper score. Not a
+  defect; the platform working as designed (no exploitable edge, established cheaply).
+
+evaluation:                        # docs/evidence/stage2g-dp1-development/results/ (frozen)
+  execution_commit: "470b28656163cc63f5c975796f247a08e9bd80c3"
+  runtime: CPython 3.11.15 (matches the environment-bound mutation approvals)
+  determinism:
+    atp_raw_matches_unread_reference: true      # raw sections digest sha256:f53614f2...
+    wta_double_run_byte_identical: true
+    reconciliation: {ATP: EXACT_MATCH_ALL, WTA: MATCH_WITHIN_1e-6_ALL}
+  raw_oof_log_loss:  {DP1: {ATP: 0.648924, WTA: 0.634759}, F2: {ATP: 0.626453, WTA: 0.621226}, structural_null_ln2: 0.693147}
+  paired_raw_dp1_minus_f2_development_nats: {ATP: 0.02247149, WTA: 0.0135337, harm_boundary: 0.0007}
+  continuation_rule: specs/programme/stage2g-dp1-continuation-rule-v1.yaml (applied; no threshold changed after opening)
+  requirement_verdicts: {A_integrity: PASS, B_paired_nonharm: FAIL, C_overall_calibrated: PASS,
+    D_tour_adequacy: PASS, E_calibration_improvement: FAIL, F_temporal_transfer: PASS, G_uncertainty: DIAGNOSTIC}
+
+status: >-
+  DP1 remains reproducible and executable but RETIRED from active development. Its
+  registration (dp1-glicko2-registration-v1), calibration (calibration §, clamp amendment)
+  and mutation adjudication (mutation-survivors-stage2g) are frozen history.
+
+programme_history_after_stage2:
+  F2-v1: PROMOTED HISTORICAL BASELINE (active sporting baseline for future research)
+  F3_surface_elo: FAIL_HARM
+  DP1_dynamic_glicko2: STOP_DP1_HARM
+  next: >-
+    No implementation work begins on any replacement sporting model until a future founder
+    directive authorises it. Stage 3 objective is to discover information genuinely
+    INDEPENDENT of Frozen F2 (docs/stage3/).
