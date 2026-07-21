@@ -1,0 +1,314 @@
+{
+ "scorecard": "STAGE2G-DP1-DEVELOPMENT-SCORECARD-V1",
+ "execution_commit": "470b28656163cc63f5c975796f247a08e9bd80c3",
+ "evidence_class": "DEVELOPMENT (June is development forever; no confirmation claimed)",
+ "raw_dp1": {
+  "ATP": {
+   "oof": {
+    "n": 15165,
+    "log_loss": 0.648924,
+    "brier": 0.225804,
+    "cal_in_large": -0.005061,
+    "cal_slope": 0.624278
+   },
+   "validation": {
+    "n": 2521,
+    "log_loss": 0.649256,
+    "brier": 0.224715,
+    "cal_in_large": -0.002641,
+    "cal_slope": 0.596483
+   }
+  },
+  "WTA": {
+   "oof": {
+    "n": 13938,
+    "log_loss": 0.634759,
+    "brier": 0.22007,
+    "cal_in_large": -0.003994,
+    "cal_slope": 0.667795
+   },
+   "validation": {
+    "n": 2414,
+    "log_loss": 0.637244,
+    "brier": 0.220765,
+    "cal_in_large": -0.004635,
+    "cal_slope": 0.658934
+   }
+  }
+ },
+ "raw_f2v1": {
+  "ATP": {
+   "oof": {
+    "n": 15165,
+    "log_loss": 0.626453,
+    "brier": 0.21887,
+    "cal_in_large": -0.00724,
+    "cal_slope": 0.833425
+   },
+   "validation": {
+    "n": 2521,
+    "log_loss": 0.6256,
+    "brier": 0.218164,
+    "cal_in_large": -0.00168,
+    "cal_slope": 0.80534
+   }
+  },
+  "WTA": {
+   "oof": {
+    "n": 13938,
+    "log_loss": 0.621226,
+    "brier": 0.216452,
+    "cal_in_large": -0.006541,
+    "cal_slope": 0.853185
+   },
+   "validation": {
+    "n": 2414,
+    "log_loss": 0.619895,
+    "brier": 0.215456,
+    "cal_in_large": -0.002976,
+    "cal_slope": 0.834506
+   }
+  }
+ },
+ "structural_null": {
+  "ATP": 0.693147,
+  "WTA": 0.693147,
+  "ln2": 0.693147
+ },
+ "paired_raw_dp1_minus_f2_development": {
+  "ATP": 0.02247149,
+  "ATP_ci95": [
+   0.01751188,
+   0.02779001
+  ],
+  "WTA": 0.0135337,
+  "WTA_ci95": [
+   0.00901381,
+   0.01809965
+  ],
+  "harm_boundary": 0.0007,
+  "note": "positive = DP1 worse; both far exceed the boundary"
+ },
+ "calibrated_validation": {
+  "ATP": {
+   "brier": 0.219628,
+   "cal_in_large": 0.002012,
+   "cal_intercept": -0.008869,
+   "cal_slope": 0.955477,
+   "log_loss": 0.629283,
+   "n": 2521,
+   "reliability": {
+    "[0.0,0.1)": {
+     "mean_p": 0.0703,
+     "n": 21,
+     "obs_rate": 0.1429
+    },
+    "[0.1,0.2)": {
+     "mean_p": 0.1563,
+     "n": 101,
+     "obs_rate": 0.2079
+    },
+    "[0.2,0.3)": {
+     "mean_p": 0.2528,
+     "n": 207,
+     "obs_rate": 0.285
+    },
+    "[0.3,0.4)": {
+     "mean_p": 0.3542,
+     "n": 406,
+     "obs_rate": 0.3325
+    },
+    "[0.4,0.5)": {
+     "mean_p": 0.4515,
+     "n": 525,
+     "obs_rate": 0.4343
+    },
+    "[0.5,0.6)": {
+     "mean_p": 0.5485,
+     "n": 515,
+     "obs_rate": 0.5398
+    },
+    "[0.6,0.7)": {
+     "mean_p": 0.6478,
+     "n": 396,
+     "obs_rate": 0.6591
+    },
+    "[0.7,0.8)": {
+     "mean_p": 0.7465,
+     "n": 213,
+     "obs_rate": 0.7465
+    },
+    "[0.8,0.9)": {
+     "mean_p": 0.845,
+     "n": 113,
+     "obs_rate": 0.8407
+    },
+    "[0.9,1.0)": {
+     "mean_p": 0.9236,
+     "n": 24,
+     "obs_rate": 0.9167
+    }
+   }
+  },
+  "WTA": {
+   "brier": 0.217388,
+   "cal_in_large": -0.003571,
+   "cal_intercept": 0.016989,
+   "cal_slope": 0.98673,
+   "log_loss": 0.624239,
+   "n": 2414,
+   "reliability": {
+    "[0.0,0.1)": {
+     "mean_p": 0.0775,
+     "n": 17,
+     "obs_rate": 0.1765
+    },
+    "[0.1,0.2)": {
+     "mean_p": 0.1586,
+     "n": 106,
+     "obs_rate": 0.1887
+    },
+    "[0.2,0.3)": {
+     "mean_p": 0.2557,
+     "n": 203,
+     "obs_rate": 0.2463
+    },
+    "[0.3,0.4)": {
+     "mean_p": 0.3548,
+     "n": 327,
+     "obs_rate": 0.3456
+    },
+    "[0.4,0.5)": {
+     "mean_p": 0.4496,
+     "n": 452,
+     "obs_rate": 0.458
+    },
+    "[0.5,0.6)": {
+     "mean_p": 0.5468,
+     "n": 533,
+     "obs_rate": 0.5478
+    },
+    "[0.6,0.7)": {
+     "mean_p": 0.6466,
+     "n": 387,
+     "obs_rate": 0.6434
+    },
+    "[0.7,0.8)": {
+     "mean_p": 0.7437,
+     "n": 255,
+     "obs_rate": 0.7608
+    },
+    "[0.8,0.9)": {
+     "mean_p": 0.8437,
+     "n": 110,
+     "obs_rate": 0.8545
+    },
+    "[0.9,1.0)": {
+     "mean_p": 0.9161,
+     "n": 24,
+     "obs_rate": 0.9167
+    }
+   }
+  }
+ },
+ "rule_application": {
+  "A_integrity": "PASS",
+  "B_paired_nonharm": {
+   "ATP_delta": 0.02247149,
+   "WTA_delta": 0.0135337,
+   "boundary": 0.0007,
+   "ATP": "FAIL",
+   "WTA": "FAIL"
+  },
+  "C_overall_calibrated": {
+   "log_loss": 0.626816,
+   "lt_ln2": true,
+   "brier": 0.218532,
+   "lt_0.25": true,
+   "cal_in_large": -0.000719,
+   "in_pm0.02": true,
+   "cal_slope": 0.970765,
+   "in_0.90_1.10": true,
+   "verdict": "PASS"
+  },
+  "D_tour": {
+   "ATP": {
+    "n": 2521,
+    "log_loss": 0.629283,
+    "lt_ln2": true,
+    "brier": 0.219628,
+    "lt025": true,
+    "cil": 0.002012,
+    "in03": true,
+    "slope": 0.955477,
+    "in085115": true,
+    "verdict": "PASS"
+   },
+   "WTA": {
+    "n": 2414,
+    "log_loss": 0.624239,
+    "lt_ln2": true,
+    "brier": 0.217388,
+    "lt025": true,
+    "cil": -0.003571,
+    "in03": true,
+    "slope": 0.98673,
+    "in085115": true,
+    "verdict": "PASS"
+   }
+  },
+  "E_calibration_improvement": {
+   "ATP": {
+    "dp1_slope_err": 0.044523,
+    "f2_slope_err": 0.033698,
+    "dp1_better": false,
+    "worse_by_gt_0.02": false,
+    "dp1_cil_within_0.05": true
+   },
+   "WTA": {
+    "dp1_slope_err": 0.01327,
+    "f2_slope_err": 0.021892,
+    "dp1_better": true,
+    "worse_by_gt_0.02": false,
+    "dp1_cil_within_0.05": true
+   },
+   "overall": {
+    "dp1_pooled_slope_err": 0.029235,
+    "f2_pooled_slope_err": 0.027923,
+    "dp1_better_overall": false
+   }
+  },
+  "F_temporal_transfer": {
+   "ATP": {
+    "oof_ll": 0.648924,
+    "val_ll": 0.649256,
+    "transfer_ok": true,
+    "annual_ge_ln2_blocks": []
+   },
+   "WTA": {
+    "oof_ll": 0.634759,
+    "val_ll": 0.637244,
+    "transfer_ok": true,
+    "annual_ge_ln2_blocks": []
+   }
+  },
+  "G_uncertainty": {
+   "empirical_coverage": "DIAGNOSTIC_ONLY (no frozen empirical gate; governance gap)",
+   "structural_properties_pinned_by_tests": "RD widens interval; inactivity never shrinks; cold-start wider; ordering/finiteness \u2014 all property-tested (SPEC-106)",
+   "coverage_atp_method": "DEVELOPMENT_DIAGNOSTIC",
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "requirement_verdicts": {
+  "A_integrity": "PASS",
+  "B_paired_nonharm": "FAIL",
+  "C_overall_calibrated": "PASS",
+  "D_tour_adequacy": "PASS (both tours)",
+  "E_calibration_improvement": "FAIL (DP1 not better than F2 overall)",
+  "F_temporal_transfer": "PASS",
+  "G_uncertainty": "DIAGNOSTIC (governance gap; no frozen gate)"
+ },
+ "frozen_verdict": "STOP_DP1_HARM",
+ "verdict_basis": "DP1 exceeds the +0.0007 paired development log-loss harm boundary on BOTH tours (ATP +0.02247, WTA +0.01353 nats) \u2014 the dynamic Glicko-2 model is materially worse on proper score than the frozen F2-v1 global Elo baseline. Calibration is adequate (C/D pass) but the model carries less discriminative information than the simpler baseline. Expected platform outcome: no incremental edge from the added dynamic complexity.",
+ "continuation": "Per continuation-rule \u00a7H + founder \u00a77: preserve DP1 as a failed registered model; do NOT begin Slice 4; return to founder. No threshold changed after opening."
+}

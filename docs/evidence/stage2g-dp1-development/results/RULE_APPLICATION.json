@@ -1,0 +1,88 @@
+{
+ "A_integrity": "PASS",
+ "B_paired_nonharm": {
+  "ATP_delta": 0.02247149,
+  "WTA_delta": 0.0135337,
+  "boundary": 0.0007,
+  "ATP": "FAIL",
+  "WTA": "FAIL"
+ },
+ "C_overall_calibrated": {
+  "log_loss": 0.626816,
+  "lt_ln2": true,
+  "brier": 0.218532,
+  "lt_0.25": true,
+  "cal_in_large": -0.000719,
+  "in_pm0.02": true,
+  "cal_slope": 0.970765,
+  "in_0.90_1.10": true,
+  "verdict": "PASS"
+ },
+ "D_tour": {
+  "ATP": {
+   "n": 2521,
+   "log_loss": 0.629283,
+   "lt_ln2": true,
+   "brier": 0.219628,
+   "lt025": true,
+   "cil": 0.002012,
+   "in03": true,
+   "slope": 0.955477,
+   "in085115": true,
+   "verdict": "PASS"
+  },
+  "WTA": {
+   "n": 2414,
+   "log_loss": 0.624239,
+   "lt_ln2": true,
+   "brier": 0.217388,
+   "lt025": true,
+   "cil": -0.003571,
+   "in03": true,
+   "slope": 0.98673,
+   "in085115": true,
+   "verdict": "PASS"
+  }
+ },
+ "E_calibration_improvement": {
+  "ATP": {
+   "dp1_slope_err": 0.044523,
+   "f2_slope_err": 0.033698,
+   "dp1_better": false,
+   "worse_by_gt_0.02": false,
+   "dp1_cil_within_0.05": true
+  },
+  "WTA": {
+   "dp1_slope_err": 0.01327,
+   "f2_slope_err": 0.021892,
+   "dp1_better": true,
+   "worse_by_gt_0.02": false,
+   "dp1_cil_within_0.05": true
+  },
+  "overall": {
+   "dp1_pooled_slope_err": 0.029235,
+   "f2_pooled_slope_err": 0.027923,
+   "dp1_better_overall": false
+  }
+ },
+ "F_temporal_transfer": {
+  "ATP": {
+   "oof_ll": 0.648924,
+   "val_ll": 0.649256,
+   "transfer_ok": true,
+   "annual_ge_ln2_blocks": []
+  },
+  "WTA": {
+   "oof_ll": 0.634759,
+   "val_ll": 0.637244,
+   "transfer_ok": true,
+   "annual_ge_ln2_blocks": []
+  }
+ },
+ "G_uncertainty": {
+  "empirical_coverage": "DIAGNOSTIC_ONLY (no frozen empirical gate; governance gap)",
+  "structural_properties_pinned_by_tests": "RD widens interval; inactivity never shrinks; cold-start wider; ordering/finiteness \u2014 all property-tested (SPEC-106)",
+  "coverage_atp_method": "DEVELOPMENT_DIAGNOSTIC",
+  "verdict": "DIAGNOSTIC"
+ }
+}

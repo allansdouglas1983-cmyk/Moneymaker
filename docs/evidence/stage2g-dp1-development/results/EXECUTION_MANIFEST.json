@@ -1,0 +1,20 @@
+{
+ "artifacts": {
+  "DP1G2_EVALUATION_REPORT_ATP.json": "a4d4b67d014c0b3e3e381fb5dd1cee06e14e6e4b3e5a9321a54e62d588490d5f",
+  "DP1G2_EVALUATION_REPORT_MERGED.json": "5fc51bb07f034d9de3a227b44b6c1073cd766474ed0e68ab8e37300c612f0d90",
+  "DP1G2_EVALUATION_REPORT_WTA.json": "32d8355f0c88c9860e20aabd3e05939d02ddbbbc75ffd17c62d7dd540c92152d",
+  "DP1G2_MANIFEST_ATP.json": "4e905fe602902aa7df7d92923a51969b9e7b67b5ef5e3939ba8035bd3221156e",
+  "DP1G2_MANIFEST_WTA.json": "43a90779d8e859c627263aa5840f23acfdc46d4400f839754e43b81e329dde0c"
+ },
+ "determinism": {
+  "atp_raw_matches_reference": true,
+  "wta_double_run_byte_identical": true
+ },
+ "execution_commit_sha": "470b28656163cc63f5c975796f247a08e9bd80c3",
+ "input_file_sha256": {},
+ "reconciliation": {
+  "ATP": "EXACT_MATCH_ALL",
+  "WTA": "MATCH_WITHIN_1e-6_ALL"
+ },
+ "script_version": "stage2g-dp1-run-v2"
+}
