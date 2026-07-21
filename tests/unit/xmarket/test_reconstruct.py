@@ -75,6 +75,20 @@ def test_later_price_cannot_fill_an_earlier_missing_state() -> None:
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_ONE_SIDED_AT_F0
 
 
+def test_message_exactly_at_cutoff_is_included() -> None:
+    # the rule is publish_time <= commit_pt_ms: a message at pt EXACTLY == cutoff is IN.
+    # Kills the leakage-boundary mutant `pt > cutoff` -> `pt >= cutoff` (which would drop it).
+    mid = "1.1"
+    stream = [
+        _md(mid, 100),
+        _rc(mid, 1000, 7698572, 20.5, batb=[[0, 1.90, 50.0]], batl=[[0, 1.95, 40.0]]),
+    ]
+    snap = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)
+    assert snap.latest_message_pt == 1000
+    q = {(s.selection_id, s.line): s for s in snap.quotes}[(7698572, 20.5)]
+    assert q.best_back_price == 1.90 and q.best_lay_price == 1.95
+
+
 def test_no_state_at_or_before_cutoff_refuses() -> None:
     mid = "1.1"
     stream = [_md(mid, 5000), _rc(mid, 6000, 7698572, 20.5, batb=[[0, 1.9, 5.0]])]

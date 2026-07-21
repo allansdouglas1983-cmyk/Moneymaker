@@ -198,6 +198,17 @@ def test_set_handicap_is_never_accepted_as_game_handicap() -> None:
         P.parse_game_handicap(runners)
 
 
+def test_game_handicap_classification_boundary_at_3_0() -> None:
+    # The game/set boundary is max|hc| <= 3.0 => refuse. Pin BOTH sides of the boundary so a
+    # mutant that flips <= to < (or the constant) dies:
+    #   max|hc| exactly 3.0 -> refuse (a set-sized handicap is not a game handicap)
+    with pytest.raises(P.MarketParseError):
+        P.parse_game_handicap(_double_line_handicap_runners([1.5, 3.0]))
+    #   max|hc| 3.5 (> 3.0) -> accepted as a game handicap
+    lines = P.parse_game_handicap(_double_line_handicap_runners([1.5, 3.5]))
+    assert {ln.line for ln in lines} == {1.5, 3.5}
+
+
 def test_game_handicap_unpaired_giver_refuses() -> None:
     runners = _double_line_handicap_runners([5.5])  # valid pair, max>3
     runners.append(_runner(9628236, "A Tomljanovic", -4.5))  # dangling giver, no B@+4.5
