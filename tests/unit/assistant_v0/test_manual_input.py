@@ -21,7 +21,7 @@ def _kw(**over: object) -> dict[str, object]:
         source="MANUAL_BETFAIR_UI",
         back_a=Decimal("1.90"), back_a_size=Decimal("50"),
         lay_a=Decimal("1.95"), lay_a_size=Decimal("40"),
-        back_b=Decimal("2.05"), back_b_size=Decimal("30"),
+        back_b=Decimal("2.04"), back_b_size=Decimal("30"),
         lay_b=Decimal("2.12"), lay_b_size=Decimal("20"),
         market_status="OPEN", in_play=False, market_id="1.234", event_id="E1",
     )
