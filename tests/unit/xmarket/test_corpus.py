@@ -31,12 +31,12 @@ def _write_market(tmp: Path, event_id: str, market_id: str, market_type: str) ->
     return p
 
 
-def test_market_id_from_filename(tmp_path):
+def test_market_id_from_filename(tmp_path: Path) -> None:
     p = _write_market(tmp_path, "E1", "1.234", "MATCH_ODDS")
     assert C.market_id_from_path(p) == "1.234"
 
 
-def test_read_first_definition_returns_marketref(tmp_path):
+def test_read_first_definition_returns_marketref(tmp_path: Path) -> None:
     p = _write_market(tmp_path, "E1", "1.234", "COMBINED_TOTAL")
     ref = C.read_first_definition(p)
     assert isinstance(ref, MarketRef)
@@ -46,7 +46,7 @@ def test_read_first_definition_returns_marketref(tmp_path):
     assert ref.market_time_ms == 1780488000000  # 2026-06-03T12:00:00Z in ms
 
 
-def test_iter_market_files_finds_all_bz2(tmp_path):
+def test_iter_market_files_finds_all_bz2(tmp_path: Path) -> None:
     _write_market(tmp_path, "E1", "1.1", "MATCH_ODDS")
     _write_market(tmp_path, "E1", "1.2", "COMBINED_TOTAL")
     _write_market(tmp_path, "E2", "1.3", "HANDICAP")
@@ -54,13 +54,13 @@ def test_iter_market_files_finds_all_bz2(tmp_path):
     assert found == ["1.1", "1.2", "1.3"]
 
 
-def test_iter_messages_yields_in_file_order(tmp_path):
+def test_iter_messages_yields_in_file_order(tmp_path: Path) -> None:
     p = _write_market(tmp_path, "E1", "1.234", "MATCH_ODDS")
     msgs = list(C.iter_messages(p))
     assert [m["pt"] for m in msgs] == [100, 200]
 
 
-def test_build_catalogue_from_corpus_is_deterministic(tmp_path):
+def test_build_catalogue_from_corpus_is_deterministic(tmp_path: Path) -> None:
     _write_market(tmp_path, "E1", "1.1", "MATCH_ODDS")
     _write_market(tmp_path, "E1", "1.2", "COMBINED_TOTAL")
     cat_a = C.build_corpus_catalogue(tmp_path)
@@ -69,7 +69,7 @@ def test_build_catalogue_from_corpus_is_deterministic(tmp_path):
     assert set(cat_a) == {"1.1", "1.2"}
 
 
-def test_missing_market_time_is_none_not_error(tmp_path):
+def test_missing_market_time_is_none_not_error(tmp_path: Path) -> None:
     d = tmp_path / "2026" / "Jun" / "3" / "E1"
     d.mkdir(parents=True, exist_ok=True)
     p = d / "1.9.bz2"
@@ -81,7 +81,7 @@ def test_missing_market_time_is_none_not_error(tmp_path):
     assert ref.market_time_ms is None
 
 
-def test_file_without_definition_refuses(tmp_path):
+def test_file_without_definition_refuses(tmp_path: Path) -> None:
     d = tmp_path / "2026" / "Jun" / "3" / "E1"
     d.mkdir(parents=True, exist_ok=True)
     p = d / "1.8.bz2"

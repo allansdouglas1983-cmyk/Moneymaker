@@ -10,22 +10,27 @@ Tests are hermetic (synthetic messages) — no corpus dependency.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from research.xmarket import reconstruct as R
 
 
 # --------------------------------------------------------------------------- helpers
-def _md(mid, pt, *, status="OPEN", in_play=False, market_type="COMBINED_TOTAL",
-        event_id="35670766", cross=False, market_time=2000, num_active=110):
+def _md(mid: str, pt: int, *, status: str = "OPEN", in_play: bool = False,
+        market_type: str = "COMBINED_TOTAL", event_id: str = "35670766", cross: bool = False,
+        market_time: int = 2000, num_active: int = 110) -> dict[str, Any]:
     return {"pt": pt, "mc": [{"id": mid, "marketDefinition": {
         "status": status, "inPlay": in_play, "marketType": market_type,
         "eventId": event_id, "crossMatching": cross, "marketTime": market_time,
         "numberOfActiveRunners": num_active}}]}
 
 
-def _rc(mid, pt, sel, hc, *, batb=None, batl=None, ltp=0.0, tv=0.0):
-    change = {"id": sel, "hc": hc, "ltp": ltp, "tv": tv}
+def _rc(mid: str, pt: int, sel: int, hc: float, *, batb: list[list[float]] | None = None,
+        batl: list[list[float]] | None = None, ltp: float = 0.0,
+        tv: float = 0.0) -> dict[str, Any]:
+    change: dict[str, Any] = {"id": sel, "hc": hc, "ltp": ltp, "tv": tv}
     if batb is not None:
         change["batb"] = batb
     if batl is not None:
@@ -33,7 +38,7 @@ def _rc(mid, pt, sel, hc, *, batb=None, batl=None, ltp=0.0, tv=0.0):
     return {"pt": pt, "mc": [{"id": mid, "rc": [change]}]}
 
 
-def _two_sided_stream(mid="1.1", cutoff_pt=1000):
+def _two_sided_stream(mid: str = "1.1") -> list[dict[str, Any]]:
     return [
         _md(mid, 100),
         _rc(mid, 200, 7698572, 20.5, batb=[[0, 1.90, 50.0]], batl=[[0, 1.95, 40.0]], tv=500.0),
@@ -42,7 +47,7 @@ def _two_sided_stream(mid="1.1", cutoff_pt=1000):
 
 
 # --------------------------------------------------------------- as-of timestamp core
-def test_state_after_f0_timestamp_is_structurally_inaccessible():
+def test_state_after_f0_timestamp_is_structurally_inaccessible() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid) + [
         _rc(mid, 5000, 7698572, 20.5, batb=[[0, 1.10, 999.0]], batl=[[0, 1.11, 999.0]]),
@@ -54,7 +59,7 @@ def test_state_after_f0_timestamp_is_structurally_inaccessible():
     assert snap.latest_message_pt == 300
 
 
-def test_later_price_cannot_fill_an_earlier_missing_state():
+def test_later_price_cannot_fill_an_earlier_missing_state() -> None:
     mid = "1.1"
     stream = [
         _md(mid, 100),
@@ -70,7 +75,7 @@ def test_later_price_cannot_fill_an_earlier_missing_state():
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_ONE_SIDED_AT_F0
 
 
-def test_no_state_at_or_before_cutoff_refuses():
+def test_no_state_at_or_before_cutoff_refuses() -> None:
     mid = "1.1"
     stream = [_md(mid, 5000), _rc(mid, 6000, 7698572, 20.5, batb=[[0, 1.9, 5.0]])]
     with pytest.raises(R.ReconstructionRefusal) as ei:
@@ -78,7 +83,7 @@ def test_no_state_at_or_before_cutoff_refuses():
     assert ei.value.reason == R.NO_STATE_AT_OR_BEFORE_F0_TIMESTAMP
 
 
-def test_messages_for_other_markets_are_ignored():
+def test_messages_for_other_markets_are_ignored() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid) + [
         _rc("1.999", 400, 7698572, 20.5, batb=[[0, 1.01, 1.0]], batl=[[0, 1.02, 1.0]]),
@@ -89,21 +94,21 @@ def test_messages_for_other_markets_are_ignored():
 
 
 # ------------------------------------------------------------------- book exclusions
-def test_in_play_at_f0_refuses():
+def test_in_play_at_f0_refuses() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid) + [_md(mid, 900, in_play=True)]
     snap = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_IN_PLAY_AT_F0
 
 
-def test_suspended_at_f0_refuses():
+def test_suspended_at_f0_refuses() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid) + [_md(mid, 900, status="SUSPENDED")]
     snap = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_SUSPENDED_AT_F0
 
 
-def test_one_sided_at_f0_refuses():
+def test_one_sided_at_f0_refuses() -> None:
     mid = "1.1"
     stream = [
         _md(mid, 100),
@@ -113,7 +118,7 @@ def test_one_sided_at_f0_refuses():
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_ONE_SIDED_AT_F0
 
 
-def test_crossed_at_f0_refuses():
+def test_crossed_at_f0_refuses() -> None:
     mid = "1.1"
     stream = [
         _md(mid, 100),
@@ -123,20 +128,20 @@ def test_crossed_at_f0_refuses():
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_CROSSED_AT_F0
 
 
-def test_empty_book_at_f0_refuses():
+def test_empty_book_at_f0_refuses() -> None:
     mid = "1.1"
     stream = [_md(mid, 100), _rc(mid, 200, 7698572, 20.5, ltp=0.0, tv=0.0)]  # no batb/batl
     snap = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)
     assert R.book_exclusion_reason(snap) == R.DERIVATIVE_EMPTY_AT_F0
 
 
-def test_clean_two_sided_book_passes():
+def test_clean_two_sided_book_passes() -> None:
     snap = R.reconstruct_as_of(_two_sided_stream(), "1.1", cutoff_ms=1000)
     assert R.book_exclusion_reason(snap) is None
 
 
 # ------------------------------------------------------------------------ sync / age
-def test_quote_age_seconds_uses_latest_pre_cutoff_update():
+def test_quote_age_seconds_uses_latest_pre_cutoff_update() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid)  # latest pre-cutoff pt = 300
     snap = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)
@@ -144,7 +149,7 @@ def test_quote_age_seconds_uses_latest_pre_cutoff_update():
 
 
 # ---------------------------------------------------------------------- book quality
-def test_book_quality_reports_spread_sizes_and_depth():
+def test_book_quality_reports_spread_sizes_and_depth() -> None:
     snap = R.reconstruct_as_of(_two_sided_stream(), "1.1", cutoff_ms=1000)
     bq = R.book_quality(snap)
     assert bq.two_sided_line_count >= 1
@@ -154,7 +159,7 @@ def test_book_quality_reports_spread_sizes_and_depth():
 
 
 # --------------------------------------------------------------- no-outcome contract
-def test_snapshot_has_no_outcome_field():
+def test_snapshot_has_no_outcome_field() -> None:
     snap = R.reconstruct_as_of(_two_sided_stream(), "1.1", cutoff_ms=1000)
     banned = {"winner", "result", "settled", "settled_time", "pnl", "profit", "loss",
               "outcome", "won", "runner_result", "bsp", "close", "closing"}
@@ -166,7 +171,7 @@ def test_snapshot_has_no_outcome_field():
 
 
 # ------------------------------------------------------------------------ determinism
-def test_reconstruction_is_deterministic_and_row_order_invariant():
+def test_reconstruction_is_deterministic_and_row_order_invariant() -> None:
     mid = "1.1"
     stream = _two_sided_stream(mid)
     a = R.reconstruct_as_of(stream, mid, cutoff_ms=1000)

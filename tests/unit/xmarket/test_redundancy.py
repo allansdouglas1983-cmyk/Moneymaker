@@ -10,22 +10,24 @@ stays UNRESOLVED. Hermetic: synthetic message lists.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from research.xmarket import redundancy as RD
 
 
-def _rc(mid, pt, sel=1, hc=0.0):
+def _rc(mid: str, pt: int, sel: int = 1, hc: float = 0.0) -> dict[str, Any]:
     return {"pt": pt, "mc": [{"id": mid, "rc": [{"id": sel, "hc": hc,
             "batb": [[0, 1.9, 5.0]], "batl": [[0, 2.0, 5.0]]}]}]}
 
 
-def test_insufficient_updates_when_too_few():
+def test_insufficient_updates_when_too_few() -> None:
     deriv = [_rc("d", 100)]
     mo = [_rc("m", 100)]
     ev = RD.classify(mo, deriv, "m", "d", cutoff_ms=1000, min_updates=5)
     assert ev.status == RD.INSUFFICIENT_UPDATES
 
 
-def test_non_redundant_when_derivative_moves_without_mo():
+def test_non_redundant_when_derivative_moves_without_mo() -> None:
     # derivative updates spaced ~100 s apart; the single MO update is >90 s from all of them
     deriv = [_rc("d", t) for t in (100_000, 200_000, 300_000, 400_000, 500_000, 600_000)]
     mo = [_rc("m", 5_000)]  # one MO update, far (>5 s) from every derivative update
@@ -35,7 +37,7 @@ def test_non_redundant_when_derivative_moves_without_mo():
     assert ev.status == RD.OBSERVABLY_NON_REDUNDANT_UPDATES
 
 
-def test_redundant_path_when_every_derivative_update_coincides_with_mo():
+def test_redundant_path_when_every_derivative_update_coincides_with_mo() -> None:
     times = (100, 200, 300, 400, 500, 600)
     deriv = [_rc("d", t) for t in times]
     mo = [_rc("m", t) for t in times]  # exact same publish times
@@ -44,7 +46,7 @@ def test_redundant_path_when_every_derivative_update_coincides_with_mo():
     assert ev.status == RD.OBSERVABLY_REDUNDANT_PATH
 
 
-def test_unresolved_when_mixed():
+def test_unresolved_when_mixed() -> None:
     times = (100, 200, 300, 400, 500, 600)
     deriv = [_rc("d", t) for t in times]
     # half coincide with MO, half do not
@@ -53,14 +55,14 @@ def test_unresolved_when_mixed():
     assert ev.status == RD.INDEPENDENCE_UNRESOLVED
 
 
-def test_only_pre_cutoff_updates_count():
+def test_only_pre_cutoff_updates_count() -> None:
     deriv = [_rc("d", t) for t in (100, 200, 300, 400, 500)] + [_rc("d", 9000)]
     mo = [_rc("m", 100)]
     ev = RD.classify(mo, deriv, "m", "d", cutoff_ms=1000, min_updates=5)
     assert ev.derivative_update_count == 5  # the pt=9000 update is excluded
 
 
-def test_aggregate_status_distribution():
+def test_aggregate_status_distribution() -> None:
     evs = [
         RD.RedundancyEvidence("d1", 6, 1, {"0ms": 1.0, "100ms": 1.0, "1s": 1.0, "5s": 1.0},
                               RD.OBSERVABLY_NON_REDUNDANT_UPDATES),

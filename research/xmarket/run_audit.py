@@ -107,7 +107,7 @@ def run(corpus_root: str, f0_path: str = F0_MANIFEST,
         # §9 UTC-day concentration counts MARKETS (once), not derivatives
         if A.record_has_identifying(rec, 300.0):
             day_counter[rec.calendar_day or "UNKNOWN_DAY"] += 1
-        per_match.append(_per_match_record(rec, meta))
+        per_match.append(_per_match_record(rec))
 
     inventory = _market_type_inventory(catalogue)
     n_ident = A.n_primary_identifying(records, CUTOFFS_S)
@@ -157,7 +157,7 @@ def run(corpus_root: str, f0_path: str = F0_MANIFEST,
     return report, per_match
 
 
-def _per_match_record(rec: A.MarketAuditRecord, meta: dict[str, Any]) -> dict[str, Any]:
+def _per_match_record(rec: A.MarketAuditRecord) -> dict[str, Any]:
     def _d(d: A.DerivativeAudit | None) -> dict[str, Any] | None:
         return asdict(d) if d is not None else None
     return {

@@ -20,20 +20,23 @@ no outcome, no settlement is read or asserted here.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from research.xmarket import parsers as P
 
 
 # --------------------------------------------------------------------------- helpers
-def _runner(rid: int, name: str, hc: float | None) -> dict:
-    d: dict = {"id": rid, "name": name}
+def _runner(rid: int, name: str, hc: float | None) -> dict[str, Any]:
+    d: dict[str, Any] = {"id": rid, "name": name}
     if hc is not None:
         d["hc"] = hc
     return d
 
 
-def _total_games_runners(lines, over_id=7698572, under_id=7698577):
+def _total_games_runners(lines: list[float], over_id: int = 7698572,
+                         under_id: int = 7698577) -> list[dict[str, Any]]:
     """Real COMBINED_TOTAL shape: one Over id, one Under id, reused across every line."""
     out = []
     for ln in lines:
@@ -42,8 +45,9 @@ def _total_games_runners(lines, over_id=7698572, under_id=7698577):
     return out
 
 
-def _double_line_handicap_runners(mags, a_id=9628236, b_id=9607743,
-                                  a_name="A Tomljanovic", b_name="Swan"):
+def _double_line_handicap_runners(mags: list[float], a_id: int = 9628236, b_id: int = 9607743,
+                                  a_name: str = "A Tomljanovic",
+                                  b_name: str = "Swan") -> list[dict[str, Any]]:
     """Real HANDICAP shape: for each magnitude m, all four of A@-m,B@+m,A@+m,B@-m."""
     out = []
     for m in mags:
@@ -59,12 +63,12 @@ _SET_LADDER = [0.5, 1.5, 2.5]  # unambiguously a SET handicap: max 2.5 <= 3.0
 
 
 # --------------------------------------------------------------------------- version
-def test_parser_version_is_pinned():
+def test_parser_version_is_pinned() -> None:
     assert P.PARSER_VERSION == "xmarket-parsers-v1"
 
 
 # ----------------------------------------------------------------------- market_role
-def test_market_role_maps_every_observed_type_to_its_role():
+def test_market_role_maps_every_observed_type_to_its_role() -> None:
     assert P.market_role("MATCH_ODDS") == P.PRIMARY_MATCH_ODDS
     assert P.market_role("COMBINED_TOTAL") == P.PRIMARY_IDENTIFYING_TOTAL_GAMES
     assert P.market_role("HANDICAP") == P.PRIMARY_IDENTIFYING_GAME_HANDICAP
@@ -77,37 +81,37 @@ def test_market_role_maps_every_observed_type_to_its_role():
     assert P.market_role("TOURNAMENT_WINNER") == P.UNSUPPORTED
 
 
-def test_market_role_unknown_type_fails_closed_and_never_renames():
+def test_market_role_unknown_type_fails_closed_and_never_renames() -> None:
     assert P.market_role("SOME_NEW_BETFAIR_TYPE") == P.UNKNOWN_REQUIRES_REVIEW
     assert P.market_role("match_odds") == P.UNKNOWN_REQUIRES_REVIEW  # case-sensitive: raw is raw
 
 
 @pytest.mark.parametrize("bad", ["", 123, None])
-def test_market_role_refuses_empty_or_non_string(bad):
+def test_market_role_refuses_empty_or_non_string(bad: str) -> None:
     with pytest.raises(P.MarketParseError):
         P.market_role(bad)
 
 
 # ------------------------------------------------------------------------ match_odds
-def test_match_odds_returns_two_ids_sorted():
+def test_match_odds_returns_two_ids_sorted() -> None:
     runners = [_runner(22, "Player Z", None), _runner(11, "Player A", None)]
     assert P.parse_match_odds(runners) == (11, 22)
 
 
 @pytest.mark.parametrize("n", [1, 3, 0])
-def test_match_odds_wrong_runner_count_refuses(n):
+def test_match_odds_wrong_runner_count_refuses(n: int) -> None:
     runners = [_runner(i + 1, f"P{i}", None) for i in range(n)]
     with pytest.raises(P.MarketParseError):
         P.parse_match_odds(runners)
 
 
-def test_match_odds_shared_id_refuses():
+def test_match_odds_shared_id_refuses() -> None:
     runners = [_runner(5, "A", None), _runner(5, "B", None)]
     with pytest.raises(P.MarketParseError):
         P.parse_match_odds(runners)
 
 
-def test_set_betting_is_not_a_two_player_market():
+def test_set_betting_is_not_a_two_player_market() -> None:
     assert P.market_role("SET_BETTING") != P.PRIMARY_MATCH_ODDS
     set_betting_runners = [
         _runner(1, "A 2-0", None), _runner(2, "A 2-1", None),
@@ -118,7 +122,7 @@ def test_set_betting_is_not_a_two_player_market():
 
 
 # ----------------------------------------------------------------------- total_games
-def test_total_games_distinguishes_over_under_and_line():
+def test_total_games_distinguishes_over_under_and_line() -> None:
     runners = _total_games_runners([12.0, 12.5, 13.0])
     lines = P.parse_total_games(runners)
     assert [ln.line for ln in lines] == [12.0, 12.5, 13.0]  # sorted by line
@@ -128,38 +132,38 @@ def test_total_games_distinguishes_over_under_and_line():
         assert ln.over_runner_id != ln.under_runner_id
 
 
-def test_total_games_missing_under_side_refuses():
+def test_total_games_missing_under_side_refuses() -> None:
     runners = [_runner(7698572, "Over", 12.0), _runner(7698572, "Over", 12.5),
                _runner(7698577, "Under", 12.0)]  # 12.5 Under missing
     with pytest.raises(P.MarketParseError):
         P.parse_total_games(runners)
 
 
-def test_total_games_duplicate_line_refuses():
+def test_total_games_duplicate_line_refuses() -> None:
     runners = _total_games_runners([12.0]) + [_runner(7698572, "Over", 12.0)]
     with pytest.raises(P.MarketParseError):
         P.parse_total_games(runners)
 
 
-def test_total_games_non_over_under_name_refuses():
+def test_total_games_non_over_under_name_refuses() -> None:
     runners = [_runner(1, "Yes", 12.0), _runner(2, "No", 12.0)]
     with pytest.raises(P.MarketParseError):
         P.parse_total_games(runners)
 
 
-def test_total_games_absent_hc_refuses():
+def test_total_games_absent_hc_refuses() -> None:
     runners = [_runner(7698572, "Over", None), _runner(7698577, "Under", None)]
     with pytest.raises(P.MarketParseError):
         P.parse_total_games(runners)
 
 
 @pytest.mark.parametrize("bad", [[], "notalist", None])
-def test_total_games_empty_or_non_list_refuses(bad):
+def test_total_games_empty_or_non_list_refuses(bad: object) -> None:
     with pytest.raises(P.MarketParseError):
         P.parse_total_games(bad)
 
 
-def test_total_games_row_order_does_not_change_output():
+def test_total_games_row_order_does_not_change_output() -> None:
     lines = [12.0, 12.5, 13.0, 13.5]
     a = P.parse_total_games(_total_games_runners(lines))
     b = P.parse_total_games(_total_games_runners(list(reversed(lines))))
@@ -167,7 +171,7 @@ def test_total_games_row_order_does_not_change_output():
 
 
 # --------------------------------------------------------------------- game_handicap
-def test_game_handicap_double_line_produces_two_lines_per_magnitude():
+def test_game_handicap_double_line_produces_two_lines_per_magnitude() -> None:
     runners = _double_line_handicap_runners(_GAME_LADDER)
     lines = P.parse_game_handicap(runners)
     assert len(lines) == 2 * len(_GAME_LADDER)
@@ -178,7 +182,7 @@ def test_game_handicap_double_line_produces_two_lines_per_magnitude():
     assert givers_at_4_5 == {9628236, 9607743}
 
 
-def test_game_handicap_giver_is_the_negative_hc_player():
+def test_game_handicap_giver_is_the_negative_hc_player() -> None:
     runners = _double_line_handicap_runners([4.5])  # single magnitude, but 4.5 > 3.0
     lines = P.parse_game_handicap(runners)
     assert len(lines) == 2
@@ -188,27 +192,27 @@ def test_game_handicap_giver_is_the_negative_hc_player():
     assert all(ln.line == 4.5 for ln in lines)
 
 
-def test_set_handicap_is_never_accepted_as_game_handicap():
+def test_set_handicap_is_never_accepted_as_game_handicap() -> None:
     runners = _double_line_handicap_runners(_SET_LADDER)  # max|hc| 2.5 <= 3.0
     with pytest.raises(P.MarketParseError):
         P.parse_game_handicap(runners)
 
 
-def test_game_handicap_unpaired_giver_refuses():
+def test_game_handicap_unpaired_giver_refuses() -> None:
     runners = _double_line_handicap_runners([5.5])  # valid pair, max>3
     runners.append(_runner(9628236, "A Tomljanovic", -4.5))  # dangling giver, no B@+4.5
     with pytest.raises(P.MarketParseError):
         P.parse_game_handicap(runners)
 
 
-def test_game_handicap_more_than_two_players_refuses():
+def test_game_handicap_more_than_two_players_refuses() -> None:
     runners = _double_line_handicap_runners([4.5])
     runners.append(_runner(999, "Third Player", -4.5))
     with pytest.raises(P.MarketParseError):
         P.parse_game_handicap(runners)
 
 
-def test_game_handicap_player_mapped_to_two_ids_refuses():
+def test_game_handicap_player_mapped_to_two_ids_refuses() -> None:
     runners = _double_line_handicap_runners([4.5])
     runners.append(_runner(8888, "A Tomljanovic", -5.5))
     runners.append(_runner(9607743, "Swan", 5.5))
@@ -216,14 +220,14 @@ def test_game_handicap_player_mapped_to_two_ids_refuses():
         P.parse_game_handicap(runners)
 
 
-def test_game_handicap_absent_hc_refuses():
+def test_game_handicap_absent_hc_refuses() -> None:
     runners = _double_line_handicap_runners([4.5])
     runners.append(_runner(9628236, "A Tomljanovic", None))
     with pytest.raises(P.MarketParseError):
         P.parse_game_handicap(runners)
 
 
-def test_game_handicap_zero_line_refuses():
+def test_game_handicap_zero_line_refuses() -> None:
     runners = _double_line_handicap_runners([4.5])
     runners.append(_runner(9628236, "A Tomljanovic", 0.0))
     runners.append(_runner(9607743, "Swan", 0.0))
@@ -232,12 +236,12 @@ def test_game_handicap_zero_line_refuses():
 
 
 @pytest.mark.parametrize("bad", [[], "notalist", None])
-def test_game_handicap_empty_or_non_list_refuses(bad):
+def test_game_handicap_empty_or_non_list_refuses(bad: object) -> None:
     with pytest.raises(P.MarketParseError):
         P.parse_game_handicap(bad)
 
 
-def test_game_handicap_row_order_does_not_change_output():
+def test_game_handicap_row_order_does_not_change_output() -> None:
     runners = _double_line_handicap_runners(_GAME_LADDER)
     a = P.parse_game_handicap(runners)
     b = P.parse_game_handicap(list(reversed(runners)))
@@ -245,13 +249,13 @@ def test_game_handicap_row_order_does_not_change_output():
 
 
 # --------------------------------------------------------------------- determinism
-def test_repeated_calls_are_byte_identical_in_repr():
+def test_repeated_calls_are_byte_identical_in_repr() -> None:
     tg = _total_games_runners([12.0, 12.5])
     gh = _double_line_handicap_runners([4.5, 5.5])
     assert repr(P.parse_total_games(tg)) == repr(P.parse_total_games(tg))
     assert repr(P.parse_game_handicap(gh)) == repr(P.parse_game_handicap(gh))
 
 
-def test_runner_with_non_dict_entry_refuses():
+def test_runner_with_non_dict_entry_refuses() -> None:
     with pytest.raises(P.MarketParseError):
         P.parse_match_odds([_runner(1, "A", None), ("not", "a", "dict")])
