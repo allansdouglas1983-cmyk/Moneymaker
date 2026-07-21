@@ -104,8 +104,9 @@ def run(corpus_root: str, f0_path: str = F0_MANIFEST,
                     C.iter_messages(paths[d.linked_market_id]) if d.linked_market_id in paths else [],
                     mo_id, d.linked_market_id, meta["commit_pt_ms"])
                 redundancy_ev.append(ev)
-                if A.record_has_identifying(rec, 300.0):
-                    day_counter[rec.calendar_day or "UNKNOWN_DAY"] += 1
+        # §9 UTC-day concentration counts MARKETS (once), not derivatives
+        if A.record_has_identifying(rec, 300.0):
+            day_counter[rec.calendar_day or "UNKNOWN_DAY"] += 1
         per_match.append(_per_match_record(rec, meta))
 
     inventory = _market_type_inventory(catalogue)

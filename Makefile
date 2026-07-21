@@ -22,6 +22,7 @@ verify:
 	! grep -rinE '$(ESCAPE_HATCHES)' $(MONEY) --include='*.py'
 	! grep -rinE '$(ESCAPE_HATCHES)' $(EVIDENCE) --include='*.py'
 	uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker
+	uv run python tools/check_import_quarantine.py --forbid research.xmarket --from l5_decision l5b_risk l6_broker l7_settle l3_features l4_pricing
 	uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features
 	uv run python tools/check_import_quarantine.py --forbid l8_evidence.tennis_outcomes --from l3_features l4_pricing
 	uv run mypy --strict .
