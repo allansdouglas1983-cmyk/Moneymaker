@@ -106,8 +106,8 @@ def _model_view_digest(f2: F2Diagnostic) -> str:
     return "sha256:" + hashlib.sha256(blob.encode()).hexdigest()
 
 
-def build_output(snap: ManualMarketSnapshot, market: MarketResult, f2: F2Diagnostic, *,
-                 reference_time_ms: int) -> AssistantOutput:
+def build_output(snap: ManualMarketSnapshot, market: MarketResult,
+                 f2: F2Diagnostic) -> AssistantOutput:
     """Assemble the deterministic V0 output. Market probability is final; F2 is a labelled
     diagnostic; no bet/edge/EV/stake/tip field exists."""
     status = data_status(input_valid=True, market_valid=market.available,

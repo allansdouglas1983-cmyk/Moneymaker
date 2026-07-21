@@ -1,0 +1,48 @@
+{
+  "best_back_a": "1.90",
+  "best_back_b": "2.08",
+  "best_lay_a": "1.92",
+  "best_lay_b": "2.12",
+  "competitor_a": "A Tomljanovic",
+  "competitor_b": "H Watson",
+  "data_digest": "sha256:62fb701e75bea7b1e752aba417806b3036e689dbff3beadccdabc9029dca83e0",
+  "economic_posture": "NO_BET_RESEARCH_ONLY",
+  "event_id": "35670766",
+  "f2_available": false,
+  "f2_history_count_a": null,
+  "f2_history_count_b": null,
+  "f2_label": null,
+  "f2_probability_a": null,
+  "f2_probability_b": null,
+  "final_probability_a": 0.5236749847790878,
+  "final_probability_b": 0.47632501522091214,
+  "final_probability_source": "MARKET",
+  "info_price_method": "info-price-v2",
+  "market_fair_odds_a": 1.909581379797719,
+  "market_fair_odds_b": 2.099406850459482,
+  "market_id": "1.258760105",
+  "market_prob_interval_a": [
+    0.5208333333333334,
+    0.5263157894736842
+  ],
+  "market_prob_interval_b": [
+    0.4716981132075471,
+    0.4807692307692307
+  ],
+  "market_probability_a": 0.5236749847790878,
+  "market_probability_b": 0.47632501522091214,
+  "market_timestamp_ms": 1780310700000,
+  "model_market_disagreement_a": null,
+  "model_market_disagreement_b": null,
+  "model_view_digest": "sha256:cd9dbc6aa624155e9ddc1c8358e2bc6e349dc4e52d2d9459e8b848849167b363",
+  "policy_digest": "sha256:c1416a7dd615af3b870a39d38d8ea07f0b47af46a8f74c9a4eb381f4a4e34201",
+  "quote_age_ms": 30000,
+  "reason_codes": [
+    "MARKET_PRICE_AVAILABLE",
+    "MODEL_HISTORY_INSUFFICIENT",
+    "RESEARCH_ONLY_NO_BET"
+  ],
+  "scheduled_start_ms": 1780311000000,
+  "status": "MARKET_ONLY",
+  "tour": "WTA"
+}

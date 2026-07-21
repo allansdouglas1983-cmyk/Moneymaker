@@ -70,7 +70,7 @@ def test_quote_age_reported() -> None:
 
 def test_implied_probability_interval_present() -> None:
     res = MP.assess_market(_snap(), reference_time_ms=1000)
-    assert res.p_a_interval is not None
+    assert res.p_a_interval is not None and res.p_a is not None
     lo, hi = res.p_a_interval
     assert lo < res.p_a <= hi or lo <= res.p_a < hi  # midpoint inside the back/lay interval
 

@@ -9,6 +9,8 @@ rewritten. No shadow ROI or P&L; no hypothetical bet. Scoring math is tested wit
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import math
 
 import pytest
@@ -46,21 +48,21 @@ def test_ledger_is_append_only_no_update_or_delete() -> None:
         assert not hasattr(SL.ShadowLedger, forbidden)
 
 
-def test_append_and_read_pre_match(tmp_path) -> None:
+def test_append_and_read_pre_match(tmp_path: Path) -> None:
     led = SL.ShadowLedger(tmp_path / "ledger.jsonl")
     led.append_pre_match(_pre("r1"))
     got = led.pre_match_by_id("r1")
     assert got is not None and got.market_probability_a == 0.6
 
 
-def test_duplicate_pre_match_id_refuses(tmp_path) -> None:
+def test_duplicate_pre_match_id_refuses(tmp_path: Path) -> None:
     led = SL.ShadowLedger(tmp_path / "ledger.jsonl")
     led.append_pre_match(_pre("r1"))
     with pytest.raises(SL.ShadowLedgerError):
         led.append_pre_match(_pre("r1"))
 
 
-def test_settlement_for_unknown_record_refuses(tmp_path) -> None:
+def test_settlement_for_unknown_record_refuses(tmp_path: Path) -> None:
     led = SL.ShadowLedger(tmp_path / "ledger.jsonl")
     app = SL.SettlementAppend(record_id="nope", winner="A", scored=True,
                               market_log_loss=0.5, market_brier=0.16,
@@ -69,7 +71,7 @@ def test_settlement_for_unknown_record_refuses(tmp_path) -> None:
         led.append_settlement(app)
 
 
-def test_settlement_append_does_not_modify_original(tmp_path) -> None:
+def test_settlement_append_does_not_modify_original(tmp_path: Path) -> None:
     led = SL.ShadowLedger(tmp_path / "ledger.jsonl")
     led.append_pre_match(_pre("r1"))
     before = led.pre_match_by_id("r1")
@@ -88,7 +90,7 @@ def test_log_loss_and_brier_math() -> None:
     assert SL.log_loss(0.6, 0) == pytest.approx(-math.log(0.4))
 
 
-def test_persistence_roundtrip_is_deterministic(tmp_path) -> None:
+def test_persistence_roundtrip_is_deterministic(tmp_path: Path) -> None:
     p = tmp_path / "ledger.jsonl"
     led = SL.ShadowLedger(p)
     led.append_pre_match(_pre("r1"))

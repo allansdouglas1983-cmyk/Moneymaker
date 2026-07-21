@@ -36,7 +36,7 @@ def _build(f2: F2.F2Diagnostic | None = None) -> O.AssistantOutput:
     market = MP.assess_market(snap, reference_time_ms=1000)
     if f2 is None:
         f2 = F2.unavailable(F2.MODEL_HISTORY_INSUFFICIENT)
-    return O.build_output(snap, market, f2, reference_time_ms=1000)
+    return O.build_output(snap, market, f2)
 
 
 def test_output_has_no_bet_or_value_fields() -> None:
@@ -76,7 +76,7 @@ def test_status_market_only_when_no_f2() -> None:
 
 def test_fair_odds_are_labelled_and_derived_from_market() -> None:
     out = _build()
-    assert out.market_fair_odds_a is not None
+    assert out.market_fair_odds_a is not None and out.market_probability_a is not None
     # fair odds = 1 / market probability
     assert abs(out.market_fair_odds_a - (1.0 / out.market_probability_a)) < 1e-9
 
@@ -86,7 +86,7 @@ def test_model_market_disagreement_reported() -> None:
                          history_count_b=40, label="MODEL_DIAGNOSTIC_NOT_MARKET_PROVEN",
                          reason=None)
     out = _build(f2)
-    assert out.model_market_disagreement_a is not None
+    assert out.model_market_disagreement_a is not None and out.market_probability_a is not None
     assert abs(out.model_market_disagreement_a - (0.70 - out.market_probability_a)) < 1e-9
 
 
