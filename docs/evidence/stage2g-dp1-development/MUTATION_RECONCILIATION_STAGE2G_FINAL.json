@@ -1,46 +1,62 @@
 {
- "reconciliation": {
+ "final_totals": {
+  "mutants": 2693,
+  "killed": 2547,
+  "survived": 146,
+  "manifest_entries": 146
+ },
+ "per_module": {
   "glicko2_family": {
-   "mutants": 1234,
-   "killed": 1170,
-   "survivors": 64,
-   "manifest_entries": 64,
-   "missing": [],
-   "extra": [],
-   "duplicates": [],
-   "stale": []
+   "mutants": 1050,
+   "killed": 1040,
+   "survived": 10,
+   "db_sha256": "4ea409983b1540eda94f38bdc7cb79e09dfbe88778b5d791584855d446c481dc"
   },
   "dp1_calibration": {
-   "mutants": 573,
-   "killed": 542,
-   "survivors": 31,
-   "manifest_entries": 31,
-   "missing": [],
-   "extra": [],
-   "duplicates": [],
-   "stale": []
+   "mutants": 575,
+   "killed": 557,
+   "survived": 18,
+   "db_sha256": "234852769b314d88dd2e8d6b58ef0c264e1f615e29f653829b748f7ec01bf305"
   },
   "dp1_distribution": {
    "mutants": 1068,
-   "killed": 948,
-   "survivors": 120,
-   "manifest_entries": 120,
-   "missing": [],
-   "extra": [],
-   "duplicates": [],
-   "stale": []
+   "killed": 950,
+   "survived": 118,
+   "db_sha256": "e86a7c244a86c2f91b340c400ec1a5e63b526b50f28e30f1989180a6c777c199"
   }
  },
- "totals": {
-  "total_mutants": 2875,
-  "total_killed": 2660,
-  "total_survivors": 215,
-  "manifest_entries": 215
+ "approved_146": 146,
+ "rejected_survivors": 0,
+ "unexplained": 0,
+ "behavioural": 0,
+ "approved_then_eliminated": 0,
+ "approved_then_eliminated_note": "No approved-class mutant was removed by refactor. The 182 mutation sites that disappeared (2875 -> 2693) were all in the deleted J_dead_except_sign and E_unreachable_ksearch code (both REJECTED, \u00a73), plus killed mutants now absent.",
+ "class_counts": {
+  "G_diagnostic_prose": 14,
+  "H_domain_bound_identity_max0": 1,
+  "D_unreachable_branch_race_invariant": 2,
+  "C2_dominated_comparison_sorted_invariant": 1,
+  "K_sigmoid_branch_x0_identity": 2,
+  "L_layered_unreachable_boundary": 15,
+  "H_environment_bound_identity": 2,
+  "C_min_invariant_equivalent_LtE": 2,
+  "B_byte_identical_rule_construction": 62,
+  "C_symmetric_quadrature_reflection": 1,
+  "A_pep563_annotation": 44
  },
- "per_module_db_sha256": {
-  "glicko2_family": "552b4271856137b0c99a7034f9e212c8ed5cd4724f367217d006848da92050ed",
-  "dp1_calibration": "af5619ed4efddc04c9bae1f1a3e9b2673e85daedbe9e359ad876ea9a1fa3a414",
-  "dp1_distribution": "82c58343e8872a8696272b71213980f1b9c0c6a6cda7d2ea81379cacaf1f3b44"
+ "founder_approved_table": {
+  "A_pep563_annotation": 44,
+  "B_byte_identical_rule_construction": 62,
+  "L_layered_unreachable_boundary": 15,
+  "G_diagnostic_prose": 14,
+  "D_unreachable_branch_race_invariant": 2,
+  "K_sigmoid_branch_x0_identity": 2,
+  "H_environment_bound_identity": 2,
+  "C_min_invariant_equivalent_LtE": 2,
+  "H_domain_bound_identity_max0": 1,
+  "C2_dominated_comparison_sorted_invariant": 1,
+  "C_symmetric_quadrature_reflection": 1
  },
- "all_zero": true
+ "match": "class_counts == founder_approved_table",
+ "entries_digest": "43d836f5d0dfd12aaff16c41b953ac415b668b143229952bda23e607ffbd4d65"
 }
