@@ -1,0 +1,98 @@
+# specs/evidence/tennis-derivative-settlement-semantics-v1.yaml
+# STAGE3-0002 §14 — settlement-semantics registry for the Betfair tennis DERIVATIVE
+# markets a future point->game->set->match latent model would have to price.
+# Human-owned (CODEOWNERS specs/**). This is a RULES registry (how a market resolves),
+# NOT a results file: it records NO winner, score, or settled outcome for any actual match.
+#
+# Every classification here is UNRESOLVED. No official Betfair Exchange tennis rule source
+# was read in this audit (that is external research, not authorised here), and June outcomes
+# were NOT read to infer any rule (directive §14: "Do not read June outcomes merely to infer
+# the rule"). Per §18, settlement semantics that are required but unverified are a HARD STOP,
+# not something to guess: no rule below authorises any model, grading, or evidence step. A
+# future founder-approved verification slice (analogue of DR-TENNIS-SETTLEMENT-001, and of
+# SPEC-084's pending tennis MATCH_ODDS matrix) must supply the official rule source and date;
+# the matrix then activates whole, never partially.
+
+registry_id: TENNIS-DERIVATIVE-SETTLEMENT-SEMANTICS-V1
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0002 §14
+outcome_free: true                       # documents resolution rules; records no match result
+consumes_no_result_data: true
+official_rule_source: null               # none read in this audit (no external research authorised)
+official_rule_date: null
+
+# Founder status vocabulary (§14). Until an official source is supplied, UNRESOLVED is the
+# only honest classification for every type.
+status_vocabulary:
+  - VERIFIED_COMPATIBLE_FOR_PREMATCH_STRUCTURE
+  - VERIFIED_CONTRACTUALLY_DIFFERENT_ON_RETIREMENT
+  - VERIFIED_VOID_ON_FORMAT_CHANGE
+  - UNRESOLVED
+  - PROHIBITED
+
+market_types:
+
+  COMBINED_TOTAL:                        # Betfair "Total Games"
+    role: PRIMARY_IDENTIFYING_TOTAL_GAMES
+    betfair_betting_type: ASIAN_HANDICAP_DOUBLE_LINE
+    quantity_priced: total games played in the match (both players summed)
+    status: UNRESOLVED
+    official_rule_source: null
+    rule_date: null
+    exact_rule_meaning: UNRESOLVED (Asian double-line half/whole win-loss-push not verified)
+    retirement_behavior: UNRESOLVED
+    walkover_behavior: UNRESOLVED
+    disqualification_behavior: UNRESOLVED
+    format_change_behavior: UNRESOLVED
+    sporting_result_labels_compatible: UNRESOLVED
+    later_validation_requires_explicit_exclusion: UNRESOLVED
+
+  HANDICAP:                              # Betfair game handicap (double line)
+    role: PRIMARY_IDENTIFYING_GAME_HANDICAP
+    betfair_betting_type: ASIAN_HANDICAP_DOUBLE_LINE
+    quantity_priced: signed difference in games between the two players
+    status: UNRESOLVED
+    official_rule_source: null
+    rule_date: null
+    exact_rule_meaning: UNRESOLVED (Asian half/whole-line win/half-win/push not verified)
+    retirement_behavior: UNRESOLVED
+    walkover_behavior: UNRESOLVED
+    disqualification_behavior: UNRESOLVED
+    format_change_behavior: UNRESOLVED
+    sporting_result_labels_compatible: UNRESOLVED
+    later_validation_requires_explicit_exclusion: UNRESOLVED
+
+  SET_WINNER:
+    role: AUXILIARY_SET_STRUCTURE
+    status: UNRESOLVED
+    retirement_behavior: UNRESOLVED
+    walkover_behavior: UNRESOLVED
+    disqualification_behavior: UNRESOLVED
+    format_change_behavior: UNRESOLVED
+  SET_BETTING:
+    role: AUXILIARY_OTHER
+    status: UNRESOLVED
+    retirement_behavior: UNRESOLVED
+    walkover_behavior: UNRESOLVED
+    disqualification_behavior: UNRESOLVED
+    format_change_behavior: UNRESOLVED
+  SET_CORRECT_SCORE:
+    role: AUXILIARY_OTHER
+    status: UNRESOLVED
+  NUMBER_OF_SETS:
+    role: AUXILIARY_SET_STRUCTURE
+    status: UNRESOLVED
+  PLAYER_A_WIN_A_SET:
+    role: AUXILIARY_SET_STRUCTURE
+    status: UNRESOLVED
+  PLAYER_B_WIN_A_SET:
+    role: AUXILIARY_SET_STRUCTURE
+    status: UNRESOLVED
+
+prohibitions:
+  - no rule here prices, settles, grades, or trains anything until a founder-approved
+    verification slice supplies an official source and activates the whole matrix
+  - no settled total / handicap / set result is read into any pre-off feature or as-of-F0
+    reconstruction (the audit reads only pre-off book state)
+  - no June outcome was read to infer any rule here
+  - no LLM assigns or edits a settlement rule
