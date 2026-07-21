@@ -1,0 +1,380 @@
+{
+  "audit_code_version": "xmarket-audit-v1",
+  "auxiliary_coverage": {
+    "denominator": 2518,
+    "mo_markets_with_any_auxiliary": 1957
+  },
+  "denominators": {
+    "cohort_split": {
+      "PRIMARY_ONLY_TIER": 559,
+      "STRICT": 1959
+    },
+    "committed_mo_in_f0": 2518,
+    "committed_mo_matched_in_corpus": 2518,
+    "tour_split": {
+      "ATP": 479,
+      "MIXED_TOUR": 4,
+      "TOUR_UNRESOLVED": 1491,
+      "WTA": 544
+    }
+  },
+  "line_richness": {
+    "max": 95,
+    "median": 32,
+    "min": 17,
+    "usable_identifying_derivatives": 1252
+  },
+  "n_primary_identifying_by_cutoff": {
+    "120.0": {
+      "ATP": 132,
+      "STRICT": 382,
+      "TOTAL": 382,
+      "TOUR_UNRESOLVED": 49,
+      "WTA": 201
+    },
+    "15.0": {
+      "ATP": 54,
+      "STRICT": 150,
+      "TOTAL": 150,
+      "TOUR_UNRESOLVED": 11,
+      "WTA": 85
+    },
+    "30.0": {
+      "ATP": 75,
+      "STRICT": 211,
+      "TOTAL": 211,
+      "TOUR_UNRESOLVED": 20,
+      "WTA": 116
+    },
+    "300.0": {
+      "ATP": 163,
+      "MIXED_TOUR": 1,
+      "STRICT": 494,
+      "TOTAL": 494,
+      "TOUR_UNRESOLVED": 71,
+      "WTA": 259
+    },
+    "60.0": {
+      "ATP": 99,
+      "STRICT": 294,
+      "TOTAL": 294,
+      "TOUR_UNRESOLVED": 40,
+      "WTA": 155
+    }
+  },
+  "one_tick_spread_sensitivity_by_cutoff": {
+    "120.0": {
+      "1": 6,
+      "2": 29,
+      "3": 85,
+      "5": 221,
+      "10": 357
+    },
+    "15.0": {
+      "1": 2,
+      "2": 8,
+      "3": 28,
+      "5": 73,
+      "10": 135
+    },
+    "30.0": {
+      "1": 3,
+      "2": 13,
+      "3": 48,
+      "5": 115,
+      "10": 194
+    },
+    "300.0": {
+      "1": 7,
+      "2": 40,
+      "3": 117,
+      "5": 297,
+      "10": 467
+    },
+    "60.0": {
+      "1": 5,
+      "2": 21,
+      "3": 60,
+      "5": 152,
+      "10": 265
+    }
+  },
+  "raw_market_type_inventory": {
+    "COMBINED_TOTAL": {
+      "events": 739,
+      "markets": 740,
+      "role": "PRIMARY_IDENTIFYING_TOTAL_GAMES"
+    },
+    "HANDICAP": {
+      "events": 739,
+      "markets": 740,
+      "role": "PRIMARY_IDENTIFYING_GAME_HANDICAP"
+    },
+    "MATCH_ODDS": {
+      "events": 3516,
+      "markets": 3521,
+      "role": "PRIMARY_MATCH_ODDS"
+    },
+    "NUMBER_OF_SETS": {
+      "events": 737,
+      "markets": 738,
+      "role": "AUXILIARY_SET_STRUCTURE"
+    },
+    "PLAYER_A_WIN_A_SET": {
+      "events": 740,
+      "markets": 742,
+      "role": "AUXILIARY_SET_STRUCTURE"
+    },
+    "PLAYER_B_WIN_A_SET": {
+      "events": 740,
+      "markets": 741,
+      "role": "AUXILIARY_SET_STRUCTURE"
+    },
+    "SET_BETTING": {
+      "events": 2922,
+      "markets": 2942,
+      "role": "AUXILIARY_OTHER"
+    },
+    "SET_CORRECT_SCORE": {
+      "events": 740,
+      "markets": 742,
+      "role": "AUXILIARY_OTHER"
+    },
+    "SET_WINNER": {
+      "events": 2932,
+      "markets": 6044,
+      "role": "AUXILIARY_SET_STRUCTURE"
+    },
+    "TOURNAMENT_WINNER": {
+      "events": 12,
+      "markets": 13,
+      "role": "UNSUPPORTED"
+    }
+  },
+  "redundancy_status_distribution": {
+    "INDEPENDENCE_UNRESOLVED": 1196,
+    "OBSERVABLY_NON_REDUNDANT_UPDATES": 56
+  },
+  "refusal_funnel": {
+    "DERIVATIVE_EMPTY_AT_F0": 8,
+    "DERIVATIVE_ONE_SIDED_AT_F0": 10,
+    "GAME_HANDICAP_ABSENT": 1883,
+    "NOT_LINKED_TO_MATCH_ODDS_EVENT": 210,
+    "TOTAL_GAMES_ABSENT": 1883
+  },
+  "report_digest": "sha256:f220722588b25363fe9e764aa69077839dca6fd1cf2bfe6a0e326c6cdf014ee6",
+  "selection_bias_coverage_by_cutoff": {
+    "120.0": {
+      "by_cohort": {
+        "PRIMARY_ONLY_TIER": {
+          "covered": 0,
+          "denominator": 559
+        },
+        "STRICT": {
+          "covered": 382,
+          "denominator": 1959
+        }
+      },
+      "by_tour": {
+        "ATP": {
+          "covered": 132,
+          "denominator": 479
+        },
+        "MIXED_TOUR": {
+          "covered": 0,
+          "denominator": 4
+        },
+        "TOUR_UNRESOLVED": {
+          "covered": 49,
+          "denominator": 1491
+        },
+        "WTA": {
+          "covered": 201,
+          "denominator": 544
+        }
+      },
+      "overall": {
+        "covered": 382,
+        "denominator": 2518
+      }
+    },
+    "15.0": {
+      "by_cohort": {
+        "PRIMARY_ONLY_TIER": {
+          "covered": 0,
+          "denominator": 559
+        },
+        "STRICT": {
+          "covered": 150,
+          "denominator": 1959
+        }
+      },
+      "by_tour": {
+        "ATP": {
+          "covered": 54,
+          "denominator": 479
+        },
+        "MIXED_TOUR": {
+          "covered": 0,
+          "denominator": 4
+        },
+        "TOUR_UNRESOLVED": {
+          "covered": 11,
+          "denominator": 1491
+        },
+        "WTA": {
+          "covered": 85,
+          "denominator": 544
+        }
+      },
+      "overall": {
+        "covered": 150,
+        "denominator": 2518
+      }
+    },
+    "30.0": {
+      "by_cohort": {
+        "PRIMARY_ONLY_TIER": {
+          "covered": 0,
+          "denominator": 559
+        },
+        "STRICT": {
+          "covered": 211,
+          "denominator": 1959
+        }
+      },
+      "by_tour": {
+        "ATP": {
+          "covered": 75,
+          "denominator": 479
+        },
+        "MIXED_TOUR": {
+          "covered": 0,
+          "denominator": 4
+        },
+        "TOUR_UNRESOLVED": {
+          "covered": 20,
+          "denominator": 1491
+        },
+        "WTA": {
+          "covered": 116,
+          "denominator": 544
+        }
+      },
+      "overall": {
+        "covered": 211,
+        "denominator": 2518
+      }
+    },
+    "300.0": {
+      "by_cohort": {
+        "PRIMARY_ONLY_TIER": {
+          "covered": 0,
+          "denominator": 559
+        },
+        "STRICT": {
+          "covered": 494,
+          "denominator": 1959
+        }
+      },
+      "by_tour": {
+        "ATP": {
+          "covered": 163,
+          "denominator": 479
+        },
+        "MIXED_TOUR": {
+          "covered": 1,
+          "denominator": 4
+        },
+        "TOUR_UNRESOLVED": {
+          "covered": 71,
+          "denominator": 1491
+        },
+        "WTA": {
+          "covered": 259,
+          "denominator": 544
+        }
+      },
+      "overall": {
+        "covered": 494,
+        "denominator": 2518
+      }
+    },
+    "60.0": {
+      "by_cohort": {
+        "PRIMARY_ONLY_TIER": {
+          "covered": 0,
+          "denominator": 559
+        },
+        "STRICT": {
+          "covered": 294,
+          "denominator": 1959
+        }
+      },
+      "by_tour": {
+        "ATP": {
+          "covered": 99,
+          "denominator": 479
+        },
+        "MIXED_TOUR": {
+          "covered": 0,
+          "denominator": 4
+        },
+        "TOUR_UNRESOLVED": {
+          "covered": 40,
+          "denominator": 1491
+        },
+        "WTA": {
+          "covered": 155,
+          "denominator": 544
+        }
+      },
+      "overall": {
+        "covered": 294,
+        "denominator": 2518
+      }
+    }
+  },
+  "self_quote_observable_by_cutoff": {
+    "120.0": {
+      "usable_derivatives": 671,
+      "usable_with_independent_volume": 584,
+      "usable_with_multiple_updates": 671,
+      "verdict": "SELF_QUOTES_PRESENT"
+    },
+    "15.0": {
+      "usable_derivatives": 217,
+      "usable_with_independent_volume": 197,
+      "usable_with_multiple_updates": 217,
+      "verdict": "SELF_QUOTES_PRESENT"
+    },
+    "30.0": {
+      "usable_derivatives": 336,
+      "usable_with_independent_volume": 303,
+      "usable_with_multiple_updates": 336,
+      "verdict": "SELF_QUOTES_PRESENT"
+    },
+    "300.0": {
+      "usable_derivatives": 928,
+      "usable_with_independent_volume": 802,
+      "usable_with_multiple_updates": 928,
+      "verdict": "SELF_QUOTES_PRESENT"
+    },
+    "60.0": {
+      "usable_derivatives": 494,
+      "usable_with_independent_volume": 437,
+      "usable_with_multiple_updates": 494,
+      "verdict": "SELF_QUOTES_PRESENT"
+    }
+  },
+  "total_games_only_vs_game_handicap_only_vs_both_at_300s": {
+    "both": 434,
+    "game_handicap_only": 35,
+    "total_games_only": 25
+  },
+  "tournament_attribution": "NOT_AVAILABLE_OUTCOME_BLIND",
+  "utc_day_concentration_at_300s": {
+    "distinct_days": 29,
+    "largest_day_count": 65
+  }
+}
