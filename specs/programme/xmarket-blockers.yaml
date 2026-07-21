@@ -1,0 +1,39 @@
+# specs/programme/xmarket-blockers.yaml
+# STAGE3-0003 §1 — explicit blocker records for CROSS_MARKET_LATENT_V1. Human-owned
+# (CODEOWNERS specs/**). Each blocker holds implementation until founder-approved external
+# evidence resolves it. No blocker is resolved by an LLM or by an internal derivation.
+
+blockers:
+
+  - id: EXT-XMARKET-001
+    title: Official derivative-market settlement semantics
+    status: OPEN
+    holds: CROSS_MARKET_LATENT_V1
+    requirement: >-
+      The exact, official Betfair Exchange settlement rules for the tennis derivative
+      markets a latent model would price (COMBINED_TOTAL / Total Games; HANDICAP / Game
+      Handicap), including Asian half/whole-line win/half-win/push semantics and
+      retirement / walkover / disqualification / format-change behaviour. Until supplied
+      by an official source with a rule date, every type is UNRESOLVED
+      (specs/evidence/tennis-derivative-settlement-semantics-v1.yaml).
+    intake_record: docs/research/requests/DR-TENNIS-XMARKET-SETTLEMENT-001.md
+    resolution_rule: >-
+      Resolved only by founder-approved external Deep Research citing the official rule
+      source and date; the settlement matrix then activates whole, never partially. No
+      June outcome may be read to infer a rule.
+
+  - id: EXT-XMARKET-002
+    title: Defensible treatment of derivative-price independence / cross-matching / redundancy
+    status: OPEN
+    holds: CROSS_MARKET_LATENT_V1
+    requirement: >-
+      A scientifically defensible basis for treating derivative prices as carrying
+      information independent of Match Odds. The STAGE3-0002 audit found only 56 markets
+      with observably non-redundant movement and 1196 INDEPENDENCE_UNRESOLVED; the
+      historical feed does not expose internal order origin and cannot prove
+      non-redundancy. This blocker requires an external, defensible independence /
+      cross-matching treatment before any residual or latent competitiveness is fitted.
+    intake_record: docs/research/requests/DR-TENNIS-XMARKET-INDEPENDENCE-001.md
+    resolution_rule: >-
+      Resolved only by founder-approved external evidence; observable timestamp
+      differences alone never establish independence.

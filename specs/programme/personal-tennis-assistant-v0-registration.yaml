@@ -1,0 +1,87 @@
+# specs/programme/personal-tennis-assistant-v0-registration.yaml
+# STAGE3-0003 §3-§11 — registration for PERSONAL_TENNIS_ASSISTANT_V0. Human-owned
+# (CODEOWNERS specs/**). A bounded operational v0 built ONLY from already-governed
+# components. Private, single-user, local, research/shadow only. No paid API, no order
+# placement, no real-money recommendation.
+
+programme_id: PERSONAL_TENNIS_ASSISTANT_V0
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0003
+package: assistant_v0/
+
+posture:
+  private: true
+  single_user: true
+  local: true
+  research_shadow_only: true
+  manual_betfair_input: true
+  no_paid_api: true
+  no_order_placement: true
+  no_real_money_recommendation: true
+  uses_only_already_governed_components: true
+
+# ---- §4 probability posture ----------------------------------------------------------
+probability_posture:
+  final_v0_decision_probability: MARKET_PROBABILITY_ONLY
+  primary_market_view:
+    source: governed Betfair Match Odds implied probability
+    input: manually entered current quote (or an already-lawful local/delayed snapshot)
+    market_timestamp_and_staleness_always_visible: true
+  sporting_model_view:
+    model: frozen F2-v1 (historical sporting estimate)
+    label: MODEL_DIAGNOSTIC_NOT_MARKET_PROVEN
+    never_silently_replaces_market: true
+    never_becomes_final_tip_probability: true
+    never_represented_as_prospectively_confirmed: true
+  retired_and_not_selectable: [F3_surface_elo, DP1_dynamic_glicko2]
+  no_fitted_residual_or_lambda: true          # none exists; do not invent one
+
+# ---- §5 statuses (BET/shadow statuses are NOT in the enum — unconstructible) ----------
+allowed_statuses:
+  - INSUFFICIENT_DATA
+  - MARKET_UNAVAILABLE
+  - MARKET_ONLY
+  - MODEL_VIEW_ONLY
+  - NO_BET_RESEARCH_ONLY
+forbidden_and_unconstructible_statuses:
+  - SHADOW_CANDIDATE
+  - BET_CANDIDATE
+  - BET_AUTHORIZED
+  - PLACE_BET
+  - STAKE_RECOMMENDATION
+llm_may_change_status: false
+
+# ---- §7 output — forbidden fields ----------------------------------------------------
+output_must_not_contain:
+  - betting edge
+  - expected value
+  - stake
+  - tip
+  - recommended side
+  - prospective profit
+output_may_show:
+  - fair odds corresponding to the market probability (labelled)
+  - the separate F2 diagnostic probability (labelled MODEL_DIAGNOSTIC_NOT_MARKET_PROVEN)
+
+# ---- §10 shadow ledger ----------------------------------------------------------------
+shadow_ledger:
+  append_only: true
+  pre_match_fields: [manual snapshot, market probability, F2-v1 diagnostic, status,
+    reason codes, data and code digests]
+  post_settlement_append_only: [governed sporting outcome, whether market/model prob was
+    scored, log loss, Brier score, exclusion reason]
+  never_rewrites_original_snapshot: true
+  no_shadow_roi_or_pnl_in_v0: true
+  no_hypothetical_bet: true
+
+# ---- §11 cross-market audit view (display only) --------------------------------------
+cross_market_audit_view:
+  source: frozen STAGE3-0002 artifact (docs/evidence/stage3-cross-market-audit/PER_MATCH_RECORDS.jsonl)
+  label: "RESEARCH AUDIT — NOT USED IN THE PROBABILITY"
+  must_not_produce_latent_parameter: true
+  must_not_produce_competitiveness_tip: true
+  must_not_import_research_xmarket_into_probability_path: true
+
+quarantine:
+  assistant_v0_must_not_reach: [l5_decision, l5b_risk, l6_broker, l7_settle]
+  assistant_v0_probability_path_must_not_import: research.xmarket

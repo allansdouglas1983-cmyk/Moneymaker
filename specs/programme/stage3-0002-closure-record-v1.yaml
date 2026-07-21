@@ -1,0 +1,57 @@
+# specs/programme/stage3-0002-closure-record-v1.yaml — closure of the STAGE3-0002
+# cross-market feasibility audit (founder directive STAGE3-0003). Human-owned (CODEOWNERS
+# specs/**). Append-only history: the audit is accepted and frozen; its verdict stands.
+
+closure_id: STAGE3-0002-CLOSURE-v1
+closed_on: "2026-07-21"
+authority: founder directive STAGE3-0003 (audit accepted)
+audit_registration: specs/programme/cross-market-audit-v1.yaml (digest sha256:aec7c31f0723...)
+
+verdict: LIMITED_DATA_AUDIT_INCONCLUSIVE
+interpretation: >-
+  The June corpus contains a real but bounded, STRICT-concentrated population of
+  live-synchronised, two-sided identifying derivative markets (Total Games / Game
+  Handicap). It is large enough to be interesting but two feasibility preconditions are
+  unresolved in a zero-cost audit: derivative settlement semantics are UNVERIFIED
+  (EXT-XMARKET-001) and genuine information independence is UNRESOLVED (EXT-XMARKET-002).
+  The audit therefore cannot green-light implementation. No latent model was implemented or
+  fitted. That is the correct result — the platform establishing feasibility cheaply and
+  honestly.
+
+evidence:                          # docs/evidence/stage3-cross-market-audit/ (frozen)
+  audit_report_digest: "sha256:f220722588b25363fe9e764aa69077839dca6fd1cf2bfe6a0e326c6cdf014ee6"
+  determinism: byte-identical report digest across two independent runs
+  make_verify: green (2366 tests, ruff ARG, pylint W0613, quarantines, mypy --strict)
+  mutation: advisory — 973 mutants, 548 killed / 425 survived; two integrity-critical
+    boundaries pinned + manually verified killed (MUTATION_NOTES.md)
+  frozen_numbers:
+    primary_june_singles_universe: 2876
+    f0_committed_denominator: 2518
+    identifying_sibling_ceiling: "635 / 2518"
+    usable_le_15s: 150
+    usable_le_30s: 211
+    usable_le_60s: 294
+    usable_le_120s: 382
+    usable_le_300s: 494
+    total_games_le_300s: 459
+    game_handicap_le_300s: 469
+    both_le_300s: 434
+    strict_usable_le_300s: "494 / 1959"
+    primary_only_tier_usable: "0 / 559"
+    auxiliary_presence: "1957 / 2518"
+    observably_non_redundant: 56
+    independence_unresolved: 1196
+    settlement_unresolved_all_types: true
+
+status: >-
+  The audit code (research/xmarket/) is preserved as research-only. The proposed layer
+  CROSS_MARKET_LATENT_V1 is recorded BLOCKED_EXTERNAL_FACTS (not rejected), held by
+  EXT-XMARKET-001 and EXT-XMARKET-002. Operational work continues on
+  PERSONAL_TENNIS_ASSISTANT_V0 (market-only), which does not depend on the blocked layer.
+
+programme_history:
+  F2_v1: FROZEN HISTORICAL SPORTING BASELINE (diagnostic only; never market-proven)
+  F3_surface_elo: CLOSED FAIL_HARM
+  DP1_dynamic_glicko2: CLOSED STOP_DP1_HARM
+  CROSS_MARKET_LATENT_V1: BLOCKED_EXTERNAL_FACTS
+  june: DEVELOPMENT DATA (never prospective confirmation)

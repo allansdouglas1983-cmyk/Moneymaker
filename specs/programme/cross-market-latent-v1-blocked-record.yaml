@@ -1,0 +1,98 @@
+# specs/programme/cross-market-latent-v1-blocked-record.yaml
+# STAGE3-0003 §1 — programme status for the proposed cross-market layer. Human-owned
+# (CODEOWNERS specs/**). Records the STAGE3-0002 audit closure and holds the layer as
+# BLOCKED_EXTERNAL_FACTS. The layer is NOT rejected; it is provisionally scoped and blocked.
+
+record_id: CROSS-MARKET-LATENT-V1-BLOCKED
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0003
+
+# ---- STAGE3-0002 audit closure (accepted, frozen) ----------------------------------
+stage3_0002_closure:
+  verdict: LIMITED_DATA_AUDIT_INCONCLUSIVE          # accepted; correct result
+  no_latent_model_implemented_or_fitted: true
+  audit_report_digest: "sha256:f220722588b25363fe9e764aa69077839dca6fd1cf2bfe6a0e326c6cdf014ee6"
+  registration_digest: "sha256:aec7c31f072e3382bbd71e6885e054962a308938741d02b6c1ed02de0f8d6e4a"
+  frozen_evidence:
+    primary_june_singles_universe: 2876
+    f0_committed_denominator: 2518
+    identifying_sibling_ceiling: "635 / 2518"
+    usable_primary_identifying:
+      quote_age_le_15s: 150
+      quote_age_le_30s: 211
+      quote_age_le_60s: 294
+      quote_age_le_120s: 382
+      quote_age_le_300s: 494
+    usable_total_games_le_300s: 459
+    usable_game_handicap_le_300s: 469
+    both_present_le_300s: 434
+    strict_usable_le_300s: "494 / 1959"
+    primary_only_tier_usable: "0 / 559"
+    auxiliary_set_market_presence: "1957 / 2518"
+    observably_non_redundant_movement: 56
+    independence_unresolved: 1196
+    settlement_semantics_unresolved_all_types: true
+
+# ---- the layer -----------------------------------------------------------------------
+layer: CROSS_MARKET_LATENT_V1
+status: BLOCKED_EXTERNAL_FACTS
+rejected: false
+
+provisional_scope_if_ever_activated:      # NOT a general tennis layer
+  - F0-committed tennis singles
+  - STRICT cohort only
+  - correctly linked Total Games and/or Game Handicap market
+  - open, pre-match, two-sided and uncrossed
+  - parseable line
+  - derivative state reconstructed at or before the F0 decision timestamp
+  - no later price substitution
+  - quote-age policy still pending
+  - settlement semantics verified
+  - information-origin/redundancy policy verified
+not_applicable_to: PRIMARY_ONLY_TIER (under the June evidence)
+
+do_not_implement:                          # §1 — hard hold
+  - point->game->set->match equations
+  - serve-probability inversion
+  - latent competitiveness
+  - market-surface fitting
+  - residual fitting
+  - line-selection policy
+  - liquidity weights
+  - uncertainty propagation
+  - outcome validation
+
+blocked_by:
+  - EXT-XMARKET-001   # official derivative-market settlement semantics
+  - EXT-XMARKET-002   # scientifically defensible treatment of derivative-price
+                      # independence, cross-matching and observable redundancy
+
+activation_rule: >-
+  CROSS_MARKET_LATENT_V1 is not implemented under any circumstances until BOTH blockers are
+  resolved by founder-approved external evidence AND a separate founder directive authorises
+  it. No automatic activation from research reports.
+
+# ---- §2 research-only preservation ---------------------------------------------------
+research_only_preservation:
+  modules: research/xmarket/ (parsers, corpus, linkage, reconstruct, redundancy, audit, run_audit)
+  classification: audit/research modules — NOT production prediction code
+  may_not_feed:
+    - a fundamental prediction
+    - a final probability
+    - a personal tip
+    - a shadow candidate
+    - any money or execution path
+  import_quarantine: >-
+    enforced in the Makefile — no path from l5_decision / l5b_risk / l6_broker / l7_settle /
+    l3_features / l4_pricing reaches research.xmarket. The operational V0 also may not import
+    research.xmarket into its probability path (V0 reads the frozen audit ARTIFACT as
+    display-only data, never the live audit code).
+  mutation_status: >-
+    the current advisory mutation result (973 mutants, 548 killed / 425 survived; two
+    integrity-critical boundaries pinned and verified killed) is SUFFICIENT to preserve the
+    audit evidence, and is NOT sufficient for a production cross-market predictor.
+  on_activation_only:
+    - promote only the required parsers, event linkage and snapshot synchronizer
+    - move them behind governed production contracts
+    - add complete money/advice-critical property and mutation testing
+    - do NOT promote diagnostic-only audit arithmetic automatically
