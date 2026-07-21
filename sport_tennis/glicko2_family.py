@@ -44,6 +44,7 @@ __all__ = [
     "Glicko2ConvergenceError",
     "Glicko2Family",
     "PlayerState",
+    "brackets_root_or_touches_zero",
     "inactivity_step",
     "initial_bracket",
     "new_volatility",
@@ -109,41 +110,48 @@ def _expected(mu: float, mu_j: float, phi_j: float) -> float:
     return 1.0 / (1.0 + math.exp(-_g(phi_j) * (mu - mu_j)))
 
 
+def brackets_root_or_touches_zero(f_c: float, f_b: float) -> bool:
+    """Illinois bracket-update sign test as an EXACT pure predicate (founder §4):
+    True iff f_c and f_b have opposite signs OR either is exactly zero — i.e. the
+    interval [c, b] brackets a root or one endpoint sits on it. Uses the product form
+    so it never divides (f_b == 0 is a legitimate zero-touch, not an error) and the
+    `<= 0` boundary counts a zero touch as bracketing."""
+    return f_c * f_b <= 0.0
+
+
 def initial_bracket(
     *, phi: float, v: float, delta: float, sigma: float, tau: float
 ) -> tuple[float, float]:
     """The paper's step-5 bracket initialisation as a PURE seam.
 
-    Registered pure domain: finite inputs with phi > 0, v > 0, sigma > 0, tau > 0
-    (the mathematical domain of the paper's algorithm). ``rate_player`` constructs
-    values inside it by construction; the public model API's accepted domain is
-    unchanged by this seam. The case split is STRICT ``Delta^2 > phi^2 + v``; exact
-    equality takes the k-branch (the B-branch would be ln(0)).
+    Registered pure domain: finite inputs with phi > 0, v > 0, sigma > 0, and the
+    registered ``tau == GLICKO2_TAU`` (0.5). The case split is STRICT
+    ``Delta^2 > phi^2 + v``; exact equality takes the D<=0 branch (the other branch
+    would be ln(0)).
 
-    Structural invariant (analytic; pinned by tests and proven in the Slice-2
-    survivor packet): on the k-branch D = Delta^2 - phi^2 - v <= 0, the first term
-    of f at x = a - k*tau has magnitude < 1/2 while -(x - a)/tau^2 contributes
-    +k/tau >= +2 at tau = 0.5, so f(a - k*tau) > 3/2 > 0 for every k >= 1 — the
-    while-loop body below never executes for ANY input in the registered domain.
-    The paper-faithful loop is retained rather than simplified so the code matches
-    the pinned primary source line for line.
+    Founder §3 (2026-07-21): on the D = Delta^2 - phi^2 - v <= 0 branch the paper's
+    k-search terminates immediately at k = 1 for the registered tau = 0.5 — analytic:
+    the first term of the paper's f at x = a - tau has magnitude < 1/2 while
+    -(x - a)/tau^2 contributes +1/tau = +2, so f(a - tau) > 3/2 > 0, so the search
+    never advances past k = 1 and B = a - tau. The dead sign-only f and the
+    never-executing search loop are therefore REMOVED and the analytically-established
+    bracket is returned directly. This is valid ONLY at tau = 0.5; a future tau is a
+    new registered version (hence the guard). Every golden volatility/rating/RD/
+    probability/uncertainty/state/replay value is preserved byte-identically.
     """
+    if tau != GLICKO2_TAU:
+        raise ValueError(
+            f"initial_bracket is registered for tau == {GLICKO2_TAU} only (the D<=0 "
+            f"direct return is analytically established at that tau); got tau={tau!r} — "
+            "a different tau requires a new registered version"
+        )
     a = math.log(sigma * sigma)
     delta_sq = delta * delta
     phi_sq = phi * phi
-
-    def f(x: float) -> float:
-        ex = math.exp(x)
-        num = ex * (delta_sq - phi_sq - v - ex)
-        den = 2.0 * (phi_sq + v + ex) ** 2
-        return num / den - (x - a) / (tau * tau)
-
     if delta_sq > phi_sq + v:
         return a, math.log(delta_sq - phi_sq - v)
-    k = 1
-    while f(a - k * tau) < 0.0:  # structurally unreachable body — see docstring
-        k += 1
-    return a, a - k * tau
+    # D <= 0: k-search terminates at k = 1 for tau = 0.5 (see docstring).
+    return a, a - tau
 
 
 def new_volatility(
@@ -174,7 +182,7 @@ def new_volatility(
             )
         big_c = big_a + (big_a - big_b) * f_a / (f_b - f_a)
         f_c = f(big_c)
-        if f_c * f_b <= 0.0:
+        if brackets_root_or_touches_zero(f_c, f_b):
             big_a, f_a = big_b, f_b
         else:
             f_a = f_a / 2.0

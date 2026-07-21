@@ -30,6 +30,7 @@ from sport_tennis.glicko2_family import (
     Glicko2ConvergenceError,
     Glicko2Family,
     PlayerState,
+    brackets_root_or_touches_zero,
     inactivity_step,
     initial_bracket,
     new_volatility,
@@ -548,3 +549,44 @@ class TestInitialBracketSeam:
                         )
                         f_val = first - (x - a) / (GLICKO2_TAU * GLICKO2_TAU)
                         assert f_val > 0.0, (phi, v, delta, sigma)
+
+
+class TestInitialBracketRegisteredTau:
+    """Founder §3: the D<=0 direct-return bracket is analytically valid ONLY at the
+    registered tau=0.5. initial_bracket must enforce that at the governed boundary; a
+    future tau requires a new registered version."""
+
+    def test_registered_tau_accepted(self) -> None:
+        a, b = initial_bracket(phi=0.5, v=1.2, delta=0.3, sigma=0.06, tau=GLICKO2_TAU)
+        assert b == a - GLICKO2_TAU  # D<=0 branch, direct return
+
+    def test_non_registered_tau_refused(self) -> None:
+        for bad_tau in (0.4, 0.6, 1.0, 0.3):
+            with pytest.raises(ValueError, match="tau"):
+                initial_bracket(phi=0.5, v=1.2, delta=0.3, sigma=0.06, tau=bad_tau)
+
+
+class TestIllinoisSignPredicate:
+    """Founder §4: the Illinois bracket-update sign test is an exact pure predicate.
+    Exact-boundary unit tests kill both survivors:
+      - Mul_Div (`f_c / f_b`): dies at f_b == 0 (division raises vs product returns True)
+      - LtE_Lt (`f_c * f_b < 0.0`): dies at a zero touch (product == 0 -> True vs False)."""
+
+    def test_opposite_signs_bracket_the_root(self) -> None:
+        assert brackets_root_or_touches_zero(1.0, -1.0) is True
+        assert brackets_root_or_touches_zero(-2.5, 3.0) is True
+
+    def test_same_signs_do_not_bracket(self) -> None:
+        assert brackets_root_or_touches_zero(1.0, 1.0) is False
+        assert brackets_root_or_touches_zero(-2.0, -0.5) is False
+
+    def test_zero_touch_counts_as_bracket_both_positions(self) -> None:
+        # kills LtE_Lt: product == 0.0 must be True (<=), not False (<)
+        assert brackets_root_or_touches_zero(0.0, 5.0) is True
+        assert brackets_root_or_touches_zero(5.0, 0.0) is True
+        assert brackets_root_or_touches_zero(0.0, 0.0) is True
+
+    def test_predicate_never_divides(self) -> None:
+        # kills Mul_Div: f_b == 0.0 must return (not raise ZeroDivisionError)
+        assert brackets_root_or_touches_zero(3.0, 0.0) is True
+        assert brackets_root_or_touches_zero(-3.0, 0.0) is True

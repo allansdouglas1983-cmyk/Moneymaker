@@ -1,0 +1,68 @@
+# specs/mutation-survivors-stage2g.yaml — GOVERNED append-only Stage 2G mutation-survivor
+# approval record. Human-owned. Records the founder's per-ID adjudication (2026-07-21) of
+# the 215-survivor merged manifest (MUTATION_SURVIVOR_PACKET_STAGE2G_FINAL_ALL_V1.json,
+# entries digest sha256:e4725ace...). Only entries listed here are approved; every other
+# survivor is either killed or eliminated by refactor in the same slice.
+
+record_id: STAGE2G-MUTATION-ADJUDICATION-V1
+adjudicated_on: "2026-07-21"
+authority: founder directive (per-ID adjudication)
+manifest: MUTATION_SURVIVOR_PACKET_STAGE2G_FINAL_ALL_V1.json
+manifest_entries_digest: sha256:e4725acec4237d270154c3ce48074ae1a358228b621939ddf052c4ebf20d09de
+
+approved_count: 146
+approved_by: founder
+
+approved_complete_classes:            # every entry of these classes is approved
+  A_pep563_annotation: 44
+  B_byte_identical_rule_construction: 62
+  L_layered_unreachable_boundary: 15
+  G_diagnostic_prose: 14
+  D_unreachable_branch_race_invariant: 2
+  K_sigmoid_branch_x0_identity: 2
+  H_environment_bound_identity: 2
+  C2_dominated_comparison_sorted_invariant: 1
+  C_symmetric_quadrature_reflection: 1
+
+approved_exact_subsets:
+  C_min_invariant_equivalent:         # only the <= entries; NOT the Eq_Is entries
+    - dp1_calibration.py::core/ReplaceComparisonOperator_Eq_LtE::2
+    - dp1_calibration.py::core/ReplaceComparisonOperator_Eq_LtE::3
+  H_domain_bound_identity:            # only the max(0->-1) case; NOT the sub->mod entry
+    - glicko2_family.py::core/NumberReplacer::65
+
+not_approved_here:                    # handled by refactor/kill in this slice, not approval
+  J_dead_except_sign_unreachable: 34    # dead mechanism REMOVED (founder §3)
+  E_unreachable_ksearch_structure: 13   # dead mechanism REMOVED (founder §3)
+  E_same_root_convergence_path: 2       # KILLED via extracted sign predicate (founder §4)
+  C_min_invariant_equivalent_Eq_Is: 2   # the Eq_Is subset — NOT approved (founder §1.A)
+  H_domain_bound_identity_sub_mod: 1    # the sub->mod entry — NOT approved (founder §1.B)
+  F_defensive_counter: 7                # not in the founder approval list
+  F_defensive_cap: 4
+  F_defensive_epsilon: 1
+  M_defensive_finite_guard_masked: 1
+  N_slope_guard_masked_by_temperature: 3
+  I_type_checking_import: 1
+  # (the above non-approved equivalents remain in the manifest with approved_by null,
+  #  pending either a future founder decision or a kill/refactor in a later pass)
+
+conditions:                           # founder §2 — approval validity conditions
+  A_pep563_annotations:
+    valid_while: postponed annotations active; NO runtime consumer evaluates __annotations__;
+      no Pydantic/schema/registration/digest path consumes them
+    enforcement: tests/unit/sport_tennis/test_mutation_equivalence_pins.py
+      TestClassAPep563ArchitecturePin (must remain continuously enforced by make verify)
+  B_fixed_quadrature_construction:
+    scope: the registered fixed 20-node rule and its EXACT numerical output only
+    pins: node/weight arrays byte-identical; accumulation order + rule sha256 unchanged;
+      cache statistics and arbitrary quadrature-size behaviour are NOT a governed contract
+    enforcement: TestNumericalEdges::test_golden_rule_digest_pinned, TestGaussHermiteRule
+  G_diagnostic_prose:
+    valid_where: exception type and stable structured error identity unchanged; prose is NOT
+      parsed, hashed, persisted as evidence identity, or used for branching
+  H_environment_bound_string_identity:
+    note: NOT a language-level Python equivalence; environment-bound (str.strip() identity)
+    python_implementation: CPython
+    python_version: 3.11.15
+    environment_digest: sha256:98df2a621901eac3cf51657029af4f3aa80ab6244b97066f7901e326c74015ed
+    reclassification: MANDATORY on any interpreter implementation or version change
