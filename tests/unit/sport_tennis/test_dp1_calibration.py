@@ -338,11 +338,16 @@ class TestFitGuardKills:
         assert other_equal == _HORIZON
         cal = fit_affine_logit_calibration(races, rows, horizon=other_equal, tour="atp")
         assert cal.n_rows == 60  # accepted despite non-identity
-        # a foreign horizon that sorts BEFORE the rows' horizon must still be refused
+        # foreign horizons on BOTH sides of the rows' horizon must be refused — the
+        # smaller side alone leaves the `>` mutant alive (rows' horizon > smaller is
+        # already True), so a LARGER foreign horizon is required to kill it.
         smaller = HorizonLabel("aaa-earlier")
-        assert smaller < _HORIZON
+        larger = HorizonLabel("zzz-later")
+        assert smaller < _HORIZON < larger
         with pytest.raises(CrossFitViolation):
             fit_affine_logit_calibration(races, rows, horizon=smaller, tour="atp")
+        with pytest.raises(CrossFitViolation):
+            fit_affine_logit_calibration(races, rows, horizon=larger, tour="atp")
 
     def test_canonical_selection_rejects_duplicate_and_missing(self) -> None:
         """L150 kill: `<=` would mark BOTH rows canonical (duplicate → refuse); `is`
