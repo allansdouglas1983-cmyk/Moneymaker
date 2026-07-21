@@ -33,3 +33,4 @@ traceability.md
 # OS / editor
 .DS_Store
 *.swp
+docs/evidence/stage3-cross-market-audit/*.log
