@@ -2662,5 +2662,6 @@
    ],
    "approved_by": null
   }
- ]
+ ],
+ "_superseded_by": "SUPERSEDED by MUTATION_SURVIVOR_PACKET_STAGE2G_FINAL_ALL_V1.json (round-3; glicko2 entries stale)"
 }

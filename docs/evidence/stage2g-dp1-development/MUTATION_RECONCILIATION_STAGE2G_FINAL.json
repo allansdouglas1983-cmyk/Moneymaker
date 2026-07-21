@@ -1,0 +1,46 @@
+{
+ "reconciliation": {
+  "glicko2_family": {
+   "mutants": 1234,
+   "killed": 1170,
+   "survivors": 64,
+   "manifest_entries": 64,
+   "missing": [],
+   "extra": [],
+   "duplicates": [],
+   "stale": []
+  },
+  "dp1_calibration": {
+   "mutants": 573,
+   "killed": 542,
+   "survivors": 31,
+   "manifest_entries": 31,
+   "missing": [],
+   "extra": [],
+   "duplicates": [],
+   "stale": []
+  },
+  "dp1_distribution": {
+   "mutants": 1068,
+   "killed": 948,
+   "survivors": 120,
+   "manifest_entries": 120,
+   "missing": [],
+   "extra": [],
+   "duplicates": [],
+   "stale": []
+  }
+ },
+ "totals": {
+  "total_mutants": 2875,
+  "total_killed": 2660,
+  "total_survivors": 215,
+  "manifest_entries": 215
+ },
+ "per_module_db_sha256": {
+  "glicko2_family": "552b4271856137b0c99a7034f9e212c8ed5cd4724f367217d006848da92050ed",
+  "dp1_calibration": "af5619ed4efddc04c9bae1f1a3e9b2673e85daedbe9e359ad876ea9a1fa3a414",
+  "dp1_distribution": "82c58343e8872a8696272b71213980f1b9c0c6a6cda7d2ea81379cacaf1f3b44"
+ },
+ "all_zero": true
+}
