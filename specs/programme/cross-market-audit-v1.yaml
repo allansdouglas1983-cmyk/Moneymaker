@@ -1,0 +1,131 @@
+# specs/programme/cross-market-audit-v1.yaml — FROZEN registration for the STAGE3-0002
+# zero-cost cross-market latent-model FEASIBILITY AUDIT. Human-owned (CODEOWNERS specs/**).
+# Frozen BEFORE any derivative-market PRICE is read. External evidence DR-TENNIS-MOAT-001
+# (accepted as hypothesis generation only). This is an inventory / linkage / timing /
+# book-quality / information-redundancy audit. NO latent model is implemented or fitted.
+
+audit_id: CROSS-MARKET-AUDIT-V1
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0002
+external_evidence: DR-TENNIS-MOAT-001 (hypothesis generation only; proves nothing, authorises no spend)
+audit_code_version: xmarket-audit-v1
+
+programme_posture:                     # §0 — preserved, unaltered
+  F2_v1: FROZEN HISTORICAL SPORTING BASELINE
+  F3_surface_elo: CLOSED FAIL_HARM
+  DP1_glicko2: CLOSED STOP_DP1_HARM
+  june: DEVELOPMENT DATA (never prospective confirmation)
+  no_rating_family_reopened: true
+  no_prior_verdict_threshold_scorecard_or_model_altered: true
+
+source_manifests:
+  source_corpus: June Betfair ADVANCED historical corpus (already held; NO purchase)
+  corpus_tar_sha256: bd69cd68fb5ac8cc6e1a0cb0d26d1fbf9b2e7179ff0fd9e1fdbdc8edb7b2c2ee
+  corpus_checksum_manifest: pilot-data/SHA256SUMS.txt (sha256 d6d2f44b318aea425f39...; 20,482 bz2 market files)
+  f0_snapshot_manifest: docs/evidence/stage2b-f0-f2-runs/F0_MARKET_YARDSTICK_MANIFEST.jsonl
+  f0_snapshot_manifest_sha256: 90b80100dc0d141a6b39fa5f18df17a1d627366d827e9d3a48acaa6ed9cec828
+  june_universe_manifest: docs/evidence/stage2b-f0-f2-runs/F0_MARKET_YARDSTICK_MANIFEST.jsonl (2,876 MO markets)
+  canonical_replay_manifest: docs/evidence/stage2b-f0-f2-runs/ (F0 process; info-price-v2; reschedule-policy-v1)
+  note: the F0 manifest IS the June singles Match-Odds universe + committed snapshots + the
+    exact frozen F0 decision timestamps (commit_pt_ms) used for as-of reconstruction (§6).
+
+denominators:                          # §2 — derived from manifests, not copied
+  A_PRIMARY_JUNE_SINGLES_UNIVERSE: 2876      # all MO markets in the F0 manifest
+  B_F0_COMMITTED_JUNE_SINGLES: 2518          # committed==True; the cross-market sync denominator
+  B_cohort_split: {STRICT: 1959, PRIMARY_ONLY_TIER: 559}
+  principal_results_reported_against: [A, B]
+  cohort_tags_retained: [STRICT (sibling-corroborated), PRIMARY_ONLY_TIER]
+  no_silent_removal_of_thin_or_lower_tier_markets: true
+
+fields_permitted_to_read:              # metadata + market prices/book only
+  market_definition: [marketType, bettingType, eventId, eventName, name, marketTime, openDate,
+    suspendTime, status, inPlay, betDelay, numberOfWinners, numberOfActiveRunners, runners
+    (id/name/hc), crossMatching, turnInPlayEnabled, version, eventTypeId, regulators, timezone]
+  market_stream: [publish_time, price ladders (best back/lay, sizes, ladder depth),
+    last-traded-price, traded volume, book-change timestamps, market-definition updates]
+  f0_manifest: [market_id, committed, commit_pt_ms, market_time_ms_at_commit, cohort,
+    post_commit_revision_count, refusal_reason, p_market_by_selection (MO selection ids only)]
+
+prohibited_fields:                     # §1 — never read/derived in this audit
+  - winners
+  - sporting outcomes
+  - settlement results
+  - ROI
+  - P&L
+  - CLV
+  - EV
+  - betting selections / tips
+  - any result-derived feature
+
+synchronization_protocol:              # §6/§7
+  as_of_timestamp: the exact frozen F0 decision timestamp per Match-Odds market (commit_pt_ms)
+  reconstruction_rule: a derivative sibling's state is built ONLY from stream messages with
+    publish_time <= the F0 decision timestamp; NO later/substitute/closing/in-play state
+  candidate_quote_age_cutoffs_seconds: [15, 30, 60, 120, 300]   # audit sensitivities, NOT policy
+  staleness_cutoff: NOT frozen in this audit (reported as a sensitivity only)
+
+market_type_parser_version: xmarket-parsers-v1
+market_type_classification:            # §3 — derived from the corpus, not the research report
+  MATCH_ODDS: {role: PRIMARY_MATCH_ODDS, runners: 2, note: the canonical sibling}
+  COMBINED_TOTAL: {role: PRIMARY_IDENTIFYING_TOTAL_GAMES, bettingType: ASIAN_HANDICAP_DOUBLE_LINE,
+    line_unit: total games in the match, selections: Over/Under per line (12.0..39.0 observed),
+    note: Betfair "Total Games"; multi-line packed market}
+  HANDICAP: {role: PRIMARY_IDENTIFYING_GAME_HANDICAP_CANDIDATE, bettingType: ASIAN_HANDICAP_DOUBLE_LINE,
+    line_unit: games handicap per player (-11.5..+11.5 observed), note: parser MUST confirm the
+    line is a GAME handicap and refuse any set-handicap or other-handicap contamination (§3/§4)}
+  SET_WINNER: {role: AUXILIARY_SET_STRUCTURE}
+  SET_BETTING: {role: AUXILIARY_OTHER, structure: multi-runner correct-score-by-sets}
+  SET_CORRECT_SCORE: {role: AUXILIARY_OTHER, structure: multi-runner}
+  NUMBER_OF_SETS: {role: AUXILIARY_SET_STRUCTURE}
+  PLAYER_A_WIN_A_SET: {role: AUXILIARY_SET_STRUCTURE}
+  PLAYER_B_WIN_A_SET: {role: AUXILIARY_SET_STRUCTURE}
+  TOURNAMENT_WINNER: {role: UNSUPPORTED, note: outright; not match-linked}
+  unlisted: UNKNOWN_REQUIRES_REVIEW (fail closed)
+
+output_metrics:                        # §19 — every metric this audit emits
+  - raw market-type inventory (counts/events/dates/runner-shape/singles-doubles/tennis)
+  - type-specific parser coverage table
+  - event-linkage report (with linkage-anomaly detection)
+  - synchronization report (quote ages, staleness indicators)
+  - N_PRIMARY_IDENTIFYING per quote-age cutoff and per cohort/tour/day/tournament
+  - Total Games / Game Handicap / both coverage
+  - auxiliary-market coverage
+  - book-quality metrics (spread ticks/bps, best sizes, ladder depth, matched volume, update recency)
+  - line-richness report (lines offered, closest-to-balanced, most-volume, spread/depth by line)
+  - one-tick / book-interval sensitivity packet
+  - empirical redundancy / independent-update evidence status
+  - settlement-semantics registry (specs/evidence/tennis-derivative-settlement-semantics-v1.yaml)
+  - selection-bias / coverage comparison (outcome-blind fields)
+  - complete refusal funnel
+
+exclusion_reasons:                     # every counted refusal
+  - MARKET_TYPE_UNKNOWN_REQUIRES_REVIEW
+  - NOT_LINKED_TO_MATCH_ODDS_EVENT
+  - AMBIGUOUS_EVENT_LINKAGE
+  - MULTIPLE_MATCH_ODDS_FOR_EVENT_UNRESOLVED
+  - CANCELLED_OR_RELISTED_INSTANCE
+  - NO_STATE_AT_OR_BEFORE_F0_TIMESTAMP
+  - DERIVATIVE_IN_PLAY_AT_F0
+  - DERIVATIVE_SUSPENDED_AT_F0
+  - DERIVATIVE_ONE_SIDED_AT_F0
+  - DERIVATIVE_CROSSED_AT_F0
+  - DERIVATIVE_EMPTY_AT_F0
+  - MALFORMED_SELECTION_STRUCTURE
+  - AMBIGUOUS_OR_MISSING_LINE
+  - SET_HANDICAP_OR_OTHER_NOT_GAME_HANDICAP
+  - QUOTE_AGE_EXCEEDS_CUTOFF (sensitivity-conditional; reported, not a hard exclusion)
+
+permitted_final_verdicts:              # §1 — no model-performance thresholds defined here
+  - GO_TO_BOUNDED_IMPLEMENTATION
+  - GO_TO_COHORT_BOUNDED_IMPLEMENTATION
+  - LIMITED_DATA_AUDIT_INCONCLUSIVE
+  - NO_GO
+
+prohibitions_reaffirmed:               # §0
+  no_latent_model_implemented: true
+  no_serve_probabilities_fit: true
+  no_residual_fit: true
+  no_roi_pnl_clv_ev_tips_or_selections: true
+  no_new_model_family: true
+  no_purchase_no_api_no_bet_no_execution: true
+  raw_corpus_untouched: true
