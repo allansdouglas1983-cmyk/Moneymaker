@@ -9,15 +9,26 @@ a discrepancy is STOP_MATH_INTEGRITY. Import-quarantined from execution/pricing/
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from sport_tennis.coherence.formats import FormatSpec, set_tiebreak_target
 
 _EPS = 1e-12
+NORMALIZATION_TOLERANCE = 1e-9
 
 
 class CoherenceMathError(Exception):
     """A synthetic math input/domain is invalid — refuse, never guess."""
+
+
+def check_normalized(total: float, *, what: str = "distribution") -> None:
+    """Governed normalization guard (§5.2): refuse any PMF whose mass does not sum to 1 within
+    NORMALIZATION_TOLERANCE. NaN and the infinities are refused EXPLICITLY — a normalized total is
+    a FINITE number within tolerance of 1. (A naive ``abs(total-1) > tol`` guard silently accepts
+    NaN, since every NaN comparison is False.) Do not weaken the tolerance."""
+    if not math.isfinite(total) or abs(total - 1.0) > NORMALIZATION_TOLERANCE:
+        raise CoherenceMathError(f"{what} does not normalize (sum={total!r})")
 
 
 def _check_p(name: str, p: float) -> None:
@@ -180,8 +191,6 @@ def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
                     nxt[(na, nb)] = nxt.get((na, nb), 0.0) + pr * branch
         level = nxt
 
-    total = sum(games.values())
-    if abs(total - 1.0) > 1e-9:
-        raise CoherenceMathError(f"set distribution does not normalize (sum={total})")
+    check_normalized(sum(games.values()), what="set distribution")
     first_wins = sum(pr for (a, b), pr in games.items() if a > b)
     return SetResult(games=games, first_server_wins=first_wins)

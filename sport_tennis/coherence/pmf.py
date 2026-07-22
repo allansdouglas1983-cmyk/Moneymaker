@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from sport_tennis.coherence.scoring import CoherenceMathError
+from sport_tennis.coherence.scoring import CoherenceMathError, check_normalized
 
 _HALF = Decimal("0.5")
 
@@ -28,9 +28,7 @@ def _validate_line(line: Decimal) -> None:
 def _validate_pmf(pmf: dict[int, float]) -> None:
     if not pmf:
         raise CoherenceMathError("empty PMF")
-    total = sum(pmf.values())
-    if abs(total - 1.0) > 1e-9:
-        raise CoherenceMathError(f"PMF does not normalize (sum={total})")
+    check_normalized(sum(pmf.values()), what="PMF")
 
 
 @dataclass(frozen=True)

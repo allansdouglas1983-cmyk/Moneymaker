@@ -18,7 +18,7 @@ from sport_tennis.coherence.formats import (
     format_spec,
     is_match_tiebreak_decider,
 )
-from sport_tennis.coherence.scoring import CoherenceMathError, set_distribution, tiebreak_win_prob
+from sport_tennis.coherence.scoring import check_normalized, set_distribution, tiebreak_win_prob
 
 
 @dataclass(frozen=True)
@@ -81,8 +81,6 @@ def match_distribution(p_a: float, p_b: float, fmt: MatchFormat, *,
                     nxt[(nsa, nsb, naf, ntot, nmar)] += p2
         state = nxt
 
-    tot_sum = sum(total_pmf.values())
-    if abs(tot_sum - 1.0) > 1e-9:
-        raise CoherenceMathError(f"match total-games PMF does not normalize (sum={tot_sum})")
+    check_normalized(sum(total_pmf.values()), what="match total-games PMF")
     return MatchDistribution(match_win_a=match_win_a,
                              total_games_pmf=dict(total_pmf), margin_pmf=dict(margin_pmf))
