@@ -6,6 +6,10 @@ deterministic digest and serialization.
 """
 from __future__ import annotations
 
+import dataclasses
+
+import pytest
+
 from xmarket_contracts import observation as O
 
 
@@ -72,3 +76,48 @@ def test_observation_set_deterministic_serialization() -> None:
                                     game_handicap_observations=(), format_status="X",
                                     synchronization_status="Y", completeness_status="Z")
     assert s.to_json() == s.to_json()
+
+
+# ---------------------------------------------------------------------------
+# STAGE3-0006 §8 mutation-kill tests (behavioural survivors, section C).
+# ---------------------------------------------------------------------------
+
+def _fixed_set() -> O.CrossMarketObservationSet:
+    """A fixed observation set whose field order is NOT alphabetical, so sort_keys matters."""
+    mo = _obs(derivative_market_id="1.mo", derivative_market_type="MATCH_ODDS",
+              raw_selection_names=("A", "B"), parsed_line=None)
+    return O.CrossMarketObservationSet(
+        mo_observation=mo, total_games_observations=(_obs(),),
+        game_handicap_observations=(), format_status="FORMAT_UNRESOLVED",
+        synchronization_status="USABLE", completeness_status="MO_PLUS_TOTAL_GAMES")
+
+
+def test_observation_frozen_and_hashable() -> None:
+    """L17 CrossMarketObservation @dataclass(frozen=True) ReplaceTrueWithFalse::0."""
+    o = _obs()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        o.parsed_line = 0.0  # type: ignore[misc]
+    assert isinstance(hash(o), int)
+
+
+def test_observation_set_frozen_and_hashable() -> None:
+    """L58 CrossMarketObservationSet @dataclass(frozen=True) ReplaceTrueWithFalse::2."""
+    s = _fixed_set()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        s.format_status = "x"  # type: ignore[misc]
+    assert isinstance(hash(s), int)
+
+
+def test_provenance_digest_golden_pin() -> None:
+    """L54 `json.dumps(..., sort_keys=True, ...)` ReplaceTrueWithFalse::1 — pin the exact
+    digest; a sort_keys=False mutant emits keys in (non-alphabetical) field order and hashes
+    to a different value."""
+    assert _obs().provenance_digest() == (
+        "sha256:ea91533ae7f5c3bc4da5b89a476cf3e16cfc810b7742479607c0774dad3963b4")
+
+
+def test_observation_set_digest_golden_pin() -> None:
+    """L80 `json.dumps(..., sort_keys=True, ...)` ReplaceTrueWithFalse::3 — pin the exact
+    set digest; a sort_keys=False mutant hashes to a different value."""
+    assert _fixed_set().digest() == (
+        "sha256:8f599745e9739ad1399aaea6800c2a6d9bbda49437b6577f9eb7526d9fd052d6")
