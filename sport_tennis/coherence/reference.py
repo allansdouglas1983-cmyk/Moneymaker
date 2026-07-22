@@ -10,7 +10,9 @@ This module MUST NOT be imported by production code (test-only).
 """
 from __future__ import annotations
 
-from sport_tennis.coherence.formats import FormatSpec
+from collections import defaultdict
+
+from sport_tennis.coherence.formats import FormatSpec, MatchFormat, format_spec
 from sport_tennis.coherence.scoring import tiebreak_server_is_first
 
 
@@ -84,3 +86,94 @@ def ref_set_first_wins(p_first: float, p_other: float, spec: FormatSpec, *,
         return v
 
     return s(0, 0)
+
+
+def ref_set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
+                         is_final_set: bool) -> dict[tuple[int, int], float]:
+    """Full terminal-game-score distribution for a set, by TOP-DOWN memoised recursion
+    (independent of the production bottom-up forward DP). Returns {(games_first, games_other):
+    prob}. Uses the independent game/tiebreak references throughout."""
+    hold_first = ref_game_win_prob(p_first)
+    hold_other = ref_game_win_prob(p_other)
+    tb_target = 10 if (is_final_set and spec.final_set_rule == "TB10_FINAL_AT_6_6") else 7
+    tb_first = ref_tiebreak_win_prob(p_first, p_other, tb_target)
+
+    def is_terminal(a: int, b: int) -> bool:
+        if a >= 6 and a - b >= 2:
+            return True
+        if b >= 6 and b - a >= 2:
+            return True
+        return (a == 7 and b == 5) or (a == 5 and b == 7)
+
+    memo: dict[tuple[int, int], dict[tuple[int, int], float]] = {}
+
+    def dist(a: int, b: int) -> dict[tuple[int, int], float]:
+        if (a, b) == (6, 6):
+            return {(7, 6): tb_first, (6, 7): 1.0 - tb_first}
+        if is_terminal(a, b):
+            return {(a, b): 1.0}
+        key = (a, b)
+        if key in memo:
+            return memo[key]
+        game_no = a + b + 1
+        server_first = (game_no % 2 == 1)
+        hold = hold_first if server_first else hold_other
+        p_first_wins_game = hold if server_first else (1.0 - hold)
+        out: dict[tuple[int, int], float] = defaultdict(float)
+        for na, nb, branch in ((a + 1, b, p_first_wins_game),
+                               (a, b + 1, 1.0 - p_first_wins_game)):
+            for term, pv in dist(na, nb).items():
+                out[term] += branch * pv
+        memo[key] = dict(out)
+        return memo[key]
+
+    return dist(0, 0)
+
+
+def ref_match(p_a: float, p_b: float, fmt: MatchFormat, *,
+              a_serves_first_match: bool) -> tuple[float, dict[int, float], dict[int, float]]:
+    """Depth-first re-derivation of the full-match distribution (independent of the production
+    forward DP in match.py). Returns (match_win_a, total_games_pmf, margin_pmf), all in terms
+    of the FIXED players A and B. Uses the independent set/tiebreak references throughout."""
+    spec = format_spec(fmt)
+    stw = spec.sets_to_win
+    is_match_tb = spec.final_set_rule == "MATCH_TB10_REPLACES_DECIDER"
+
+    match_win_a = 0.0
+    total_pmf: dict[int, float] = defaultdict(float)
+    margin_pmf: dict[int, float] = defaultdict(float)
+
+    def recurse(sa: int, sb: int, af: bool, tot: int, mar: int, pr: float) -> None:
+        nonlocal match_win_a
+        is_decider = (sa == stw - 1 and sb == stw - 1)
+        if is_match_tb and is_decider:
+            a_win = ref_tiebreak_win_prob(p_a, p_b, 10) if af \
+                else 1.0 - ref_tiebreak_win_prob(p_b, p_a, 10)
+            credit = spec.match_tiebreak_games_credited_to_winner
+            match_win_a += pr * a_win
+            total_pmf[tot + credit] += pr
+            margin_pmf[mar + credit] += pr * a_win
+            margin_pmf[mar - credit] += pr * (1.0 - a_win)
+            return
+        sd = ref_set_distribution(p_a if af else p_b, p_b if af else p_a, spec,
+                                  is_final_set=is_decider)
+        for (gf, go), spr in sd.items():
+            ga, gb = (gf, go) if af else (go, gf)
+            games_in_set = gf + go
+            a_won = ga > gb
+            nsa, nsb = sa + (1 if a_won else 0), sb + (0 if a_won else 1)
+            naf = af if (games_in_set % 2 == 0) else (not af)
+            ntot, nmar = tot + games_in_set, mar + (ga - gb)
+            p2 = pr * spr
+            if nsa == stw:
+                match_win_a += p2
+                total_pmf[ntot] += p2
+                margin_pmf[nmar] += p2
+            elif nsb == stw:
+                total_pmf[ntot] += p2
+                margin_pmf[nmar] += p2
+            else:
+                recurse(nsa, nsb, naf, ntot, nmar, p2)
+
+    recurse(0, 0, a_serves_first_match, 0, 0, 1.0)
+    return match_win_a, dict(total_pmf), dict(margin_pmf)
