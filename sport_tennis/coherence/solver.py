@@ -1,0 +1,272 @@
+"""CROSS_MARKET_COHERENCE_V1 — PRODUCTION identification solver (STAGE3-0005 §13/§14/§15).
+
+SYNTHETIC-ONLY, deterministic. Given a format and two target observations — the Match-Odds
+implied win probability for player A and the Over probability of ONE selected Total-Games line —
+recovers the two latent serve parameters (p_a, p_b) by a **deterministic bounded 2-D root
+solve**: a fixed-resolution coarse residual scan over the parameter domain, isolation of every
+local-minimum cell, and a fixed-depth nested-grid refinement of each. No random restarts, no
+outcome data, no market prices beyond the two supplied target numbers.
+
+First server is a NUISANCE parameter (§2.4): the solve is run for BOTH ``A serves first`` and
+``B serves first`` with NO 50/50 prior; the union of solutions is returned. When the two serve
+assignments do not converge to the same (p_a, p_b) up to the solver's dedup precision the result
+is ``FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD`` — the solver does NOT decide whether the
+difference is material (that threshold is founder-pending, coherence-v1.yaml).
+
+Only the structural statuses permitted by coherence-v1.yaml §15 are emitted; categorical
+coherence verdicts (COHERENT / INCOHERENT / ...) are NOT produced here. Import-quarantined from
+execution/pricing/V0/research.xmarket.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from decimal import Decimal
+
+from sport_tennis.coherence.formats import MatchFormat
+from sport_tennis.coherence.match import match_distribution
+from sport_tennis.coherence.pmf import over_under
+from sport_tennis.coherence.scoring import CoherenceMathError
+
+# ------------------------------------------------------------- solver numerics (NOT thresholds)
+# These are numerical constants of the root solve (grid resolution, refinement depth, matching
+# precision). They are NOT the founder-pending coherence or first-server materiality thresholds;
+# they never map a residual to a coherence verdict.
+_COARSE_N = 13            # coarse scan nodes per axis
+_N_SEED = 20              # lowest-residual coarse nodes taken as refinement seeds
+_CLUSTER_R = 2            # coarse-index radius within which seeds share one refinement
+_REFINE_LEVELS = 6        # nested-grid pre-polish depth (bring the seed onto the valley)
+_REFINE_K = 5             # refinement window nodes per axis
+_REFINE_SHRINK = 0.5      # window half-width shrink per level
+_NEWTON_ITERS = 40        # bounded damped-Newton polish iterations
+_NEWTON_SINGULAR = 1e-10  # |det J| below which Newton cannot step (leaves the grid estimate)
+_ROOT_TOL = 1e-4          # max per-equation residual for a point to count as a root
+_DEDUP_TOL = 1e-3         # max-norm distance below which two roots are the same point
+_JAC_EPS = 1e-3           # central-difference step for the identification Jacobian
+_JAC_TOL = 5e-3           # |det J| below which identification is degenerate (NON_IDENTIFIABLE)
+_BOUNDARY_TOL = 5e-3      # distance to the domain edge below which a root is a boundary solution
+
+# Per-assignment structural statuses (subset of coherence-v1.yaml §15).
+NO_ROOT = "NO_ROOT"
+IDENTIFIED = "IDENTIFIED"
+MULTIPLE_ROOTS = "MULTIPLE_ROOTS"
+NON_IDENTIFIABLE = "NON_IDENTIFIABLE"
+BOUNDARY_SOLUTION = "BOUNDARY_SOLUTION"
+FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD = "FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD"
+
+
+@dataclass(frozen=True)
+class Root:
+    """A recovered parameter pair under a fixed first-server assignment. Outcome-free."""
+
+    p_a: float
+    p_b: float
+    a_serves_first: bool
+    residual: float
+    jacobian_det: float
+    on_boundary: bool
+
+
+@dataclass(frozen=True)
+class ServerSolve:
+    """Result of the bounded root solve under ONE first-server assignment."""
+
+    a_serves_first: bool
+    status: str
+    roots: tuple[Root, ...]
+
+
+@dataclass(frozen=True)
+class IdentificationResult:
+    """Union identification result across both first-server assignments (§14)."""
+
+    status: str
+    roots: tuple[Root, ...]
+    per_server: tuple[ServerSolve, ServerSolve]
+    domain: tuple[float, float]
+    line: Decimal
+    fmt: MatchFormat
+
+
+def derived_targets(p_a: float, p_b: float, fmt: MatchFormat, line: Decimal, *,
+                    a_serves_first: bool) -> tuple[float, float]:
+    """The two identification observables produced by a known parameter pair: (match-win-A,
+    Over-probability at ``line``). Used to build synthetic targets. Outcome-free."""
+    md = match_distribution(p_a, p_b, fmt, a_serves_first_match=a_serves_first)
+    return md.match_win_a, over_under(md.total_games_pmf, line).over
+
+
+def _validate_domain(domain: tuple[float, float]) -> None:
+    lo, hi = domain
+    if not (0.0 < lo < hi < 1.0):
+        raise CoherenceMathError(f"domain must satisfy 0 < lo < hi < 1, got {domain}")
+
+
+def _clamp(x: float, lo: float, hi: float) -> float:
+    return lo if x < lo else hi if x > hi else x
+
+
+def _residual(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+              tw: float, to: float) -> tuple[float, float]:
+    md = match_distribution(p_a, p_b, fmt, a_serves_first_match=a_first)
+    f1 = md.match_win_a - tw
+    f2 = over_under(md.total_games_pmf, line).over - to
+    return f1, f2
+
+
+def _r2(f: tuple[float, float]) -> float:
+    return f[0] * f[0] + f[1] * f[1]
+
+
+def _refine(ca: float, cb: float, h: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+            tw: float, to: float, lo: float, hi: float) -> tuple[float, float, float]:
+    """Deterministic nested-grid refinement around (ca, cb). Returns (p_a, p_b, residual2)."""
+    step = 2.0 * h / (_REFINE_K - 1)
+    best_r = _r2(_residual(ca, cb, a_first, fmt, line, tw, to))
+    best_a, best_b = ca, cb
+    for _ in range(_REFINE_LEVELS):
+        for ia in range(_REFINE_K):
+            pa = _clamp(ca - h + step * ia, lo, hi)
+            for ib in range(_REFINE_K):
+                pb = _clamp(cb - h + step * ib, lo, hi)
+                r = _r2(_residual(pa, pb, a_first, fmt, line, tw, to))
+                if r < best_r:
+                    best_r, best_a, best_b = r, pa, pb
+        ca, cb = best_a, best_b
+        h *= _REFINE_SHRINK
+        step = 2.0 * h / (_REFINE_K - 1)
+
+    # Newton polish: a deterministic bounded 2-D root solve on F=(F1,F2) using the numeric
+    # Jacobian. Converges precisely in shallow valleys where the nested grid stalls; if the
+    # Jacobian is singular (a degenerate/flat direction) it cannot step and the grid estimate is
+    # kept for classification.
+    pa, pb = best_a, best_b
+    for _ in range(_NEWTON_ITERS):
+        f1, f2 = _residual(pa, pb, a_first, fmt, line, tw, to)
+        if f1 * f1 + f2 * f2 <= _ROOT_TOL * _ROOT_TOL:
+            break
+        d11, d21, d12, d22 = _jacobian(pa, pb, a_first, fmt, line, tw, to)
+        det = d11 * d22 - d12 * d21
+        if abs(det) < _NEWTON_SINGULAR:
+            break
+        da = (d22 * f1 - d12 * f2) / det
+        db = (-d21 * f1 + d11 * f2) / det
+        na, nb = _clamp(pa - da, lo, hi), _clamp(pb - db, lo, hi)
+        if abs(na - pa) < 1e-15 and abs(nb - pb) < 1e-15:
+            break
+        pa, pb = na, nb
+    newton_r = _r2(_residual(pa, pb, a_first, fmt, line, tw, to))
+    if newton_r < best_r:
+        return pa, pb, newton_r
+    return best_a, best_b, best_r
+
+
+def _jacobian(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+              tw: float, to: float) -> tuple[float, float, float, float]:
+    """Central-difference identification Jacobian (d11, d21, d12, d22) of (F1, F2) w.r.t.
+    (p_a, p_b)."""
+    e = _JAC_EPS
+    ap, am = min(p_a + e, 0.99), max(p_a - e, 0.01)
+    bp, bm = min(p_b + e, 0.99), max(p_b - e, 0.01)
+    fa_p = _residual(ap, p_b, a_first, fmt, line, tw, to)
+    fa_m = _residual(am, p_b, a_first, fmt, line, tw, to)
+    fb_p = _residual(p_a, bp, a_first, fmt, line, tw, to)
+    fb_m = _residual(p_a, bm, a_first, fmt, line, tw, to)
+    d11 = (fa_p[0] - fa_m[0]) / (ap - am)
+    d21 = (fa_p[1] - fa_m[1]) / (ap - am)
+    d12 = (fb_p[0] - fb_m[0]) / (bp - bm)
+    d22 = (fb_p[1] - fb_m[1]) / (bp - bm)
+    return d11, d21, d12, d22
+
+
+def _jacobian_det(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+                  tw: float, to: float) -> float:
+    d11, d21, d12, d22 = _jacobian(p_a, p_b, a_first, fmt, line, tw, to)
+    return d11 * d22 - d12 * d21
+
+
+def _dedup(roots: list[Root]) -> list[Root]:
+    kept: list[Root] = []
+    for r in roots:
+        if not any(max(abs(r.p_a - k.p_a), abs(r.p_b - k.p_b)) < _DEDUP_TOL for k in kept):
+            kept.append(r)
+    return kept
+
+
+def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
+               domain: tuple[float, float]) -> ServerSolve:
+    lo, hi = domain
+    axis = [lo + (hi - lo) * i / (_COARSE_N - 1) for i in range(_COARSE_N)]
+    grid = [[_r2(_residual(a, b, a_first, fmt, line, tw, to)) for b in axis] for a in axis]
+
+    # Seed refinement from the lowest-residual coarse nodes, clustered so each deep basin is
+    # refined once. A strict local-minimum test misses a narrow diagonal residual valley that
+    # falls BETWEEN coarse nodes; taking the smallest-residual nodes brackets it from both sides.
+    # Distinct basins (e.g. the mirror parameter pair) stay in separate clusters and are each
+    # refined, so genuine multiplicity is detected rather than collapsed.
+    ranked = sorted(((grid[i][j], i, j) for i in range(_COARSE_N) for j in range(_COARSE_N)),
+                    key=lambda t: (t[0], t[1], t[2]))
+    seeds: list[tuple[int, int]] = []
+    for _r, i, j in ranked[:_N_SEED]:
+        if all(max(abs(i - ci), abs(j - cj)) > _CLUSTER_R for ci, cj in seeds):
+            seeds.append((i, j))
+
+    coarse_step = (hi - lo) / (_COARSE_N - 1)
+    found: list[Root] = []
+    for i, j in seeds:
+        pa, pb, r2 = _refine(axis[i], axis[j], coarse_step, a_first, fmt, line, tw, to, lo, hi)
+        if r2 <= _ROOT_TOL * _ROOT_TOL:
+            on_b = min(pa - lo, hi - pa, pb - lo, hi - pb) < _BOUNDARY_TOL
+            jd = _jacobian_det(pa, pb, a_first, fmt, line, tw, to)
+            found.append(Root(pa, pb, a_first, r2 ** 0.5, jd, on_b))
+
+    found = _dedup(found)
+    if not found:
+        status = NO_ROOT
+    elif len(found) > 1:
+        status = MULTIPLE_ROOTS
+    else:
+        r = found[0]
+        if abs(r.jacobian_det) < _JAC_TOL:
+            status = NON_IDENTIFIABLE
+        elif r.on_boundary:
+            status = BOUNDARY_SOLUTION
+        else:
+            status = IDENTIFIED
+    return ServerSolve(a_serves_first=a_first, status=status, roots=tuple(found))
+
+
+def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: MatchFormat, *,
+             domain: tuple[float, float]) -> IdentificationResult:
+    """Dual-evaluate the bounded root solve for both first-server assignments (§14) and return
+    the union structural result. No 50/50 prior; the solver never decides first-server
+    materiality (founder-pending threshold)."""
+    _validate_domain(domain)
+    if not (0.0 <= target_match_win_a <= 1.0 and 0.0 <= target_over <= 1.0):
+        raise CoherenceMathError("targets must be probabilities in [0,1]")
+
+    sa = _solve_one(True, fmt, line, target_match_win_a, target_over, domain)
+    sb = _solve_one(False, fmt, line, target_match_win_a, target_over, domain)
+    per = (sa, sb)
+
+    # Degeneracy / multiplicity under EITHER serve assignment dominates.
+    if NON_IDENTIFIABLE in (sa.status, sb.status):
+        overall = NON_IDENTIFIABLE
+    elif MULTIPLE_ROOTS in (sa.status, sb.status):
+        overall = MULTIPLE_ROOTS
+    else:
+        valid = [s for s in per if s.status in (IDENTIFIED, BOUNDARY_SOLUTION)]
+        union = _dedup([r for s in valid for r in s.roots])
+        if not union:
+            overall = NO_ROOT
+        elif len(union) == 1:
+            overall = BOUNDARY_SOLUTION if union[0].on_boundary else IDENTIFIED
+        else:
+            # Serve assignments disagree on (p_a, p_b): first server matters here. The solver
+            # flags sensitivity; it does NOT judge materiality (founder-pending threshold).
+            overall = FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
+        return IdentificationResult(status=overall, roots=tuple(union), per_server=per,
+                                    domain=domain, line=line, fmt=fmt)
+
+    union = _dedup([r for s in per for r in s.roots])
+    return IdentificationResult(status=overall, roots=tuple(union), per_server=per,
+                                domain=domain, line=line, fmt=fmt)
