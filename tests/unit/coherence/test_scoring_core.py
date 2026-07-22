@@ -104,3 +104,19 @@ def test_set_symmetric_players_half() -> None:
     spec = format_spec(MatchFormat.BO3_AD_TB7_ALL_SETS)
     res = S.set_distribution(0.6, 0.6, spec, is_final_set=False)
     assert res.first_server_wins == pytest.approx(0.5, abs=1e-9)
+
+
+@pytest.mark.parametrize("fmt", _FORMATS)
+@pytest.mark.parametrize("final", [False, True])
+def test_set_full_distribution_equals_reference(fmt: MatchFormat, final: bool) -> None:
+    # Pin the FULL terminal-game-score distribution (every cell), not just the first-server
+    # marginal, against the independent top-down reference — kills mutants that preserve the
+    # marginal but perturb the games distribution (which feeds the total-games / margin PMFs).
+    spec = format_spec(fmt)
+    for pf in (0.38, 0.50, 0.63, 0.80):
+        for po in (0.42, 0.57, 0.71):
+            prod = S.set_distribution(pf, po, spec, is_final_set=final).games
+            ref = R.ref_set_distribution(pf, po, spec, is_final_set=final)
+            for cell in set(prod) | set(ref):
+                assert prod.get(cell, 0.0) == pytest.approx(ref.get(cell, 0.0), abs=_TOL), \
+                    f"{fmt.name} final={final} pf={pf} po={po} cell {cell}"
