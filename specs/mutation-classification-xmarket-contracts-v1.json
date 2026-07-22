@@ -122,8 +122,20 @@
     },
     {
       "module": "xmarket_contracts/synchronizer.py",
+      "operator_prefixes": ["core/RemoveDecorator"],
+      "proof_class": "DEAD_SLOT_DEFAULT_AND_INERT_DATACLASS",
+      "registered_domain_reachability": "The only RemoveDecorator survivor is the `@dataclass` on _Slot (L30; the decorated statement reports no enclosing def name). _Slot is only ever no-arg constructed at L122 then attribute-assigned/read; it is never eq/repr/hash-compared anywhere.",
+      "exact_reachable_state_evidence": "Removing @dataclass leaves _Slot's annotated fields as identical immutable class attributes with the same default values; since _Slot is only no-arg constructed and its attributes assigned/read (never compared, hashed, or repr'd), no reconstruct_as_of output can change. Equivalent. (If the founder prefers a kill, pin structurally with `assert hasattr(_Slot, '__dataclass_fields__')`.)",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_synchronizer.py::* (reconstruct output unchanged across the suite)",
+      "proof_artifact_digest": "slot-dataclass-inert-noarg-construct"
+    },
+    {
+      "module": "xmarket_contracts/synchronizer.py",
       "definitions": ["_Slot"],
-      "operator_prefixes": ["core/RemoveDecorator", "core/NumberReplacer", "core/ReplaceUnaryOperator_"],
+      "operator_prefixes": ["core/NumberReplacer", "core/ReplaceUnaryOperator_"],
       "proof_class": "DEAD_SLOT_DEFAULT_AND_INERT_DATACLASS",
       "registered_domain_reachability": "_Slot L30 `@dataclass` and L39 `last_pt: int = -1`. Every _Slot is created no-arg at L122 (setdefault) and, in the SAME loop iteration, has last_pt assigned at L130 before any read; _Slot is never eq/repr/hash-compared anywhere.",
       "exact_reachable_state_evidence": "The last_pt default is dead — it is overwritten at L130 before being read, so USub/NumberReplacer/Delete mutations of `-1` (to +1, ~1, not 1, 1, -2, -0) never affect any output. Removing @dataclass (RemoveDecorator) leaves the field defaults as identical immutable class attributes and changes nothing, since _Slot is only no-arg constructed and attribute-accessed, never compared. Equivalent.",

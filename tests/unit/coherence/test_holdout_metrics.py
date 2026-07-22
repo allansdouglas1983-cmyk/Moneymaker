@@ -49,7 +49,8 @@ def test_tick_distance_exact() -> None:
 
 @pytest.mark.parametrize("model_mid,observed_mid", [
     (0.0, 0.5), (1.0, 0.5), (0.5, 0.0), (0.5, 1.0), (-0.1, 0.5), (0.5, 1.1),
-])
+    (0.5, -0.1), (0.5, 2.0), (-0.2, 0.5), (2.0, 0.5),  # negative/over-1 on BOTH sides kill the
+])                                                     # chained-comparison `<`->`!=` mutants
 def test_tick_distance_refuses_out_of_range(model_mid: float, observed_mid: float) -> None:
     # the (0,1) guard: each boundary/out-of-range probe kills a distinct bound-comparison mutant
     # (Lt->LtE/Eq/NotEq/Gt/GtE, the 0.0/1.0 NumberReplacer variants) and the `and`->`or` mutant
@@ -71,6 +72,13 @@ def test_interval_violation_above_interval() -> None:
 
 def test_interval_violation_intersecting_is_zero() -> None:
     assert H._interval_violation(0.40, 0.60, 0.50, 0.55) == 0.0
+
+
+def test_interval_violation_far_below_distinguishes_sub_from_mod() -> None:
+    # obs_lo (0.9) >= 2*hi (0.4): obs_lo - hi = 0.5 but obs_lo % hi = 0.1, so this input
+    # distinguishes the `obs_lo - hi` subtraction from a Sub->Mod mutant (the earlier
+    # below-interval case 0.6/0.4 collides because 0.6-0.4 == 0.6%0.4).
+    assert H._interval_violation(0.10, 0.40, 0.90, 0.95) == pytest.approx(0.50, abs=1e-9)
 
 
 def test_interval_violation_reversed_back_lay_orders_observed() -> None:
