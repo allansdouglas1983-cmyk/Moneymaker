@@ -40,6 +40,14 @@ _VALID_TIEBREAK_TARGETS = (7, 10)
 
 
 # ------------------------------------------------------------------------- serve order
+def _server_is_first(point_index: int) -> bool:
+    """Unvalidated serve-order arithmetic (hot path). Callers in this module always pass a valid
+    positive index; the public ``tiebreak_server_is_first`` performs the §5.4 input refusal."""
+    if point_index == 1:
+        return True
+    return ((point_index - 2) // 2) % 2 == 1
+
+
 def tiebreak_server_is_first(point_index: int) -> bool:
     """True if the player who served the tiebreak's first point serves ``point_index``
     (1-indexed). Order: first serves point 1; then serve alternates in pairs (2,3 other;
@@ -47,9 +55,7 @@ def tiebreak_server_is_first(point_index: int) -> bool:
     if not isinstance(point_index, int) or isinstance(point_index, bool) or point_index < 1:
         raise CoherenceMathError(
             f"tiebreak point index must be a positive int, got {point_index!r}")
-    if point_index == 1:
-        return True
-    return ((point_index - 2) // 2) % 2 == 1
+    return _server_is_first(point_index)
 
 
 def tiebreak_tail_servers(target: int) -> tuple[bool, bool]:
@@ -59,7 +65,7 @@ def tiebreak_tail_servers(target: int) -> tuple[bool, bool]:
     if target not in _VALID_TIEBREAK_TARGETS:
         raise CoherenceMathError(f"tiebreak target must be 7 or 10, got {target}")
     n0 = 2 * (target - 1) + 1
-    return tiebreak_server_is_first(n0), tiebreak_server_is_first(n0 + 1)
+    return _server_is_first(n0), _server_is_first(n0 + 1)
 
 
 def _deuce_tail_first_win(x: float, y: float) -> float:
@@ -161,7 +167,7 @@ def tiebreak_win_prob(p_first: float, p_other: float, target: int) -> float:
         raise CoherenceMathError(f"tiebreak target must be 7 or 10, got {target}")
 
     def first_point_win(n: int) -> float:
-        return p_first if tiebreak_server_is_first(n) else (1.0 - p_other)
+        return p_first if _server_is_first(n) else (1.0 - p_other)
 
     # deuce tail at (target-1, target-1): two-point cycle using the ACTUAL tail servers (§5.5)
     s0, s1 = tiebreak_tail_servers(target)
