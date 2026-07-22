@@ -13,9 +13,21 @@ from sport_tennis.coherence import reference as R
 from sport_tennis.coherence.scoring import (
     CoherenceMathError,
     _deuce_tail_first_win,
+    point_win_prob_for_first,
     tiebreak_server_is_first,
     tiebreak_tail_servers,
 )
+
+
+# ------------------------------------------------------------ point-win path (kills serve flip)
+def test_point_win_prob_matches_independent_reference_serve() -> None:
+    # The first player wins point n with p_first when they serve it, else (1-p_other). Pinned
+    # against the INDEPENDENT reference serve order, so a serve-assignment inversion (AddNot on
+    # _server_is_first) is killed even though the tiebreak WIN probability is flip-invariant.
+    pf, po = 0.7, 0.4
+    for n in range(1, 30):
+        expected = pf if R.ref_tiebreak_server_is_first(n) else (1.0 - po)
+        assert point_win_prob_for_first(n, pf, po) == expected
 
 
 # --------------------------------------------------------------- §5.4 service sequence

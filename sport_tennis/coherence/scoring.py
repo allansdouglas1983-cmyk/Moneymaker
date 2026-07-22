@@ -58,6 +58,14 @@ def tiebreak_server_is_first(point_index: int) -> bool:
     return _server_is_first(point_index)
 
 
+def point_win_prob_for_first(point_index: int, p_first: float, p_other: float) -> float:
+    """P(the FIRST player wins tiebreak point ``point_index``): ``p_first`` if that player serves
+    the point, else ``1 - p_other``. Pinned directly (§5.4) so a serve-assignment inversion is
+    killed even though the tiebreak WIN probability happens to be invariant under a full
+    serve-schedule reversal (a genuine symmetry, but the per-point path must still be correct)."""
+    return p_first if _server_is_first(point_index) else (1.0 - p_other)
+
+
 def tiebreak_tail_servers(target: int) -> tuple[bool, bool]:
     """The (server_is_first, server_is_first) booleans for the two service points of the deuce
     cycle at (target-1, target-1). Explicit tail seam (§5.5): the win-probability flow reads the
@@ -111,13 +119,14 @@ def tiebreak_is_tail(a: int, b: int, target: int) -> bool:
 
 
 def set_is_terminal(a: int, b: int) -> bool:
-    """(a,b) ends the set: 6-0..6-4 / 7-5 and mirrors. 6-6 is NOT terminal (a tiebreak follows);
-    7-6 is produced only by that tiebreak."""
+    """(a,b) ends the set: reached >=6 games AND leads by >=2 (6-0..6-4 and the 7-5 / mirrors,
+    which also satisfy lead-by-2). 6-6 is NOT terminal (a tiebreak follows); 7-6 is produced only
+    by that tiebreak. The explicit 7-5/5-7 clause is intentionally omitted: those scores have
+    |a-b| == 2 with max >= 6 and are therefore already caught above — an explicit clause would be
+    dead code (STAGE3-0006 §8 simplification)."""
     if a >= 6 and a - b >= 2:
         return True
-    if b >= 6 and b - a >= 2:
-        return True
-    return (a == 7 and b == 5) or (a == 5 and b == 7)
+    return b >= 6 and b - a >= 2
 
 
 def set_is_tiebreak_state(a: int, b: int) -> bool:
@@ -166,9 +175,6 @@ def tiebreak_win_prob(p_first: float, p_other: float, target: int) -> float:
     if target not in _VALID_TIEBREAK_TARGETS:
         raise CoherenceMathError(f"tiebreak target must be 7 or 10, got {target}")
 
-    def first_point_win(n: int) -> float:
-        return p_first if _server_is_first(n) else (1.0 - p_other)
-
     # deuce tail at (target-1, target-1): two-point cycle using the ACTUAL tail servers (§5.5)
     s0, s1 = tiebreak_tail_servers(target)
     x = p_first if s0 else (1.0 - p_other)
@@ -188,7 +194,7 @@ def tiebreak_win_prob(p_first: float, p_other: float, target: int) -> float:
         if key in memo:
             return memo[key]
         n = a + b + 1
-        w = first_point_win(n)
+        w = point_win_prob_for_first(n, p_first, p_other)
         v = w * tb(a + 1, b) + (1.0 - w) * tb(a, b + 1)
         memo[key] = v
         return v
