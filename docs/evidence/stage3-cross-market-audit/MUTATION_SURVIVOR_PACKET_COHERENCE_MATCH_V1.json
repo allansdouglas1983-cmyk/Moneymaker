@@ -1,6 +1,6 @@
 [
   {
-    "survivor_id": "0f215ad5680b",
+    "survivor_id": "d63b9dc221b2",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -22,7 +22,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "5edd2b7aba16",
+    "survivor_id": "b646c4076286",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -44,7 +44,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "57c760aa689e",
+    "survivor_id": "502fad653ac7",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -66,7 +66,29 @@
     "approved_by": null
   },
   {
-    "survivor_id": "a5735381615c",
+    "survivor_id": "9d6546f12a07",
+    "module": "sport_tennis/coherence/match.py",
+    "source_file": "sport_tennis/coherence/match.py",
+    "symbol": "match_distribution",
+    "source_line": 49,
+    "source_expression_hash": "5e1e746b107d5f1a",
+    "original_expression": "is_decider = (sa == stw - 1 and sb == stw - 1)",
+    "mutated_expression": "is_decider = (sa == stw - 1 and sb is stw - 1)",
+    "mutation_operator": "core/ReplaceComparisonOperator_Eq_Is",
+    "proposed_proof_class": "CPYTHON_SMALL_INT_IDENTITY_EQUIVALENT_ENV_BOUND",
+    "registered_domain_reachability": "The `==` operands are small non-negative integers: stw-1 in {1,2} and stw in {2,3}; the counters sa,sb,nsa,nsb are small integers built by +1 increments and so are also in [0,3].",
+    "exact_reachable_state_evidence": "Every operand lies in CPython's small-int interned range [-5, 256], so the interpreter returns the SAME cached int object for equal values and `is` coincides with `==` for every reachable comparison. ENV-BOUND: this identity holds under CPython (the runtime env recorded below); on a Python implementation without small-int caching it must be reclassified. Reclassification rule: verify the interpreter interns the operand range; if not, treat as BEHAVIOURAL and kill with a boxed-int context. Runtime env: CPython 3.11 (.venv).",
+    "malformed_input_reachability": "n/a",
+    "output_fields_affected": "none",
+    "pmf_comparison": "identical",
+    "serialization_digest_comparison": "n/a",
+    "production_reference_comparison": "unchanged",
+    "associated_test_ids": "test_match_and_pmf.py::test_match_pmfs_normalize (structural), test_match_ref_bo3_fast.py::*",
+    "proof_artifact_digest": "cpython-small-int-cache-is-equals-eq",
+    "approved_by": null
+  },
+  {
+    "survivor_id": "8ed49d149e6c",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -88,7 +110,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "fb5933c2d886",
+    "survivor_id": "700a3b53fb9c",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -110,7 +132,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "998e19f47a3d",
+    "survivor_id": "2c2a9b5fc131",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -132,7 +154,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "9741b18edc6b",
+    "survivor_id": "0192ca631e8c",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -154,7 +176,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "f2e5b91304fc",
+    "survivor_id": "c5a906b2533b",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -176,7 +198,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "9a10827caef3",
+    "survivor_id": "cdf054367fbe",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
@@ -198,7 +220,7 @@
     "approved_by": null
   },
   {
-    "survivor_id": "8b6016383bf0",
+    "survivor_id": "1e920908d332",
     "module": "sport_tennis/coherence/match.py",
     "source_file": "sport_tennis/coherence/match.py",
     "symbol": "match_distribution",
