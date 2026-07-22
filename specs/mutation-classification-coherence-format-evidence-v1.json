@@ -1,0 +1,36 @@
+{
+  "_comment": "STAGE3-0006 format_evidence.py survivor classification (LEAD proposals; approved_by null). After the §12 source-simplification refactor (dict lookup for the length status; positive `in _SUPPORTED_FORMAT_VALUES` membership replacing the ordered/`!=` status branch; truthiness replacing `len(...)==1`) and the four adversarial tests, 13 survivors -> 3. Each residual ties to an EXACT mutation with a complete reachable-state or interned-singleton proof (§2(1)/identity form) — no interplay hand-waving. Matches the cr_fe2 re-run against committed code.",
+  "module": "sport_tennis/coherence/format_evidence.py",
+  "rules": [
+    {
+      "module": "sport_tennis/coherence/format_evidence.py",
+      "definitions": ["resolve_format"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Eq_GtE"],
+      "proof_class": "BOUNDED_TOTAL_ORDER_MAX_EQUIVALENT",
+      "registered_domain_reachability": "Two sites. (L108) `resolved == UNSUPPORTED_FORMAT`: at this elif every supported MatchFormat value was already consumed by the `resolved in _SUPPORTED_FORMAT_VALUES` branch, so the reachable value set is exactly {UNSUPPORTED_FORMAT, FORMAT_UNRESOLVED}. (L121) `e.tier == TIER_C`: e.tier was validated to be a member of _TIERS = {A, B, C} at the top of resolve_format (else FormatEvidenceError), so the reachable value set is exactly {A, B, C}.",
+      "exact_reachable_state_evidence": "In both cases the right-hand constant is the STRICT LEXICOGRAPHIC MAXIMUM of the exact reachable set: 'UNSUPPORTED_FORMAT' > 'FORMAT_UNRESOLVED' ('U'>'F'); 'C' > 'B' > 'A'. For x drawn from a finite totally-ordered set whose maximum is m, `x >= m` is true iff `x == m`. Therefore `>=` and `==` induce identical control flow over the complete reachable domain at each site. Enumerated exhaustively: L108 {UNSUPPORTED_FORMAT: ==True/>=True, FORMAT_UNRESOLVED: ==False/>=False}; L121 {C: ==True/>=True, B: ==False/>=False, A: ==False/>=False}.",
+      "malformed_input_reachability": "A tier outside {A,B,C} raises FormatEvidenceError before L121; classify_format_token only ever returns a supported value, UNSUPPORTED_FORMAT or FORMAT_UNRESOLVED, so no other value reaches L108.",
+      "output_fields_affected": "none (identical resolve_format return over the complete input space)",
+      "pmf_comparison": "n/a",
+      "serialization_digest_comparison": "n/a",
+      "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_format_evidence.py::test_unsupported_token_is_unsupported, ::test_tier_a_unknown_token_is_unresolved_not_unsupported, ::test_length_token_on_non_tier_c_is_ignored, ::test_tier_c_length_only_best_of_3/5 (the Lt/LtE/Is siblings at both sites are KILLED by these; only the max-side >= remains)",
+      "proof_artifact_digest": "compare-against-reachable-maximum-gte-equals-eq"
+    },
+    {
+      "module": "sport_tennis/coherence/format_evidence.py",
+      "definitions": ["resolve_format"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Eq_Is"],
+      "proof_class": "INTERNED_SINGLETON_IDENTITY_EQUIVALENT",
+      "registered_domain_reachability": "L108 `resolved == UNSUPPORTED_FORMAT`. `resolved` is the return value of classify_format_token, which returns the module-level constant object UNSUPPORTED_FORMAT itself (a single interned str literal) on the unsupported path, or a MatchFormat .value / FORMAT_UNRESOLVED otherwise.",
+      "exact_reachable_state_evidence": "UNSUPPORTED_FORMAT is a single interned str object; classify_format_token returns THAT object by reference on the only path that produces an unsupported classification (`return UNSUPPORTED_FORMAT`). Hence whenever `resolved == UNSUPPORTED_FORMAT` is true, `resolved is UNSUPPORTED_FORMAT` is also true (same object); and for the only other reachable value at this branch (FORMAT_UNRESOLVED, a distinct interned object) both `==` and `is` are false. `is` and `==` therefore coincide over the complete reachable domain. The sibling `e.tier is TIER_C` identity mutant at L121 is KILLED because a tier string may be a non-interned distinct 'C' object (test_tier_c_length_with_non_interned_tier_string); here no such non-interned UNSUPPORTED_FORMAT is ever constructed.",
+      "malformed_input_reachability": "classify_format_token never returns a non-interned equal copy of UNSUPPORTED_FORMAT; it returns the constant or an enum value.",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a",
+      "serialization_digest_comparison": "n/a",
+      "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_format_evidence.py::test_unsupported_token_is_unsupported, ::test_unsupported_alongside_real_format_does_not_conflict",
+      "proof_artifact_digest": "interned-constant-returned-by-identity-is-equals-eq"
+    }
+  ]
+}

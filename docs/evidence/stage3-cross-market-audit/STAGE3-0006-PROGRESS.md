@@ -33,10 +33,32 @@ June run; no outcomes; `p_market_info`/V0 unchanged; £0; `approved_by: null` th
   path mutants that are additionally KILLABLE by a pinned point-number seam / direct assignment —
   offered to the founder; classified as proven-equivalent for now.
 
+### §4/§7 formats.py packet (EXACT, committed)
+- `formats.py`: **3 survivors** — all genuine equivalents. Classes: `ENUM_MEMBER_IDENTITY_EQUIVALENT`
+  (`is`↔`==` on FinalSetRule singletons; 2), `GUARD_OR_AND_FALLTHROUGH_EQUIVALENT`
+  (classify_format_token guard `or`→`and` with identical FORMAT_UNRESOLVED fall-through; 1).
+- Packet/index/reconciliation `..._COHERENCE_FORMATS_V1.*` (missing=extra=duplicate=stale=unclassified=0).
+
+### §4/§7/§12 format_evidence.py packet (EXACT, committed) — kill-refactor
+- Applied the §12 preference (**kill, don't hand-wave**): source-simplified to a length-status
+  dict lookup, replaced the ordered/`!=` status branch with positive `in _SUPPORTED_FORMAT_VALUES`
+  membership, and replaced `len(...)==1` with truthiness; added 4 adversarial tests
+  (unsupported-alongside-real-format, tier-A unknown token, length-token-on-non-tier-C,
+  non-interned tier string). **13 survivors → 3.**
+- The 3 residuals have complete proofs (not interplay): `BOUNDED_TOTAL_ORDER_MAX_EQUIVALENT`
+  (`>=` vs `==` where the RHS constant is the lexicographic maximum of the exact reachable set —
+  `{UNSUPPORTED_FORMAT, FORMAT_UNRESOLVED}` at L108, `{A,B,C}` at L121; 2) and
+  `INTERNED_SINGLETON_IDENTITY_EQUIVALENT` (`is` vs `==` on the interned `UNSUPPORTED_FORMAT`
+  constant returned by identity; 1).
+- Packet/index/reconciliation `..._COHERENCE_FORMAT_EVIDENCE_V1.*` (all-zero).
+
 ## Remaining before the coherence gate is closed
-- Full mutation + packets for the other six coherence modules: `formats.py`,
-  `format_evidence.py`, `pmf.py`, `match.py`, `solver.py`, `holdout.py` (§4/§7).
-- Consolidated `MUTATION_SURVIVOR_PACKET_COHERENCE_V1_FINAL` across all seven modules (§10).
+- Full mutation + packets for the last four coherence modules: `pmf.py`, `match.py`, `solver.py`,
+  `holdout.py` (§4/§7) — mutation IN PROGRESS this pass (fast BO3 exact-reference + property/
+  refusal test subsets built so each mutant runs in seconds rather than the un-memoised BO5
+  reference's minutes).
+- Consolidated `MUTATION_SURVIVOR_PACKET_COHERENCE_V1_FINAL` across all seven modules (§10) —
+  merger tool `tools/consolidate_coherence_packet.py` delivered.
 
 ## Workstream A — promoted xmarket contracts/plumbing
 - NOT STARTED this pass. State unchanged from STAGE3-0004

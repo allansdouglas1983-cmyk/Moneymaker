@@ -101,3 +101,40 @@ def test_malformed_evidence_refused() -> None:
         resolve_format((FormatEvidence("Z", _BO3, "GOVERNED_COMPETITION_IDENTITY"),))
     with pytest.raises(FormatEvidenceError):
         resolve_format((FormatEvidence(TIER_A, "", "GOVERNED_COMPETITION_IDENTITY"),))
+
+
+# --- STAGE3-0006 §5 mutation-hardening: adversarial inputs that pin the exact comparison ---
+
+def test_unsupported_alongside_real_format_does_not_conflict() -> None:
+    # One real A/B format plus an unsupported A/B token must resolve to the real format. A mutant
+    # that misroutes the UNSUPPORTED classification into the `full` set (e.g. `==`->`>` on the
+    # unsupported test) would instead see two members and return CONFLICT.
+    ev = (FormatEvidence(TIER_A, _BO3, "GOVERNED_COMPETITION_IDENTITY"),
+          FormatEvidence(TIER_A, "FAST4", "GOVERNED_COMPETITION_IDENTITY"))
+    assert resolve_format(ev) == _BO3
+
+
+def test_tier_a_unknown_token_is_unresolved_not_unsupported() -> None:
+    # A tier-A token that is neither a supported format nor an explicitly-unsupported token
+    # classifies to FORMAT_UNRESOLVED and must contribute nothing. A mutant that treats the
+    # unresolved value as unsupported (e.g. `==`->`<` on the unsupported test) would wrongly
+    # return UNSUPPORTED_FORMAT.
+    ev = (FormatEvidence(TIER_A, "SOME_UNKNOWN_TOKEN", "GOVERNED_COMPETITION_IDENTITY"),)
+    assert resolve_format(ev) == FORMAT_UNRESOLVED
+
+
+def test_length_token_on_non_tier_c_is_ignored() -> None:
+    # Only tier C may contribute length. A tier-B item carrying a length token must NOT establish
+    # length. A mutant widening the tier test (`==`->`<=`) would let tier A/B contribute a length.
+    ev = (FormatEvidence(TIER_B, LENGTH_BEST_OF_3, "PRE_MATCH_EVENT_METADATA"),)
+    assert resolve_format(ev) == FORMAT_UNRESOLVED
+
+
+def test_tier_c_length_with_non_interned_tier_string() -> None:
+    # The tier value carried on the evidence may be a distinct (non-interned) "C" string object.
+    # An identity mutant (`==`->`is`) on the tier test would fail to match it; the correct `==`
+    # resolves the length.
+    tier_c = "".join(ch for ch in TIER_C)      # value-equal to TIER_C, distinct object
+    assert tier_c is not TIER_C
+    ev = (FormatEvidence(tier_c, LENGTH_BEST_OF_5, "NUMBER_OF_SETS_SELECTIONS"),)
+    assert resolve_format(ev) == FORMAT_LENGTH_ONLY_BEST_OF_5

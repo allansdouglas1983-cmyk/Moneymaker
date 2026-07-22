@@ -20,8 +20,15 @@ from dataclasses import dataclass
 from sport_tennis.coherence.formats import (
     FORMAT_UNRESOLVED,
     UNSUPPORTED_FORMAT,
+    MatchFormat,
     classify_format_token,
 )
+
+# The exact set of values classify_format_token returns for a genuinely supported format. Using
+# positive membership here (rather than excluding the two status strings by ordered/`!=`
+# comparison) removes the string-ordering branch entirely: an unsupported or unresolved token
+# simply is not a member, so the mutation of a comparison operator has nothing to survive on.
+_SUPPORTED_FORMAT_VALUES = frozenset(f.value for f in MatchFormat)
 
 TIER_A = "A"
 TIER_B = "B"
@@ -60,9 +67,16 @@ class FormatEvidence:
     source: str
 
 
+# Direct lookup, not a comparison: the two length tokens map to their statuses by table, so there
+# is no `==`/`is`/`<=` branch for a mutation operator to survive on.
+_LENGTH_STATUS = {
+    LENGTH_BEST_OF_3: FORMAT_LENGTH_ONLY_BEST_OF_3,
+    LENGTH_BEST_OF_5: FORMAT_LENGTH_ONLY_BEST_OF_5,
+}
+
+
 def _length_only_status(token: str) -> str:
-    return FORMAT_LENGTH_ONLY_BEST_OF_3 if token == LENGTH_BEST_OF_3 \
-        else FORMAT_LENGTH_ONLY_BEST_OF_5
+    return _LENGTH_STATUS[token]
 
 
 def resolve_format(evidence: tuple[FormatEvidence, ...]) -> str:
@@ -89,13 +103,14 @@ def resolve_format(evidence: tuple[FormatEvidence, ...]) -> str:
     for e in evidence:
         if e.tier in (TIER_A, TIER_B):
             resolved = classify_format_token(e.token)
-            if resolved == UNSUPPORTED_FORMAT:
-                unsupported = True
-            elif resolved != FORMAT_UNRESOLVED:
+            if resolved in _SUPPORTED_FORMAT_VALUES:
                 full.add(resolved)
+            elif resolved == UNSUPPORTED_FORMAT:
+                unsupported = True
+            # else FORMAT_UNRESOLVED: contributes nothing.
     if len(full) > 1:
         return FORMAT_EVIDENCE_CONFLICT
-    if len(full) == 1:
+    if full:                       # exactly one (len>1 handled above); truthiness, not `== 1`.
         return next(iter(full))
     if unsupported:
         return UNSUPPORTED_FORMAT
@@ -107,6 +122,6 @@ def resolve_format(evidence: tuple[FormatEvidence, ...]) -> str:
             lengths.add(e.token)
     if len(lengths) > 1:
         return FORMAT_EVIDENCE_CONFLICT
-    if len(lengths) == 1:
+    if lengths:                    # exactly one; truthiness, not `== 1`.
         return _length_only_status(next(iter(lengths)))
     return FORMAT_UNRESOLVED

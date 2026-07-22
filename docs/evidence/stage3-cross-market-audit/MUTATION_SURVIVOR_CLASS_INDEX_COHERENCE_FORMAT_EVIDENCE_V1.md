@@ -1,0 +1,6 @@
+# Mutation survivor class index
+
+total survivors: 3
+
+- BOUNDED_TOTAL_ORDER_MAX_EQUIVALENT: 2
+- INTERNED_SINGLETON_IDENTITY_EQUIVALENT: 1
