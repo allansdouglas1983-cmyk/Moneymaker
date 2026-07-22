@@ -84,9 +84,19 @@ assistant_v0/research.xmarket`, and are imported by neither `assistant_v0` nor `
     postponed annotations and consumes no annotations at runtime (no `get_type_hints` /
     `__annotations__` / pydantic), making the `PEP563_TYPE_ANNOTATION_OPERATORS` mutation class
     genuinely equivalent.
-17. **Synthetic mutation bar** (§16) — `sport_tennis/coherence/{scoring,pmf,formats,
-    format_evidence}.py` mutation-tested; survivor classification recorded in
-    `specs/mutation-survivors-coherence-v1.yaml`. [numbers folded in on completion]
+17. **Synthetic mutation bar** (§16) — core module `sport_tennis/coherence/scoring.py`:
+    **1041 mutants, 905 killed / 136 survived (86.9%)** against the fast test subset. Three
+    honest hardening rounds (85.0 → 85.8 → 86.9%) killed every behavioural serve-order and
+    games-distribution mutant found: (a) made the reference serve order INDEPENDENT of
+    production (it had shared `tiebreak_server_is_first`), (b) added a full set-distribution
+    cell-by-cell agreement test. Residual 136 survivors classified in
+    `specs/mutation-survivors-coherence-v1.yaml` (55 lead-proposed EQUIVALENT with reachability
+    proofs; **80 DP_ARITH_OR_LOGIC_UNPROVEN — NOT claimed equivalent**, incl. one `AddNot`
+    serve-flip requiring a symmetry proof or killing test), all `approved_by: null`. The
+    advice-critical bar is **NOT YET MET and recorded honestly**; it need not be met here (the
+    engine is synthetic-only, quarantined, no real run). Full per-survivor evidence in
+    `docs/evidence/.../COHERENCE_SCORING_MUTATION_SURVIVORS.json`. Kill rate is a LOWER BOUND —
+    the full suite's match/PMF full-PMF agreement (excluded per-mutant for runtime) kills more.
 18. **Survivor extractor tooling** — `tools/extract_mutation_survivors.py` (read-only) generates
     the per-survivor packet from a cosmic-ray session for founder adjudication.
 
@@ -111,7 +121,9 @@ assistant_v0/research.xmarket`, and are imported by neither `assistant_v0` nor `
 
 ## H. Verification
 
-23. `make verify` — [status folded in on completion].
+23. `make verify` — **GREEN**: 664 tests pass; ruff ARG clean; pylint W0613 10/10; escape-hatch
+    greps clean; all import quarantines OK (incl. the 7 new `sport_tennis.coherence` lines);
+    `mypy --strict .` success across 175 source files.
 24. Import quarantines for `sport_tennis.coherence` — all pass (7 lines added to the Makefile).
 25. Nothing exposed: staged plumbing unexposed; no June diagnostic run; awaiting founder
     mutation adjudication per the directive's closing instruction.
