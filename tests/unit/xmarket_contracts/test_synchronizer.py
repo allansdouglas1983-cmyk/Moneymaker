@@ -371,3 +371,38 @@ def test_status_equal_nonidentical_open_not_suspended() -> None:
               _rc("1.1", 200, 111, 20.5, bb=[[0, 1.9, 5.0]], bl=[[0, 1.95, 5.0]])]
     snap = SY.reconstruct_as_of(stream, "1.1", cutoff_ms=1000)
     assert SY.book_exclusion_reason(snap) is None
+
+
+# --- STAGE3-0006 §8 additional kills for the flagged-verdict survivors (lead) ---
+
+def test_best_level_non_numeric_size_excluded() -> None:
+    """L79 NumberReplacer (isinstance(e[2],...) -> e[1]): the size type-guard. A non-numeric
+    size must be EXCLUDED cleanly (not crash on e[2] > 0). The mutant that checks e[1] instead of
+    e[2] would reach `"x" > 0` and raise TypeError."""
+    assert SY._best_level([[0, 1.9, "x"]]) == (None, None, 0)
+
+
+def test_best_level_bool_size_excluded() -> None:
+    """L79 NumberReplacer (not isinstance(e[2],bool) -> e[1]): a boolean size must be EXCLUDED.
+    The mutant dropping the e[2] bool-guard would admit True as size 1.0."""
+    assert SY._best_level([[0, 1.9, True]]) == (None, None, 0)
+
+
+def test_best_level_nonempty_all_filtered_zero_levels() -> None:
+    """L81 `return None, None, 0` NumberReplacer (0 -> 1 / -1): a NON-EMPTY ladder whose every
+    entry is filtered out (here a zero-size entry) returns level count 0 — distinct from the
+    empty-list path (L76). The mutant returns a phantom 1/-1 level count."""
+    assert SY._best_level([[0, 1.9, 0.0]]) == (None, None, 0)
+
+
+def test_none_line_sentinel_orders_above_line_below_minus_one() -> None:
+    """L149 sort-key None sentinel `-1.0` NumberReplacer (-1.0 -> -2.0): a real line in
+    (-2.0, -1.0] must sort BELOW the None sentinel. With a -1.5 line the correct order is
+    [-1.5, None] (sentinel -1.0 > -1.5); a -2.0 sentinel would flip it to [None, -1.5]."""
+    stream = [
+        {"pt": 100, "mc": [{"id": "1.1", "rc": [{"id": 111, "hc": -1.5, "tv": 0.0,
+                                                 "batb": [[0, 1.9, 5.0]]}]}]},
+        {"pt": 110, "mc": [{"id": "1.1", "rc": [{"id": 111, "tv": 0.0}]}]},  # None line
+    ]
+    snap = SY.reconstruct_as_of(stream, "1.1", cutoff_ms=1000)
+    assert [q.line for q in snap.quotes] == [-1.5, None]

@@ -1,0 +1,163 @@
+{
+  "_comment": "STAGE3-0006 §8/§9/§11 xmarket_contracts residual survivor classification (LEAD proposals; approved_by null). After the behavioural kills (69 worker-drafted + lead L138 integrity kill + 5 lead synchronizer kills), 186 -> the residual are the 66 PEP-563 annotation-operator mutants (one class, per-module architecture proof) plus a small set of non-annotation equivalents each with a complete reachable-state / algebraic / interned-identity proof. Reconciled against the confirming per-module re-runs. One combined file; build_mutation_packet filters rules by module.",
+  "module": null,
+  "rules": [
+    {
+      "module": "xmarket_contracts/parsers.py",
+      "operator_prefixes": ["core/ReplaceBinaryOperator_BitOr_"],
+      "proof_class": "PEP563_TYPE_ANNOTATION_OPERATOR_EQUIVALENT",
+      "registered_domain_reachability": "The only BitOr survivors are on type-annotation tokens. parsers.py L69 `def _runner_tuple(r: object) -> tuple[int, str, float | None]:` — the `float | None` union is in the RETURN annotation.",
+      "exact_reachable_state_evidence": "parsers.py carries `from __future__ import annotations` (L8/L10), so every annotation is stored as a STRING (PEP 563) and never evaluated at runtime; mutating the `|` (to any operator) in an annotation cannot change any runtime value or control flow. Architecture-proven by tests/unit/xmarket_contracts/test_annotation_architecture.py. Per-module: this module has the future import and the mutated line is an annotation.",
+      "malformed_input_reachability": "n/a (annotations are never evaluated)",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a",
+      "serialization_digest_comparison": "n/a",
+      "production_reference_comparison": "n/a",
+      "associated_test_ids": "tests/unit/xmarket_contracts/test_annotation_architecture.py",
+      "proof_artifact_digest": "pep563-annotation-string-not-evaluated"
+    },
+    {
+      "module": "xmarket_contracts/parsers.py",
+      "definitions": ["parse_total_games"],
+      "operator_prefixes": ["core/ReplaceBinaryOperator_BitAnd_BitOr"],
+      "proof_class": "SET_INTERSECTION_EQUALS_UNION_ON_EQUAL_SETS",
+      "registered_domain_reachability": "L107 `sorted(set(overs) & set(unders))`. This line is reached only after L104-106, which raise unless `set(overs) ^ set(unders)` is empty.",
+      "exact_reachable_state_evidence": "An empty symmetric difference means set(overs) == set(unders). For equal sets A == B, A & B == A | B == A. So `&` and `|` yield the identical line set at this reachable point. Equivalent by algebraic identity over the registered domain.",
+      "malformed_input_reachability": "unpaired lines raise at L104-106 before L107",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_parsers.py::test_total_games_over_under_and_line, ::test_total_games_unpaired_under_refused",
+      "proof_artifact_digest": "equal-sets-intersection-equals-union"
+    },
+    {
+      "module": "xmarket_contracts/parsers.py",
+      "definitions": ["parse_game_handicap"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_NotEq_Lt", "core/ReplaceComparisonOperator_NotEq_Gt"],
+      "proof_class": "REDUNDANT_GUARD_CONSTANT_FALSE",
+      "registered_domain_reachability": "L134 `if len(id_by_name) != 2:`. Reached only after L123-124 force exactly two distinct names and L129-133 build a name<->id bijection that RAISES on any many-to-one collision.",
+      "exact_reachable_state_evidence": "Given exactly two distinct names each mapped to exactly one id with no raise, id_by_name has exactly two keys, so len(id_by_name) == 2 on every reachable path. The condition is therefore constant-False, and `!=`, `<`, `>` all evaluate to False identically. The guard is dominated (redundant) — a defensive backstop that never fires. Equivalent (alternatively removable as dead code).",
+      "malformed_input_reachability": "collisions raise at L130/L132 before L134",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_parsers.py::test_game_handicap_three_players_message, ::test_game_handicap_name_maps_two_ids_*",
+      "proof_artifact_digest": "len-idbyname-constant-two-guard-dead"
+    },
+    {
+      "module": "xmarket_contracts/parsers.py",
+      "definitions": ["parse_game_handicap"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_GtE_Gt"],
+      "proof_class": "POST_ZERO_CHECK_STRICT_EQUALS_NONSTRICT",
+      "registered_domain_reachability": "L156 `if hc >= 0.0: continue`. L147-148 raise on any hc == 0.0 before this loop, so every hc reaching L156 is strictly non-zero.",
+      "exact_reachable_state_evidence": "With hc != 0 guaranteed, `hc >= 0.0` and `hc > 0.0` agree on every reachable value (they differ only at hc == 0, which is unreachable here). Equivalent.",
+      "malformed_input_reachability": "hc == 0.0 raises at L147-148",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_parsers.py::test_game_handicap_giver_is_negative_hc, ::test_game_handicap_refusals",
+      "proof_artifact_digest": "hc-nonzero-gte-equals-gt"
+    },
+    {
+      "module": "xmarket_contracts/parsers.py",
+      "definitions": ["parse_game_handicap"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Eq_LtE"],
+      "proof_class": "SORTED_PAIR_MIN_LE_EQUALS_EQ",
+      "registered_domain_reachability": "L159 `other = b_id if gid == a_id else a_id`, where (a_id, b_id) = sorted(id_by_name.values()) so a_id < b_id (distinct, proven at L132), and gid is one of the two ids.",
+      "exact_reachable_state_evidence": "a_id is the MINIMUM of the two ids and gid in {a_id, b_id} with a_id <= gid always. So `gid <= a_id` is true iff gid == a_id (gid can never be strictly below the minimum). `<=` and `==` therefore select the same `other` for every reachable gid. Equivalent.",
+      "malformed_input_reachability": "n/a (ids proven distinct)",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_parsers.py::test_game_handicap_giver_receiver_identity_pairing",
+      "proof_artifact_digest": "gid-ge-min-le-equals-eq"
+    },
+
+    {
+      "module": "xmarket_contracts/linkage.py",
+      "operator_prefixes": ["core/ReplaceBinaryOperator_BitOr_"],
+      "proof_class": "PEP563_TYPE_ANNOTATION_OPERATOR_EQUIVALENT",
+      "registered_domain_reachability": "The only BitOr survivors are on type-annotation tokens. linkage.py L96 `def _sole(role: str) -> str | None:` — the `str | None` union is in the RETURN annotation.",
+      "exact_reachable_state_evidence": "linkage.py carries `from __future__ import annotations`, so annotations are strings (PEP 563) never evaluated at runtime; mutating `|` cannot affect runtime. Architecture-proven by test_annotation_architecture.py. Per-module: future import present, mutated line is an annotation.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "tests/unit/xmarket_contracts/test_annotation_architecture.py",
+      "proof_artifact_digest": "pep563-annotation-string-not-evaluated"
+    },
+    {
+      "module": "xmarket_contracts/linkage.py",
+      "definitions": ["link_mo"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_NotEq_IsNot"],
+      "proof_class": "SELF_SIBLING_INERT_IDENTITY_EQUIVALENT",
+      "registered_domain_reachability": "L89 `... and r.market_id != mo_market_id` filtering sibling refs. Catalogue keys (market ids) are unique, so exactly one ref (the MO's own) has r.market_id == mo_market_id.",
+      "exact_reachable_state_evidence": "Only the MO's own ref satisfies market_id == mo_market_id; whether it is included as its own sibling is inert — the MO role is never a `_sole` target (only TG/GH are) and is filtered out of `auxiliary` at L111 (PRIMARY_MATCH_ODDS excluded), and the mismatch loop iterates only tg/gh. So `is not` vs `!=` cannot change any LinkResult field for any reachable catalogue. Equivalent regardless of int interning.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_linkage.py::* (link results unchanged across the suite)",
+      "proof_artifact_digest": "self-sibling-inert-is-equals-ne"
+    },
+    {
+      "module": "xmarket_contracts/linkage.py",
+      "definitions": ["_sole"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Gt_GtE", "core/NumberReplacer"],
+      "proof_class": "UNREACHABLE_AT_LEN_ONE_EQUIVALENT",
+      "registered_domain_reachability": "L99 `return cands[0].market_id` and L100 `if len(cands) > 1:`. L98 returns when len(cands) == 1, so L99/L100 are reached only for len(cands) in {0} U {>=2}.",
+      "exact_reachable_state_evidence": "(a) L100 `> 1` vs `>= 1` (Gt_GtE) and vs `> 0` (NumberReplacer 1->0) differ only at len == 1, which is unreachable here (L98 already returned). (b) L99 `cands[0]` vs `cands[-1]` (NumberReplacer 0->-1) differ only when len > 1, but L99 is reached only when len == 1 (a single-candidate role), where cands[0] == cands[-1]. Both equivalent over the reachable domain.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_linkage.py::test_sole_zero_candidates_not_ambiguous, ::test_ambiguous_*",
+      "proof_artifact_digest": "sole-len-one-guard-unreachable"
+    },
+
+    {
+      "module": "xmarket_contracts/synchronizer.py",
+      "operator_prefixes": ["core/ReplaceBinaryOperator_BitOr_"],
+      "proof_class": "PEP563_TYPE_ANNOTATION_OPERATOR_EQUIVALENT",
+      "registered_domain_reachability": "The only BitOr survivors are on type-annotation tokens: L74 `def _best_level(ladder) -> tuple[float | None, float | None, int]:` (two unions in the return annotation), L96 `book: dict[tuple[int, float | None], _Slot] = {}` (a variable annotation), and L167 `def book_exclusion_reason(snap) -> str | None:` (return annotation).",
+      "exact_reachable_state_evidence": "synchronizer.py carries `from __future__ import annotations`, so all annotations — including the L96 variable annotation, which PEP 526 leaves unevaluated — are strings never evaluated at runtime; mutating `|` cannot affect runtime. Architecture-proven by test_annotation_architecture.py. Per-module: future import present, every mutated line is an annotation.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "tests/unit/xmarket_contracts/test_annotation_architecture.py",
+      "proof_artifact_digest": "pep563-annotation-string-not-evaluated"
+    },
+    {
+      "module": "xmarket_contracts/synchronizer.py",
+      "definitions": ["_Slot"],
+      "operator_prefixes": ["core/RemoveDecorator", "core/NumberReplacer", "core/ReplaceUnaryOperator_"],
+      "proof_class": "DEAD_SLOT_DEFAULT_AND_INERT_DATACLASS",
+      "registered_domain_reachability": "_Slot L30 `@dataclass` and L39 `last_pt: int = -1`. Every _Slot is created no-arg at L122 (setdefault) and, in the SAME loop iteration, has last_pt assigned at L130 before any read; _Slot is never eq/repr/hash-compared anywhere.",
+      "exact_reachable_state_evidence": "The last_pt default is dead — it is overwritten at L130 before being read, so USub/NumberReplacer/Delete mutations of `-1` (to +1, ~1, not 1, 1, -2, -0) never affect any output. Removing @dataclass (RemoveDecorator) leaves the field defaults as identical immutable class attributes and changes nothing, since _Slot is only no-arg constructed and attribute-accessed, never compared. Equivalent.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_synchronizer.py::* (reconstruct output unchanged across the suite)",
+      "proof_artifact_digest": "slot-default-overwritten-before-read"
+    },
+    {
+      "module": "xmarket_contracts/synchronizer.py",
+      "definitions": ["reconstruct_as_of"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Gt_GtE"],
+      "proof_class": "MAX_TRACKING_NOOP_AT_EQUALITY",
+      "registered_domain_reachability": "L132 `if applied and pt > latest_pt:` guarding `latest_pt = pt`.",
+      "exact_reachable_state_evidence": "`>` and `>=` differ only when pt == latest_pt, where the guarded assignment latest_pt = pt is a no-op (assigns the same value). No reachable state changes. Equivalent.",
+      "malformed_input_reachability": "n/a",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_synchronizer.py::test_applied_message_at_pt_zero_is_returned, ::test_latest_pt_ignores_other_market_message",
+      "proof_artifact_digest": "gt-vs-gte-noop-at-equality"
+    },
+    {
+      "module": "xmarket_contracts/synchronizer.py",
+      "definitions": ["reconstruct_as_of"],
+      "operator_prefixes": ["core/ReplaceUnaryOperator_USub_Invert", "core/NumberReplacer"],
+      "proof_class": "OUT_OF_RANGE_NEGATIVE_SENTINEL_EQUIVALENT",
+      "registered_domain_reachability": "L95 `latest_pt = -1` (the empty/no-applied-message sentinel). Only the SURVIVING variants are ~1 (=-2) and -2; the +ve / >=0 variants were killed by test_applied_message_at_pt_zero_is_returned and test_negative_pt_never_beats_sentinel.",
+      "exact_reachable_state_evidence": "publish_times reaching the max-tracking are non-negative (a negative pt is refused earlier), so any sentinel strictly below 0 behaves identically to -1 for both the max update at L132 (`pt > latest_pt` is always true for the first real pt against any negative sentinel) and the empty-refusal at L138 (`latest_pt < 0`). -2 and ~1 (=-2) are both strictly negative, hence equivalent to -1. (A sentinel of 0 or positive is NOT equivalent and was killed.)",
+      "malformed_input_reachability": "negative pt refused before max-tracking",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a", "serialization_digest_comparison": "n/a", "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_synchronizer.py::test_applied_message_at_pt_zero_is_returned, ::test_negative_pt_never_beats_sentinel",
+      "proof_artifact_digest": "negative-sentinel-below-zero-equivalent"
+    }
+  ]
+}
