@@ -109,3 +109,36 @@ running under the direct-unit harness (feasible in minutes) and its packet + the
 `COHERENCE_V1_FINAL` are the only remaining build steps. No mutation survivor is approved
 (`approved_by: null` throughout); both gates remain OPEN and held for founder adjudication; no
 June diagnostic runs until the founder ratifies and authorises.
+
+---
+
+## Mutation runner incident + hardened harness (2026-07-22)
+
+`MUTATION_HARNESS_PROCESS_ISOLATION_DEFECT` — full record:
+`MUTATION_RUNNER_INCIDENT_2026-07-22.md`. Two facets: (1) an `ORPHANED_RUNAWAY_PYTEST_PROCESS`
+(PID 30538, orphaned LIVE pytest, ~62 min at ~100% of one core, from the discarded match-v2 run);
+(2) the unhardened solver exec died over an idle gap and left `solver.py` mutated (restored
+byte-identical to HEAD `8eef77f`). **No committed packet was affected** — the outcome audit
+(`tools/mutation_audit.py`) shows every final DB is 100% tested, all `NORMAL`, zero
+untested/non-normal/incompetent, and each `normal_survived` count equals its packet.
+
+Fix (tests-first, green): `tools/isolated_exec.py` (new-session process-group runner; timeout →
+SIGTERM group → grace → SIGKILL → reap → /proc-verify no descendant; red tests A–J 16/16 green),
+`tools/mutation_harness.py` (per-mutant revalidator with byte-identical source-restore proof + six
+outcome states; `TIMEOUT_CLEANUP_FAILED`/`SOURCE_RESTORE_FAILED` are terminal stop states),
+`tools/run_hardened_mutation.sh` (pre/post/trap source restore + byte-identical HEAD verify;
+resumable), `tools/mutation_audit.py` (outcome-integrity audit, `--require-clean`).
+
+### Status terminology (until founder adjudication)
+
+- **XMARKET** — engineering hardening: COMPLETE; packet reconciliation: COMPLETE (85 survivors, 66
+  annotation exact + 19 equivalents, reconciles zero); founder approval gate: **OPEN**.
+- **COHERENCE six non-solver modules** (scoring, formats, format_evidence, pmf, match, holdout) —
+  engineering hardening: COMPLETE; packets: COMPLETE (every final DB audited CLEAN — no non-normal
+  job, so not PROVISIONAL); founder approval gate: **OPEN**. Match jobs are additionally being
+  re-run under the hardened harness (`ENGINEERING_PACKET_COMPLETE_BUT_REVALIDATION_PENDING`).
+- **SOLVER** — mutation execution: IN_PROGRESS (hardened harness); final packet: PENDING; founder
+  approval gate: **OPEN**.
+
+No gate is fully closed until the founder approves the final exact survivor set. `approved_by:
+null` throughout; no June run; no outcomes read; nothing exposed; £0 budget freeze.
