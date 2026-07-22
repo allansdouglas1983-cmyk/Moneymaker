@@ -39,7 +39,7 @@ def test_game_production_equals_reference() -> None:
 def test_game_refuses_out_of_range() -> None:
     for bad in (0.0, 1.0, -0.1, 1.2, 1):
         with pytest.raises(S.CoherenceMathError):
-            S.game_win_prob(bad)  # type: ignore[arg-type]
+            S.game_win_prob(bad)
 
 
 # ----------------------------------------------------------------------- tiebreak

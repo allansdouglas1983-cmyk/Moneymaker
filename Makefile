@@ -29,6 +29,13 @@ verify:
 	uv run python tools/check_import_quarantine.py --forbid research.xmarket --from xmarket_contracts
 	uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features
 	uv run python tools/check_import_quarantine.py --forbid l8_evidence.tennis_outcomes --from l3_features l4_pricing
+	uv run python tools/check_import_quarantine.py --forbid l5_decision --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid l5b_risk --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid l6_broker --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid l7_settle --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid assistant_v0 --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid research.xmarket --from sport_tennis.coherence
+	uv run python tools/check_import_quarantine.py --forbid sport_tennis.coherence --from assistant_v0 l4_pricing
 	uv run mypy --strict .
 
 mutants:
