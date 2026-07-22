@@ -119,6 +119,14 @@ def set_is_tiebreak_state(a: int, b: int) -> bool:
     return a == 6 and b == 6
 
 
+def set_game_server_is_first(a: int, b: int) -> bool:
+    """Whether the FIRST server serves the next game at set score (a games first, b other). Game 1
+    (0 games played) is served by first; the server alternates each game. Only the PARITY of the
+    games played matters, so arithmetic that preserves that parity (e.g. a+b vs a-b vs a^b) is
+    provably equivalent here; a parity flip or a multiplicative change is behavioural (§5.9)."""
+    return (a + b) % 2 == 0
+
+
 # ------------------------------------------------------------------------------- game
 def game_win_prob(p: float) -> float:
     """Probability the server wins an advantage game given serve-point-win probability p."""
@@ -193,6 +201,29 @@ class SetResult:
     first_server_wins: float
 
 
+def _expand_set_level(level: dict[tuple[int, int], float], hold_first: float, hold_other: float,
+                      tb_first_wins: float,
+                      ) -> tuple[dict[tuple[int, int], float], dict[tuple[int, int], float]]:
+    """Process one forward-DP level, returning (terminal_mass, next_level). EVERY state in
+    ``level`` contributes (completeness seam, §5.8): a 6-6 state emits the two tiebreak terminals;
+    any other state plays the next game and routes each branch to a terminal or the next level."""
+    terminals: dict[tuple[int, int], float] = {}
+    nxt: dict[tuple[int, int], float] = {}
+    for (a, b), pr in level.items():
+        if set_is_tiebreak_state(a, b):
+            terminals[(7, 6)] = terminals.get((7, 6), 0.0) + pr * tb_first_wins
+            terminals[(6, 7)] = terminals.get((6, 7), 0.0) + pr * (1.0 - tb_first_wins)
+            continue
+        server_is_first = set_game_server_is_first(a, b)
+        hold = hold_first if server_is_first else hold_other
+        p_first_wins_game = hold if server_is_first else (1.0 - hold)
+        for na, nb, branch in ((a + 1, b, p_first_wins_game),
+                               (a, b + 1, 1.0 - p_first_wins_game)):
+            target = terminals if set_is_terminal(na, nb) else nxt
+            target[(na, nb)] = target.get((na, nb), 0.0) + pr * branch
+    return terminals, nxt
+
+
 def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
                      is_final_set: bool) -> SetResult:
     """Single-set distribution by forward DP. The "first" player serves games 1,3,5,...; the
@@ -208,23 +239,9 @@ def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
     games: dict[tuple[int, int], float] = {}
     level: dict[tuple[int, int], float] = {(0, 0): 1.0}
     while level:
-        nxt: dict[tuple[int, int], float] = {}
-        for (a, b), pr in level.items():
-            if set_is_tiebreak_state(a, b):
-                games[(7, 6)] = games.get((7, 6), 0.0) + pr * tb_first_wins
-                games[(6, 7)] = games.get((6, 7), 0.0) + pr * (1.0 - tb_first_wins)
-                continue
-            game_no = a + b + 1                      # the game about to be played
-            server_is_first = (game_no % 2 == 1)
-            hold = hold_first if server_is_first else hold_other
-            p_first_wins_game = hold if server_is_first else (1.0 - hold)
-            for na, nb, branch in ((a + 1, b, p_first_wins_game),
-                                   (a, b + 1, 1.0 - p_first_wins_game)):
-                if set_is_terminal(na, nb):
-                    games[(na, nb)] = games.get((na, nb), 0.0) + pr * branch
-                else:
-                    nxt[(na, nb)] = nxt.get((na, nb), 0.0) + pr * branch
-        level = nxt
+        terminals, level = _expand_set_level(level, hold_first, hold_other, tb_first_wins)
+        for cell, mass in terminals.items():
+            games[cell] = games.get(cell, 0.0) + mass
 
     check_normalized(sum(games.values()), what="set distribution")
     first_wins = sum(pr for (a, b), pr in games.items() if a > b)
