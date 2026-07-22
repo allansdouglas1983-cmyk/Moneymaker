@@ -74,6 +74,51 @@ def _deuce_tail_first_win(x: float, y: float) -> float:
     return ff / total
 
 
+# ------------------------------------------------------------- terminal predicates (§5.7)
+def game_is_win(s: int, r: int) -> bool:
+    """The server has won an advantage game: reached at least 4 points AND leads by at least 2."""
+    return s >= 4 and s - r >= 2
+
+
+def game_is_loss(s: int, r: int) -> bool:
+    """The returner has won the game (mirror of ``game_is_win``)."""
+    return r >= 4 and r - s >= 2
+
+
+def game_is_deuce(s: int, r: int) -> bool:
+    """Deuce: both at 3+ points and level (advantage regime)."""
+    return s >= 3 and r >= 3 and s == r
+
+
+def tiebreak_is_win(a: int, b: int, target: int) -> bool:
+    """The first server has won a first-to-``target`` (win-by-2) tiebreak."""
+    return a >= target and a - b >= 2
+
+
+def tiebreak_is_loss(a: int, b: int, target: int) -> bool:
+    return b >= target and b - a >= 2
+
+
+def tiebreak_is_tail(a: int, b: int, target: int) -> bool:
+    """The (target-1, target-1) win-by-two tail state."""
+    return a == target - 1 and b == target - 1
+
+
+def set_is_terminal(a: int, b: int) -> bool:
+    """(a,b) ends the set: 6-0..6-4 / 7-5 and mirrors. 6-6 is NOT terminal (a tiebreak follows);
+    7-6 is produced only by that tiebreak."""
+    if a >= 6 and a - b >= 2:
+        return True
+    if b >= 6 and b - a >= 2:
+        return True
+    return (a == 7 and b == 5) or (a == 5 and b == 7)
+
+
+def set_is_tiebreak_state(a: int, b: int) -> bool:
+    """The 6-6 game score that triggers the set tiebreak."""
+    return a == 6 and b == 6
+
+
 # ------------------------------------------------------------------------------- game
 def game_win_prob(p: float) -> float:
     """Probability the server wins an advantage game given serve-point-win probability p."""
@@ -82,11 +127,11 @@ def game_win_prob(p: float) -> float:
     memo: dict[tuple[int, int], float] = {}
 
     def g(s: int, r: int) -> float:
-        if s >= 4 and s - r >= 2:
+        if game_is_win(s, r):
             return 1.0
-        if r >= 4 and r - s >= 2:
+        if game_is_loss(s, r):
             return 0.0
-        if s >= 3 and r >= 3 and s == r:                 # deuce
+        if game_is_deuce(s, r):
             return p * p / (p * p + q * q)
         key = (s, r)
         if key in memo:
@@ -119,11 +164,11 @@ def tiebreak_win_prob(p_first: float, p_other: float, target: int) -> float:
     memo: dict[tuple[int, int], float] = {}
 
     def tb(a: int, b: int) -> float:
-        if a >= target and a - b >= 2:
+        if tiebreak_is_win(a, b, target):
             return 1.0
-        if b >= target and b - a >= 2:
+        if tiebreak_is_loss(a, b, target):
             return 0.0
-        if a == target - 1 and b == target - 1:
+        if tiebreak_is_tail(a, b, target):
             return deuce_first
         key = (a, b)
         if key in memo:
@@ -148,16 +193,6 @@ class SetResult:
     first_server_wins: float
 
 
-def _set_terminal(a: int, b: int) -> bool:
-    """True if game score (a,b) ends the set (6-0..6-4 / 7-5 mirrors). 6-6 is NOT terminal
-    (a tiebreak follows); 7-6 is produced only by that tiebreak."""
-    if a >= 6 and a - b >= 2:
-        return True
-    if b >= 6 and b - a >= 2:
-        return True
-    return (a == 7 and b == 5) or (a == 5 and b == 7)
-
-
 def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
                      is_final_set: bool) -> SetResult:
     """Single-set distribution by forward DP. The "first" player serves games 1,3,5,...; the
@@ -175,7 +210,7 @@ def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
     while level:
         nxt: dict[tuple[int, int], float] = {}
         for (a, b), pr in level.items():
-            if (a, b) == (6, 6):
+            if set_is_tiebreak_state(a, b):
                 games[(7, 6)] = games.get((7, 6), 0.0) + pr * tb_first_wins
                 games[(6, 7)] = games.get((6, 7), 0.0) + pr * (1.0 - tb_first_wins)
                 continue
@@ -185,7 +220,7 @@ def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
             p_first_wins_game = hold if server_is_first else (1.0 - hold)
             for na, nb, branch in ((a + 1, b, p_first_wins_game),
                                    (a, b + 1, 1.0 - p_first_wins_game)):
-                if _set_terminal(na, nb):
+                if set_is_terminal(na, nb):
                     games[(na, nb)] = games.get((na, nb), 0.0) + pr * branch
                 else:
                     nxt[(na, nb)] = nxt.get((na, nb), 0.0) + pr * branch

@@ -86,7 +86,7 @@ def test_set_distribution_normalizes_and_scores_valid() -> None:
     assert abs(sum(res.games.values()) - 1.0) < 1e-9
     for (a, b), pr in res.games.items():
         assert 0.0 <= pr <= 1.0
-        assert S._set_terminal(a, b) or (a, b) in {(7, 6), (6, 7)}  # 7-6 comes via the tiebreak
+        assert S.set_is_terminal(a, b) or (a, b) in {(7, 6), (6, 7)}  # 7-6 comes via the tiebreak
 
 
 @pytest.mark.parametrize("fmt", _FORMATS)
