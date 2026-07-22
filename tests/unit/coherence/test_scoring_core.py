@@ -69,6 +69,12 @@ def test_tiebreak_bad_target_refuses() -> None:
         S.tiebreak_win_prob(0.6, 0.6, 5)
 
 
+def test_tiebreak_serve_order_equals_independent_reference() -> None:
+    # Production closed-form serve order vs the independent iterative reference, point by point.
+    for n in range(1, 41):
+        assert S.tiebreak_server_is_first(n) == R.ref_tiebreak_server_is_first(n)
+
+
 # ---------------------------------------------------------------------------- set
 _FORMATS = [MatchFormat.BO3_AD_TB7_ALL_SETS, MatchFormat.BO3_AD_TB10_FINAL_AT_6_6,
             MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]

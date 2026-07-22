@@ -13,7 +13,20 @@ from __future__ import annotations
 from collections import defaultdict
 
 from sport_tennis.coherence.formats import FormatSpec, MatchFormat, format_spec
-from sport_tennis.coherence.scoring import tiebreak_server_is_first
+
+
+def ref_tiebreak_server_is_first(point_index: int) -> bool:
+    """Independent serve-order re-derivation (iterative turn simulation, NOT the production
+    closed form) so the tiebreak agreement test genuinely cross-checks production serve order.
+    First server serves point 1 only; thereafter serve alternates every two points."""
+    server_first = True
+    points_left_in_turn = 1          # the first server's opening turn is a single point
+    for _ in range(1, point_index):  # simulate transitions up to the queried point
+        points_left_in_turn -= 1
+        if points_left_in_turn == 0:
+            server_first = not server_first
+            points_left_in_turn = 2
+    return server_first
 
 
 def ref_game_win_prob(p: float) -> float:
@@ -30,7 +43,7 @@ def ref_tiebreak_win_prob(p_first: float, p_other: float, target: int, cap: int 
     residual mass beyond ``cap`` is < 1e-60 for any realistic split, so this agrees with the
     production closed-form deuce tail to machine precision while being a different structure."""
     def first_pt(n: int) -> float:
-        return p_first if tiebreak_server_is_first(n) else (1.0 - p_other)
+        return p_first if ref_tiebreak_server_is_first(n) else (1.0 - p_other)
 
     memo: dict[tuple[int, int], float] = {}
 
