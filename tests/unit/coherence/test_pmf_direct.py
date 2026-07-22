@@ -82,3 +82,17 @@ def test_bad_line_and_pmf_refused() -> None:
         over_under({20: 0.5, 21: 0.3}, Decimal("20.5"))  # not normalized
     with pytest.raises(CoherenceMathError):
         handicap_cover({}, Decimal("0"))                  # empty
+
+
+# --- STAGE3-0006 §5 mutation-hardening: the multiple-of-0.5 line guard (kill NotEq->Lt) ---
+
+def test_line_guard_refuses_line_whose_double_rounds_down() -> None:
+    # _validate_line checks `(line*2) != (line*2).to_integral_value()`. A NotEq->Lt mutant only
+    # raises when line*2 is BELOW its rounded integral (fractional part > 0.5). A line whose doubled
+    # value has fractional part < 0.5 (22.1 -> 44.2 -> rounds to 44) is >= the integral, so the `<`
+    # mutant would wrongly ACCEPT it. The existing bad-line test uses 21.3 (42.6 -> rounds up to 43),
+    # which `<` still refuses. Pin the complementary side.
+    with pytest.raises(CoherenceMathError):
+        over_under(_TOT, Decimal("22.1"))
+    with pytest.raises(CoherenceMathError):
+        handicap_cover(_MAR, Decimal("22.1"))

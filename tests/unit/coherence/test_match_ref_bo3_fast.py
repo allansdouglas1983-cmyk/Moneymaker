@@ -48,3 +48,13 @@ def test_match_exact_vs_reference_bo3_fast(fmt: MatchFormat, a_first: bool) -> N
         assert prod.match_win_a == pytest.approx(win, abs=_TOL)
         _pmf_close(prod.total_games_pmf, tot)
         _pmf_close(prod.margin_pmf, mar)
+
+
+def test_match_distribution_serves_first_is_keyword_only() -> None:
+    # match_distribution(..., *, a_serves_first_match): the `*` keyword-only marker. A `*`->`/`
+    # (Mul_Div) signature mutant turns it into a positional-only marker, silently dropping the
+    # keyword-only enforcement. Passing a_serves_first_match POSITIONALLY must raise TypeError under
+    # the correct signature; the mutant would accept it.
+    import pytest
+    with pytest.raises(TypeError):
+        match_distribution(0.6, 0.5, MatchFormat.BO3_AD_TB7_ALL_SETS, True)  # type: ignore[misc]
