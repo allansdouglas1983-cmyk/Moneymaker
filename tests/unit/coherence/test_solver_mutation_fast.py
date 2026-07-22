@@ -78,3 +78,26 @@ def test_fast_mirror_degenerate() -> None:
     pas = sorted(round(r.p_a, 2) for r in res.roots)
     assert 0.40 == pytest.approx(pas[0], abs=1e-2)
     assert 0.60 == pytest.approx(pas[-1], abs=1e-2)
+
+
+def test_fast_no_root() -> None:
+    # an Over target unreachable at the line (no BO3 match exceeds 40 games) -> NO_ROOT.
+    from sport_tennis.coherence.solver import NO_ROOT
+    res = identify(0.5, 0.2, Decimal("40.5"), _FMT, domain=_DOMAIN)
+    assert res.status == NO_ROOT
+    assert res.roots == ()
+
+
+def test_fast_flat_over_not_identified() -> None:
+    # below the minimum total the Over equation carries no gradient -> a continuum, never IDENTIFIED.
+    from sport_tennis.coherence.solver import MULTIPLE_ROOTS, NON_IDENTIFIABLE
+    res = identify(0.5, 1.0, Decimal("11.5"), _FMT, domain=(0.50, 0.70))
+    assert res.status in (MULTIPLE_ROOTS, NON_IDENTIFIABLE)
+
+
+def test_fast_near_certain_non_identifiable() -> None:
+    # a saturated match-win makes the identification Jacobian singular -> NON_IDENTIFIABLE.
+    from sport_tennis.coherence.solver import MULTIPLE_ROOTS, NON_IDENTIFIABLE, NO_ROOT
+    tw, to = derived_targets(0.78, 0.50, _FMT, Decimal("22.5"), a_serves_first=True)
+    res = identify(tw, to, Decimal("22.5"), _FMT, domain=_DOMAIN)
+    assert res.status in (NON_IDENTIFIABLE, MULTIPLE_ROOTS, NO_ROOT)
