@@ -51,7 +51,8 @@ def test_classify_low_token_is_unresolved() -> None:
 
 
 def test_classify_non_interned_valid_token_resolves() -> None:
-    # a value-equal but distinct string object (runtime-concatenated, not interned): a `==`->`is`
-    # mutant would fail to match; the correct code resolves it.
-    token = "BO3_AD_TB7_ALL_" + "SETS"
+    # a value-equal but distinct (non-interned) string object built char-by-char at runtime: a
+    # `==`->`is` mutant would fail the identity check and not resolve it; the correct `==` does.
+    token = "".join(c for c in MatchFormat.BO3_AD_TB7_ALL_SETS.value)
+    assert token is not MatchFormat.BO3_AD_TB7_ALL_SETS.value   # genuinely distinct object
     assert classify_format_token(token) == MatchFormat.BO3_AD_TB7_ALL_SETS.value
