@@ -1,0 +1,87 @@
+# specs/programme/cross-market-coherence-v1.yaml — versioned, append-only implementation
+# registration for CROSS_MARKET_COHERENCE_V1 (founder directive STAGE3-0005 §3). Human-owned
+# (CODEOWNERS specs/**). Coherence-only; synthetic-only build; numerical real-data evaluation
+# blocked until EXT-XMARKET-003 fully resolves and the founder authorises.
+
+registration_id: CROSS-MARKET-COHERENCE-V1-IMPL
+registered_on: "2026-07-22"
+authority: founder directive STAGE3-0005
+specification_input: DR-TENNIS-XMARKET-MATH-001 (accepted with STAGE3-0005 §2 corrections)
+
+purpose: >-
+  A coherence, uncertainty and abstention research layer. It identifies two serve parameters
+  from Match Odds + one selected Total Games line and measures whether the OTHER Total Games
+  and Game Handicap lines are structurally consistent with that identification. It is NOT a
+  predictor, tip, edge, or final probability; no coherence output changes p_market_info.
+
+supported_markets: [MATCH_ODDS, COMBINED_TOTAL, HANDICAP]
+supported_cohort: F0-committed June singles, STRICT cohort only, governed synchronized books
+primary_only_tier: UNSUPPORTED
+
+format_vocabulary:                       # §10 — immutable; do not default to best-of-three
+  supported:
+    - BO3_AD_TB7_ALL_SETS
+    - BO3_AD_TB10_FINAL_AT_6_6
+    - BO5_AD_TB10_FINAL_AT_6_6
+    - BO3_AD_MATCH_TB10_REPLACES_DECIDER
+  unsupported: [NO_AD_SINGLES, ADV_FINAL_SET_NO_TB, FAST4, UNKNOWN, MIXED_OR_NONSTANDARD]
+  unknown_status: FORMAT_UNRESOLVED
+  unsupported_status: UNSUPPORTED_FORMAT
+
+format_evidence_policy:                  # §11 — format independently known, never from prices/outcomes
+  tier_A: [official governed competition identity, frozen competition-format lookup]
+  tier_B: [lawful pre-match event metadata]
+  tier_C: [SET_BETTING or NUMBER_OF_SETS selection structure — best-of-3 vs best-of-5 ONLY]
+  tier_C_may_not_establish: [final-set tiebreak length, match-tiebreak replacement,
+    advantage final set, no-ad scoring]
+  never_use: [Total Games prices, Handicap prices, fitted parameters, realized games, score, result, outcomes]
+
+identification_inputs:                   # §2.3 / §13
+  target: frozen p_market_info + normalized-midpoint probability of ONE deterministically
+    selected Total Games Over line
+  solver: deterministic bounded 2-D root solve (no random starts; fixed tolerances/iterations)
+  envelope_method: back/lay intervals + one-tick perturbations for identification envelope /
+    sensitivity ONLY (never mixed into the fit objective)
+
+holdout_observations:                    # §2.2 / §14
+  identification_uses: MATCH_ODDS + one selected Total Games line
+  reserved_out_of_fit: [every other valid Total Games line, every valid Game Handicap line]
+  holdout_metrics: [model-implied probability, raw back/lay interval, midpoint,
+    interval violation, tick-distance, first-server range, line, market type]
+
+first_server_treatment: NUISANCE_PARAMETER   # §2.4 — no 50/50 prior; dual evaluate A-first / B-first;
+                                             # union of solutions; FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
+
+independent_verification: MANDATORY          # §2.5 — production generator vs test-only reference generator
+                                             # must AGREE over a governed grid; discrepancy = STOP_MATH_INTEGRITY
+
+structural_refusals:                     # §15 — permitted statuses (no categorical coherence yet)
+  - FORMAT_UNRESOLVED
+  - UNSUPPORTED_FORMAT
+  - INSUFFICIENT_LIQUIDITY
+  - NON_IDENTIFIABLE
+  - MULTIPLE_ROOTS
+  - NO_ROOT
+  - BOUNDARY_SOLUTION
+  - FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
+  - IDENTIFIED
+  - HOLDOUT_SURFACE_AVAILABLE
+  - HOLDOUT_SURFACE_UNAVAILABLE
+  - ORIGIN_UNRESOLVED
+  prohibited_until_thresholds_frozen: [COHERENT, PARTIALLY_COHERENT, INCOHERENT, WEAKLY_IDENTIFIED]
+
+thresholds_pending_founder:
+  - first-server materiality threshold
+  - final parameter domain (candidates [0.30,0.90]^2 / [0.35,0.90]^2 / [0.40,0.90]^2 tested synthetically)
+  - coherence categorical thresholds
+
+outcomes_prohibited_in_this_slice: true
+v0_integration_prohibited: true
+real_data_run_prohibited_until: founder adjudication of the promoted-plumbing mutation packet
+
+quarantine:
+  package: sport_tennis/coherence/
+  synthetic_only: true
+  no_real_corpus_ingestion: true
+  must_not_import: [l5_decision, l5b_risk, l6_broker, l7_settle, assistant_v0, research.xmarket]
+  must_not_be_imported_by: [assistant_v0, l4_pricing pricing paths]

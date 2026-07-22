@@ -41,11 +41,22 @@ blockers:
 
   - id: EXT-XMARKET-003
     title: Exact mathematical and format specification
-    status: OPEN                                 # STAGE3-0004 §7 — new blocker
-    holds: CROSS_MARKET_COHERENCE_V1 (numerical implementation)
+    status: SPECIFICATION_ACCEPTED_IMPLEMENTATION_VALIDATION   # STAGE3-0005 §0
+    updated_on: "2026-07-22"
+    specification_input: DR-TENNIS-XMARKET-MATH-001 (accepted subject to STAGE3-0005 §2 corrections)
+    findings: docs/research/findings/DR-TENNIS-XMARKET-MATH-001-findings.md
+    not_fully_resolved_until:                    # STAGE3-0005 §0
+      - format classification passes
+      - production and independent-reference mathematics agree
+      - solver integrity passes
+      - promoted-plumbing mutation governance closes (founder adjudication of the packet)
+      - the outcome-blind June diagnostic completes
+    holds: CROSS_MARKET_COHERENCE_V1 (real-data numerical evaluation; synthetic-only build authorised)
     requirement: >-
-      The exact, founder-approved mathematical and format specification before ANY numerical
-      coherence implementation begins.
+      The exact, founder-approved mathematical and format specification. The specification is
+      now ACCEPTED as an implementation input (with STAGE3-0005 §2 corrections); a
+      synthetic-only implementation is authorised, quarantined from real ingestion and V0. No
+      real June coherence run until the mutation packet is founder-adjudicated.
     must_resolve:
       - exact point->game->set->match equations
       - best-of-three

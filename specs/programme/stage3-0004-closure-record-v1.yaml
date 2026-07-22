@@ -1,0 +1,37 @@
+# specs/programme/stage3-0004-closure-record-v1.yaml — closure of STAGE3-0004 (founder
+# directive STAGE3-0005). Human-owned (CODEOWNERS specs/**). Append-only history.
+
+closure_id: STAGE3-0004-CLOSURE-v1
+closed_on: "2026-07-22"
+authority: founder directive STAGE3-0005 (STAGE3-0004 return accepted)
+
+accepted:
+  EXT-XMARKET-001: RESOLVED_WITH_EXCLUSIONS
+  EXT-XMARKET-002: RESOLVED_AS_UNOBSERVABLE_LIMITATION
+  CROSS_MARKET_LATENT_INDEPENDENT_SIGNAL_V1: NO_GO_UNPROVEN_INFORMATION_ORIGIN
+  CROSS_MARKET_COHERENCE_V1: authorised as a coherence/uncertainty/abstention research layer only
+  supported_market_types: [MATCH_ODDS, COMBINED_TOTAL, HANDICAP]
+  supported_cohort: F0-committed June singles, STRICT only, governed synchronized derivative books
+  PRIMARY_ONLY_TIER: unsupported by the June evidence
+  no_latent_model_implemented_or_fitted: true
+
+fixed_scientific_posture:                # STAGE3-0005 §1 — preserved permanently
+  F2_v1: FROZEN
+  F3: CLOSED FAIL_HARM
+  DP1: CLOSED STOP_DP1_HARM
+  june: DEVELOPMENT DATA
+  derivative_order_origin: UNRESOLVED
+  derivative_prices_not_independent_information: true
+  p_market_info: AUTHORITATIVE (no cross-market output changes it)
+  no_tip_edge_ev_stake_recommendation: true
+  budget: "£0 new-spend in force"
+
+prohibited_until_further_directive:
+  - revive a rating family
+  - fit a sporting residual
+  - calculate profitability
+  - integrate the coherence layer into the assistant
+  - expose staged cross-market plumbing to pricing or tipping
+  - run the real June coherence diagnostic before the mutation gate closes
+
+promoted_plumbing_status: STAGED (not exposed to pricing/final-probability/V0-status/tipping/execution/real-June-eval)
