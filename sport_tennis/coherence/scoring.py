@@ -25,14 +25,42 @@ def _check_p(name: str, p: float) -> None:
         raise CoherenceMathError(f"{name} must be a float in the open interval (0,1), got {p!r}")
 
 
+_VALID_TIEBREAK_TARGETS = (7, 10)
+
+
 # ------------------------------------------------------------------------- serve order
 def tiebreak_server_is_first(point_index: int) -> bool:
     """True if the player who served the tiebreak's first point serves ``point_index``
     (1-indexed). Order: first serves point 1; then serve alternates in pairs (2,3 other;
-    4,5 first; 6,7 other; ...)."""
+    4,5 first; 6,7 other; ...). A non-positive or non-integer index is refused (§5.4)."""
+    if not isinstance(point_index, int) or isinstance(point_index, bool) or point_index < 1:
+        raise CoherenceMathError(
+            f"tiebreak point index must be a positive int, got {point_index!r}")
     if point_index == 1:
         return True
     return ((point_index - 2) // 2) % 2 == 1
+
+
+def tiebreak_tail_servers(target: int) -> tuple[bool, bool]:
+    """The (server_is_first, server_is_first) booleans for the two service points of the deuce
+    cycle at (target-1, target-1). Explicit tail seam (§5.5): the win-probability flow reads the
+    two tail servers, never an opaque point index."""
+    if target not in _VALID_TIEBREAK_TARGETS:
+        raise CoherenceMathError(f"tiebreak target must be 7 or 10, got {target}")
+    n0 = 2 * (target - 1) + 1
+    return tiebreak_server_is_first(n0), tiebreak_server_is_first(n0 + 1)
+
+
+def _deuce_tail_first_win(x: float, y: float) -> float:
+    """Two-point deuce-cycle resolution: the first player wins with probability ff/(ff+oo), where
+    ff = P(first wins both tail points) and oo = P(other wins both). Guarded 0.5 fallback when the
+    per-cycle resolution mass ff+oo underflows below ``_EPS`` — reachable only for near-degenerate
+    boundary probabilities (§5.10). ``_EPS`` is the exact governed threshold; do not weaken it."""
+    ff, oo = x * y, (1.0 - x) * (1.0 - y)
+    total = ff + oo
+    if total < _EPS:
+        return 0.5
+    return ff / total
 
 
 # ------------------------------------------------------------------------------- game
@@ -65,17 +93,17 @@ def tiebreak_win_prob(p_first: float, p_other: float, target: int) -> float:
     player's serve-point-win probability. ``target`` is 7 or 10."""
     _check_p("p_first", p_first)
     _check_p("p_other", p_other)
-    if target not in (7, 10):
+    if target not in _VALID_TIEBREAK_TARGETS:
         raise CoherenceMathError(f"tiebreak target must be 7 or 10, got {target}")
 
     def first_point_win(n: int) -> float:
         return p_first if tiebreak_server_is_first(n) else (1.0 - p_other)
 
-    # deuce tail at (target-1, target-1): two-point cycle using the ACTUAL servers there
-    n0 = 2 * (target - 1) + 1
-    x, y = first_point_win(n0), first_point_win(n0 + 1)
-    ff, oo = x * y, (1.0 - x) * (1.0 - y)
-    deuce_first = 0.5 if (ff + oo) < _EPS else ff / (ff + oo)
+    # deuce tail at (target-1, target-1): two-point cycle using the ACTUAL tail servers (§5.5)
+    s0, s1 = tiebreak_tail_servers(target)
+    x = p_first if s0 else (1.0 - p_other)
+    y = p_first if s1 else (1.0 - p_other)
+    deuce_first = _deuce_tail_first_win(x, y)
 
     memo: dict[tuple[int, int], float] = {}
 
