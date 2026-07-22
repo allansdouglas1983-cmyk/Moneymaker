@@ -1,0 +1,135 @@
+# specs/mutation-survivors-coherence-v1.yaml
+# STAGE3-0005 §16 — synthetic mutation bar for the SYNTHETIC coherence math core
+# (sport_tennis/coherence/scoring.py). Human-owned (CODEOWNERS specs/**). Append-only.
+#
+# STATUS: PENDING FOUNDER ADJUDICATION. Per the money-module discipline every surviving
+# mutant must be killed or founder-approved as equivalent; an LLM never self-approves a
+# survivor. Every disposition below is the LEAD's proposed classification for founder
+# ratification, NOT an approval. `approved_by: null` throughout.
+#
+# The coherence engine is SYNTHETIC-ONLY and import-quarantined (Makefile) from execution,
+# pricing, tipping, V0 and research.xmarket. No real-data run occurs. An incomplete mutation
+# bar therefore corrupts no conclusion; it is recorded truthfully for adjudication.
+
+record_id: MUTATION-SURVIVORS-COHERENCE-V1
+recorded_on: "2026-07-22"
+authority: founder directive STAGE3-0005 §16 (synthetic mutation bar)
+tooling: cosmic-ray (init/exec/dump), per-mutant timeout 2s
+target_module: sport_tennis/coherence/scoring.py    # the core game/tiebreak/set generators
+full_survivor_evidence: docs/evidence/stage3-cross-market-audit/COHERENCE_SCORING_MUTATION_SURVIVORS.json
+
+# The mutation bar was measured against the FAST test subset (test_scoring_core +
+# test_format_evidence + test_pmf_direct). This is an explicit, honest scoping choice: the FULL
+# suite additionally runs the match / total-games / game-margin FULL-PMF agreement
+# (test_match_and_pmf) which is too slow to execute once per mutant this session and which kills
+# further survivors. The reported kill rate is therefore a LOWER BOUND on the true kill rate.
+test_command: ".venv/bin/python -m pytest tests/unit/coherence/test_scoring_core.py \
+  tests/unit/coherence/test_format_evidence.py tests/unit/coherence/test_pmf_direct.py -q"
+
+mutation_result_final:
+  total_mutants: 1041
+  killed: 905
+  survived: 136
+  kill_rate: 0.869
+
+# Hardening applied this slice (tests strengthened; NO production math changed; NO test weakened):
+hardening_history:
+  - round: 1
+    kill_rate: 0.850
+    survived: 156
+  - round: 2
+    action: >-
+      reference.py made INDEPENDENT of production serve order (it had imported
+      tiebreak_server_is_first FROM production, so serve-order mutations changed both sides and
+      escaped the agreement). Added ref_tiebreak_server_is_first (iterative turn simulation) and
+      a direct point-by-point cross-check test. Killed 8 behavioural serve-order mutants.
+    kill_rate: 0.858
+    survived: 148
+  - round: 3
+    action: >-
+      Added a FULL set-distribution agreement test (every terminal-game-score cell vs the
+      independent top-down ref_set_distribution) — the set agreement previously checked only the
+      first_server_wins scalar marginal. Killed 12 games-distribution mutants.
+    kill_rate: 0.869
+    survived: 136
+
+# Primary correctness guarantee (independent of mutation): production == an independently
+# structured test-only reference to 1e-9 across game / tiebreak / set (full distribution) /
+# match / total-games PMF / game-margin PMF / Over-Under / handicap-cover (STAGE3-0005 §2.5).
+# A discrepancy is STOP_MATH_INTEGRITY; none occurred.
+
+survivor_classification:                 # LEAD proposal for founder ratification (approved_by: null)
+
+  - class: PEP563_TYPE_ANNOTATION_OPERATORS
+    count: 1
+    disposition: EQUIVALENT
+    approved_by: null
+    rationale: >-
+      Operator mutant on a type-annotation line. The module uses `from __future__ import
+      annotations` (PEP 563) and consumes no annotations at runtime (proved by
+      tests/unit/xmarket_contracts/test_annotation_architecture.py). Provably equivalent.
+
+  - class: BOUNDED_DP_UNREACHABLE_STATE
+    count: 51
+    disposition: EQUIVALENT
+    approved_by: null
+    rationale: >-
+      Comparison-operator mutants on the win / terminal boundaries of the game DP (`g`), the
+      tiebreak DP (`tb`), `_set_terminal` and `set_distribution` (e.g. `s >= 4` -> `s == 4`,
+      `a >= 6` -> `a == 6`). The DP short-circuits — the advantage-game deuce closed form at
+      `s == r` and the set 6-6 tiebreak — make the higher states (s=5, a=7 via non-tiebreak,
+      etc.) UNREACHABLE, so the mutated and original guards agree on every reachable state.
+      Equivalent on the reachable state space.
+
+  - class: GUARD_DOMAIN_EQUIVALENT
+    count: 2
+    disposition: EQUIVALENT
+    approved_by: null
+    rationale: >-
+      Serve-order guard mutants whose operand domain makes them no-ops: `point_index == 1` ->
+      `point_index <= 1` and the `>= 1` variant, where point_index is always >= 1 (1-indexed),
+      so the mutated guard has identical truth on every queried index.
+
+  - class: EPS_GUARD_NEVER_CROSSED
+    count: 1
+    disposition: EQUIVALENT
+    approved_by: null
+    rationale: >-
+      `_EPS = 1e-12` -> a negative value. `_EPS` guards only the deuce-tail fallback
+      `if (ff + oo) < _EPS: return 0.5`; for any valid serve probability ff + oo > 0, so neither
+      the original nor the mutant ever takes the fallback branch. Equivalent on valid inputs.
+
+  - class: IMMUTABILITY_NOT_VALUE_AFFECTING
+    count: 1
+    disposition: EQUIVALENT_FOR_VALUES
+    approved_by: null
+    rationale: >-
+      `@dataclass(frozen=True)` -> `frozen=False` on SetResult. This weakens compile-time
+      immutability but changes NO computed probability value; every test asserts values, not
+      frozen-ness. Proposed equivalent for values; the founder may prefer a killing test that
+      asserts SetResult is frozen (a cheap immutability guard) rather than approving it.
+
+  - class: DP_ARITH_OR_LOGIC_UNPROVEN
+    count: 80
+    disposition: PENDING_FOUNDER_ADJUDICATION
+    approved_by: null
+    note: >-
+      Arithmetic / bit-operator / logic mutants inside the bounded DPs (`g`, `tb`,
+      `_set_terminal`, `set_distribution`, `tiebreak_win_prob`, `first_point_win`). The large
+      majority are expected equivalent because the operands are small bounded integers on the
+      reachable state space (e.g. `s - r` vs `s ^ r` where the `>= 2` guard has identical truth
+      on all reachable (s, r)), but the LEAD has NOT completed a per-mutant reachability proof
+      for every one, and at least one — the `AddNot` on `tiebreak_win_prob.first_point_win`,
+      which inverts the per-point server yet survived the 1e-9 agreement — requires either an
+      explicit symmetry proof or a killing test before it may be called equivalent. These are
+      NOT claimed equivalent. They are queued for the founder-gated per-ID kill-or-approve
+      process (the Stage-2 precedent), and partly for the fuller test suite (match/PMF full-PMF
+      agreement) which was excluded from the per-mutant command for runtime.
+
+# The advice-critical 100%-killed-or-approved bar is therefore NOT YET MET for the synthetic
+# engine. It does not need to be met for this slice: the engine is synthetic-only, quarantined,
+# and no real coherence run is authorised until EXT-XMARKET-003 resolves and the founder
+# separately authorises exposure (cross-market-coherence-v1.yaml).
+bar_status: NOT_MET_RECORDED_HONESTLY
+exposed_to_pricing_or_tipping: false
+real_data_run: none
