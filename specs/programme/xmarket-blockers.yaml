@@ -1,39 +1,65 @@
 # specs/programme/xmarket-blockers.yaml
-# STAGE3-0003 §1 — explicit blocker records for CROSS_MARKET_LATENT_V1. Human-owned
-# (CODEOWNERS specs/**). Each blocker holds implementation until founder-approved external
-# evidence resolves it. No blocker is resolved by an LLM or by an internal derivation.
+# Explicit blocker records for the cross-market programme. Human-owned (CODEOWNERS specs/**).
+# No blocker is resolved by an LLM or by an internal derivation. Updated by founder directive
+# STAGE3-0004 §7 (001/002 resolved with limitations; 003 opened).
 
 blockers:
 
   - id: EXT-XMARKET-001
     title: Official derivative-market settlement semantics
-    status: OPEN
-    holds: CROSS_MARKET_LATENT_V1
-    requirement: >-
-      The exact, official Betfair Exchange settlement rules for the tennis derivative
-      markets a latent model would price (COMBINED_TOTAL / Total Games; HANDICAP / Game
-      Handicap), including Asian half/whole-line win/half-win/push semantics and
-      retirement / walkover / disqualification / format-change behaviour. Until supplied
-      by an official source with a rule date, every type is UNRESOLVED
-      (specs/evidence/tennis-derivative-settlement-semantics-v1.yaml).
+    status: RESOLVED_WITH_EXCLUSIONS            # STAGE3-0004 §7
+    resolved_on: "2026-07-21"
+    findings: docs/research/findings/DR-TENNIS-XMARKET-SETTLEMENT-001-findings.md
     intake_record: docs/research/requests/DR-TENNIS-XMARKET-SETTLEMENT-001.md
-    resolution_rule: >-
-      Resolved only by founder-approved external Deep Research citing the official rule
-      source and date; the settlement matrix then activates whole, never partially. No
-      June outcome may be read to infer a rule.
+    record:
+      primary_market: MATCH_ODDS (verified primary match-winner market)
+      usable_auxiliary_with_exclusions: [SET_WINNER, SET_BETTING, NUMBER_OF_SETS,
+        COMBINED_TOTAL, HANDICAP, PLAYER_A_WIN_A_SET, PLAYER_B_WIN_A_SET]
+      excluded: {SET_CORRECT_SCORE: exact contract unresolved,
+        TOURNAMENT_WINNER: wrong event granularity for a single-match model}
+      exclusion_policy_keyed_on: match-completion status (NOT per-derivative settlement)
+      exclude: [walkover, withdrawal_or_did_not_start, retirement_any_stage, disqualification,
+        abandonment, incomplete_match, post_load_scoring_format_change,
+        cancelled_and_relisted_instance, ambiguous_result, conflicting_outcome_source]
+      include: [normally_completed_matches, venue_or_surface_change_if_otherwise_completes]
+      june_2026_rule_text_byte_identity: UNVERIFIED (no semantic change found)
+    settlement_registry: specs/evidence/tennis-derivative-settlement-semantics-v2.yaml
 
   - id: EXT-XMARKET-002
-    title: Defensible treatment of derivative-price independence / cross-matching / redundancy
-    status: OPEN
-    holds: CROSS_MARKET_LATENT_V1
-    requirement: >-
-      A scientifically defensible basis for treating derivative prices as carrying
-      information independent of Match Odds. The STAGE3-0002 audit found only 56 markets
-      with observably non-redundant movement and 1196 INDEPENDENCE_UNRESOLVED; the
-      historical feed does not expose internal order origin and cannot prove
-      non-redundancy. This blocker requires an external, defensible independence /
-      cross-matching treatment before any residual or latent competitiveness is fitted.
+    title: Information origin / cross-matching / redundancy
+    status: RESOLVED_AS_UNOBSERVABLE_LIMITATION  # STAGE3-0004 §7
+    resolved_on: "2026-07-21"
+    findings: docs/research/findings/DR-TENNIS-XMARKET-INDEPENDENCE-001-findings.md
     intake_record: docs/research/requests/DR-TENNIS-XMARKET-INDEPENDENCE-001.md
+    record:
+      order_origin: cannot be determined from ADVANCED historical data
+      independence_claim: NEVER permitted
+      coherence_only_use: justified (market-quality / uncertainty / abstention diagnostics)
+      crossMatching_flag: metadata only — cannot establish mechanism (true!=cross-market,
+        false!=independent flow)
+    evidence_policy: specs/evidence/cross-matching-evidence-policy-v1.yaml
+
+  - id: EXT-XMARKET-003
+    title: Exact mathematical and format specification
+    status: OPEN                                 # STAGE3-0004 §7 — new blocker
+    holds: CROSS_MARKET_COHERENCE_V1 (numerical implementation)
+    requirement: >-
+      The exact, founder-approved mathematical and format specification before ANY numerical
+      coherence implementation begins.
+    must_resolve:
+      - exact point->game->set->match equations
+      - best-of-three
+      - best-of-five
+      - standard tiebreak
+      - final-set tiebreak
+      - match-tiebreak formats
+      - server-order treatment
+      - exact expected-total-games distribution
+      - exact game-handicap distribution
+      - deterministic format identification from pre-match data
+      - objective function
+      - constraints
+      - uncertainty and sensitivity method
     resolution_rule: >-
-      Resolved only by founder-approved external evidence; observable timestamp
-      differences alone never establish independence.
+      No numerical implementation begins until EXT-XMARKET-003 is approved by the founder AND
+      separately authorised. Governance, contracts and data-plumbing hardening may proceed.

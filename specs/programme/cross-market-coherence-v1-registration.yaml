@@ -1,0 +1,94 @@
+# specs/programme/cross-market-coherence-v1-registration.yaml
+# STAGE3-0004 §3/§4/§5/§6 — registration of the replacement hypothesis
+# CROSS_MARKET_COHERENCE_V1. Human-owned (CODEOWNERS specs/**). Governance + contracts only;
+# the numerical implementation is blocked by EXT-XMARKET-003 and a separate authorisation.
+
+hypothesis_id: CROSS_MARKET_COHERENCE_V1
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0004
+numerical_implementation_blocked_by: EXT-XMARKET-003
+
+purpose: >-
+  Determine whether synchronized Match Odds, Total Games and Game Handicap prices can be
+  projected onto one internally coherent tennis market surface, and use the degree of
+  coherence or incoherence ONLY as a market-quality, uncertainty and abstention diagnostic.
+
+it_is_not:
+  - a replacement for p_market_info
+  - an independent predictor
+  - a final probability
+  - a tip generator
+  - a betting edge
+  - an execution signal
+
+permitted_future_outputs:               # §3 — no numeric score affects V0 probability/tip
+  - COHERENT
+  - PARTIALLY_COHERENT
+  - INCOHERENT
+  - UNIDENTIFIED
+  - STALE_DERIVATIVE
+  - INSUFFICIENT_LIQUIDITY
+  - FORMAT_UNRESOLVED
+  - SETTLEMENT_SEMANTICS_UNSUPPORTED
+  - ORIGIN_UNRESOLVED
+  - UNSUPPORTED_COHORT
+no_numeric_coherence_score_affects_final_probability_or_tip: true   # until a future prospective gate
+
+initial_supported_market_types:         # §4 — do not broaden automatically
+  - MATCH_ODDS
+  - COMBINED_TOTAL
+  - HANDICAP
+deferred_from_v1: [SET_WINNER, SET_BETTING, NUMBER_OF_SETS, PLAYER_A_WIN_A_SET, PLAYER_B_WIN_A_SET]
+excluded: [SET_CORRECT_SCORE, TOURNAMENT_WINNER]
+rationale:
+  COMBINED_TOTAL: total-games structure
+  HANDICAP: game-margin structure
+  both: primary identifying derivatives in the completed audit
+
+initial_candidate_cohort:               # §5
+  - June F0-committed singles Match Odds
+  - STRICT cohort
+  - correctly linked COMBINED_TOTAL and/or HANDICAP sibling
+  - derivative available no later than the exact F0 decision timestamp
+  - OPEN
+  - pre-match
+  - not suspended
+  - parseable
+  - two-sided
+  - not crossed
+  - valid line
+  - verified market semantics
+  - no use of later prices
+primary_only_tier: UNSUPPORTED (June produced 0 usable identifying markets out of 559)
+quote_age_policy: UNRESOLVED
+report_sensitivities_seconds: [15, 30, 60, 120, 300]
+production_cutoff_frozen: false          # not until the mathematical registration + founder decision
+
+outcome_evaluation_subset:              # §6 — construction needs no outcomes
+  coherence_layer_uses_only_pre_match_prices: true
+  outcome_evaluable_only_when:
+    - joins deterministically to the lawful Tennis-Data corpus
+    - recorded as normally completed
+    - one unambiguous sporting winner
+    - no retirement
+    - no walkover
+    - no disqualification
+    - no abandonment
+    - no format change
+    - no outcome-source conflict
+    - no cancelled-and-relisted ambiguity
+  refuse_if_completion_status_unproven: true
+  do_not_infer_completion_from_a_derivative_settlement: true
+  report_separately: [pre_match_coherence_constructible_count, outcome_evaluable_count]
+
+still_prohibited:                        # §15
+  - two-parameter serve model
+  - O'Malley/Barnett scoring equations
+  - Total Games or Handicap line selection
+  - liquidity weights
+  - latent parameters
+  - outcomes
+  - altering p_market_info
+  - altering F2-v1 / reviving F3 / reviving DP1
+  - tips / EV / ROI / P&L / CLV / stakes
+  - data purchase / execution

@@ -1,0 +1,34 @@
+# specs/evidence/cross-matching-evidence-policy-v1.yaml
+# STAGE3-0004 §12 — governed cross-matching evidence policy. Human-owned (CODEOWNERS
+# specs/**). Replaces any independence claim with observable, origin-unresolved statuses.
+# There is deliberately NO `INDEPENDENT` status.
+
+policy_id: CROSS-MATCHING-EVIDENCE-POLICY-V1
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0004
+basis: docs/research/findings/DR-TENNIS-XMARKET-INDEPENDENCE-001-findings.md
+
+statuses:                                # the ONLY permitted statuses
+  - OBSERVABLY_NON_REDUNDANT_UPDATES     # derivative moves are observably not a redundant path
+  - OBSERVABLY_REDUNDANT_PATH            # derivative moves coincide exactly with MO moves
+  - ORIGIN_UNRESOLVED                    # default where mechanism cannot be established
+  - INSUFFICIENT_ACTIVITY               # too few updates to say anything
+forbidden_status: INDEPENDENT            # never created
+
+rules:
+  - observable non-redundancy does NOT equal independence
+  - ORIGIN_UNRESOLVED is the default where mechanism cannot be established
+  - "crossMatching=true does NOT establish cross-market matching"
+  - "crossMatching=false does NOT prove independent customer flow"
+  - no price receives increased predictive authority because of an independence claim
+  - future weighting may use book quality and coherence fit, NOT presumed order origin
+
+mapping_from_stage3_0002_audit:
+  note: >-
+    The STAGE3-0002 redundancy statuses map to this policy as follows:
+    OBSERVABLY_NON_REDUNDANT_UPDATES -> OBSERVABLY_NON_REDUNDANT_UPDATES (origin still unresolved);
+    INDEPENDENCE_UNRESOLVED -> ORIGIN_UNRESOLVED;
+    INSUFFICIENT_UPDATES -> INSUFFICIENT_ACTIVITY;
+    OBSERVABLY_REDUNDANT_PATH -> OBSERVABLY_REDUNDANT_PATH.
+    The audit's 56 OBSERVABLY_NON_REDUNDANT vs 1196 INDEPENDENCE_UNRESOLVED does NOT establish
+    independence for any market.

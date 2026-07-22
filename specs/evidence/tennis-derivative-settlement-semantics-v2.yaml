@@ -1,0 +1,93 @@
+# specs/evidence/tennis-derivative-settlement-semantics-v2.yaml
+# STAGE3-0004 §9 — versioned settlement-semantics registry. Human-owned (CODEOWNERS
+# specs/**). Supersedes v1 (which had every type UNRESOLVED) using the accepted
+# DR-TENNIS-XMARKET-SETTLEMENT-001 findings. Every unresolved item is preserved EXPLICITLY.
+# This registry classifies settlement compatibility; it authorises NO numerical model
+# (that is EXT-XMARKET-003). Inferred official display names are kept distinct from verified.
+
+registry_id: TENNIS-DERIVATIVE-SETTLEMENT-SEMANTICS-V2
+supersedes: TENNIS-DERIVATIVE-SETTLEMENT-SEMANTICS-V1
+registered_on: "2026-07-21"
+authority: founder directive STAGE3-0004 §9
+findings: docs/research/findings/DR-TENNIS-XMARKET-SETTLEMENT-001-findings.md
+outcome_free: true
+june_2026_rule_text_byte_identity: UNVERIFIED (no semantic change found)
+
+# match-completion exclusion policy (keyed on match completion, NOT per-derivative settlement)
+global_exclusion_policy:
+  exclude: [walkover, withdrawal_or_did_not_start, retirement_any_stage, disqualification,
+    abandonment, incomplete_match, post_load_scoring_format_change,
+    cancelled_and_relisted_instance, ambiguous_result, conflicting_outcome_source]
+  include: [normally_completed_matches, venue_or_surface_change_if_otherwise_completes]
+
+market_types:
+
+  MATCH_ODDS:
+    classification: VERIFIED_COMPATIBLE_COMPLETED_MATCHES
+    role: primary
+    official_name_status: VERIFIED
+    v1_supported: true
+
+  COMBINED_TOTAL:
+    classification: VERIFIED_CONTRACTUALLY_DIFFERENT_BUT_USABLE_WITH_EXCLUSIONS
+    role: primary identifying auxiliary
+    unit: full-match games
+    raw_marketType: COMBINED_TOTAL
+    inferred_display_name: "Total Games"
+    official_name_status: INFERRED
+    evaluation_requires_normally_completed_match: true
+    asian_half_whole_line_micro_semantics: DEFERRED_TO_EXT_XMARKET_003
+    v1_supported: true
+
+  HANDICAP:
+    classification: VERIFIED_CONTRACTUALLY_DIFFERENT_BUT_USABLE_WITH_EXCLUSIONS
+    role: primary identifying auxiliary
+    unit: game margin
+    raw_marketType: HANDICAP
+    inferred_display_name: "Handicap"
+    official_name_status: INFERRED
+    evaluation_requires_normally_completed_match: true
+    asian_half_whole_line_micro_semantics: DEFERRED_TO_EXT_XMARKET_003
+    v1_supported: true
+
+  SET_WINNER:
+    classification: USABLE_WITH_EXCLUSIONS
+    official_name_status: INFERRED
+    deferred_from_v1: true
+
+  SET_BETTING:
+    classification: USABLE_WITH_EXCLUSIONS
+    official_name_status: INFERRED
+    deferred_from_v1: true
+
+  NUMBER_OF_SETS:
+    classification: USABLE_WITH_EXCLUSIONS
+    match_tiebreak_treatment: UNRESOLVED
+    official_name_status: INFERRED
+    deferred_from_v1: true
+
+  PLAYER_A_WIN_A_SET:
+    classification: USABLE_WITH_EXCLUSIONS
+    official_name_status: INFERRED
+    deferred_from_v1: true
+
+  PLAYER_B_WIN_A_SET:
+    classification: USABLE_WITH_EXCLUSIONS
+    official_name_status: INFERRED
+    deferred_from_v1: true
+
+  SET_CORRECT_SCORE:
+    classification: UNRESOLVED
+    reason: exact contract unresolved
+    prohibited_from_v1: true
+
+  TOURNAMENT_WINNER:
+    classification: UNSUITABLE_FOR_SINGLE_MATCH_LAYER
+    reason: wrong event granularity
+    prohibited_from_v1: true
+
+prohibitions:
+  - no rule here prices, settles, grades, or trains anything (that is EXT-XMARKET-003)
+  - no June outcome is read to infer a rule; completion status comes from the governed path
+  - inferred official display names are never silently promoted to verified
+  - no LLM assigns or edits a classification

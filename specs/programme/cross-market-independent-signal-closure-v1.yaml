@@ -1,0 +1,35 @@
+# specs/programme/cross-market-independent-signal-closure-v1.yaml
+# STAGE3-0004 §2 — closure of the independent-signal hypothesis. Human-owned (CODEOWNERS
+# specs/**). Append-only history: the project will not build or describe a derivative-market
+# layer as an independently informed predictor beyond Match Odds.
+
+closure_id: CROSS-MARKET-INDEPENDENT-SIGNAL-CLOSURE-v1
+closed_on: "2026-07-21"
+authority: founder directive STAGE3-0004
+hypothesis: CROSS_MARKET_LATENT_INDEPENDENT_SIGNAL_V1
+status: NO_GO_UNPROVEN_INFORMATION_ORIGIN
+
+basis: >-
+  DR-TENNIS-XMARKET-INDEPENDENCE-001 established that the internal origin of tennis
+  derivative-market orders is unresolved and unobservable from ADVANCED historical data.
+  Observed non-redundant movement does not prove independent customer order flow; no official
+  source establishes tennis Match Odds <-> Total Games / Handicap / Set cross-market matching.
+
+meaning: >-
+  The project will not build or describe a derivative-market layer as an independently
+  informed predictor beyond Match Odds. This does NOT prohibit a coherence layer
+  (CROSS_MARKET_COHERENCE_V1), which uses coherence only as a market-quality / uncertainty /
+  abstention diagnostic.
+
+do_not:
+  - claim independent order flow
+  - claim price discovery
+  - claim derivative information is orthogonal merely because its timestamp differs
+  - claim synthetic or cross-matched prices are uninformative
+  - claim a model edge
+  - fit a sporting residual from the derivative prices under this hypothesis
+
+supersedes_note: >-
+  This closes the "independent signal" framing of the earlier BLOCKED CROSS_MARKET_LATENT_V1
+  record; the coherence framing continues under CROSS_MARKET_COHERENCE_V1, itself
+  numerically blocked by EXT-XMARKET-003.
