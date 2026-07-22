@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sport_tennis.coherence.formats import FormatSpec
+from sport_tennis.coherence.formats import FormatSpec, set_tiebreak_target
 
 _EPS = 1e-12
 
@@ -128,7 +128,7 @@ def set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
     _check_p("p_other", p_other)
     hold_first = game_win_prob(p_first)
     hold_other = game_win_prob(p_other)
-    tb_target = 10 if (is_final_set and spec.final_set_rule == "TB10_FINAL_AT_6_6") else 7
+    tb_target = set_tiebreak_target(spec, is_final_set=is_final_set)
     tb_first_wins = tiebreak_win_prob(p_first, p_other, tb_target)
 
     games: dict[tuple[int, int], float] = {}

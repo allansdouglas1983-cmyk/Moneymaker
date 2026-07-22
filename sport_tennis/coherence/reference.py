@@ -12,7 +12,12 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from sport_tennis.coherence.formats import FormatSpec, MatchFormat, format_spec
+from sport_tennis.coherence.formats import (
+    FinalSetRule,
+    FormatSpec,
+    MatchFormat,
+    format_spec,
+)
 
 
 def ref_tiebreak_server_is_first(point_index: int) -> bool:
@@ -71,7 +76,7 @@ def ref_set_first_wins(p_first: float, p_other: float, spec: FormatSpec, *,
     production forward DP)."""
     hold_first = ref_game_win_prob(p_first)
     hold_other = ref_game_win_prob(p_other)
-    tb_target = 10 if (is_final_set and spec.final_set_rule == "TB10_FINAL_AT_6_6") else 7
+    tb_target = 10 if (is_final_set and spec.final_set_rule is FinalSetRule.TB10_FINAL_AT_6_6) else 7
     tb = ref_tiebreak_win_prob(p_first, p_other, tb_target)
 
     memo: dict[tuple[int, int], float] = {}
@@ -108,7 +113,7 @@ def ref_set_distribution(p_first: float, p_other: float, spec: FormatSpec, *,
     prob}. Uses the independent game/tiebreak references throughout."""
     hold_first = ref_game_win_prob(p_first)
     hold_other = ref_game_win_prob(p_other)
-    tb_target = 10 if (is_final_set and spec.final_set_rule == "TB10_FINAL_AT_6_6") else 7
+    tb_target = 10 if (is_final_set and spec.final_set_rule is FinalSetRule.TB10_FINAL_AT_6_6) else 7
     tb_first = ref_tiebreak_win_prob(p_first, p_other, tb_target)
 
     def is_terminal(a: int, b: int) -> bool:
@@ -150,7 +155,7 @@ def ref_match(p_a: float, p_b: float, fmt: MatchFormat, *,
     of the FIXED players A and B. Uses the independent set/tiebreak references throughout."""
     spec = format_spec(fmt)
     stw = spec.sets_to_win
-    is_match_tb = spec.final_set_rule == "MATCH_TB10_REPLACES_DECIDER"
+    is_match_tb = spec.final_set_rule is FinalSetRule.MATCH_TB10_REPLACES_DECIDER
 
     match_win_a = 0.0
     total_pmf: dict[int, float] = defaultdict(float)

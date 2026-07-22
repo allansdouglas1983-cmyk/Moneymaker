@@ -57,6 +57,7 @@ def test_final_set_rule_not_ordered_and_not_string() -> None:
     # comparable by <= (killing the lexicographic mutant) and never equals a raw string.
     a = FinalSetRule.TB10_FINAL_AT_6_6
     assert (a == FinalSetRule.TB10_FINAL_AT_6_6) is (a is FinalSetRule.TB10_FINAL_AT_6_6)
-    assert a != "TB10_FINAL_AT_6_6"
+    raw: object = "TB10_FINAL_AT_6_6"      # the enum member never equals its raw string value
+    assert a != raw
     with pytest.raises(TypeError):
         _ = a <= FinalSetRule.TB7_ALL_SETS  # type: ignore[operator]

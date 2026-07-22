@@ -13,7 +13,11 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
-from sport_tennis.coherence.formats import MatchFormat, format_spec
+from sport_tennis.coherence.formats import (
+    MatchFormat,
+    format_spec,
+    is_match_tiebreak_decider,
+)
 from sport_tennis.coherence.scoring import CoherenceMathError, set_distribution, tiebreak_win_prob
 
 
@@ -31,7 +35,7 @@ def match_distribution(p_a: float, p_b: float, fmt: MatchFormat, *,
                        a_serves_first_match: bool) -> MatchDistribution:
     spec = format_spec(fmt)
     stw = spec.sets_to_win
-    is_match_tb = spec.final_set_rule == "MATCH_TB10_REPLACES_DECIDER"
+    is_match_tb = is_match_tiebreak_decider(spec)
 
     match_win_a = 0.0
     total_pmf: dict[int, float] = defaultdict(float)
