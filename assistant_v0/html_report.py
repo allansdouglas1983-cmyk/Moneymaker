@@ -13,6 +13,7 @@ from typing import Any
 
 BANNER = "RESEARCH / SHADOW ONLY — NO BET RECOMMENDATION"
 XMARKET_LABEL = "RESEARCH AUDIT — NOT USED IN THE PROBABILITY"
+CROSS_MARKET_DIAGNOSTIC_BANNER = "CROSS-MARKET RESEARCH DIAGNOSTIC — NOT USED IN THE FINAL PROBABILITY"
 
 
 def _esc(v: object) -> str:
@@ -23,8 +24,11 @@ def _rows(pairs: list[tuple[str, object]]) -> str:
     return "".join(f"<tr><th>{_esc(k)}</th><td>{_esc(v)}</td></tr>" for k, v in pairs)
 
 
-def render_html(output: dict[str, Any], *, xmarket_view: dict[str, Any] | None = None) -> str:
-    """Return a deterministic static HTML report for one V0 output."""
+def render_html(output: dict[str, Any], *, xmarket_view: dict[str, Any] | None = None,
+                cross_market_diagnostic: dict[str, Any] | None = None) -> str:
+    """Return a deterministic static HTML report for one V0 output. The optional cross-market
+    research diagnostic (STAGE3-0004 §13) is DISPLAY-ONLY under its own banner and never
+    affects the final (market-only) probability."""
     match = _rows([
         ("Competitor A", output.get("competitor_a")),
         ("Competitor B", output.get("competitor_b")),
@@ -65,6 +69,15 @@ def render_html(output: dict[str, Any], *, xmarket_view: dict[str, Any] | None =
         ("Policy digest", output.get("policy_digest")),
     ])
 
+    diagnostic_section = ""
+    if cross_market_diagnostic is not None:
+        drows = _rows([(k, v) for k, v in sorted(cross_market_diagnostic.items())])
+        diagnostic_section = (
+            f'<section class="xmarket"><h2>Cross-market research diagnostic</h2>'
+            f'<p class="label">{_esc(CROSS_MARKET_DIAGNOSTIC_BANNER)}</p>'
+            f'<table>{drows}</table></section>'
+        )
+
     xmarket_section = ""
     if xmarket_view is not None:
         xrows = _rows([(k, v) for k, v in sorted(xmarket_view.items())])
@@ -91,6 +104,7 @@ def render_html(output: dict[str, Any], *, xmarket_view: dict[str, Any] | None =
         f"<section><h2>Market probability (final)</h2><table>{market}</table></section>"
         f"<section><h2>F2-v1 diagnostic (separate — not market-proven)</h2><table>{f2}</table></section>"
         f"<section><h2>Status &amp; reasons</h2><table>{diagnostics}</table></section>"
+        f"{diagnostic_section}"
         f"{xmarket_section}"
         f"<section><h2>Provenance</h2><table>{provenance}</table></section>"
         "</body></html>"
