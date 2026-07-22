@@ -87,7 +87,8 @@ def test_best_level_picks_lowest_index_and_ignores_zero_size() -> None:
 
 
 def test_reconstruct_ignores_non_int_pt_and_selection() -> None:
-    stream = [{"pt": "bad", "mc": [{"id": "m", "rc": [{"id": 1, "hc": 20.5, "batb": [[0, 1.9, 5.0]]}]}]},
+    stream: list[dict[str, object]] = [
+              {"pt": "bad", "mc": [{"id": "m", "rc": [{"id": 1, "hc": 20.5, "batb": [[0, 1.9, 5.0]]}]}]},
               {"pt": 100, "mc": [{"id": "m", "marketDefinition": {"status": "OPEN",
                "inPlay": False, "marketType": "COMBINED_TOTAL", "eventId": "E1"}}]},
               {"pt": 200, "mc": [{"id": "m", "rc": [{"id": "notint", "hc": 20.5, "batb": [[0, 1.9, 5.0]]}]}]}]

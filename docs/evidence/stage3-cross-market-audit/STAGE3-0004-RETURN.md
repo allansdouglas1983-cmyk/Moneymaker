@@ -74,7 +74,26 @@ warning, research-only summary). It shows no latent/coherence/tip/probability-ad
 final V0 probability remains **market-only** and is unaffected.
 
 ## 13. Tests, mutation and verification results
-_(mutation numbers + full make verify filled below.)_
+- **Unit + property tests:** `tests/unit/xmarket_contracts/` (parsers, linkage, synchronizer,
+  observation, mutation-hardening) all green; red-tests-first throughout.
+- **`make verify`:** green end-to-end (see confirmation at foot).
+- **Mutation (advice-critical, cosmic-ray):** 588 mutants over the four promoted modules,
+  **402 killed / 186 survived (68%)** after a hardening pass. Full log:
+  `docs/evidence/stage3-cross-market-audit/XMARKET_CONTRACTS_MUTATION.txt`. The two
+  **integrity-critical boundaries are pinned and killed** (Set-vs-Game classification at
+  max|line|==3.0; F0 leakage at pt==cutoff / no-backfill), plus bool guards and best-level rules.
+- **Honest status of the §14 bar:** the advice-critical "every promoted behavioural mutant
+  killed or founder-approved" bar is **NOT YET MET**. Of the 186 survivors, **66 are the
+  provable PEP-563 type-annotation-operator equivalence class** (annotations never evaluated
+  under `from __future__ import annotations`), and **120 non-annotation survivors** (defensive
+  branches, error-detail formatting, and some genuinely behavioural) are **queued for the
+  founder-gated per-ID kill-or-approve process** — the same multi-round adjudication used in
+  Stage 2. Recorded in `specs/mutation-survivors-xmarket-contracts.yaml` (`approved_by: null`).
+  An LLM never self-approves a survivor.
+- **Consequence:** the promoted `xmarket_contracts` components remain **STAGED** — import-
+  quarantined from execution and from pricing/tipping (Makefile), numerical layer blocked by
+  `EXT-XMARKET-003`. Nothing advice-critical runs on this code until the founder ratifies the
+  survivor record AND separately authorises exposure.
 
 ## 14. Remaining EXT-XMARKET-003 questions
 Exact point→game→set→match equations; best-of-3; best-of-5; standard tiebreak; final-set

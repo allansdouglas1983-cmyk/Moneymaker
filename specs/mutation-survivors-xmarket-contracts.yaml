@@ -1,0 +1,69 @@
+# specs/mutation-survivors-xmarket-contracts.yaml
+# STAGE3-0004 §14 — advice-critical mutation survivor record for the PROMOTED cross-market
+# plumbing (xmarket_contracts). Human-owned (CODEOWNERS specs/**). Append-only.
+#
+# STATUS: PENDING FOUNDER ADJUDICATION. Per §14 every promoted behavioural mutant must be
+# killed or founder-approved as equivalent. This is the founder-gated, per-ID process used
+# in Stage 2 (mutation rounds; specs/mutation-survivors*.yaml) — an LLM never self-approves a
+# survivor. `approved_by: null` everywhere below; the disposition column is the LEAD's
+# proposed classification for founder ratification, NOT an approval.
+#
+# The promoted components are STAGED: they are NOT exposed to any pricing/tipping/advice path
+# (Makefile import quarantine), and the numerical coherence layer is blocked by
+# EXT-XMARKET-003. Nothing advice-critical runs on this code until the founder ratifies this
+# record AND separately authorises exposure.
+
+record_id: MUTATION-SURVIVORS-XMARKET-CONTRACTS-V1
+recorded_on: "2026-07-22"
+authority: founder directive STAGE3-0004 §14 (advice-critical bar)
+full_survivor_log: docs/evidence/stage3-cross-market-audit/XMARKET_CONTRACTS_MUTATION.txt
+tooling: cosmic-ray (uv run tools/run_mutation.py --report)
+test_suite: tests/unit/xmarket_contracts
+
+mutation_result_post_hardening:
+  total_mutants: 588
+  killed: 402
+  survived: 186
+  kill_rate: 0.684
+  per_module:
+    parsers.py:      {mutants: 200, killed: 160, survived: 40}
+    linkage.py:      {mutants: 104, killed: 68,  survived: 36}
+    synchronizer.py: {mutants: 254, killed: 148, survived: 106}
+    observation.py:  {mutants: 30,  killed: 26,  survived: 4}
+
+integrity_critical_boundaries_pinned_and_killed:
+  - Set-vs-Game classification boundary (parse_game_handicap max|line| == 3.0 refuse / 3.5 accept)
+  - F0 leakage boundary (reconstruct_as_of: pt == cutoff INCLUDED; pt > cutoff excluded; no backfill)
+  - bool-vs-int/float guards (bool id/hc/tv refused)
+  - best-level lowest-index + zero-size-drop; non-int pt/selection ignored
+
+survivor_classification:               # LEAD proposal for founder ratification (approved_by: null)
+
+  - class: PEP563_TYPE_ANNOTATION_OPERATORS
+    count: 66
+    disposition: EQUIVALENT
+    approved_by: null
+    rationale: >-
+      All operator mutants on type-annotation lines (e.g. `float | None`, `str | None`,
+      `int | None`, `-> tuple[...] | None`). Every module uses `from __future__ import
+      annotations` (PEP 563), so annotations are stored as STRINGS and never evaluated at
+      runtime; mutating the `|` (or any operator) in an annotation cannot change runtime
+      behaviour. Provably equivalent as a whole class. (parsers 11, linkage 11, synchronizer 44)
+
+  - class: NON_ANNOTATION_SURVIVORS
+    count: 120
+    disposition: PENDING_FOUNDER_ADJUDICATION
+    approved_by: null
+    note: >-
+      Non-annotation survivors (parsers 29, linkage 25, synchronizer 62, observation 4). A
+      mixture of (a) defensive-branch mutants on inputs the contracts refuse or the corpus
+      never produces, (b) error-detail NumberReplacer/format mutants that do not change the
+      raised exception TYPE the contracts assert, and (c) genuinely behavioural mutants that
+      need a killing test. These are queued for the founder-gated per-ID kill-or-approve
+      process exactly as the Stage-2 mutation rounds; the LEAD will kill the behavioural ones
+      with targeted tests and submit equivalence classifications for founder ratification in a
+      follow-up round. The advice-critical 100%-killed-or-approved bar is therefore NOT YET MET.
+
+promotion_status: STAGED_HARDENING_IN_PROGRESS
+exposed_to_pricing_or_tipping: false
+numerical_layer: BLOCKED_BY_EXT-XMARKET-003
