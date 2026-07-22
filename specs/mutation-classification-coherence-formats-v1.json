@@ -1,0 +1,36 @@
+{
+  "_comment": "STAGE3-0006 formats.py survivor classification (LEAD proposals; approved_by null). Matches the confirming formats re-run.",
+  "module": "sport_tennis/coherence/formats.py",
+  "rules": [
+    {
+      "module": "sport_tennis/coherence/formats.py",
+      "definitions": ["set_tiebreak_target", "is_match_tiebreak_decider"],
+      "operator_prefixes": ["core/ReplaceComparisonOperator_Is_Eq"],
+      "proof_class": "ENUM_MEMBER_IDENTITY_EQUIVALENT",
+      "registered_domain_reachability": "final_set_rule is always a FinalSetRule enum member",
+      "exact_reachable_state_evidence": "Enum members are singletons and Enum.__eq__ is identity-based, so `is` and `==` yield identical results for every FinalSetRule member",
+      "malformed_input_reachability": "n/a (spec.final_set_rule is always a governed enum member)",
+      "output_fields_affected": "none",
+      "pmf_comparison": "identical",
+      "serialization_digest_comparison": "n/a",
+      "production_reference_comparison": "unchanged (reference uses its own inline branching)",
+      "associated_test_ids": "test_final_set_rule.py::*, test_formats_table.py::*",
+      "proof_artifact_digest": "enum-singleton-identity"
+    },
+    {
+      "module": "sport_tennis/coherence/formats.py",
+      "definitions": ["classify_format_token"],
+      "operator_prefixes": ["core/ReplaceOrWithAnd"],
+      "proof_class": "GUARD_OR_AND_FALLTHROUGH_EQUIVALENT",
+      "registered_domain_reachability": "any token (str or non-str, empty or not)",
+      "exact_reachable_state_evidence": "the early-return guard `not isinstance(token,str) or not token` -> `and` differs only for non-str-truthy and empty-str; in both cases the fall-through path (no format value matches, token not in UNSUPPORTED_FORMAT_TOKENS) returns the SAME FORMAT_UNRESOLVED. Exhaustive over the input partitions {valid-str, empty-str, unsupported-str, other-str, non-str-truthy, non-str-falsy}",
+      "malformed_input_reachability": "non-str inputs handled identically (both return FORMAT_UNRESOLVED)",
+      "output_fields_affected": "none",
+      "pmf_comparison": "n/a",
+      "serialization_digest_comparison": "n/a",
+      "production_reference_comparison": "n/a",
+      "associated_test_ids": "test_format_evidence.py::test_malformed_evidence_refused, test_formats_table.py::*",
+      "proof_artifact_digest": "classify-fallthrough-partition-proof"
+    }
+  ]
+}
