@@ -26,9 +26,18 @@ from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.match import match_distribution
 from sport_tennis.coherence.pmf import over_under
 from sport_tennis.coherence.solver_contracts import (
+    Jacobian2x2,
+    ResidualVector2,
     SolverStatus,
     validate_domain,
     validate_targets,
+)
+from sport_tennis.coherence.solver_scan import (
+    build_scan_axis,
+    is_singular,
+    jacobian_from_differences,
+    perturbation_points,
+    rank_seed_nodes,
 )
 
 # ------------------------------------------------------------- solver numerics (NOT thresholds)
@@ -118,7 +127,9 @@ def _residual(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Dec
 
 
 def _r2(f: tuple[float, float]) -> float:
-    return f[0] * f[0] + f[1] * f[1]
+    # Residual 2-norm-squared via the closed ResidualVector2 contract (§6): mo*mo + tg*tg,
+    # byte-identical to f[0]*f[0] + f[1]*f[1].
+    return ResidualVector2(f[0], f[1]).sum_of_squares()
 
 
 def _refine(ca: float, cb: float, h: float, a_first: bool, fmt: MatchFormat, line: Decimal,
@@ -148,9 +159,10 @@ def _refine(ca: float, cb: float, h: float, a_first: bool, fmt: MatchFormat, lin
         f1, f2 = _residual(pa, pb, a_first, fmt, line, tw, to)
         if f1 * f1 + f2 * f2 <= _ROOT_TOL * _ROOT_TOL:
             break
-        d11, d21, d12, d22 = _jacobian(pa, pb, a_first, fmt, line, tw, to)
-        det = d11 * d22 - d12 * d21
-        if abs(det) < _NEWTON_SINGULAR:
+        jac = _jacobian_matrix(pa, pb, a_first, fmt, line, tw, to)
+        d11, d21, d12, d22 = jac.d_mo_d_a, jac.d_tg_d_a, jac.d_mo_d_b, jac.d_tg_d_b
+        det = jac.determinant()
+        if is_singular(det, _NEWTON_SINGULAR):
             break
         da = (d22 * f1 - d12 * f2) / det
         db = (-d21 * f1 + d11 * f2) / det
@@ -164,28 +176,32 @@ def _refine(ca: float, cb: float, h: float, a_first: bool, fmt: MatchFormat, lin
     return best_a, best_b, best_r
 
 
-def _jacobian(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
-              tw: float, to: float) -> tuple[float, float, float, float]:
-    """Central-difference identification Jacobian (d11, d21, d12, d22) of (F1, F2) w.r.t.
-    (p_a, p_b)."""
-    e = _JAC_EPS
-    ap, am = min(p_a + e, 0.99), max(p_a - e, 0.01)
-    bp, bm = min(p_b + e, 0.99), max(p_b - e, 0.01)
+def _jacobian_matrix(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+                     tw: float, to: float) -> Jacobian2x2:
+    """Central-difference identification Jacobian of (F1, F2) w.r.t. (p_a, p_b), assembled through
+    the ``perturbation_points`` (§8a) and ``jacobian_from_differences`` (§8b) seams into the closed
+    ``Jacobian2x2`` contract. Byte-identical to the prior inline difference quotients."""
+    ap, am = perturbation_points(p_a, _JAC_EPS, 0.01, 0.99)
+    bp, bm = perturbation_points(p_b, _JAC_EPS, 0.01, 0.99)
     fa_p = _residual(ap, p_b, a_first, fmt, line, tw, to)
     fa_m = _residual(am, p_b, a_first, fmt, line, tw, to)
     fb_p = _residual(p_a, bp, a_first, fmt, line, tw, to)
     fb_m = _residual(p_a, bm, a_first, fmt, line, tw, to)
-    d11 = (fa_p[0] - fa_m[0]) / (ap - am)
-    d21 = (fa_p[1] - fa_m[1]) / (ap - am)
-    d12 = (fb_p[0] - fb_m[0]) / (bp - bm)
-    d22 = (fb_p[1] - fb_m[1]) / (bp - bm)
-    return d11, d21, d12, d22
+    return jacobian_from_differences(fa_p, fa_m, fb_p, fb_m, ap - am, bp - bm)
+
+
+def _jacobian(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
+              tw: float, to: float) -> tuple[float, float, float, float]:
+    """Tuple view (d11, d21, d12, d22) = (d_mo_d_a, d_tg_d_a, d_mo_d_b, d_tg_d_b) of the
+    ``_jacobian_matrix`` seam. Signature preserved byte-for-byte so the existing direct pin
+    (``test_solver_units_fast.test_jacobian_exact``) is unchanged by the seam extraction."""
+    j = _jacobian_matrix(p_a, p_b, a_first, fmt, line, tw, to)
+    return j.d_mo_d_a, j.d_tg_d_a, j.d_mo_d_b, j.d_tg_d_b
 
 
 def _jacobian_det(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
                   tw: float, to: float) -> float:
-    d11, d21, d12, d22 = _jacobian(p_a, p_b, a_first, fmt, line, tw, to)
-    return d11 * d22 - d12 * d21
+    return _jacobian_matrix(p_a, p_b, a_first, fmt, line, tw, to).determinant()
 
 
 def _dedup(roots: list[Root]) -> list[Root]:
@@ -199,20 +215,16 @@ def _dedup(roots: list[Root]) -> list[Root]:
 def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
                domain: tuple[float, float]) -> ServerSolve:
     lo, hi = domain
-    axis = [lo + (hi - lo) * i / (_COARSE_N - 1) for i in range(_COARSE_N)]
+    axis = build_scan_axis(lo, hi, _COARSE_N)
     grid = [[_r2(_residual(a, b, a_first, fmt, line, tw, to)) for b in axis] for a in axis]
 
     # Seed refinement from the lowest-residual coarse nodes, clustered so each deep basin is
-    # refined once. A strict local-minimum test misses a narrow diagonal residual valley that
-    # falls BETWEEN coarse nodes; taking the smallest-residual nodes brackets it from both sides.
-    # Distinct basins (e.g. the mirror parameter pair) stay in separate clusters and are each
-    # refined, so genuine multiplicity is detected rather than collapsed.
-    ranked = sorted(((grid[i][j], i, j) for i in range(_COARSE_N) for j in range(_COARSE_N)),
-                    key=lambda t: (t[0], t[1], t[2]))
-    seeds: list[tuple[int, int]] = []
-    for _r, i, j in ranked[:_N_SEED]:
-        if all(max(abs(i - ci), abs(j - cj)) > _CLUSTER_R for ci, cj in seeds):
-            seeds.append((i, j))
+    # refined once (§7 seed-selection rule; §5 scan-cell folded in — see solver_scan docstring).
+    # A strict local-minimum test misses a narrow diagonal residual valley that falls BETWEEN
+    # coarse nodes; taking the smallest-residual nodes brackets it from both sides. Distinct basins
+    # (e.g. the mirror parameter pair) stay in separate clusters and are each refined, so genuine
+    # multiplicity is detected rather than collapsed.
+    seeds = rank_seed_nodes(grid, _N_SEED, _CLUSTER_R)
 
     coarse_step = (hi - lo) / (_COARSE_N - 1)
     found: list[Root] = []
@@ -230,7 +242,7 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
         status = MULTIPLE_ROOTS
     else:
         r = found[0]
-        if abs(r.jacobian_det) < _JAC_TOL:
+        if is_singular(r.jacobian_det, _JAC_TOL):
             status = NON_IDENTIFIABLE
         elif r.on_boundary:
             status = BOUNDARY_SOLUTION
