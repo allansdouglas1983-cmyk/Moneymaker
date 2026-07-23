@@ -1,0 +1,14 @@
+{
+ "accounted": 424,
+ "all_zero_discrepancies": true,
+ "classified_equivalent_survivors": 1,
+ "duplicate": 0,
+ "extra": 0,
+ "killed": 423,
+ "missing": 0,
+ "nonnormal": 0,
+ "stale": 0,
+ "total_mutation_specs": 424,
+ "unclassified": 0,
+ "untested": 0
+}
