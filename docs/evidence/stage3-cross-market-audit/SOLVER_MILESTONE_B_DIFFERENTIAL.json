@@ -1,0 +1,62 @@
+{
+ "byte_identical": true,
+ "contract_seams_reused": [
+  "ResidualVector2.sum_of_squares (\u00a76, Milestone A)",
+  "Jacobian2x2.determinant (\u00a78, Milestone A)",
+  "Jacobian2x2.condition_scale (\u00a79 diagnostic, Milestone A)"
+ ],
+ "exception_to_status_behaviour": "UNCHANGED (validators still raise CoherenceMathError; no raise->status remap in this milestone).",
+ "finding_5_7": "\u00a75 (ScanCell four-corner residuals) and \u00a77 (SIGN_CHANGE candidate regions) do NOT describe this solver; it ranks/clusters lowest-residual-norm grid NODES. Per \u00a77 escape clause the actual rule is preserved explicitly in rank_seed_nodes; \u00a75 has no independent seam. NOT collapsed to a sign-change model.",
+ "golden_oracle_sha256": "e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+ "golden_result": "PASS byte-for-byte (test_solver_golden.py, 2 tests)",
+ "milestone": "STAGE3-0006C-B",
+ "prechange_commit": "20463e2c8d862ac3061cee39f5115a928282c187",
+ "seam_checks": [
+  {
+   "exact_equal": true,
+   "mismatches": 0,
+   "note": "n=13 nodes; both governed domains + 3 probes; exact ==",
+   "samples": 65,
+   "seam": "build_scan_axis(\u00a74)"
+  },
+  {
+   "exact_equal": true,
+   "mismatches": 0,
+   "note": "40 deterministic 13x13 grids x 4 (n_seed,cluster_r); exact list equality",
+   "samples": 160,
+   "seam": "rank_seed_nodes(\u00a77,\u00a75-folded)"
+  },
+  {
+   "exact_equal": true,
+   "mismatches": 0,
+   "note": "clamp lo=0.01 hi=0.99; interior + both clamped edges; exact ==",
+   "samples": 30,
+   "seam": "perturbation_points(\u00a78a)"
+  },
+  {
+   "exact_equal": true,
+   "mismatches": 0,
+   "note": "15 (p_a,p_b) points via real _residual; fields, seam det, matrix det all exact ==",
+   "samples": 15,
+   "seam": "jacobian_from_differences+determinant(\u00a78b)"
+  },
+  {
+   "exact_equal": true,
+   "mismatches": 0,
+   "note": "both governed tols; sign-symmetric; strict-< exact ==",
+   "samples": 20,
+   "seam": "is_singular(\u00a79)"
+  }
+ ],
+ "seams_extracted": [
+  "build_scan_axis (\u00a74)",
+  "rank_seed_nodes (\u00a77; \u00a75 scan-cell folded in \u2014 no independent seam)",
+  "perturbation_points (\u00a78a)",
+  "jacobian_from_differences (\u00a78b -> Jacobian2x2)",
+  "is_singular (\u00a79)"
+ ],
+ "section": "\u00a712 independent semantic-equivalence + differential",
+ "tests_altered": "NONE (existing test_jacobian_exact 4-tuple pin preserved via _jacobian adapter).",
+ "total_mismatches": 0,
+ "total_samples": 290
+}
