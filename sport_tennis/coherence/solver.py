@@ -25,7 +25,11 @@ from decimal import Decimal
 from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.match import match_distribution
 from sport_tennis.coherence.pmf import over_under
-from sport_tennis.coherence.scoring import CoherenceMathError
+from sport_tennis.coherence.solver_contracts import (
+    SolverStatus,
+    validate_domain,
+    validate_targets,
+)
 
 # ------------------------------------------------------------- solver numerics (NOT thresholds)
 # These are numerical constants of the root solve (grid resolution, refinement depth, matching
@@ -45,13 +49,15 @@ _JAC_EPS = 1e-3           # central-difference step for the identification Jacob
 _JAC_TOL = 5e-3           # |det J| below which identification is degenerate (NON_IDENTIFIABLE)
 _BOUNDARY_TOL = 5e-3      # distance to the domain edge below which a root is a boundary solution
 
-# Per-assignment structural statuses (subset of coherence-v1.yaml §15).
-NO_ROOT = "NO_ROOT"
-IDENTIFIED = "IDENTIFIED"
-MULTIPLE_ROOTS = "MULTIPLE_ROOTS"
-NON_IDENTIFIABLE = "NON_IDENTIFIABLE"
-BOUNDARY_SOLUTION = "BOUNDARY_SOLUTION"
-FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD = "FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD"
+# Per-assignment structural statuses (subset of coherence-v1.yaml §15). The public string values
+# are sourced from the governed SolverStatus enum (STAGE3-0006C Milestone A) so the vocabulary has
+# a single closed definition; the string values are unchanged (byte-identical public contract).
+NO_ROOT = SolverStatus.NO_ROOT.value
+IDENTIFIED = SolverStatus.IDENTIFIED.value
+MULTIPLE_ROOTS = SolverStatus.MULTIPLE_ROOTS.value
+NON_IDENTIFIABLE = SolverStatus.NON_IDENTIFIABLE.value
+BOUNDARY_SOLUTION = SolverStatus.BOUNDARY_SOLUTION.value
+FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD = SolverStatus.FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD.value
 
 
 @dataclass(frozen=True)
@@ -96,9 +102,7 @@ def derived_targets(p_a: float, p_b: float, fmt: MatchFormat, line: Decimal, *,
 
 
 def _validate_domain(domain: tuple[float, float]) -> None:
-    lo, hi = domain
-    if not (0.0 < lo < hi < 1.0):
-        raise CoherenceMathError(f"domain must satisfy 0 < lo < hi < 1, got {domain}")
+    validate_domain(domain[0], domain[1])
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
@@ -241,8 +245,7 @@ def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: 
     the union structural result. No 50/50 prior; the solver never decides first-server
     materiality (founder-pending threshold)."""
     _validate_domain(domain)
-    if not (0.0 <= target_match_win_a <= 1.0 and 0.0 <= target_over <= 1.0):
-        raise CoherenceMathError("targets must be probabilities in [0,1]")
+    validate_targets(target_match_win_a, target_over)
 
     sa = _solve_one(True, fmt, line, target_match_win_a, target_over, domain)
     sb = _solve_one(False, fmt, line, target_match_win_a, target_over, domain)
