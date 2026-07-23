@@ -34,3 +34,6 @@ traceability.md
 .DS_Store
 *.swp
 docs/evidence/stage3-cross-market-audit/*.log
+
+# Session scratchpad (ephemeral: cosmic-ray sessions, temp scripts — reproducible from committed configs)
+scratchpad/
