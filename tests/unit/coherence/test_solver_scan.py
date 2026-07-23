@@ -53,6 +53,14 @@ def test_build_scan_axis_golden_both_governed_domains() -> None:
     assert a[6] == pytest.approx(0.625, abs=1e-12)       # midpoint node of 0.35..0.90
 
 
+def test_build_scan_axis_denominator_is_n_minus_one_for_general_n() -> None:
+    # n != 13 breaks the coincidence 13 - 1 == 13 ^ 1 == 12: a `n - 1` -> `n ^ 1` (or +/<<) mutant
+    # only survives at n=13. With n=4 the denominator is 3 while 4^1=5, 4+1=5, 4<<1=8, so the last
+    # node stops being exactly hi and the whole spacing changes.
+    assert build_scan_axis(0.0, 1.0, 4) == [0.0, 1 / 3, 2 / 3, 1.0]
+    assert build_scan_axis(0.0, 1.0, 4)[-1] == 1.0
+
+
 # ------------------------------------------------------------------ rank_seed_nodes (§7, §5 folded)
 def _flat_grid(size: int, value: float) -> list[list[float]]:
     return [[value for _ in range(size)] for _ in range(size)]
@@ -119,6 +127,20 @@ def test_rank_seed_nodes_respects_n_seed_truncation() -> None:
     assert seeds == [(0, 0)]
 
 
+def test_rank_seed_nodes_distance_is_subtraction_not_add_shift_or_bitop() -> None:
+    # Non-origin existing seeds make the Chebyshev index distance sensitive to the EXACT operator.
+    # `i - ci` coincides with `i + ci`, `i >> ci`, `i << ci`, `i | ci`, `i ^ ci` (and the same on
+    # the j term) only when the seed index is 0, which is why an origin-seeded grid cannot kill
+    # these mutants. Seeds at (3,3)/(5,5)/(5,3) yield a seed list that differs under every one of
+    # the 12 distance-operator mutants (verified exhaustively). Exact-list assertion.
+    size = 7
+    grid = [[1.0] * size for _ in range(size)]
+    grid[3][3] = 0.10
+    grid[5][5] = 0.11
+    grid[5][3] = 0.12
+    assert rank_seed_nodes(grid, n_seed=20, cluster_r=2) == [(3, 3), (0, 0), (0, 3), (0, 6)]
+
+
 def test_rank_seed_nodes_all_not_any_over_existing_seeds() -> None:
     # A candidate near ONE existing seed but far from another must be suppressed (rule is `all`
     # existing seeds are far). Kills all()->any().
@@ -164,6 +186,15 @@ def test_jacobian_from_differences_maps_every_role() -> None:
     assert j.d_tg_d_a == (0.03 - 0.01) / 0.002
     assert j.d_mo_d_b == (0.40 - 0.10) / 0.004
     assert j.d_tg_d_b == (0.09 - 0.03) / 0.004
+
+
+def test_jacobian_from_differences_is_true_division_not_floordiv() -> None:
+    # The maps-every-role test happens to give d_mo_d_a an exactly-integer float quotient (50.0),
+    # so `/`->`//` is invisible there. A non-integer quotient makes true vs floor division diverge.
+    j = jacobian_from_differences((0.1, 0.0), (0.0, 0.0), (0.0, 0.0), (0.0, 0.0),
+                                  denom_a=0.03, denom_b=1.0)
+    assert j.d_mo_d_a == 0.1 / 0.03              # ~3.333...; floor division would give 3.0
+    assert j.d_mo_d_a != (0.1 - 0.0) // 0.03
 
 
 def test_jacobian_from_differences_determinant_orientation_preserved() -> None:
