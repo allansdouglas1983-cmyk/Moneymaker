@@ -18,6 +18,7 @@ import inspect
 import json
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
@@ -64,14 +65,14 @@ def _rnd(x: float | None) -> float | None:
     return None if x is None else round(float(x), 9)
 
 
-def _golden_case(tw: float, to: float) -> dict:
+def _golden_case(tw: float, to: float) -> dict[str, Any]:
     for case in _GOLDEN_V2["identify"]:
         if case["tw"] == tw and case["to"] == to:
-            return case
+            return dict(case)
     raise AssertionError(f"golden case not found: {tw}, {to}")
 
 
-def _got_dict(r: S.IdentificationResult) -> dict:
+def _got_dict(r: S.IdentificationResult) -> dict[str, object]:
     """The exact V2-golden comparison shape (test_solver_golden convention, round-9)."""
     return {
         "status": r.status,
@@ -185,7 +186,7 @@ def test_variant_definitions_pin_the_registration() -> None:
         if variant is not ScanVariant.G0_BASELINE:
             assert d.a2_artifact_sha256 == by_name[variant.name]["a2_artifact_sha256"]
     with pytest.raises(Exception):
-        d.axis_digest = "x"  # type: ignore[misc]  # frozen
+        d.axis_digest = "x"  # type: ignore[misc,unused-ignore]  # frozen
 
 
 # ---------------------------------------------------------------- §7 immutable snapshots
@@ -359,6 +360,138 @@ def test_comparator_refuses_malformed_input_rather_than_hiding_it() -> None:
         _compare(mixed)                                   # mixed first-server assignment
 
 
+# ------------------------------------------------- §15 hardening round 1 (stability gate)
+def test_decision_serialize_digest_and_frozen() -> None:
+    """Kills the serialize/digest survivors: the reason field serializes by exact value (None
+    when stable, the enum value when unstable); both digests are the sha256 of the CANONICAL
+    (sorted-key, compact) JSON of serialize(); StabilityDecision is frozen."""
+    import hashlib
+    import json
+
+    stable = _compare(_trio((S.IDENTIFIED, [_root(0.62, 0.58)]),
+                            (S.IDENTIFIED, [_root(0.62, 0.58)]),
+                            (S.IDENTIFIED, [_root(0.62, 0.58)])))
+    assert stable.serialize()["reason"] is None
+    unstable = _compare(_trio((S.IDENTIFIED, [_root(0.62, 0.58)]), (S.NO_ROOT, []),
+                              (S.IDENTIFIED, [_root(0.62, 0.58)])))
+    assert unstable.serialize()["reason"] == "DISCRETISATION_UNSTABLE_ROOT_SET"
+    for decision in (stable, unstable):
+        canonical = json.dumps(decision.serialize(), sort_keys=True,
+                               separators=(",", ":")).encode("utf-8")
+        assert decision.digest() == hashlib.sha256(canonical).hexdigest()
+    snap = stable.snapshots[0]
+    canonical = json.dumps(snap.serialize(), sort_keys=True,
+                           separators=(",", ":")).encode("utf-8")
+    assert snap.digest() == hashlib.sha256(canonical).hexdigest()
+    with pytest.raises(Exception):
+        stable.stable = False  # type: ignore[misc]      # frozen dataclass
+
+
+def test_matching_count_cap_and_length_mismatch_directions() -> None:
+    """Kills the enumeration-cap and length-guard survivors: a 3x3 fully-adjacent cluster has
+    six complete matchings and must report cap+1 == 3 exactly; BOTH length-mismatch directions
+    return 0 (never an exception, never a vacuous match)."""
+    cluster = tuple(_root(0.5 + i * 2.5e-4, 0.5 + i * 2.5e-4) for i in range(3))
+    assert count_complete_matchings(cluster, cluster, S._DEDUP_TOL) == 3
+    one = (_root(0.5, 0.5),)
+    assert count_complete_matchings(one, (), S._DEDUP_TOL) == 0
+    assert count_complete_matchings((), one, S._DEDUP_TOL) == 0
+
+
+def test_comparator_refuses_surplus_snapshots_and_positional_calls() -> None:
+    """Kills the input-guard survivors: FOUR snapshots raise (not only too few), and the
+    domain/tolerance parameters are keyword-only by contract."""
+    ok = _trio((S.NO_ROOT, []), (S.NO_ROOT, []), (S.NO_ROOT, []))
+    with pytest.raises(ValueError):
+        _compare(list(ok) + [ok[0]])
+    with pytest.raises(TypeError):
+        compare_registered_variants(tuple(ok), _pd(), S._DEDUP_TOL)  # type: ignore[misc,unused-ignore]
+
+
+def test_comparison_base_is_g0_for_status_and_mirror() -> None:
+    """Kills the base-anchor survivors (snapshots[0] -> [1]/[-1]): a trio where ONLY G0
+    disagrees — in status (same count, same coordinates) and separately in mirror relation —
+    must be unstable; a base anchored on G1/G2 would see agreement."""
+    x = [_root(0.62, 0.58)]
+    d = _compare(_trio((S.NON_IDENTIFIABLE, x), (S.IDENTIFIED, x), (S.IDENTIFIED, x)))
+    assert d.stable is False
+    assert d.disagreements == (
+        "STATUS_DISAGREEMENT[G0_BASELINE=NON_IDENTIFIABLE,G1_REGISTERED_VALIDATION=IDENTIFIED]",
+        "STATUS_DISAGREEMENT[G0_BASELINE=NON_IDENTIFIABLE,G2_REGISTERED_VALIDATION=IDENTIFIED]",
+    )
+    mirror = [_root(0.40, 0.40), _root(0.60, 0.60)]
+    drifted = [_root(0.4008, 0.4008), _root(0.6008, 0.6008)]
+    d2 = _compare(_trio((S.MULTIPLE_ROOTS, mirror), (S.MULTIPLE_ROOTS, drifted),
+                        (S.MULTIPLE_ROOTS, drifted)))
+    assert d2.stable is False
+    assert d2.disagreements == (
+        "MIRROR_RELATION_DISAGREEMENT[G0_BASELINE=ADMISSIBLE_MIRROR_PAIR,"
+        "G1_REGISTERED_VALIDATION=UNRELATED_MULTIPLE_ROOTS]",
+        "MIRROR_RELATION_DISAGREEMENT[G0_BASELINE=ADMISSIBLE_MIRROR_PAIR,"
+        "G2_REGISTERED_VALIDATION=UNRELATED_MULTIPLE_ROOTS]",
+    )
+
+
+def test_status_comparison_is_value_equality_not_identity_or_ordering() -> None:
+    """Kills the string-comparison survivors: equal-VALUE distinct-identity status strings are
+    agreement (both for ordinary statuses and for the all-refusal rule), and a status pair that
+    sorts lexicographically below the base is still a disagreement."""
+    x = [_root(0.62, 0.58)]
+    runtime_identified = "".join(["IDENT", "IFIED"])
+    d = _compare(_trio((S.IDENTIFIED, x), (runtime_identified, x), (S.IDENTIFIED, x)))
+    assert d.stable is True and d.disagreements == ()
+    runtime_refusal = "".join(["NON_", "IDENTIFIABLE"])
+    d2 = _compare(_trio((S.NON_IDENTIFIABLE, [_root(0.78, 0.50)]),
+                        (runtime_refusal, []),
+                        (S.NON_IDENTIFIABLE, [_root(0.7805, 0.5002)])))
+    assert d2.stable is True and d2.disagreements == ()
+    d3 = _compare(_trio((S.IDENTIFIED, x), (S.BOUNDARY_SOLUTION, x), (S.IDENTIFIED, x)))
+    assert d3.stable is False
+    assert d3.disagreements == (
+        "STATUS_DISAGREEMENT[G0_BASELINE=IDENTIFIED,"
+        "G1_REGISTERED_VALIDATION=BOUNDARY_SOLUTION]",)
+
+
+def test_pairwise_disagreements_are_exhaustive_and_direction_blind() -> None:
+    """Kills the pairwise-loop survivors (directional count comparisons, continue->break,
+    boundary direction, ambiguity thresholds): the EXACT disagreement tuples are pinned for a
+    both-direction count trio, an all-pairs-absent trio, a double-ambiguity trio away from the
+    mirror line, and a two-pair boundary trio."""
+    two = [_root(0.62, 0.58), _root(0.70, 0.66)]
+    three = two + [_root(0.55, 0.45)]
+    d = _compare(_trio((S.MULTIPLE_ROOTS, two), (S.MULTIPLE_ROOTS, three),
+                       (S.MULTIPLE_ROOTS, two)))
+    assert d.disagreements == (
+        "ROOT_COUNT_DISAGREEMENT[G0_BASELINE=2,G1_REGISTERED_VALIDATION=3]",
+        "ROOT_COUNT_DISAGREEMENT[G1_REGISTERED_VALIDATION=3,G2_REGISTERED_VALIDATION=2]",
+    )
+    d2 = _compare(_trio((S.IDENTIFIED, [_root(0.40, 0.40)]),
+                        (S.IDENTIFIED, [_root(0.55, 0.55)]),
+                        (S.IDENTIFIED, [_root(0.62, 0.58)])))
+    assert d2.disagreements == (
+        "LOCATION_MATCHING_ABSENT[G0_BASELINE,G1_REGISTERED_VALIDATION]",
+        "LOCATION_MATCHING_ABSENT[G0_BASELINE,G2_REGISTERED_VALIDATION]",
+        "LOCATION_MATCHING_ABSENT[G1_REGISTERED_VALIDATION,G2_REGISTERED_VALIDATION]",
+    )
+    g0 = [_root(0.7, 0.6), _root(0.7005, 0.6005)]
+    g1 = [_root(0.70025, 0.60025), _root(0.70075, 0.60075)]
+    d3 = _compare(_trio((S.MULTIPLE_ROOTS, g0), (S.MULTIPLE_ROOTS, g1),
+                        (S.MULTIPLE_ROOTS, g0)))
+    assert d3.disagreements == (
+        "LOCATION_MATCHING_AMBIGUOUS[G0_BASELINE,G1_REGISTERED_VALIDATION]",
+        "LOCATION_MATCHING_AMBIGUOUS[G0_BASELINE,G2_REGISTERED_VALIDATION]",
+        "LOCATION_MATCHING_AMBIGUOUS[G1_REGISTERED_VALIDATION,G2_REGISTERED_VALIDATION]",
+    )
+    plain = [_root(0.62, 0.58, boundary=False), _root(0.70, 0.66, boundary=False)]
+    flagged = [_root(0.62, 0.58, boundary=True), _root(0.70, 0.66, boundary=True)]
+    d4 = _compare(_trio((S.MULTIPLE_ROOTS, plain), (S.MULTIPLE_ROOTS, flagged),
+                        (S.MULTIPLE_ROOTS, plain)))
+    assert d4.disagreements == (
+        "BOUNDARY_FLAG_DISAGREEMENT[G0_BASELINE,G1_REGISTERED_VALIDATION]",
+        "BOUNDARY_FLAG_DISAGREEMENT[G1_REGISTERED_VALIDATION,G2_REGISTERED_VALIDATION]",
+    )
+
+
 # ---------------------------------------------------------------- §6/§9 wired identify fixtures
 @pytest.fixture(scope="module")
 def valley_result() -> S.IdentificationResult:
@@ -387,7 +520,7 @@ def test_10_2_stable_unique_root_is_byte_identical_to_v2(
 ) -> None:
     case = _golden_case(0.895558727, 0.399655852)
     r = S.identify(case["tw"], case["to"], Decimal(case["line"]), _FMT,
-                   domain=tuple(case["domain"]))  # type: ignore[arg-type]
+                   domain=tuple(case["domain"]))  # type: ignore[arg-type,unused-ignore]
     assert _got_dict(r) == case["out"]                    # G0 result retained byte-identically
     for solve in r.per_server:
         assert solve.stability is not None and solve.stability.stable is True
@@ -398,7 +531,7 @@ def test_10_2_stable_unique_root_is_byte_identical_to_v2(
 def test_10_3_stable_no_root_is_byte_identical_to_v2() -> None:
     case = _golden_case(0.5, 0.2)
     r = S.identify(case["tw"], case["to"], Decimal(case["line"]), _FMT,
-                   domain=tuple(case["domain"]))  # type: ignore[arg-type]
+                   domain=tuple(case["domain"]))  # type: ignore[arg-type,unused-ignore]
     assert _got_dict(r) == case["out"]
     assert r.status == S.NO_ROOT and r.roots == ()
     for solve in r.per_server:
@@ -408,7 +541,7 @@ def test_10_3_stable_no_root_is_byte_identical_to_v2() -> None:
 def test_10_4_stable_mirror_pair_is_byte_identical_to_v2() -> None:
     case = _golden_case(0.5, 0.583147184)
     r = S.identify(case["tw"], case["to"], Decimal(case["line"]), _FMT,
-                   domain=tuple(case["domain"]))  # type: ignore[arg-type]
+                   domain=tuple(case["domain"]))  # type: ignore[arg-type,unused-ignore]
     assert _got_dict(r) == case["out"]
     assert classify_mirror_relation(r.roots, _pd(), S._DEDUP_TOL) \
         is MirrorRelation.ADMISSIBLE_MIRROR_PAIR
@@ -423,7 +556,7 @@ def test_10_10_first_server_isolation_refuses_before_union() -> None:
     reach the public result."""
     case = _golden_case(0.999706441, 0.026266616)
     r = S.identify(case["tw"], case["to"], Decimal(case["line"]), _FMT,
-                   domain=tuple(case["domain"]))  # type: ignore[arg-type]
+                   domain=tuple(case["domain"]))  # type: ignore[arg-type,unused-ignore]
     sa, sb = r.per_server
     assert sa.a_serves_first is True and sb.a_serves_first is False
     # A: stable refusal agreement — the G0 solve retained byte-identically (V2 per_server pin)
