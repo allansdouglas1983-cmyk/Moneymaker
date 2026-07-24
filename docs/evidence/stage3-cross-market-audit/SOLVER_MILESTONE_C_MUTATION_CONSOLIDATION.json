@@ -1,0 +1,158 @@
+{
+ "approved_by": null,
+ "behavioural_survivors": 0,
+ "gate_6_transition_nonconvergence": {
+  "disclosure": "The wired transition loop lives in solver.py, whose module-wide mutation campaign was superseded (SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE.md) and is NOT resumed here per REV1 \u00a721. Its mutation evidence is deferred to the final consolidated solver packet after Milestone D.",
+  "evidence": "SOLVER_MILESTONE_C_DIFFERENTIAL.json \u2014 8/8 fixtures exact-equal finals with equal _residual call counts; all four termination reasons exercised (CONVERGED, BUDGET_EXHAUSTED at exactly 40 iterations raising nothing, STAGNANT, SINGULAR); golden oracle byte-identical post-wiring.",
+  "method": "FROZEN_LOOP_DIFFERENTIAL + GOLDEN (not cosmic-ray)"
+ },
+ "gate_definition_coverage": {
+  "covered_by_gates_1_to_5": 229,
+  "module_total": 229,
+  "note": "every mutation spec maps to a gate-1..5 definition; the two <module>-scope specs are the NewtonStep2 @dataclass(frozen=True) decorator mutants (frozen->False and decorator removal), attributed to gate 3 and killed by the frozen-contract test; newton_converged, inf_norm and serialize contain no mutable operators and so carry zero specs"
+ },
+ "hardening_rounds": 0,
+ "harness": "tools/run_hardened_mutation.sh (isolated_exec-wrapped; source restored + proven byte-identical to HEAD on exit; audited by tools/mutation_audit.py --require-clean).",
+ "micro_gates": [
+  {
+   "definitions": [
+    "newton_converged",
+    "residual_norm2_within_tolerance"
+   ],
+   "gate": 1,
+   "result": {
+    "killed": 18,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "convergence (residual-only, inclusive)"
+  },
+  {
+   "definitions": [
+    "iteration_is_permitted",
+    "next_iteration_index",
+    "_require_index"
+   ],
+   "gate": 2,
+   "result": {
+    "killed": 32,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "iteration budget (range semantics + increment + type refusal)"
+  },
+  {
+   "definitions": [
+    "propose_newton_step",
+    "NewtonStep2",
+    "validate",
+    "inf_norm",
+    "serialize",
+    "<module>"
+   ],
+   "gate": 3,
+   "result": {
+    "killed": 97,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "Newton step (exact 2x2 Cramer + NewtonStep2 contract)"
+  },
+  {
+   "definitions": [
+    "clamp_scalar",
+    "apply_step_clamped"
+   ],
+   "gate": 4,
+   "result": {
+    "killed": 38,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "clamp projection + full-step application (damping WITHDRAWN by REV1 \u00a71)"
+  },
+  {
+   "definitions": [
+    "is_stagnant",
+    "prefer_newton_candidate"
+   ],
+   "gate": 5,
+   "result": {
+    "killed": 44,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "stagnation + final grid-vs-Newton selection"
+  }
+ ],
+ "milestone": "STAGE3-0006C-C-REV1",
+ "per_definition": {
+  "<module>": {
+   "killed": 2,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "_require_index": {
+   "killed": 3,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "apply_step_clamped": {
+   "killed": 22,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "clamp_scalar": {
+   "killed": 16,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "is_stagnant": {
+   "killed": 37,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "iteration_is_permitted": {
+   "killed": 16,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "next_iteration_index": {
+   "killed": 13,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "prefer_newton_candidate": {
+   "killed": 7,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "propose_newton_step": {
+   "killed": 92,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "residual_norm2_within_tolerance": {
+   "killed": 18,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "validate": {
+   "killed": 3,
+   "nonnormal": 0,
+   "survived": 0
+  }
+ },
+ "section": "\u00a718/\u00a719 mutation consolidation (revised micro-gates)",
+ "session": {
+  "config": "docs/evidence/stage3-cross-market-audit/scripts/cr_solver_iteration.toml",
+  "killed": 229,
+  "module": "sport_tennis/coherence/solver_iteration.py",
+  "nonnormal": 0,
+  "survived": 0,
+  "total_specs": 229,
+  "untested": 0
+ },
+ "survivor_classes": {},
+ "unexplained_survivors": 0
+}
