@@ -83,14 +83,21 @@ def ref_solve_assignment(a_first: bool, fmt: MatchFormat, line: Decimal, tw: flo
         h = (hi - lo) / (n - 1)
         best_a, best_b = ca, cb
         best = _norm2(ref_residual(ca, cb, a_first, fmt, line, tw, to))
-        for _ in range(24):
-            for ia in range(5):
-                pa = min(max(best_a - h + h / 2 * ia, lo), hi)
-                for ib in range(5):
-                    pb = min(max(best_b - h + h / 2 * ib, lo), hi)
-                    v = _norm2(ref_residual(pa, pb, a_first, fmt, line, tw, to))
-                    if v < best:
-                        best, best_a, best_b = v, pa, pb
+        # adaptive walk-then-shrink: keep moving at the CURRENT scale until no improvement (this
+        # tracks the solver's narrow diagonal residual valley, which a fixed-shrink axis-aligned
+        # window cannot follow), then halve the scale. Bounded by the guard and the scale floor.
+        while h > 1e-9:
+            improved, guard = True, 0
+            while improved and guard < 80:
+                improved, guard = False, guard + 1
+                for ia in range(5):
+                    pa = min(max(best_a - h + h / 2 * ia, lo), hi)
+                    for ib in range(5):
+                        pb = min(max(best_b - h + h / 2 * ib, lo), hi)
+                        v = _norm2(ref_residual(pa, pb, a_first, fmt, line, tw, to))
+                        if v < best:
+                            best, best_a, best_b = v, pa, pb
+                            improved = True
             h *= 0.5
         if best <= _ROOT_TOL * _ROOT_TOL:
             jd = _jac_det(best_a, best_b, a_first, fmt, line, tw, to)

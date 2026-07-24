@@ -26,6 +26,11 @@ from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.match import match_distribution
 from sport_tennis.coherence.pmf import over_under
 from sport_tennis.coherence.root_dedup import deduplicate_roots
+from sport_tennis.coherence.rootset import (
+    classify_overall,
+    classify_per_solve,
+    within_boundary_tolerance,
+)
 from sport_tennis.coherence.solver_contracts import (
     Jacobian2x2,
     ResidualVector2,
@@ -248,26 +253,13 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
     for i, j in seeds:
         pa, pb, r2 = _refine(axis[i], axis[j], coarse_step, a_first, fmt, line, tw, to, lo, hi)
         if residual_norm2_within_tolerance(r2, _ROOT_TOL):
-            on_b = min(pa - lo, hi - pa, pb - lo, hi - pb) < _BOUNDARY_TOL
+            on_b = within_boundary_tolerance(pa, pb, lo, hi, _BOUNDARY_TOL)
             jd = _jacobian_det(pa, pb, a_first, fmt, line, tw, to)
             found.append(Root(pa, pb, a_first, r2 ** 0.5, jd, on_b))
 
     roots, ambiguous = _canonical_roots(found)
-    if ambiguous:
-        # a non-transitive tolerance chain: the root set is not well-defined (amendment §4.3)
-        status = NON_IDENTIFIABLE
-    elif not roots:
-        status = NO_ROOT
-    elif len(roots) > 1:
-        status = MULTIPLE_ROOTS
-    else:
-        r = roots[0]
-        if is_singular(r.jacobian_det, _JAC_TOL):
-            status = NON_IDENTIFIABLE
-        elif r.on_boundary:
-            status = BOUNDARY_SOLUTION
-        else:
-            status = IDENTIFIED
+    # Exhaustive per-assignment decision table (STAGE3-0006C-D-REV2 §16 seam; byte-identical).
+    status = classify_per_solve(ambiguous, roots, _JAC_TOL)
     return ServerSolve(a_serves_first=a_first, status=status, roots=roots)
 
 
@@ -283,30 +275,17 @@ def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: 
     sb = _solve_one(False, fmt, line, target_match_win_a, target_over, domain)
     per = (sa, sb)
 
-    # Degeneracy / multiplicity under EITHER serve assignment dominates.
-    if NON_IDENTIFIABLE in (sa.status, sb.status):
-        overall = NON_IDENTIFIABLE
-    elif MULTIPLE_ROOTS in (sa.status, sb.status):
-        overall = MULTIPLE_ROOTS
+    # Exhaustive identify-level decision table (STAGE3-0006C-D-REV2 §16 seam; byte-identical):
+    # degeneracy under either assignment dominates, then multiplicity, then the union path; the
+    # union pool matches the frozen behaviour (all per-solve roots on the degenerate branch,
+    # valid-solve roots otherwise); union ambiguity escalates to NON_IDENTIFIABLE; first-server
+    # sensitivity is flagged, never judged (founder-pending threshold).
+    if NON_IDENTIFIABLE in (sa.status, sb.status) or MULTIPLE_ROOTS in (sa.status, sb.status):
+        pool = [r for s in per for r in s.roots]
     else:
         valid = [s for s in per if s.status in (IDENTIFIED, BOUNDARY_SOLUTION)]
-        union, union_ambiguous = _canonical_roots([r for s in valid for r in s.roots])
-        if union_ambiguous:
-            # a cross-assignment tolerance chain: refusal dominates (amendment §4.3)
-            overall = NON_IDENTIFIABLE
-        elif not union:
-            overall = NO_ROOT
-        elif len(union) == 1:
-            overall = BOUNDARY_SOLUTION if union[0].on_boundary else IDENTIFIED
-        else:
-            # Serve assignments disagree on (p_a, p_b): first server matters here. The solver
-            # flags sensitivity; it does NOT judge materiality (founder-pending threshold).
-            overall = FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
-        return IdentificationResult(status=overall, roots=union, per_server=per,
-                                    domain=domain, line=line, fmt=fmt)
-
-    union, union_ambiguous = _canonical_roots([r for s in per for r in s.roots])
-    if union_ambiguous:
-        overall = NON_IDENTIFIABLE
+        pool = [r for s in valid for r in s.roots]
+    union, union_ambiguous = _canonical_roots(pool)
+    overall = classify_overall(sa.status, sb.status, union, union_ambiguous)
     return IdentificationResult(status=overall, roots=union, per_server=per,
                                 domain=domain, line=line, fmt=fmt)
