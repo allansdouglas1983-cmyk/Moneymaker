@@ -1,0 +1,189 @@
+{
+ "amendment": "STAGE3-0006C-D-A3 / CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1",
+ "approved_by": null,
+ "classified_changes": [
+  {
+   "class": "EXPECTED_STATUS_CHANGE_DISCRETISATION_REFUSAL",
+   "fixture": "identify line=22.5 domain=[0.35, 0.9] tw=0.999706441",
+   "new_roots": [
+    [
+     0.780146625,
+     0.50011761,
+     true,
+     2.4949e-05,
+     0.002154359,
+     false
+    ]
+   ],
+   "new_status": "NON_IDENTIFIABLE",
+   "old_roots": [
+    [
+     0.780146625,
+     0.50011761,
+     true,
+     2.4949e-05,
+     0.002154359,
+     false
+    ],
+    [
+     0.781808539,
+     0.501575356,
+     false,
+     5.3421e-05,
+     0.002335263,
+     false
+    ],
+    [
+     0.782844247,
+     0.502200513,
+     false,
+     8.7871e-05,
+     0.002354129,
+     false
+    ]
+   ],
+   "old_status": "NON_IDENTIFIABLE",
+   "per_server_stability": [
+    {
+     "a_serves_first": true,
+     "reason": null,
+     "stable": true,
+     "variant_counts": [
+      1,
+      1,
+      1
+     ],
+     "variant_statuses": [
+      "NON_IDENTIFIABLE",
+      "NON_IDENTIFIABLE",
+      "NON_IDENTIFIABLE"
+     ]
+    },
+    {
+     "a_serves_first": false,
+     "reason": "DISCRETISATION_UNSTABLE_ROOT_SET",
+     "stable": false,
+     "variant_counts": [
+      2,
+      0,
+      1
+     ],
+     "variant_statuses": [
+      "MULTIPLE_ROOTS",
+      "NON_IDENTIFIABLE",
+      "NON_IDENTIFIABLE"
+     ]
+    }
+   ]
+  },
+  {
+   "class": "EXPECTED_STATUS_CHANGE_DISCRETISATION_REFUSAL",
+   "fixture": "identify line=11.5 domain=[0.5, 0.7] tw=0.5",
+   "new_roots": [],
+   "new_status": "NON_IDENTIFIABLE",
+   "old_roots": [
+    [
+     0.5,
+     0.5,
+     true,
+     0.0,
+     0.0,
+     true
+    ],
+    [
+     0.566666667,
+     0.566666667,
+     true,
+     0.0,
+     0.0,
+     false
+    ],
+    [
+     0.582291667,
+     0.582291667,
+     false,
+     0.0,
+     0.0,
+     false
+    ],
+    [
+     0.625,
+     0.625,
+     true,
+     0.0,
+     0.0,
+     false
+    ],
+    [
+     0.641666667,
+     0.641666667,
+     true,
+     0.0,
+     0.0,
+     false
+    ],
+    [
+     0.696875,
+     0.696875,
+     false,
+     0.0,
+     0.0,
+     true
+    ],
+    [
+     0.699479167,
+     0.699479167,
+     true,
+     0.0,
+     0.0,
+     true
+    ]
+   ],
+   "old_status": "MULTIPLE_ROOTS",
+   "per_server_stability": [
+    {
+     "a_serves_first": true,
+     "reason": "DISCRETISATION_UNSTABLE_ROOT_SET",
+     "stable": false,
+     "variant_counts": [
+      5,
+      8,
+      4
+     ],
+     "variant_statuses": [
+      "MULTIPLE_ROOTS",
+      "MULTIPLE_ROOTS",
+      "MULTIPLE_ROOTS"
+     ]
+    },
+    {
+     "a_serves_first": false,
+     "reason": "DISCRETISATION_UNSTABLE_ROOT_SET",
+     "stable": false,
+     "variant_counts": [
+      4,
+      7,
+      4
+     ],
+     "variant_statuses": [
+      "MULTIPLE_ROOTS",
+      "MULTIPLE_ROOTS",
+      "MULTIPLE_ROOTS"
+     ]
+    }
+   ]
+  }
+ ],
+ "counts": {
+  "EXPECTED_STATUS_CHANGE_DISCRETISATION_REFUSAL": 2,
+  "UNCHANGED": 4,
+  "UNEXPECTED_CHANGE": 0
+ },
+ "dedup_unit_byte_identical_to_v2": true,
+ "derived_targets_identical": true,
+ "new_vintage": "SOLVER_GOLDEN_V3_DISCRETISATION_STABLE.json",
+ "new_vintage_sha256": "f21e2aa72c7d3f75810d3bdc98230af56c1fbcc9217eed5249238ac41f63f980",
+ "old_vintage": "SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED.json",
+ "old_vintage_sha256": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+ "unexpected_change_count": 0
+}
