@@ -1,0 +1,416 @@
+{
+ "amendment": "CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1",
+ "approved_by": null,
+ "directive": "STAGE3-0006C-D-A3",
+ "hardening_rounds": {
+  "max_rounds": 2,
+  "round_1": "commit 9a6112c \u2014 scan_variants G2 dedup/range/cell-width fixtures; discretisation_stability serialize/digest/frozen, matching cap + length mismatch, input guards, G0-anchored status/mirror, value-equality status, exhaustive direction-blind pairwise. 28 ds + 12 scan_variants survivors killed.",
+  "round_2": "commit 2d788f2 \u2014 two behavioural survivors killed tests-first, each proven by manual mutant application (test fails under the exact mutant) and byte-identical source restore: solver L269 (even-axis coarse step) and discretisation_stability L170 (exact-NON_IDENTIFIABLE all-refusal key).",
+  "rounds_used": 2
+ },
+ "harness": "cosmic-ray 8.4.6 via tools/run_hardened_mutation.sh (isolated_exec-wrapped, source-restore trap, git-filtered for the solver-wiring session)",
+ "modules": {
+  "discretisation_stability": "sport_tennis/coherence/discretisation_stability.py",
+  "scan_variants": "sport_tennis/coherence/scan_variants.py",
+  "solver_wiring": "sport_tennis/coherence/solver.py (A3-changed lines only, git-filtered vs 085f07c)"
+ },
+ "residual_equivalence_proof": {
+  "discretisation_stability_differential": "temp-module differential vs production over 4000 reachable trios per survivor (seed 20260724+i), comparing (stable, reason, disagreements): 0 observable diffs for every classified survivor.",
+  "scan_variants_enum": "CPython Enum members are singletons; Enum.__eq__ is identity, so is/==/!=/is-not are indistinguishable for every input."
+ },
+ "section": "\u00a715/\u00a716",
+ "session_interruption_note": "The scan_variants round-1 re-run agent tainted one session with a caught-and-killed detach; it reported a false L62 _g1_axis NumberReplacer survivor. Manual application of that exact mutant fails test_variant_axes_reproduce_a2_frozen_rules_exactly immediately (killed), and the clean final session (this packet's scan_variants db) records it KILLED. The solver-wiring session detached and died AFTER completing all 335 jobs (100%); its durable db was preserved and audited \u2014 no re-run performed (completion instruction pt 2).",
+ "sessions": {
+  "discretisation_stability": {
+   "abnormal_worker": 0,
+   "executed_normal": 178,
+   "git_filter_skipped": 0,
+   "killed": 164,
+   "session_sha256": "cf2508bffec588769f1f69e32a24ffa4a4005ad9f246f0fb24be9690ebfd3df1",
+   "survived": 14,
+   "total": 178,
+   "untested": 0
+  },
+  "scan_variants": {
+   "abnormal_worker": 0,
+   "executed_normal": 148,
+   "git_filter_skipped": 0,
+   "killed": 145,
+   "session_sha256": "423e300f6416c9caef40f2923219ec84c6867912fc9408e3ed186f172c2ad6d2",
+   "survived": 3,
+   "total": 148,
+   "untested": 0
+  },
+  "solver_wiring": {
+   "abnormal_worker": 0,
+   "executed_normal": 41,
+   "git_filter_skipped": 294,
+   "killed": 40,
+   "session_sha256": "abae982fb42dcf037e5678d248fac968580e7fbccca5ac7390f3f4f6b72fa109",
+   "survived": 1,
+   "total": 335,
+   "untested": 0
+  }
+ },
+ "survivor_packet": [
+  {
+   "approved_by": null,
+   "classification": "ENUM_IDENTITY_EQUIVALENT",
+   "definition": "variant_axis",
+   "job_id": "a3f4b7c8fb994aa1a47c1400e7f9e761",
+   "line": 85,
+   "occurrence": 0,
+   "operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "rationale": "variant is ScanVariant.G0_BASELINE -> ==: Enum members are singletons; Enum.__eq__ is identity, so is/== are indistinguishable for any input.",
+   "session": "scan_variants"
+  },
+  {
+   "approved_by": null,
+   "classification": "ENUM_IDENTITY_EQUIVALENT",
+   "definition": "variant_axis",
+   "job_id": "ea1057a69bee4a5f966dbc2cdf2d0326",
+   "line": 87,
+   "occurrence": 1,
+   "operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "rationale": "variant is ScanVariant.G1_REGISTERED_VALIDATION -> ==: enum-singleton identity.",
+   "session": "scan_variants"
+  },
+  {
+   "approved_by": null,
+   "classification": "ENUM_IDENTITY_EQUIVALENT",
+   "definition": "variant_axis",
+   "job_id": "31d6c40fd6964158b5fcbd8e08fc562f",
+   "line": 89,
+   "occurrence": 2,
+   "operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "rationale": "variant is ScanVariant.G2_REGISTERED_VALIDATION -> ==: enum-singleton identity.",
+   "session": "scan_variants"
+  },
+  {
+   "approved_by": null,
+   "classification": "INTEGER_IDENTITY_EQUIVALENT",
+   "definition": "_complete_matchings",
+   "job_id": "0c71a135011d43379152c588d2d27bd5",
+   "line": 106,
+   "occurrence": 0,
+   "operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "rationale": "len(left) != len(right) -> is not: the branch outcome depends only on integer equality; CPython caches these small lengths so is-not tracks !=. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "GUARD_DOMINATED_EQUIVALENT",
+   "definition": "recurse",
+   "job_id": "c1a6795a487a4ed9bbfd979f1d019e6a",
+   "line": 117,
+   "occurrence": 0,
+   "operator": "core/ReplaceComparisonOperator_Eq_GtE",
+   "rationale": "recurse: i == n -> i >= n. The recursion invariant guarantees 0 <= i <= n, so == and >= coincide on every reachable i. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "INTEGER_IDENTITY_EQUIVALENT",
+   "definition": "recurse",
+   "job_id": "56999d540b404161aa3d23456d93c128",
+   "line": 117,
+   "occurrence": 0,
+   "operator": "core/ReplaceComparisonOperator_Eq_Is",
+   "rationale": "recurse: i == n -> i is n. i and n are small ints (<= root count); CPython interns them, so is tracks ==. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "INTEGER_IDENTITY_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "8494372324364e9193b27107fe51b6de",
+   "line": 145,
+   "occurrence": 1,
+   "operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "rationale": "len(snapshots) != len(REGISTERED_VARIANT_ORDER) -> is not: small-int identity tracks !=. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "ENUM_IDENTITY_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "c3eed39bcac74b7093c8b049c169d6d9",
+   "line": 150,
+   "occurrence": 0,
+   "operator": "core/ReplaceComparisonOperator_IsNot_NotEq",
+   "rationale": "snap.variant is not variant -> !=: ScanVariant members are singletons; is-not/!= indistinguishable. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "GUARD_DOMINATED_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "2d00ccd594e24c20998311d04ac98455",
+   "line": 154,
+   "occurrence": 2,
+   "operator": "core/ReplaceComparisonOperator_NotEq_Gt",
+   "rationale": "len({s.a_serves_first for s in snapshots}) != 1 -> > 1. A set built from exactly three booleans always has size 1 or 2, never 0, so != 1 <=> > 1. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "IDEMPOTENT_SELF_COMPARISON_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "60d46bfe11b1409b98a21c880f1d911f",
+   "line": 160,
+   "occurrence": 11,
+   "operator": "core/NumberReplacer",
+   "rationale": "status loop snapshots[1:] -> [0:]. base = snapshots[0]; the extra iteration compares snapshots[0].status against base.status (equal), appending nothing. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "KILLED_TESTS_FIRST_ROUND_2",
+   "definition": "compare_registered_variants",
+   "job_id": "3cc2e20d89184859931cc7da5d421d38",
+   "line": 170,
+   "occurrence": 1,
+   "operator": "core/ReplaceComparisonOperator_Eq_GtE",
+   "rationale": "all(s.status == NON_IDENTIFIABLE.value) -> >=. BEHAVIOURAL over the function's type domain ('NO_ROOT' sorts above 'NON_IDENTIFIABLE'); killed tests-first at 2d788f2 by test_all_refusal_shortcut_keys_on_exact_non_identifiable_not_ordering. NOT a classified equivalent.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "INTEGER_IDENTITY_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "28c95f4a29e34c15b02e23e599fbb45d",
+   "line": 176,
+   "occurrence": 3,
+   "operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "rationale": "len(left.roots) != len(right.roots) -> is not: small-int identity tracks !=. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "GUARD_DOMINATED_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "5ca04eb465574035b7b24c4ce0c28058",
+   "line": 186,
+   "occurrence": 1,
+   "operator": "core/ReplaceComparisonOperator_Gt_NotEq",
+   "rationale": "len(matchings) > 1 -> != 1. Reached only after the not-matchings continue (line 182), so len(matchings) >= 1 here; > 1 <=> != 1. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "SINGLE_ELEMENT_INDEX_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "86638e8f13b64eccb43986ef3336ba93",
+   "line": 190,
+   "occurrence": 17,
+   "operator": "core/NumberReplacer",
+   "rationale": "enumerate(matchings[0]) -> matchings[-1]. Reached only when len(matchings) == 1 (the > 1 case continues at line 189), so matchings[0] is matchings[-1]. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "BOOLEAN_IDENTITY_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "1c3c0ec765de4c47a744395d768f7ec2",
+   "line": 191,
+   "occurrence": 4,
+   "operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "rationale": "on_boundary != on_boundary -> is not: on_boundary is a bool; True/False are singletons, so is-not tracks !=. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "IDEMPOTENT_SELF_COMPARISON_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "53f74f13668c43e2afd64b25d7610a69",
+   "line": 197,
+   "occurrence": 19,
+   "operator": "core/NumberReplacer",
+   "rationale": "mirror loop snapshots[1:] -> [0:]. base_mirror = classify(base.roots) with base = snapshots[0]; the extra iteration compares mirror(snapshots[0]) against itself, appending nothing. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "ENUM_IDENTITY_EQUIVALENT",
+   "definition": "compare_registered_variants",
+   "job_id": "885a8a73b88245a5ac22bad6e8816234",
+   "line": 199,
+   "occurrence": 1,
+   "operator": "core/ReplaceComparisonOperator_IsNot_NotEq",
+   "rationale": "mirror is not base_mirror -> !=: MirrorRelation members are singletons; is-not/!= indistinguishable. Differential: 0 diffs.",
+   "session": "discretisation_stability"
+  },
+  {
+   "approved_by": null,
+   "classification": "KILLED_TESTS_FIRST_ROUND_2",
+   "definition": "_solve_one_on_axis",
+   "job_id": "5f619a9f5e304eb7a9cf1c3200a13a90",
+   "line": 269,
+   "occurrence": 9,
+   "operator": "core/ReplaceBinaryOperator_Sub_BitXor",
+   "rationale": "coarse_step = (hi-lo)/(len(axis) - 1) -> ^ 1. BEHAVIOURAL: len^1 == len-1 only for odd axis lengths (the registered 13/25/13); an even axis distinguishes them. Killed tests-first at 2d788f2 by test_solve_on_axis_coarse_step_uses_cardinality_decrement_not_xor. NOT a classified equivalent.",
+   "session": "solver_wiring"
+  }
+ ],
+ "totals": {
+  "behavioural_survivors_remaining": 0,
+  "classified_exact_equivalents": 16,
+  "executed_mutants": 367,
+  "git_filter_skipped_solver": 294,
+  "killed_by_session_testsets": 349,
+  "killed_tests_first_round_2": 2,
+  "session_survivors": 18
+ },
+ "twelve_gates": [
+  {
+   "gate": 1,
+   "killed": 4,
+   "name": "constants_and_immutability",
+   "scope": {
+    "definition": "<module>",
+    "line_range": null
+   },
+   "session": "scan_variants",
+   "survived": 0
+  },
+  {
+   "gate": 2,
+   "killed": 33,
+   "name": "g1_nested_double_density",
+   "scope": {
+    "definition": "_g1_axis",
+    "line_range": null
+   },
+   "session": "scan_variants",
+   "survived": 0
+  },
+  {
+   "gate": 3,
+   "killed": 87,
+   "name": "g2_half_cell_phase_shift",
+   "scope": {
+    "definition": "_g2_axis",
+    "line_range": null
+   },
+   "session": "scan_variants",
+   "survived": 0
+  },
+  {
+   "gate": 4,
+   "killed": 21,
+   "name": "variant_axis_dispatch",
+   "scope": {
+    "definition": "variant_axis",
+    "line_range": null
+   },
+   "session": "scan_variants",
+   "survived": 3
+  },
+  {
+   "gate": 5,
+   "killed": 7,
+   "name": "module_reason_snapshot_structure",
+   "scope": {
+    "definition": "<module>",
+    "line_range": null
+   },
+   "session": "discretisation_stability",
+   "survived": 0
+  },
+  {
+   "gate": 6,
+   "killed": 4,
+   "name": "serialize_and_digest",
+   "scope": {
+    "definition": [
+     "serialize",
+     "digest"
+    ],
+    "line_range": null
+   },
+   "session": "discretisation_stability",
+   "survived": 0
+  },
+  {
+   "gate": 7,
+   "killed": 54,
+   "name": "matching_enumeration",
+   "scope": {
+    "definition": [
+     "_complete_matchings",
+     "recurse"
+    ],
+    "line_range": null
+   },
+   "session": "discretisation_stability",
+   "survived": 3
+  },
+  {
+   "gate": 8,
+   "killed": 33,
+   "name": "comparator_input_validation",
+   "scope": {
+    "definition": "compare_registered_variants",
+    "line_range": [
+     140,
+     156
+    ]
+   },
+   "session": "discretisation_stability",
+   "survived": 3
+  },
+  {
+   "gate": 9,
+   "killed": 22,
+   "name": "status_agreement_and_all_refusal",
+   "scope": {
+    "definition": "compare_registered_variants",
+    "line_range": [
+     157,
+     174
+    ]
+   },
+   "session": "discretisation_stability",
+   "survived": 2
+  },
+  {
+   "gate": 10,
+   "killed": 44,
+   "name": "pairwise_location_boundary_mirror_assembly",
+   "scope": {
+    "definition": "compare_registered_variants",
+    "line_range": [
+     175,
+     210
+    ]
+   },
+   "session": "discretisation_stability",
+   "survived": 6
+  },
+  {
+   "gate": 11,
+   "killed": 34,
+   "name": "solve_on_axis_scan_and_refine",
+   "scope": {
+    "definition": "_solve_one_on_axis",
+    "line_range": null
+   },
+   "session": "solver_wiring",
+   "survived": 1
+  },
+  {
+   "gate": 12,
+   "killed": 6,
+   "name": "stability_checked_solve_and_identify_union",
+   "scope": {
+    "definition": null,
+    "line_range": [
+     300,
+     340
+    ]
+   },
+   "session": "solver_wiring",
+   "survived": 0
+  }
+ ]
+}
