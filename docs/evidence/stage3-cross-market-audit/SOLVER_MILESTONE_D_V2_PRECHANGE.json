@@ -1,0 +1,45 @@
+{
+ "approved_by": null,
+ "commit": "13a05e4340438e356d4d58498778dbda7781340a",
+ "digests": {
+  "amendment_differential": "sha256:8f033194bad645c569d52089afc5012a90e3e3e66b882ee5f58e9f27c7366e07",
+  "amendment_registration": "sha256:473d4d7d56467e76fe56c17e18c2db2dddc5ef530abf1f4e47f36ef7cd458974",
+  "golden_v1": "sha256:e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+  "golden_v2": "sha256:f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+  "root_dedup.py": "sha256:8bf6c65031007f35d35328cd13643f40752199bedbec2931e15fc9acaea101f3",
+  "solver.py": "sha256:7ca8a5195a1fdaba2b84ccd8b756dbb0f68cd12ee727b6019272cc1666cab743",
+  "solver_contracts.py": "sha256:de9e9e72598bc2770f361a1e82e0a28bc51f5e73097e7a43f7aa916db031ce6d",
+  "solver_iteration.py": "sha256:90dd7ca6a804ca6f0221756db4066ed3335b7be2d27bc77205bd2d31eaea6dea",
+  "solver_scan.py": "sha256:79b37d67c1fd479d74dc967ab226edf63933c0e43c952906d1135b22acb75f8c"
+ },
+ "explicit_records": {
+  "amended_clustering_is_governing": "root_dedup.py is the single clustering implementation; Milestone D must BIND it, never reimplement or layer a second competing clustering.",
+  "mirror_not_used_in_dedup": "NO mirror machinery exists anywhere in the executable solver: mirror coordinates are never computed, never deduplicate roots, never choose a representative, never change SolverStatus. Mirror pairs surface only generically as multiple roots. Milestone D adds mirror DIAGNOSTICS only.",
+  "v2_golden_root_sets": "6 identify fixtures (IDENTIFIED x2, MULTIPLE_ROOTS x2, NON_IDENTIFIABLE, NO_ROOT) + dedup_unit section (chain refusal, close cluster, multi-root, first-server provenance, boundary metadata)"
+ },
+ "governing_rules": {
+  "ambiguity_refusal": "diameter >= _DEDUP_TOL -> component refused; reason AMBIGUOUS_ROOT_TOLERANCE_CHAIN; public NON_IDENTIFIABLE dominates",
+  "boundary_rule": "on_boundary = min(pa-lo, hi-pa, pb-lo, hi-pb) < _BOUNDARY_TOL (0.005), strict <, computed at root acceptance in _solve_one (inline expression, not yet a named seam)",
+  "canonical_root_order": "(rep.p_a, rep.p_b, rep.residual, cluster provenance digest)",
+  "component_construction": "root_dedup.connected_components \u2014 fingerprint-canonical union-find; order-invariant",
+  "component_diameter": "max pairwise Chebyshev; 0.0 singleton",
+  "coordinate_type": "float (p_a, p_b)",
+  "direct_edge": "root_dedup.have_edge: chebyshev(left,right) < _DEDUP_TOL (0.001), strict; coordinates only",
+  "exception_behaviour": "CoherenceMathError on invalid domain/targets/line, non-finite dedup candidates, and math-layer refusals; iteration exhaustion raises nothing",
+  "first_server_representation": "bool a_serves_first (True = A serves first); governed order for keys: A-first before B-first",
+  "first_server_union": "identify: NON_IDENTIFIABLE in per-statuses dominates, then MULTIPLE_ROOTS; else union = canonical dedup of roots from solves with status in {IDENTIFIED, BOUNDARY_SOLUTION}; union ambiguity -> NON_IDENTIFIABLE; 0 -> NO_ROOT; 1 -> BOUNDARY/IDENTIFIED; >1 -> FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD; degenerate branch unions ALL per-solve roots with the same ambiguity override",
+  "public_serialization": "NONE built into the result dataclasses; golden serializes ad hoc; digest material exists only at the dedup layer (RootDeduplicationResult.digest, sort_keys canonical json)",
+  "representative_key": "(residual, p_a, p_b, A-first-then-B, fingerprint) minimum",
+  "residual_norm": "Root.residual = sqrt(f1^2 + f2^2) at acceptance",
+  "root_count_rules": "per-solve: ambiguous->NON_IDENTIFIABLE; 0->NO_ROOT; >1->MULTIPLE_ROOTS; 1-> NON_IDENTIFIABLE if |jac|<_JAC_TOL else BOUNDARY_SOLUTION if on_boundary else IDENTIFIED"
+ },
+ "milestone": "STAGE3-0006C-D-REV2",
+ "section": "\u00a74 post-amendment pre-change freeze",
+ "types": {
+  "IdentificationResult": "frozen dataclass (status: str, roots: tuple[Root], per_server: (ServerSolve, ServerSolve), domain: (float, float), line: Decimal, fmt: MatchFormat) \u2014 the public result; no serialize/digest methods (golden serializes ad hoc)",
+  "Root": "frozen dataclass (p_a: float, p_b: float, a_serves_first: bool, residual: float = sqrt(r2) norm, jacobian_det: float, on_boundary: bool) \u2014 the current RootCandidate; no validate/serialize/digest methods of its own; fingerprint provided by root_dedup.candidate_fingerprint (sha256 over float.hex fields)",
+  "RootCluster": "frozen (representative: Root, members: tuple[Root] fingerprint-ordered, diameter: float, provenance_digest: str) + serialize()",
+  "RootDeduplicationResult": "frozen (clusters canonically ordered, ambiguous_components, reason: DedupReason|None) + ambiguous/representatives()/serialize()/digest()",
+  "ServerSolve": "frozen dataclass (a_serves_first: bool, status: str, roots: tuple[Root])"
+ }
+}
