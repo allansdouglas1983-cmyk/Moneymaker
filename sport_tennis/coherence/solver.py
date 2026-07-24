@@ -32,6 +32,17 @@ from sport_tennis.coherence.solver_contracts import (
     validate_domain,
     validate_targets,
 )
+from sport_tennis.coherence.solver_iteration import (
+    apply_step_clamped,
+    clamp_scalar,
+    is_stagnant,
+    iteration_is_permitted,
+    newton_converged,
+    next_iteration_index,
+    prefer_newton_candidate,
+    propose_newton_step,
+    residual_norm2_within_tolerance,
+)
 from sport_tennis.coherence.solver_scan import (
     build_scan_axis,
     is_singular,
@@ -50,8 +61,9 @@ _CLUSTER_R = 2            # coarse-index radius within which seeds share one ref
 _REFINE_LEVELS = 6        # nested-grid pre-polish depth (bring the seed onto the valley)
 _REFINE_K = 5             # refinement window nodes per axis
 _REFINE_SHRINK = 0.5      # window half-width shrink per level
-_NEWTON_ITERS = 40        # bounded damped-Newton polish iterations
+_NEWTON_ITERS = 40        # bounded undamped clamp-projected Newton polish iterations
 _NEWTON_SINGULAR = 1e-10  # |det J| below which Newton cannot step (leaves the grid estimate)
+_STAGNATION_TOL = 1e-15   # movement strictly below this on BOTH axes stops the Newton polish
 _ROOT_TOL = 1e-4          # max per-equation residual for a point to count as a root
 _DEDUP_TOL = 1e-3         # max-norm distance below which two roots are the same point
 _JAC_EPS = 1e-3           # central-difference step for the identification Jacobian
@@ -115,7 +127,9 @@ def _validate_domain(domain: tuple[float, float]) -> None:
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
-    return lo if x < lo else hi if x > hi else x
+    # Thin adapter over the closed clamp seam (STAGE3-0006C-C); semantics byte-identical, and the
+    # existing direct pins (test_solver_units_fast.test_clamp_exact) are unchanged.
+    return clamp_scalar(x, lo, hi)
 
 
 def _residual(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line: Decimal,
@@ -150,28 +164,29 @@ def _refine(ca: float, cb: float, h: float, a_first: bool, fmt: MatchFormat, lin
         h *= _REFINE_SHRINK
         step = 2.0 * h / (_REFINE_K - 1)
 
-    # Newton polish: a deterministic bounded 2-D root solve on F=(F1,F2) using the numeric
-    # Jacobian. Converges precisely in shallow valleys where the nested grid stalls; if the
-    # Jacobian is singular (a degenerate/flat direction) it cannot step and the grid estimate is
-    # kept for classification.
+    # Newton polish (STAGE3-0006C-C seams): a deterministic bounded UNDAMPED clamp-projected
+    # Newton iteration on F=(F1,F2) using the numeric Jacobian. Converges precisely in shallow
+    # valleys where the nested grid stalls; if the Jacobian is singular (a degenerate/flat
+    # direction) it cannot step and the grid estimate is kept for classification. Each full step
+    # is taken unconditionally after clamp projection; the only in-loop terminations are
+    # convergence, singularity and stagnation, and the polished point replaces the grid point only
+    # on strict final improvement.
     pa, pb = best_a, best_b
-    for _ in range(_NEWTON_ITERS):
-        f1, f2 = _residual(pa, pb, a_first, fmt, line, tw, to)
-        if f1 * f1 + f2 * f2 <= _ROOT_TOL * _ROOT_TOL:
+    it = 0
+    while iteration_is_permitted(it, _NEWTON_ITERS):
+        res = ResidualVector2(*_residual(pa, pb, a_first, fmt, line, tw, to))
+        if newton_converged(res, _ROOT_TOL):
             break
         jac = _jacobian_matrix(pa, pb, a_first, fmt, line, tw, to)
-        d11, d21, d12, d22 = jac.d_mo_d_a, jac.d_tg_d_a, jac.d_mo_d_b, jac.d_tg_d_b
-        det = jac.determinant()
-        if is_singular(det, _NEWTON_SINGULAR):
+        if is_singular(jac.determinant(), _NEWTON_SINGULAR):
             break
-        da = (d22 * f1 - d12 * f2) / det
-        db = (-d21 * f1 + d11 * f2) / det
-        na, nb = _clamp(pa - da, lo, hi), _clamp(pb - db, lo, hi)
-        if abs(na - pa) < 1e-15 and abs(nb - pb) < 1e-15:
+        na, nb = apply_step_clamped(pa, pb, propose_newton_step(res, jac), lo, hi)
+        if is_stagnant(pa, pb, na, nb, _STAGNATION_TOL):
             break
         pa, pb = na, nb
+        it = next_iteration_index(it)
     newton_r = _r2(_residual(pa, pb, a_first, fmt, line, tw, to))
-    if newton_r < best_r:
+    if prefer_newton_candidate(newton_r, best_r):
         return pa, pb, newton_r
     return best_a, best_b, best_r
 
@@ -230,7 +245,7 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
     found: list[Root] = []
     for i, j in seeds:
         pa, pb, r2 = _refine(axis[i], axis[j], coarse_step, a_first, fmt, line, tw, to, lo, hi)
-        if r2 <= _ROOT_TOL * _ROOT_TOL:
+        if residual_norm2_within_tolerance(r2, _ROOT_TOL):
             on_b = min(pa - lo, hi - pa, pb - lo, hi - pb) < _BOUNDARY_TOL
             jd = _jacobian_det(pa, pb, a_first, fmt, line, tw, to)
             found.append(Root(pa, pb, a_first, r2 ** 0.5, jd, on_b))
