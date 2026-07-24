@@ -128,6 +128,49 @@ def test_variant_axes_reproduce_a2_artifact_axes_exactly() -> None:
         assert variant_axis(variant, _LO, _HI) == frozen["axis"], variant
 
 
+def test_g2_dedup_guard_boundary_and_duplicate_semantics() -> None:
+    """§15 hardening round 1 (scan_variants gate): the A2 G2 rule's deterministic duplicate
+    guard — `shifted not in out and shifted != g0[-1]` — is inert on well-spaced odd-length
+    production axes, so its mutants survive the axis-equality pins. These direct unit fixtures
+    make every branch observable: boundary collision, duplicate midpoint, interior duplicate,
+    unsorted overshoot, midpoint colliding with a non-terminal node."""
+    from sport_tennis.coherence.scan_variants import _g2_axis
+
+    # boundary collision: the shifted value equals the terminal node and must be dropped
+    # (kills !=-><=, is-not identity, g0[0]-anchor mutants)
+    assert _g2_axis([0.0, 1.0, 1.0]) == [0.0, 1.0]
+    # midpoint equal to g0[1] but not the terminal node stays (kills the g0[+1] anchor mutant)
+    assert _g2_axis([0.0, 0.25, 1.0, 1.0]) == [0.0, 0.625, 1.0]
+    # interior duplicate cell: shifted equals g0[-2], NOT the terminal node — must stay
+    # (kills the g0[~1]/g0[-2] anchor mutants)
+    assert _g2_axis([0.2, 0.6, 0.6, 1.0]) == [0.2, 0.6, 0.8, 1.0]
+    # duplicate midpoint already in out: dropped by the membership clause alone
+    # (kills the and->or mutant, which would append the duplicate)
+    assert _g2_axis([0.0, 1.0, 0.5, 1.0]) == [0.0, 0.75, 1.0]
+    # unsorted overshoot: shifted greater than the terminal node still kept when unequal
+    # (kills the !=->< ordering mutant)
+    assert _g2_axis([0.0, 0.8, 1.2, 0.5]) == [0.0, 1.0, 0.85, 0.5]
+
+
+def test_g2_interior_range_is_length_arithmetic_not_parity_trick() -> None:
+    """§15 hardening round 1: `range(1, len(g0) - 1)` — the ^1 mutant coincides with -1 only
+    for odd lengths (every production axis is 13 nodes); an even-length direct fixture makes
+    them diverge (the mutant reads past the end)."""
+    from sport_tennis.coherence.scan_variants import _g2_axis
+
+    assert _g2_axis([0.0, 0.25, 0.5, 1.0]) == [0.0, 0.375, 0.75, 1.0]
+
+
+def test_g2_cell_width_is_subtraction_not_modulo() -> None:
+    """§15 hardening round 1: on every equally spaced lo>0 axis the float modulo
+    g0[i+1] % g0[i] coincides with subtraction (g0[i+1] < 2*g0[i] throughout), so the Sub->Mod
+    mutant survives the axis pins; a direct fixture with g0[i+1] >= 2*g0[i] separates them."""
+    from sport_tennis.coherence.scan_variants import _g2_axis
+
+    # subtraction: 0.2 + (0.9-0.2)/2 = 0.55; the modulo mutant gives 0.2 + (0.9%0.2)/2 = 0.25
+    assert _g2_axis([0.1, 0.2, 0.9]) == [0.1, 0.55, 0.9]
+
+
 def test_variant_definitions_pin_the_registration() -> None:
     reg = yaml.safe_load(_AMENDMENT_YAML.read_text())["registered_scan_variants"]
     by_name = {v["name"]: v for v in reg["validation"]}
