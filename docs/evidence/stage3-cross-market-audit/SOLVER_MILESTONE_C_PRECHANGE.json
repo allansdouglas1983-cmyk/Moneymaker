@@ -1,0 +1,57 @@
+{
+ "approved_by": null,
+ "commit": "383e1e82508871c0271534aba008beec12a13601",
+ "convergence_constants": {
+  "_BOUNDARY_TOL": 0.005,
+  "_DEDUP_TOL": 0.001,
+  "_JAC_TOL": 0.005,
+  "_NEWTON_SINGULAR": 1e-10,
+  "_ROOT_TOL": 0.0001
+ },
+ "digests": {
+  "golden_oracle": "sha256:e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+  "solver.py": "sha256:2fe4c2289753b92045ad5f8c8a422988598663608423d4a16a130129e16d85c2",
+  "solver_contracts.py": "sha256:de9e9e72598bc2770f361a1e82e0a28bc51f5e73097e7a43f7aa916db031ce6d",
+  "solver_scan.py": "sha256:79b37d67c1fd479d74dc967ab226edf63933c0e43c952906d1135b22acb75f8c"
+ },
+ "emitted_solver_status_values": [
+  "BOUNDARY_SOLUTION",
+  "FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD",
+  "IDENTIFIED",
+  "MULTIPLE_ROOTS",
+  "NON_IDENTIFIABLE",
+  "NO_ROOT"
+ ],
+ "iteration_constants": {
+  "_NEWTON_ITERS": 40,
+  "_REFINE_K": 5,
+  "_REFINE_LEVELS": 6,
+  "_REFINE_SHRINK": 0.5
+ },
+ "milestone": "STAGE3-0006C-C",
+ "newton_polish_semantics": {
+  "convergence_rule": "f1*f1 + f2*f2 <= _ROOT_TOL * _ROOT_TOL  (residual 2-norm-squared, INCLUSIVE <=, residual-only, checked at loop TOP before stepping)",
+  "convergence_uses_and_or": "n/a (single residual-norm scalar comparison, no AND/OR)",
+  "convergence_uses_step_norm": false,
+  "final_selection": "newton_r = _r2(_residual(pa,pb,...)); return (pa,pb,newton_r) if newton_r < best_r else (best_a,best_b,best_r)  (strict <; the ONLY residual-improvement comparison; a FINAL selection, not step gating)",
+  "iteration_loop": "for _ in range(_NEWTON_ITERS) -> counter starts 0, increments +1, cap _NEWTON_ITERS=40; the loop index is UNUSED in any decision",
+  "newton_step": "da = (d22*f1 - d12*f2)/det ; db = (-d21*f1 + d11*f2)/det  (exact 2x2 solve; d11=d_mo_d_a, d21=d_tg_d_a, d12=d_mo_d_b, d22=d_tg_d_b)",
+  "non_convergence_behaviour": "loop simply ends after _NEWTON_ITERS; NO exception is raised; the point becomes a Root only if r2 <= _ROOT_TOL^2 in _solve_one, else contributes nothing",
+  "singularity_break": "is_singular(det, _NEWTON_SINGULAR) -> break (Milestone-B seam; leaves grid estimate)",
+  "stagnation_break": "if abs(na - pa) < 1e-15 and abs(nb - pb) < 1e-15: break  (movement termination; AND; strict <; threshold 1e-15)",
+  "start_point": "grid refinement result (best_a, best_b)",
+  "state_update": "pa, pb = na, nb  (UNCONDITIONAL; the clamped full step is always taken; there is NO per-step residual-improvement acceptance)",
+  "step_application": "na, nb = _clamp(pa - da, lo, hi), _clamp(pb - db, lo, hi)  -> full step (factor 1.0), then PROJECTED to [lo,hi] by _clamp"
+ },
+ "non_convergence_raises_exception": false,
+ "not_used_findings": {
+  "DAMPING_SCHEDULE_NOT_USED": "The Newton step is applied at factor 1.0 (line 169: pa - da). There is no damping factor, no damping schedule, no maximum_damping_attempts anywhere in _refine. Directive \u00a79/\u00a710 damping machinery does not exist.",
+  "DOMAIN_HANDLING_IS_CLAMP_PROJECTION": "The current domain behaviour is SILENT CLAMPING / projection (line 169 _clamp(p - d, lo, hi)), NOT a reject-out-of-domain predicate. Directive \u00a711's 'no silent clamping, no projection' predicate is NOT the current behaviour; preserving current behaviour means preserving the clamp. A domain-membership predicate (ParameterDomain.contains) exists as a Milestone-A contract but is NOT used in the Newton loop.",
+  "ITERATION_TRANSITION_MULTI_FACTOR_NOT_USED": "There is no ordered damping-factor line search (directive \u00a713). Each iteration computes one full step and takes it.",
+  "MAX_DAMPING_ATTEMPTS_NOT_USED": "No damping attempts exist; there is a single unconditional full step per iteration.",
+  "STEP_ACCEPTANCE_BY_IMPROVEMENT_NOT_USED": "The clamped full step is accepted UNCONDITIONALLY each iteration (line 172). There is no per-step ACCEPT/REJECT decision and no residual-improvement gate within the loop. The only improvement comparison is the FINAL Newton-vs-grid selection (line 174). Directive \u00a712 reasons REJECT_NO_IMPROVEMENT / REJECT_OUT_OF_DOMAIN / REJECT_NONFINITE / REJECT_NO_MOVEMENT do not correspond to current per-step behaviour (movement is a loop-break, not a reject).",
+  "STEP_TOLERANCE_NOT_USED": "Convergence (line 160) uses residual norm ONLY. The movement break (line 170) is a stagnation TERMINATION, not a step-tolerance convergence-success criterion. No step_tolerance participates in convergence. Per directive \u00a71/\u00a75.1/\u00a76: recorded, NOT added."
+ },
+ "section": "\u00a73 pre-change freeze",
+ "semantic_model_divergence": "The directive (\u00a79/\u00a710/\u00a712/\u00a713/\u00a718-gate-4) describes a DAMPED Newton LINE-SEARCH with per-step improvement acceptance. The actual solver is an UNDAMPED, CLAMPED Newton polish with residual-only inclusive convergence, a stagnation break, the Milestone-B singularity break, and a final grid-vs-Newton selection. The genuinely-present seams (convergence, iteration budget, Newton step, domain-clamp, stagnation, final selection) are extractable byte-identically; the damping / step-acceptance-by-improvement / multi-factor-transition seams have NO code to extract and are recorded NOT_USED per the directive's own conditional language. This is NOT drift introduced by the refactor; it is the pre-existing algorithm, frozen here before any edit."
+}
