@@ -1,6 +1,6 @@
 {
  "approved_by": null,
- "commit": "383e1e82508871c0271534aba008beec12a13601",
+ "commit": "9a019f928cc98a5ee1198270d11a00c47aacfe32",
  "convergence_constants": {
   "_BOUNDARY_TOL": 0.005,
   "_DEDUP_TOL": 0.001,
@@ -22,13 +22,20 @@
   "NON_IDENTIFIABLE",
   "NO_ROOT"
  ],
+ "frozen_source_commit": "383e1e82508871c0271534aba008beec12a13601",
+ "incidental_behaviour": {
+  "clamp_nan_passthrough": "_clamp(NaN, lo, hi) returns NaN (both strict comparisons are False). Frozen as-is.",
+  "clamp_signed_zero": "_clamp uses strict comparisons (x < lo, x > hi); an input exactly equal to a bound is returned AS THE INPUT OBJECT (e.g. -0.0 at a 0.0 bound stays -0.0). Frozen as-is.",
+  "nan_residual_never_converges": "A NaN residual makes the inclusive comparison False, so iteration continues; no NONFINITE branch exists. Frozen as-is.",
+  "newton_iters_comment": "The _NEWTON_ITERS comment reads 'bounded damped-Newton polish iterations' \u2014 misleading prose (the polish is undamped). REV1 \u00a72 authorises correcting this comment only; recorded here pre-correction."
+ },
  "iteration_constants": {
   "_NEWTON_ITERS": 40,
   "_REFINE_K": 5,
   "_REFINE_LEVELS": 6,
   "_REFINE_SHRINK": 0.5
  },
- "milestone": "STAGE3-0006C-C",
+ "milestone": "STAGE3-0006C-C-REV1",
  "newton_polish_semantics": {
   "convergence_rule": "f1*f1 + f2*f2 <= _ROOT_TOL * _ROOT_TOL  (residual 2-norm-squared, INCLUSIVE <=, residual-only, checked at loop TOP before stepping)",
   "convergence_uses_and_or": "n/a (single residual-norm scalar comparison, no AND/OR)",
@@ -45,13 +52,15 @@
  },
  "non_convergence_raises_exception": false,
  "not_used_findings": {
-  "DAMPING_SCHEDULE_NOT_USED": "The Newton step is applied at factor 1.0 (line 169: pa - da). There is no damping factor, no damping schedule, no maximum_damping_attempts anywhere in _refine. Directive \u00a79/\u00a710 damping machinery does not exist.",
-  "DOMAIN_HANDLING_IS_CLAMP_PROJECTION": "The current domain behaviour is SILENT CLAMPING / projection (line 169 _clamp(p - d, lo, hi)), NOT a reject-out-of-domain predicate. Directive \u00a711's 'no silent clamping, no projection' predicate is NOT the current behaviour; preserving current behaviour means preserving the clamp. A domain-membership predicate (ParameterDomain.contains) exists as a Milestone-A contract but is NOT used in the Newton loop.",
-  "ITERATION_TRANSITION_MULTI_FACTOR_NOT_USED": "There is no ordered damping-factor line search (directive \u00a713). Each iteration computes one full step and takes it.",
-  "MAX_DAMPING_ATTEMPTS_NOT_USED": "No damping attempts exist; there is a single unconditional full step per iteration.",
-  "STEP_ACCEPTANCE_BY_IMPROVEMENT_NOT_USED": "The clamped full step is accepted UNCONDITIONALLY each iteration (line 172). There is no per-step ACCEPT/REJECT decision and no residual-improvement gate within the loop. The only improvement comparison is the FINAL Newton-vs-grid selection (line 174). Directive \u00a712 reasons REJECT_NO_IMPROVEMENT / REJECT_OUT_OF_DOMAIN / REJECT_NONFINITE / REJECT_NO_MOVEMENT do not correspond to current per-step behaviour (movement is a loop-break, not a reject).",
-  "STEP_TOLERANCE_NOT_USED": "Convergence (line 160) uses residual norm ONLY. The movement break (line 170) is a stagnation TERMINATION, not a step-tolerance convergence-success criterion. No step_tolerance participates in convergence. Per directive \u00a71/\u00a75.1/\u00a76: recorded, NOT added."
+  "DAMPING_FACTOR_NOT_USED": "No damping factor exists; the implicit step multiplier is the constant 1.0 with no representation in code.",
+  "DAMPING_SCHEDULE_NOT_USED": "There is no damping schedule anywhere in _refine. The Newton step is applied once per iteration at factor 1.0 (line 169: pa - da).",
+  "DOMAIN_HANDLING_IS_CLAMP_PROJECTION": "The current domain behaviour is SILENT CLAMPING / projection (line 169 _clamp(p - d, lo, hi)), NOT a reject-out-of-domain predicate. Preserving current behaviour means preserving the clamp. ParameterDomain.contains exists as a Milestone-A contract but is NOT used in the Newton loop.",
+  "FIRST_ACCEPTED_FACTOR_POLICY_NOT_USED": "With no damping factors there is no first-accepted-factor policy to preserve.",
+  "MAXIMUM_DAMPING_ATTEMPTS_NOT_USED": "No damping attempts exist; there is a single unconditional full step per iteration.",
+  "MULTI_FACTOR_LINE_SEARCH_NOT_USED": "There is no ordered damping-factor line search. Each iteration computes one full step and takes it.",
+  "PER_STEP_IMPROVEMENT_ACCEPTANCE_NOT_USED": "The clamped full step is accepted UNCONDITIONALLY each iteration (line 172). There is no per-step ACCEPT/REJECT decision and no residual-improvement gate within the loop. The only improvement comparison is the FINAL grid-versus-Newton selection (line 174, strict <).",
+  "STEP_TOLERANCE_NOT_USED": "Convergence (line 160) uses residual norm ONLY. The movement break (line 170) is a stagnation TERMINATION, not a step-tolerance convergence-success criterion. No step_tolerance participates in convergence. Recorded, NOT added."
  },
- "section": "\u00a73 pre-change freeze",
+ "section": "\u00a73/\u00a75 pre-change freeze (amended under REV1; supersedes the STAGE3-0006C-C freeze labels in place \u2014 the frozen solver sources are unchanged and their digests below are identical to the original freeze at commit 383e1e8)",
  "semantic_model_divergence": "The directive (\u00a79/\u00a710/\u00a712/\u00a713/\u00a718-gate-4) describes a DAMPED Newton LINE-SEARCH with per-step improvement acceptance. The actual solver is an UNDAMPED, CLAMPED Newton polish with residual-only inclusive convergence, a stagnation break, the Milestone-B singularity break, and a final grid-vs-Newton selection. The genuinely-present seams (convergence, iteration budget, Newton step, domain-clamp, stagnation, final selection) are extractable byte-identically; the damping / step-acceptance-by-improvement / multi-factor-transition seams have NO code to extract and are recorded NOT_USED per the directive's own conditional language. This is NOT drift introduced by the refactor; it is the pre-existing algorithm, frozen here before any edit."
 }

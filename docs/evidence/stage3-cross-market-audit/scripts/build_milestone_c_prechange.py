@@ -25,9 +25,12 @@ def sha256_file(p: str) -> str:
 commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
 
 freeze = {
-    "milestone": "STAGE3-0006C-C",
-    "section": "§3 pre-change freeze",
+    "milestone": "STAGE3-0006C-C-REV1",
+    "section": "§3/§5 pre-change freeze (amended under REV1; supersedes the STAGE3-0006C-C freeze "
+               "labels in place — the frozen solver sources are unchanged and their digests below "
+               "are identical to the original freeze at commit 383e1e8)",
     "commit": commit,
+    "frozen_source_commit": "383e1e82508871c0271534aba008beec12a13601",
     "digests": {
         "solver.py": sha256_file("sport_tennis/coherence/solver.py"),
         "solver_contracts.py": sha256_file("sport_tennis/coherence/solver_contracts.py"),
@@ -74,33 +77,44 @@ freeze = {
                                      "raised; the point becomes a Root only if r2 <= _ROOT_TOL^2 "
                                      "in _solve_one, else contributes nothing",
     },
-    # ---- directive-assumed constructs that DO NOT EXIST (recorded, never added) --------------
+    # ---- REV1 §1 descriptive findings: constructs that DO NOT EXIST (recorded, never added,
+    # ---- never given placeholder production fields) ------------------------------------------
     "not_used_findings": {
         "STEP_TOLERANCE_NOT_USED": "Convergence (line 160) uses residual norm ONLY. The movement "
                                    "break (line 170) is a stagnation TERMINATION, not a "
                                    "step-tolerance convergence-success criterion. No step_tolerance "
-                                   "participates in convergence. Per directive §1/§5.1/§6: recorded, "
-                                   "NOT added.",
-        "DAMPING_SCHEDULE_NOT_USED": "The Newton step is applied at factor 1.0 (line 169: pa - da). "
-                                     "There is no damping factor, no damping schedule, no "
-                                     "maximum_damping_attempts anywhere in _refine. Directive §9/§10 "
-                                     "damping machinery does not exist.",
-        "MAX_DAMPING_ATTEMPTS_NOT_USED": "No damping attempts exist; there is a single unconditional "
-                                         "full step per iteration.",
-        "STEP_ACCEPTANCE_BY_IMPROVEMENT_NOT_USED": "The clamped full step is accepted "
+                                   "participates in convergence. Recorded, NOT added.",
+        "DAMPING_SCHEDULE_NOT_USED": "There is no damping schedule anywhere in _refine. The Newton "
+                                     "step is applied once per iteration at factor 1.0 (line 169: "
+                                     "pa - da).",
+        "DAMPING_FACTOR_NOT_USED": "No damping factor exists; the implicit step multiplier is the "
+                                   "constant 1.0 with no representation in code.",
+        "MAXIMUM_DAMPING_ATTEMPTS_NOT_USED": "No damping attempts exist; there is a single "
+                                             "unconditional full step per iteration.",
+        "MULTI_FACTOR_LINE_SEARCH_NOT_USED": "There is no ordered damping-factor line search. Each "
+                                             "iteration computes one full step and takes it.",
+        "PER_STEP_IMPROVEMENT_ACCEPTANCE_NOT_USED": "The clamped full step is accepted "
             "UNCONDITIONALLY each iteration (line 172). There is no per-step ACCEPT/REJECT decision "
             "and no residual-improvement gate within the loop. The only improvement comparison is "
-            "the FINAL Newton-vs-grid selection (line 174). Directive §12 reasons "
-            "REJECT_NO_IMPROVEMENT / REJECT_OUT_OF_DOMAIN / REJECT_NONFINITE / REJECT_NO_MOVEMENT do "
-            "not correspond to current per-step behaviour (movement is a loop-break, not a reject).",
-        "ITERATION_TRANSITION_MULTI_FACTOR_NOT_USED": "There is no ordered damping-factor line "
-            "search (directive §13). Each iteration computes one full step and takes it.",
+            "the FINAL grid-versus-Newton selection (line 174, strict <).",
+        "FIRST_ACCEPTED_FACTOR_POLICY_NOT_USED": "With no damping factors there is no "
+                                                 "first-accepted-factor policy to preserve.",
         "DOMAIN_HANDLING_IS_CLAMP_PROJECTION": "The current domain behaviour is SILENT CLAMPING / "
             "projection (line 169 _clamp(p - d, lo, hi)), NOT a reject-out-of-domain predicate. "
-            "Directive §11's 'no silent clamping, no projection' predicate is NOT the current "
-            "behaviour; preserving current behaviour means preserving the clamp. A domain-membership "
-            "predicate (ParameterDomain.contains) exists as a Milestone-A contract but is NOT used "
-            "in the Newton loop.",
+            "Preserving current behaviour means preserving the clamp. ParameterDomain.contains "
+            "exists as a Milestone-A contract but is NOT used in the Newton loop.",
+    },
+    "incidental_behaviour": {
+        "clamp_signed_zero": "_clamp uses strict comparisons (x < lo, x > hi); an input exactly "
+            "equal to a bound is returned AS THE INPUT OBJECT (e.g. -0.0 at a 0.0 bound stays "
+            "-0.0). Frozen as-is.",
+        "clamp_nan_passthrough": "_clamp(NaN, lo, hi) returns NaN (both strict comparisons are "
+            "False). Frozen as-is.",
+        "nan_residual_never_converges": "A NaN residual makes the inclusive comparison False, so "
+            "iteration continues; no NONFINITE branch exists. Frozen as-is.",
+        "newton_iters_comment": "The _NEWTON_ITERS comment reads 'bounded damped-Newton polish "
+            "iterations' — misleading prose (the polish is undamped). REV1 §2 authorises correcting "
+            "this comment only; recorded here pre-correction.",
     },
     "semantic_model_divergence": "The directive (§9/§10/§12/§13/§18-gate-4) describes a DAMPED "
         "Newton LINE-SEARCH with per-step improvement acceptance. The actual solver is an UNDAMPED, "
