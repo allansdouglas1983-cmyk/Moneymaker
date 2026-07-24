@@ -189,6 +189,26 @@ def test_variant_definitions_pin_the_registration() -> None:
         d.axis_digest = "x"  # type: ignore[misc,unused-ignore]  # frozen
 
 
+# ------------------------------------------- §15 solver-wiring gate (coarse-step cardinality)
+def test_solve_on_axis_coarse_step_uses_cardinality_decrement_not_xor() -> None:
+    """§15 solver-wiring gate kill: ``coarse_step = (hi - lo) / (len(axis) - 1)`` is the node
+    spacing of an equally spaced axis. The Sub->BitXor mutant ``len(axis) ^ 1`` COINCIDES with
+    ``len(axis) - 1`` for every ODD axis length (13 ^ 1 == 12, 25 ^ 1 == 24), so all three
+    registered variant axes (13/25/13) leave it inert. The function's contract admits any
+    equally spaced axis; an EVEN length breaks the coincidence (6 ^ 1 == 7 != 5), giving a wrong
+    node spacing and an observably different solve. On this fixture the correct spacing yields a
+    single IDENTIFIED root while the mutant's spacing spuriously accepts a second — a
+    status-and-count divergence that kills the mutant."""
+    lo, hi, n = _LO, _HI, 6                              # even -> (n-1)=5 differs from (n^1)=7
+    axis = [lo + (hi - lo) * i / (n - 1) for i in range(n)]
+    tw, to = S.derived_targets(0.55, 0.62, _FMT, _LINE, a_serves_first=True)
+    solve = S._solve_one_on_axis(True, _FMT, _LINE, tw, to, (lo, hi), axis)
+    assert solve.status == S.IDENTIFIED
+    assert len(solve.roots) == 1
+    assert (round(solve.roots[0].p_a, 9), round(solve.roots[0].p_b, 9)) \
+        == (0.381961068, 0.451872993)
+
+
 # ---------------------------------------------------------------- §7 immutable snapshots
 def _root(pa: float, pb: float, a_first: bool = True, res: float = 1e-5, jd: float = 1.0,
           boundary: bool = False) -> S.Root:
@@ -430,6 +450,24 @@ def test_comparison_base_is_g0_for_status_and_mirror() -> None:
         "MIRROR_RELATION_DISAGREEMENT[G0_BASELINE=ADMISSIBLE_MIRROR_PAIR,"
         "G2_REGISTERED_VALIDATION=UNRELATED_MULTIPLE_ROOTS]",
     )
+
+
+def test_all_refusal_shortcut_keys_on_exact_non_identifiable_not_ordering() -> None:
+    """§15 hardening round 2 (stability gate, L170 kill): the all-three-refuse fast path is
+    guarded on EXACT equality to NON_IDENTIFIABLE, never a lexicographic ``>=``. The string
+    ``NO_ROOT`` sorts ABOVE ``NON_IDENTIFIABLE`` (``'NO_' > 'NON'``), so a ``>=`` mutant would
+    shortcut a unanimous-NO_ROOT trio straight to stable. Over production-reachable inputs a
+    NO_ROOT solve always carries zero roots, so no reachable trio distinguishes the mutant — but
+    the comparator reads status and roots independently, so a NO_ROOT trio carrying
+    non-matching roots is an in-type input on which the mutant flips a stability decision. The
+    status label must NEVER override the root-set comparison: this trio stays UNSTABLE."""
+    trio = _trio((S.NO_ROOT, [_root(0.40, 0.40)]),
+                 (S.NO_ROOT, [_root(0.55, 0.55)]),
+                 (S.NO_ROOT, [_root(0.70, 0.70)]))
+    d = _compare(trio)
+    assert d.stable is False
+    assert d.reason is StabilityReason.DISCRETISATION_UNSTABLE_ROOT_SET
+    assert any("LOCATION_MATCHING_ABSENT" in x for x in d.disagreements)
 
 
 def test_status_comparison_is_value_equality_not_identity_or_ordering() -> None:
