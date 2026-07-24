@@ -171,3 +171,21 @@ def test_harness_is_test_only() -> None:
          "sport_tennis", "assistant_v0", "l4_pricing", "l5_decision", "l6_broker"],
         capture_output=True, text=True, check=False)
     assert out.stdout.strip() == ""      # no production package imports the harness
+
+
+# ------------------------------------------------------------------ §3 freeze pin
+def test_fixture_freeze_artifact_matches_live_production() -> None:
+    import json
+    from pathlib import Path
+
+    frozen = json.loads(Path(
+        "docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_FIXTURE_FREEZE_V1.json"
+    ).read_text())
+    fx = frozen["fixture"]
+    tw, to = S.derived_targets(0.5, 0.5, _FMT, _LINE, a_serves_first=True)
+    assert fx["match_odds_target"] == tw and fx["total_games_target"] == to
+    prod = S.identify(tw, to, _LINE, _FMT, domain=(_LO, _HI))
+    assert prod.status == frozen["production_status"]
+    assert [(r.p_a, r.p_b) for r in prod.roots] \
+        == [(r["p_a"], r["p_b"]) for r in frozen["production_roots"]]
+    assert frozen["production_scan_axis"] == lattice_g0(_LO, _HI)

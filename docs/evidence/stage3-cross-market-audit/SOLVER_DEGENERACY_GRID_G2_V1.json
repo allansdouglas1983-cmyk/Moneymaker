@@ -1,0 +1,288 @@
+{
+ "axis": [
+  0.35,
+  0.41874999999999996,
+  0.46458333333333335,
+  0.5104166666666666,
+  0.5562499999999999,
+  0.6020833333333333,
+  0.6479166666666667,
+  0.6937500000000001,
+  0.7395833333333333,
+  0.7854166666666667,
+  0.83125,
+  0.8770833333333334,
+  0.9
+ ],
+ "axis_size": 13,
+ "commit": "615bfaa837b02ba929d3b8e58a792c3d57f0e819",
+ "constants": {
+  "_BOUNDARY_TOL": 0.005,
+  "_CLUSTER_R": 2,
+  "_COARSE_N": 13,
+  "_DEDUP_TOL": 0.001,
+  "_JAC_TOL": 0.005,
+  "_NEWTON_SINGULAR": 1e-10,
+  "_N_SEED": 20,
+  "_ROOT_TOL": 0.0001
+ },
+ "deterministic_seed": null,
+ "generated_at_utc": "2026-07-24T11:18:46.652043+00:00",
+ "lattice": "G2",
+ "per_server": [
+  {
+   "a_serves_first": true,
+   "accepted_before_dedup": 3,
+   "candidates": [
+    {
+     "condition_scale": 5.366967424073754,
+     "converged": true,
+     "jacobian_det": -0.010783346081659189,
+     "on_boundary": false,
+     "p_a": 0.4996744791666667,
+     "p_b": 0.4996744791666667,
+     "r2": 1.0692977906974011e-13,
+     "seed": [
+      3,
+      3
+     ],
+     "seed_coord": [
+      0.5104166666666666,
+      0.5104166666666666
+     ],
+     "singular": false
+    },
+    {
+     "condition_scale": 5.3666882050424585,
+     "converged": true,
+     "jacobian_det": 0.1194832274225939,
+     "on_boundary": false,
+     "p_a": 0.5036072043503431,
+     "p_b": 0.5036072043503432,
+     "r2": 1.6123172904937977e-09,
+     "seed": [
+      6,
+      6
+     ],
+     "seed_coord": [
+      0.6479166666666667,
+      0.6479166666666667
+     ],
+     "singular": false
+    },
+    {
+     "condition_scale": 5.366667178420681,
+     "converged": true,
+     "jacobian_det": -0.12386449770634259,
+     "on_boundary": false,
+     "p_a": 0.4962604999325286,
+     "p_b": 0.49626049993252835,
+     "r2": 1.8621750692638587e-09,
+     "seed": [
+      0,
+      0
+     ],
+     "seed_coord": [
+      0.35,
+      0.35
+     ],
+     "singular": false
+    }
+   ],
+   "roots": [
+    [
+     0.4962604999325286,
+     0.49626049993252835
+    ],
+    [
+     0.4996744791666667,
+     0.4996744791666667
+    ],
+    [
+     0.5036072043503431,
+     0.5036072043503432
+    ]
+   ],
+   "seed_count": 3,
+   "seeds": [
+    [
+     3,
+     3
+    ],
+    [
+     6,
+     6
+    ],
+    [
+     0,
+     0
+    ]
+   ],
+   "status": "MULTIPLE_ROOTS"
+  },
+  {
+   "a_serves_first": false,
+   "accepted_before_dedup": 3,
+   "candidates": [
+    {
+     "condition_scale": 5.36696742407356,
+     "converged": true,
+     "jacobian_det": -0.010783346081659189,
+     "on_boundary": false,
+     "p_a": 0.4996744791666667,
+     "p_b": 0.4996744791666667,
+     "r2": 1.0692977906974011e-13,
+     "seed": [
+      3,
+      3
+     ],
+     "seed_coord": [
+      0.5104166666666666,
+      0.5104166666666666
+     ],
+     "singular": false
+    },
+    {
+     "condition_scale": 5.3666882050423474,
+     "converged": true,
+     "jacobian_det": 0.11948322742229645,
+     "on_boundary": false,
+     "p_a": 0.5036072043503504,
+     "p_b": 0.5036072043503508,
+     "r2": 1.6123172905205454e-09,
+     "seed": [
+      6,
+      6
+     ],
+     "seed_coord": [
+      0.6479166666666667,
+      0.6479166666666667
+     ],
+     "singular": false
+    },
+    {
+     "condition_scale": 5.3666671784210145,
+     "converged": true,
+     "jacobian_det": -0.12386449770307106,
+     "on_boundary": false,
+     "p_a": 0.49626049993259075,
+     "p_b": 0.4962604999325911,
+     "r2": 1.8621750691297124e-09,
+     "seed": [
+      0,
+      0
+     ],
+     "seed_coord": [
+      0.35,
+      0.35
+     ],
+     "singular": false
+    }
+   ],
+   "roots": [
+    [
+     0.49626049993259075,
+     0.4962604999325911
+    ],
+    [
+     0.4996744791666667,
+     0.4996744791666667
+    ],
+    [
+     0.5036072043503504,
+     0.5036072043503508
+    ]
+   ],
+   "seed_count": 3,
+   "seeds": [
+    [
+     3,
+     3
+    ],
+    [
+     6,
+     6
+    ],
+    [
+     0,
+     0
+    ]
+   ],
+   "status": "MULTIPLE_ROOTS"
+  }
+ ],
+ "roots": [
+  {
+   "a_serves_first": false,
+   "condition_scale": 5.3666671784210145,
+   "determinant": -0.12386449770307106,
+   "jacobian": {
+    "d_mo_d_a": 5.3666671784210145,
+    "d_mo_d_b": -5.366667178420626,
+    "d_tg_d_a": -0.01091183721746435,
+    "d_tg_d_b": -0.012168501768550211
+   },
+   "on_boundary": false,
+   "p_a": 0.49626049993259075,
+   "p_b": 0.4962604999325911,
+   "residual_norm": 4.3152926541889514e-05,
+   "residual_vector": [
+    -2.1094237467877974e-15,
+    4.3152926541889514e-05
+   ],
+   "singular": false
+  },
+  {
+   "a_serves_first": true,
+   "condition_scale": 5.366967424073754,
+   "determinant": -0.010783346081659189,
+   "jacobian": {
+    "d_mo_d_a": 5.366967424073754,
+    "d_mo_d_b": -5.366967424073338,
+    "d_tg_d_a": -0.0010593596276864687,
+    "d_tg_d_b": -0.0009498469185076607
+   },
+   "on_boundary": false,
+   "p_a": 0.4996744791666667,
+   "p_b": 0.4996744791666667,
+   "residual_norm": 3.2700119123596494e-07,
+   "residual_vector": [
+    -2.220446049250313e-16,
+    3.2700119123596494e-07
+   ],
+   "singular": false
+  },
+  {
+   "a_serves_first": true,
+   "condition_scale": 5.3666882050424585,
+   "determinant": 0.1194832274225939,
+   "jacobian": {
+    "d_mo_d_a": 5.366688205042154,
+    "d_mo_d_b": -5.3666882050424585,
+    "d_tg_d_a": 0.011738083140533363,
+    "d_tg_d_b": 0.010525782926873442
+   },
+   "on_boundary": false,
+   "p_a": 0.5036072043503431,
+   "p_b": 0.5036072043503432,
+   "residual_norm": 4.0153670946674325e-05,
+   "residual_vector": [
+    -2.220446049250313e-16,
+    4.0153670946674325e-05
+   ],
+   "singular": false
+  }
+ ],
+ "schema_version": "degeneracy-diagnostic-v1",
+ "source_digests": {
+  "amendment": "473d4d7d56467e76fe56c17e18c2db2dddc5ef530abf1f4e47f36ef7cd458974",
+  "golden_v2": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+  "harness": "4599ede5a6eacee68ab06d171c9a92a8ac219237dc094f829f55f1b78e51c2d3",
+  "reference": "124dced3610d7e26c8723d0ae1d20bc27f648ff58164b6c0f4d2530206f1a67b",
+  "root_dedup.py": "8bf6c65031007f35d35328cd13643f40752199bedbec2931e15fc9acaea101f3",
+  "rootset.py": "b125537aa3a682a0316ec386c3a7e89575a96ec8de8a4e5c0247c2ff14d302b0",
+  "solver.py": "d3727081b27e99b8d1f800b83a49569a9029b88583a9ecf45c876ef9f13f6523"
+ },
+ "status": "MULTIPLE_ROOTS",
+ "union_ambiguous": false
+}
