@@ -1,0 +1,85 @@
+{
+ "all_zero_required_fields": {
+  "duplicate": 0,
+  "extra": 0,
+  "missing": 0,
+  "nonnormal": 0,
+  "stale": 0,
+  "unclassified": 0,
+  "untested_targeted": 0
+ },
+ "approved_by": null,
+ "directive": "STAGE3-0006C-D-A3-FINALIZE \u00a76",
+ "overall": {
+  "duplicate": 0,
+  "extra": 0,
+  "missing": 0,
+  "nonnormal": 0,
+  "packet_entries": 16,
+  "stale": 0,
+  "unclassified": 0,
+  "untested_targeted": 0
+ },
+ "packet_entries_equals_16": true,
+ "per_module": {
+  "discretisation_stability": {
+   "database_digest": "sha256:cf2508bffec588769f1f69e32a24ffa4a4005ad9f246f0fb24be9690ebfd3df1",
+   "duplicate_packet_ids": [],
+   "executed_mutants": 178,
+   "extra_packet_ids": [],
+   "killed": 164,
+   "missing_survivor_ids": [],
+   "non_normal_outcomes": 0,
+   "packet_entries": 13,
+   "round2_killed_excluded": [
+    "3cc2e20d89184859931cc7da5d421d38"
+   ],
+   "skipped_mutants": 0,
+   "source_digest": "sha256:c9e517d0c7dd780c2845405b0ab50e57b8abce98fff699624a94784b911eaa4c",
+   "stale_ids": [],
+   "survived": 14,
+   "total_mutants": 178,
+   "unclassified_ids": [],
+   "untested_targeted_jobs": 0
+  },
+  "scan_variants": {
+   "database_digest": "sha256:423e300f6416c9caef40f2923219ec84c6867912fc9408e3ed186f172c2ad6d2",
+   "duplicate_packet_ids": [],
+   "executed_mutants": 148,
+   "extra_packet_ids": [],
+   "killed": 145,
+   "missing_survivor_ids": [],
+   "non_normal_outcomes": 0,
+   "packet_entries": 3,
+   "round2_killed_excluded": [],
+   "skipped_mutants": 0,
+   "source_digest": "sha256:4c5b41422385389db63fc97e911da5a185b3bdddcc0ecd34a8de8d666afc0fa1",
+   "stale_ids": [],
+   "survived": 3,
+   "total_mutants": 148,
+   "unclassified_ids": [],
+   "untested_targeted_jobs": 0
+  },
+  "solver_wiring": {
+   "database_digest": "sha256:abae982fb42dcf037e5678d248fac968580e7fbccca5ac7390f3f4f6b72fa109",
+   "duplicate_packet_ids": [],
+   "executed_mutants": 41,
+   "extra_packet_ids": [],
+   "killed": 40,
+   "missing_survivor_ids": [],
+   "non_normal_outcomes": 0,
+   "packet_entries": 0,
+   "round2_killed_excluded": [
+    "5f619a9f5e304eb7a9cf1c3200a13a90"
+   ],
+   "skipped_mutants": 294,
+   "source_digest": "sha256:34d136d12ff3d16f808397ba67410e23706217e6dfcfd8e1dafa592b75ceadae",
+   "stale_ids": [],
+   "survived": 1,
+   "total_mutants": 335,
+   "unclassified_ids": [],
+   "untested_targeted_jobs": 0
+  }
+ },
+ "reconciliation": "MUTATION_RECONCILIATION_DISCRETISATION_STABILITY_A3_FINAL_V1"
+}
