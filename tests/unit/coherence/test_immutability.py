@@ -58,14 +58,19 @@ def test_result_type_is_frozen(instance: object, field: str) -> None:
 def test_frozen_covers_every_declared_dataclass() -> None:
     # Guard against a new result type being added without a frozen guard: every dataclass in
     # these modules must be frozen.
+    import sport_tennis.coherence.discretisation_stability as m_ds
     import sport_tennis.coherence.formats as m_formats
     import sport_tennis.coherence.format_evidence as m_fe
     import sport_tennis.coherence.holdout as m_holdout
     import sport_tennis.coherence.match as m_match
     import sport_tennis.coherence.pmf as m_pmf
+    import sport_tennis.coherence.scan_variants as m_sv
     import sport_tennis.coherence.scoring as m_scoring
     import sport_tennis.coherence.solver as m_solver
-    for mod in (m_formats, m_fe, m_holdout, m_match, m_pmf, m_scoring, m_solver):
+    # STAGE3-0006C-D-A3: inventory EXTENDED (never narrowed) to the amendment's two new
+    # production modules so ScanVariantDefinition / VariantSolveSnapshot / StabilityDecision
+    # are covered by this guard directly.
+    for mod in (m_formats, m_fe, m_holdout, m_match, m_pmf, m_scoring, m_solver, m_sv, m_ds):
         for name in dir(mod):
             obj = getattr(mod, name)
             if dataclasses.is_dataclass(obj) and isinstance(obj, type):

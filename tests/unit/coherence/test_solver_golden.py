@@ -1,12 +1,16 @@
-"""Differential golden: the solver's registered public behaviour is FROZEN — V2 vintage.
+"""Differential golden: the solver's registered public behaviour is FROZEN — V3 vintage.
 
-GOVERNED VINTAGE CHANGE (STAGE3-0006C-D-A1 / CROSS_MARKET_COHERENCE_ROOT_DEDUP_AMENDMENT_V1):
-this oracle now pins SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED — the amended solver whose root
-deduplication is set-defined canonical clustering with ambiguous-chain refusal. The prior vintage
-SOLVER_GOLDEN_V1_SEQUENCE_DEFINED.json is RETAINED unmodified as permanent historical evidence of
-the corrected sequence-defined defect; the V1->V2 change is fully classified in
-SOLVER_ROOT_DEDUP_AMENDMENT_DIFFERENTIAL.json (UNEXPECTED_CHANGE = 0). Any future deviation from
-V2 is a registered-contract change requiring a further append-only amendment.
+GOVERNED VINTAGE CHANGE (STAGE3-0006C-D-A3 /
+CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1): this oracle now pins
+SOLVER_GOLDEN_V3_DISCRETISATION_STABLE — the amended solver whose public root set is published
+only under registered-variant (G0/G1/G2) agreement, refusing discretisation-unstable systems
+with the existing NON_IDENTIFIABLE and the internal reason DISCRETISATION_UNSTABLE_ROOT_SET.
+The prior vintages SOLVER_GOLDEN_V1_SEQUENCE_DEFINED.json (A1's corrected sequence-defined
+defect) and SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED.json (the canonical-set vintage this V3
+supersedes) are RETAINED unmodified as permanent historical evidence; the V2->V3 change is fully
+classified in SOLVER_DISCRETISATION_STABILITY_AMENDMENT_DIFFERENTIAL.json (UNEXPECTED_CHANGE
+= 0). Any future deviation from V3 is a registered-contract change requiring a further
+append-only amendment.
 """
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ from sport_tennis.coherence.root_dedup import deduplicate_roots
 
 _FMT = MatchFormat.BO3_AD_TB7_ALL_SETS
 _GOLDEN = json.loads(
-    (Path(__file__).parent / "golden" / "SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED.json").read_text())
+    (Path(__file__).parent / "golden" / "SOLVER_GOLDEN_V3_DISCRETISATION_STABLE.json").read_text())
 
 
 def _rnd(x: float | None) -> float | None:
@@ -50,6 +54,27 @@ def test_identify_matches_golden() -> None:
             "domain": list(r.domain), "line": str(r.line),
         }
         assert got == case["out"], f"golden mismatch for {case['line']} {case['domain']}"
+        # V3 addition: the per-assignment registered-variant agreement evidence is pinned too
+        got_stab = []
+        for solve in r.per_server:
+            st = solve.stability
+            assert st is not None
+            got_stab.append({
+                "a_serves_first": solve.a_serves_first,
+                "stable": st.stable,
+                "reason": st.reason.value if st.reason is not None else None,
+                "disagreements": list(st.disagreements),
+                "variants": [{
+                    "variant": snap.variant.value,
+                    "status": snap.status,
+                    "root_count": len(snap.roots),
+                    "roots": sorted([[_rnd(x.p_a), _rnd(x.p_b)] for x in snap.roots]),
+                    "axis_digest": snap.axis_digest,
+                } for snap in st.snapshots],
+                "decision_digest": st.digest(),
+            })
+        assert got_stab == case["stability"], \
+            f"stability-evidence mismatch for {case['line']} {case['domain']}"
 
 
 def test_dedup_unit_fixtures_match_golden() -> None:

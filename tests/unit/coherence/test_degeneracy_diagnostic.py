@@ -67,14 +67,35 @@ def test_g3_double_density_phase_shift() -> None:
 
 
 # ------------------------------------------------------------------ §4 harness fidelity
-def test_harness_g0_reproduces_production_identify_exactly() -> None:
+def test_harness_g0_reproduces_production_g0_baseline_exactly() -> None:
+    """GOVERNED TEST CORRECTION (STAGE3-0006C-D-A3 /
+    CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1): this pin originally compared
+    the harness G0 run to ``identify()`` — which WAS the single-lattice G0 orchestration. The
+    amendment made ``identify()`` refuse discretisation-unstable systems, so on this (disputed,
+    unstable) fixture the public result is now NON_IDENTIFIABLE by design. The fidelity property
+    the pin protects — the harness reproduces the production G0 numerics EXACTLY — is unchanged
+    and now anchors to the G0 baseline path: the per-assignment G0 VariantSolveSnapshot retained
+    in the stability evidence, and the byte-identical ``_solve_one`` G0 delegate."""
     tw, to = S.derived_targets(0.5, 0.5, _FMT, _LINE, a_serves_first=True)
     prod = S.identify(tw, to, _LINE, _FMT, domain=(_LO, _HI))
     har = identify_with_lattice(lattice_g0(_LO, _HI), _FMT, _LINE, tw, to, (_LO, _HI))
-    assert har["status"] == prod.status
-    assert tuple(har["roots"]) == prod.roots                # EXACT float equality
-    assert [s["status"] for s in har["per_server"]] == [s.status for s in prod.per_server]
-    assert [tuple(s["roots"]) for s in har["per_server"]] == [s.roots for s in prod.per_server]
+    for har_solve, prod_solve in zip(har["per_server"], prod.per_server):
+        assert prod_solve.stability is not None
+        g0_snap = prod_solve.stability.snapshots[0]
+        assert g0_snap.variant.value == "G0_BASELINE"
+        assert har_solve["status"] == g0_snap.status
+        assert tuple(har_solve["roots"]) == g0_snap.roots   # EXACT float equality
+        direct = S._solve_one(har_solve["a_serves_first"], _FMT, _LINE, tw, to, (_LO, _HI))
+        assert har_solve["status"] == direct.status
+        assert tuple(har_solve["roots"]) == direct.roots    # EXACT float equality
+
+
+def test_amended_identify_refuses_the_disputed_fixture() -> None:
+    """The public contract on this fixture after the amendment: refusal with the internal
+    reason, no public roots (pinned in depth by test_discretisation_stability 10.1)."""
+    tw, to = S.derived_targets(0.5, 0.5, _FMT, _LINE, a_serves_first=True)
+    prod = S.identify(tw, to, _LINE, _FMT, domain=(_LO, _HI))
+    assert prod.status == S.NON_IDENTIFIABLE and prod.roots == ()
 
 
 def test_harness_exposes_candidate_provenance() -> None:
@@ -174,7 +195,14 @@ def test_harness_is_test_only() -> None:
 
 
 # ------------------------------------------------------------------ §3 freeze pin
-def test_fixture_freeze_artifact_matches_live_production() -> None:
+def test_fixture_freeze_artifact_matches_g0_baseline() -> None:
+    """GOVERNED TEST CORRECTION (STAGE3-0006C-D-A3 /
+    CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1): the freeze artifact recorded
+    the PRE-amendment production behaviour on the disputed fixture (MULTIPLE_ROOTS, 3 union
+    roots) — which by construction is the G0 single-lattice orchestration, since the amendment
+    changed no G0 numerics. The artifact is never rewritten; this pin now anchors it to the G0
+    baseline via the test-only harness (identify_with_lattice replicates the pre-amendment
+    orchestration exactly), while the amended public identify() refuses this unstable system."""
     import json
     from pathlib import Path
 
@@ -184,8 +212,8 @@ def test_fixture_freeze_artifact_matches_live_production() -> None:
     fx = frozen["fixture"]
     tw, to = S.derived_targets(0.5, 0.5, _FMT, _LINE, a_serves_first=True)
     assert fx["match_odds_target"] == tw and fx["total_games_target"] == to
-    prod = S.identify(tw, to, _LINE, _FMT, domain=(_LO, _HI))
-    assert prod.status == frozen["production_status"]
-    assert [(r.p_a, r.p_b) for r in prod.roots] \
+    g0 = identify_with_lattice(lattice_g0(_LO, _HI), _FMT, _LINE, tw, to, (_LO, _HI))
+    assert g0["status"] == frozen["production_status"]
+    assert [(r.p_a, r.p_b) for r in g0["roots"]] \
         == [(r["p_a"], r["p_b"]) for r in frozen["production_roots"]]
     assert frozen["production_scan_axis"] == lattice_g0(_LO, _HI)
