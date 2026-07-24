@@ -22,6 +22,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
+from sport_tennis.coherence.discretisation_stability import (
+    StabilityDecision,
+    VariantSolveSnapshot,
+    compare_registered_variants,
+)
 from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.match import match_distribution
 from sport_tennis.coherence.pmf import over_under
@@ -31,8 +36,14 @@ from sport_tennis.coherence.rootset import (
     classify_per_solve,
     within_boundary_tolerance,
 )
+from sport_tennis.coherence.scan_variants import (
+    REGISTERED_VARIANT_ORDER,
+    axis_digest,
+    variant_axis,
+)
 from sport_tennis.coherence.solver_contracts import (
     Jacobian2x2,
+    ParameterDomain,
     ResidualVector2,
     SolverStatus,
     validate_domain,
@@ -101,11 +112,16 @@ class Root:
 
 @dataclass(frozen=True)
 class ServerSolve:
-    """Result of the bounded root solve under ONE first-server assignment."""
+    """Result of the bounded root solve under ONE first-server assignment.
+
+    ``stability`` (CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1) carries the
+    immutable registered-variant agreement evidence when the assignment was solved through the
+    stability-checked path; it is ``None`` only for a bare single-axis solve."""
 
     a_serves_first: bool
     status: str
     roots: tuple[Root, ...]
+    stability: StabilityDecision | None = None
 
 
 @dataclass(frozen=True)
@@ -234,10 +250,12 @@ def _canonical_roots(candidates: list[Root]) -> tuple[tuple[Root, ...], bool]:
     return result.representatives(), result.ambiguous
 
 
-def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
-               domain: tuple[float, float]) -> ServerSolve:
+def _solve_one_on_axis(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
+                       domain: tuple[float, float], axis: list[float]) -> ServerSolve:
+    """The bounded solve with the scan axis supplied (STAGE3-0006C-D-A3 §6). For the G0 axis
+    this is byte-identical to the pre-amendment ``_solve_one`` body: the step formula
+    ``(hi - lo) / (len(axis) - 1)`` equals the former ``(hi - lo) / (_COARSE_N - 1)``."""
     lo, hi = domain
-    axis = build_scan_axis(lo, hi, _COARSE_N)
     grid = [[_r2(_residual(a, b, a_first, fmt, line, tw, to)) for b in axis] for a in axis]
 
     # Seed refinement from the lowest-residual coarse nodes, clustered so each deep basin is
@@ -248,7 +266,7 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
     # multiplicity is detected rather than collapsed.
     seeds = rank_seed_nodes(grid, _N_SEED, _CLUSTER_R)
 
-    coarse_step = (hi - lo) / (_COARSE_N - 1)
+    coarse_step = (hi - lo) / (len(axis) - 1)
     found: list[Root] = []
     for i, j in seeds:
         pa, pb, r2 = _refine(axis[i], axis[j], coarse_step, a_first, fmt, line, tw, to, lo, hi)
@@ -263,6 +281,43 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
     return ServerSolve(a_serves_first=a_first, status=status, roots=roots)
 
 
+def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
+               domain: tuple[float, float]) -> ServerSolve:
+    lo, hi = domain
+    return _solve_one_on_axis(a_first, fmt, line, tw, to, domain,
+                              build_scan_axis(lo, hi, _COARSE_N))
+
+
+def _stability_checked_solve(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float,
+                             to: float, domain: tuple[float, float]) -> ServerSolve:
+    """STAGE3-0006C-D-A3 §6/§9: run the identical production algorithm on every registered
+    variant (G0 first, then the validation variants), compare BEFORE the first-server union.
+    Stable -> the G0 solve is returned byte-identically with the agreement evidence attached.
+    Unstable -> the assignment REFUSES with the existing public NON_IDENTIFIABLE and the
+    INTERNAL reason DISCRETISATION_UNSTABLE_ROOT_SET; all snapshots are retained; there is no
+    fallback to the G0-only result and no runtime switch. Variant results are never averaged,
+    majority-voted or selected by residual; G1/G2 contribute no public root."""
+    lo, hi = domain
+    solves: list[ServerSolve] = []
+    snapshots: list[VariantSolveSnapshot] = []
+    for variant in REGISTERED_VARIANT_ORDER:
+        axis = variant_axis(variant, lo, hi)
+        solve = _solve_one_on_axis(a_first, fmt, line, tw, to, domain, axis)
+        solves.append(solve)
+        snapshots.append(VariantSolveSnapshot(
+            variant=variant, a_serves_first=a_first, status=solve.status,
+            roots=solve.roots, axis_digest=axis_digest(axis)))
+    decision = compare_registered_variants(
+        tuple(snapshots), domain=ParameterDomain.from_symmetric(lo, hi),
+        tolerance=_DEDUP_TOL)
+    g0 = solves[0]
+    if decision.stable:
+        return ServerSolve(a_serves_first=a_first, status=g0.status, roots=g0.roots,
+                           stability=decision)
+    return ServerSolve(a_serves_first=a_first, status=NON_IDENTIFIABLE, roots=(),
+                       stability=decision)
+
+
 def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: MatchFormat, *,
              domain: tuple[float, float]) -> IdentificationResult:
     """Dual-evaluate the bounded root solve for both first-server assignments (§14) and return
@@ -271,8 +326,11 @@ def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: 
     _validate_domain(domain)
     validate_targets(target_match_win_a, target_over)
 
-    sa = _solve_one(True, fmt, line, target_match_win_a, target_over, domain)
-    sb = _solve_one(False, fmt, line, target_match_win_a, target_over, domain)
+    # STAGE3-0006C-D-A3: each assignment is solved through the registered-variant stability
+    # check; an unstable assignment refuses BEFORE this union with the internal reason
+    # DISCRETISATION_UNSTABLE_ROOT_SET (public status: the existing NON_IDENTIFIABLE).
+    sa = _stability_checked_solve(True, fmt, line, target_match_win_a, target_over, domain)
+    sb = _stability_checked_solve(False, fmt, line, target_match_win_a, target_over, domain)
     per = (sa, sb)
 
     # Exhaustive identify-level decision table (STAGE3-0006C-D-REV2 §16 seam; byte-identical):
