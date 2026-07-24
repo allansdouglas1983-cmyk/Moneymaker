@@ -85,6 +85,26 @@ def test_chain_serialization_identical_across_permutations() -> None:
     assert len(digests) == 1
 
 
+def test_absolute_digest_pins() -> None:
+    # hard sha256 pins (computed from the registered policy) kill serialization mutants that are
+    # permutation-consistent — e.g. sort_keys=True -> False changes the digest for EVERY input.
+    assert deduplicate_roots([A, B, C], TOL).digest() == (
+        "sha256:85ef6c7217f9a5b8c2521b5ecf39b72ea4e6d77f004b0aef924a656d3c94f3be")
+    assert deduplicate_roots(_CLOSE, TOL).digest() == (
+        "sha256:12c6a7c6b4337319bd5ff06610daf6692c6d4fa205728fffddf2af35cd4849bd")
+
+
+def test_component_diameter_exactly_at_tolerance_refuses() -> None:
+    # chain [0.0, 0.0005, 0.001]: edges 5e-4 (strict <) join all three; the endpoint distance is
+    # EXACTLY the tolerance float -> diameter == tol -> the >= refusal boundary must trigger
+    # (kills `diameter < tol` -> `<=` at the classification site).
+    tolchain = [mk(0.0, 0.0), mk(0.0005, 0.0), mk(TOL, 0.0)]
+    result = deduplicate_roots(tolchain, TOL)
+    assert result.ambiguous
+    assert result.reason is DedupReason.AMBIGUOUS_ROOT_TOLERANCE_CHAIN
+    assert component_diameter(result.ambiguous_components[0]) == TOL
+
+
 # ------------------------------------------------------------------ §6.2 valid close cluster
 _CLOSE = [mk(0.5, 0.5, res=3e-5), mk(0.5004, 0.5002, res=1e-5), mk(0.4998, 0.5004, res=2e-5)]
 

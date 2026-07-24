@@ -34,9 +34,17 @@ def agree(cands: list[Root]) -> None:
     assert prod.ambiguous == want["ambiguous"], cands
     assert list(prod.representatives()) == want["representatives"], cands
     assert [list(c.members) for c in prod.clusters] == want["valid_components"], cands
+    # exact stored diameters must equal the literal reference diameters (kills 2-member->0.0
+    # and pair-skipping diameter mutants that keep the classification unchanged)
+    assert [c.diameter for c in prod.clusters] \
+        == [ref.ref_diameter(c) for c in want["valid_components"]], cands
     assert [list(c) for c in prod.ambiguous_components] \
         == sorted((sorted(c, key=ref.ref_fingerprint) for c in want["ambiguous_components"]),
                   key=lambda c: ref.ref_fingerprint(c[0])), cands
+    # component partition INCLUDING canonical order must match the reference exactly
+    from sport_tennis.coherence.root_dedup import connected_components
+    assert [list(c) for c in connected_components(cands, TOL)] \
+        == ref.ref_components(list(cands), TOL), cands
 
 
 # ------------------------------------------------------------------ architecture boundary
@@ -83,6 +91,31 @@ def test_randomized_deterministic_sets_agree() -> None:
         agree(cands)
         rng.shuffle(cands)
         agree(cands)
+
+
+# ------------------------------------------------------------------ canonical order inversions
+def test_two_ambiguous_chains_order_by_first_member_fingerprint() -> None:
+    # bases chosen (searched offline, deterministic) so the two chains' MIN-fingerprint order is
+    # INVERTED versus their MAX-fingerprint order: a mutant sorting ambiguous components by any
+    # member other than the canonical first (c[0]) orders them differently and dies.
+    def chain(ba: float, bb: float) -> list[Root]:
+        return [mk(ba, bb, 3e-5), mk(ba + 9e-4, bb, 1e-5), mk(ba + 1.8e-3, bb, 2e-5)]
+
+    two = chain(0.4, 0.4) + chain(0.52, 0.35)
+    for perm in [two, list(reversed(two)), two[3:] + two[:3]]:
+        agree(perm)
+        result = deduplicate_roots(perm, TOL)
+        assert len(result.ambiguous_components) == 2
+
+
+def test_two_valid_components_order_by_first_member_fingerprint() -> None:
+    # same inversion construction for VALID components: kills wrong-member component-order keys
+    # in connected_components (agree() compares partition order against the reference).
+    v1 = [mk(0.4, 0.4, 2e-5), mk(0.4003, 0.4, 1e-5)]
+    v2 = [mk(0.44, 0.62, 2e-5), mk(0.4403, 0.62, 1e-5)]
+    for perm in [v1 + v2, v2 + v1, [v1[1], v2[0], v1[0], v2[1]]]:
+        agree(perm)
+        assert len(deduplicate_roots(perm, TOL).clusters) == 2
 
 
 # ------------------------------------------------------------------ multi-component + chains
