@@ -238,3 +238,49 @@ def test_final_selection_strict_improvement_only() -> None:
     assert not prefer_newton_candidate(1e-8, 1e-9)                       # worse -> grid
     assert prefer_newton_candidate(math.nextafter(1e-9, 0.0), 1e-9)      # just better
     assert not prefer_newton_candidate(math.nextafter(1e-9, 1.0), 1e-9)  # just worse
+
+
+def test_final_selection_nonfinite_candidates_keep_grid() -> None:
+    # frozen semantics: NaN/inf Newton norms are never a strict improvement, so the grid candidate
+    # is kept; a finite Newton norm still beats an infinite grid norm (all via the same strict <).
+    assert not prefer_newton_candidate(_NAN, 1e-9)
+    assert not prefer_newton_candidate(_INF, 1e-9)
+    assert not prefer_newton_candidate(_NAN, _NAN)
+    assert prefer_newton_candidate(1e-9, _INF)
+
+
+# ------------------------------------------------------------------ REV1 full-text required pins
+def test_convergence_negative_zero_residual() -> None:
+    assert newton_converged(ResidualVector2(-0.0, -0.0), _TOL)           # (-0)^2 == 0
+    assert newton_converged(ResidualVector2(-0.0, _TOL), _TOL)           # inclusive at the edge
+
+
+def test_clamp_scalar_infinities_project_to_the_correct_edge() -> None:
+    assert clamp_scalar(_INF, 0.35, 0.9) == 0.9
+    assert clamp_scalar(-_INF, 0.35, 0.9) == 0.35
+
+
+def test_clamp_scalar_is_idempotent() -> None:
+    for x in (0.5, 0.1, 0.99, 0.35, 0.9):
+        once = clamp_scalar(x, 0.35, 0.9)
+        assert clamp_scalar(once, 0.35, 0.9) == once
+
+
+def test_apply_step_clamped_every_violation_pattern() -> None:
+    # both below; both above; opposite-side violations; coordinate independence
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(2.0, 2.0), 0.35, 0.9) == (0.35, 0.35)
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(-2.0, -2.0), 0.35, 0.9) == (0.9, 0.9)
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(2.0, -2.0), 0.35, 0.9) == (0.35, 0.9)
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(-2.0, 2.0), 0.35, 0.9) == (0.9, 0.35)
+    # clamping one coordinate never perturbs the other
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(2.0, 0.0), 0.35, 0.9) == (0.35, 0.6)
+    assert apply_step_clamped(0.5, 0.6, NewtonStep2(0.0, 2.0), 0.35, 0.9) == (0.5, 0.35)
+
+
+def test_stagnation_one_ulp_movement_and_boundary_clamp_no_movement() -> None:
+    # one-ULP movement of a ~0.5-scale point (~1.1e-16) is strictly below 1e-15 -> stagnant
+    assert is_stagnant(0.5, 0.6, math.nextafter(0.5, 1.0), 0.6, 1e-15)
+    # a clamp that returns the same boundary point produces zero movement -> stagnant
+    na = clamp_scalar(0.3, 0.35, 0.9)          # projected to the lower edge 0.35
+    assert na == 0.35
+    assert is_stagnant(0.35, 0.6, na, 0.6, 1e-15)

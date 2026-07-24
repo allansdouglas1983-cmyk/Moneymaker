@@ -33,18 +33,20 @@ total_results = con.execute("SELECT COUNT(*) FROM work_results").fetchone()[0]
 untested = total_specs - total_results
 
 GATES = [
-    {"gate": 1, "seam": "convergence (residual-only, inclusive)",
+    {"gate": 1, "name": "convergence",
      "definitions": ["newton_converged", "residual_norm2_within_tolerance"]},
-    {"gate": 2, "seam": "iteration budget (range semantics + increment + type refusal)",
+    {"gate": 2, "name": "iteration_budget",
      "definitions": ["iteration_is_permitted", "next_iteration_index", "_require_index"]},
-    {"gate": 3, "seam": "Newton step (exact 2x2 Cramer + NewtonStep2 contract)",
+    {"gate": 3, "name": "newton_step",
      "definitions": ["propose_newton_step", "NewtonStep2", "validate", "inf_norm", "serialize",
                      "<module>"]},  # <module> = the two NewtonStep2 @dataclass(frozen=True)
                                     # decorator mutants (frozen->False, decorator removal)
-    {"gate": 4, "seam": "clamp projection + full-step application (damping WITHDRAWN by REV1 §1)",
+    {"gate": 4, "name": "clamp_projection",
      "definitions": ["clamp_scalar", "apply_step_clamped"]},
-    {"gate": 5, "seam": "stagnation + final grid-vs-Newton selection",
-     "definitions": ["is_stagnant", "prefer_newton_candidate"]},
+    {"gate": 5, "name": "stagnation_and_transition",
+     "definitions": ["is_stagnant"]},
+    {"gate": 6, "name": "final_grid_vs_newton_selection_and_exhaustion",
+     "definitions": ["prefer_newton_candidate"]},
 ]
 for g in GATES:
     k = s = nn = 0
@@ -67,25 +69,27 @@ consolidation = {
                 "nonnormal": nonnormal, "untested": untested},
     "per_definition": {k: v for k, v in sorted(per.items())},
     "micro_gates": GATES,
-    "gate_definition_coverage": {"covered_by_gates_1_to_5": covered,
+    "gate_definition_coverage": {"covered_by_gates_1_to_6": covered,
                                   "module_total": killed + survived,
-                                  "note": "every mutation spec maps to a gate-1..5 definition; the "
+                                  "note": "every mutation spec maps to a gate-1..6 definition; the "
                                           "two <module>-scope specs are the NewtonStep2 "
                                           "@dataclass(frozen=True) decorator mutants (frozen->False "
                                           "and decorator removal), attributed to gate 3 and killed "
                                           "by the frozen-contract test; newton_converged, inf_norm "
                                           "and serialize contain no mutable operators and so carry "
                                           "zero specs"},
-    "gate_6_transition_nonconvergence": {
-        "method": "FROZEN_LOOP_DIFFERENTIAL + GOLDEN (not cosmic-ray)",
+    "damping_mutation_gate": "NOT_APPLICABLE",
+    "damping_mutation_gate_reason": "DAMPING_NOT_PRESENT_IN_REGISTERED_SOLVER",
+    "transition_and_exhaustion_wiring_evidence": {
+        "method": "FROZEN_LOOP_DIFFERENTIAL + GOLDEN (complements the gate-5/gate-6 seam mutants)",
         "evidence": "SOLVER_MILESTONE_C_DIFFERENTIAL.json — 8/8 fixtures exact-equal finals with "
                     "equal _residual call counts; all four termination reasons exercised "
                     "(CONVERGED, BUDGET_EXHAUSTED at exactly 40 iterations raising nothing, "
                     "STAGNANT, SINGULAR); golden oracle byte-identical post-wiring.",
-        "disclosure": "The wired transition loop lives in solver.py, whose module-wide mutation "
-                      "campaign was superseded (SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE.md) and is "
-                      "NOT resumed here per REV1 §21. Its mutation evidence is deferred to the "
-                      "final consolidated solver packet after Milestone D.",
+        "disclosure": "The wired transition loop itself lives in solver.py, whose module-wide "
+                      "mutation campaign was superseded (SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE"
+                      ".md) and is NOT resumed here per REV1 §22. Its own mutation evidence is "
+                      "deferred to the final consolidated solver packet after Milestone D.",
     },
     "hardening_rounds": 0,
     "survivor_classes": {},
@@ -123,11 +127,12 @@ idx = ["# STAGE3-0006C-C-REV1 Milestone C — mutation class index", "",
        "- (none — 100% of mutants killed on round 1)", "", "## Revised micro-gates", ""]
 for g in GATES:
     r = g["result"]
-    idx.append(f"- gate {g['gate']} {g['seam']}: killed {r['killed']}, "
+    idx.append(f"- gate {g['gate']} {g['name']}: killed {r['killed']}, "
                f"survived {r['survived']}, nonnormal {r['nonnormal']}")
-idx.append("- gate 6 iteration transition + non-convergence: FROZEN_LOOP_DIFFERENTIAL + GOLDEN "
-           "(8/8 exact, all termination reasons; solver.py module-wide mutation deferred to the "
-           "final consolidated packet)")
+idx.append("- damping gate: NOT_APPLICABLE (DAMPING_NOT_PRESENT_IN_REGISTERED_SOLVER)")
+idx.append("- transition/exhaustion wiring: FROZEN_LOOP_DIFFERENTIAL + GOLDEN (8/8 exact, all "
+           "termination reasons; solver.py module-wide mutation deferred to the final "
+           "consolidated packet)")
 (D / "SOLVER_MILESTONE_C_CLASS_INDEX.md").write_text("\n".join(idx) + "\n")
 
 print(json.dumps({"totals": consolidation["session"], "recon": recon,
