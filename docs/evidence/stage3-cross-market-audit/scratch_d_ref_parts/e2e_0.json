@@ -1,0 +1,29 @@
+{
+ "fixture": "unique_interior_root",
+ "domain": [
+  0.35,
+  0.9
+ ],
+ "targets": [
+  0.8955587270536368,
+  0.3996558518389512
+ ],
+ "production_status": "IDENTIFIED",
+ "reference_status": "IDENTIFIED",
+ "status_agree": true,
+ "production_root_count": 1,
+ "reference_root_count": 1,
+ "root_locations_agree_within_dedup_tol": true,
+ "production_roots": [
+  [
+   0.6800000822383033,
+   0.580000076601956
+  ]
+ ],
+ "reference_roots": [
+  [
+   0.6799999992434799,
+   0.5799999994154165
+  ]
+ ]
+}

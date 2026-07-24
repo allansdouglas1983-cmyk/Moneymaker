@@ -1,0 +1,215 @@
+{
+ "all_agree": false,
+ "approved_by": null,
+ "candidate_level": [
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "two_unrelated_roots",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": false
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "two_unrelated_roots",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": true
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "valid_close_cluster",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": false
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "valid_close_cluster",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": true
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "ambiguous_chain",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": false
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "ambiguous_chain",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": true
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "identical_roots_both_first_servers",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": false
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "identical_roots_both_first_servers",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": true
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "randomized_permutation",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": false
+  },
+  {
+   "ambiguity_agree": true,
+   "cluster_count_agree": true,
+   "diameters_agree": true,
+   "fixture": "randomized_permutation",
+   "membership_agree": true,
+   "representatives_agree": true,
+   "reversed": true
+  }
+ ],
+ "end_to_end": [
+  {
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "fixture": "unique_interior_root",
+   "production_root_count": 1,
+   "production_roots": [
+    [
+     0.6800000822383033,
+     0.580000076601956
+    ]
+   ],
+   "production_status": "IDENTIFIED",
+   "reference_root_count": 1,
+   "reference_roots": [
+    [
+     0.6799999992434799,
+     0.5799999994154165
+    ]
+   ],
+   "reference_status": "IDENTIFIED",
+   "root_locations_agree_within_dedup_tol": true,
+   "status_agree": true,
+   "targets": [
+    0.8955587270536368,
+    0.3996558518389512
+   ]
+  },
+  {
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "fixture": "no_root",
+   "production_root_count": 0,
+   "production_roots": [],
+   "production_status": "NO_ROOT",
+   "reference_root_count": 0,
+   "reference_roots": [],
+   "reference_status": "NO_ROOT",
+   "root_locations_agree_within_dedup_tol": true,
+   "status_agree": true,
+   "targets": [
+    0.98,
+    0.02
+   ]
+  },
+  {
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "fixture": "mirror_pair_multiple_roots",
+   "production_root_count": 1,
+   "production_roots": [
+    [
+     0.6199997776604679,
+     0.6599997286371028
+    ]
+   ],
+   "production_status": "IDENTIFIED",
+   "reference_root_count": 1,
+   "reference_roots": [
+    [
+     0.6202489838577241,
+     0.6602592161068556
+    ]
+   ],
+   "reference_status": "IDENTIFIED",
+   "root_locations_agree_within_dedup_tol": true,
+   "status_agree": true,
+   "targets": [
+    0.308914247162222,
+    0.5782644846675348
+   ]
+  },
+  {
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "fixture": "mirror_fixed_point",
+   "production_root_count": 3,
+   "production_roots": [
+    [
+     0.49626049993259075,
+     0.4962604999325911
+    ],
+    [
+     0.4996744791666667,
+     0.4996744791666667
+    ],
+    [
+     0.5043404473067234,
+     0.5043404473067243
+    ]
+   ],
+   "production_status": "MULTIPLE_ROOTS",
+   "reference_root_count": 1,
+   "reference_roots": [
+    [
+     0.49999999942687845,
+     0.49999999942687845
+    ]
+   ],
+   "reference_status": "NON_IDENTIFIABLE",
+   "root_locations_agree_within_dedup_tol": false,
+   "status_agree": false,
+   "targets": [
+    0.5,
+    0.551875114440918
+   ]
+  }
+ ],
+ "milestone": "STAGE3-0006C-D-REV2",
+ "reference_strategy": "own 17-node dense grid + local-minimum seeds + adaptive walk-then-shrink refinement + literal jacobian/boundary/status/union rules + brute-force fixpoint dedup; imports only the scoring generator and format contract (AST-enforced)",
+ "section": "\u00a717/\u00a720 production vs independent reference"
+}
