@@ -1,0 +1,218 @@
+{
+ "amendment": "STAGE3-0006C-D-A1 / CROSS_MARKET_COHERENCE_ROOT_DEDUP_AMENDMENT_V1",
+ "approved_by": null,
+ "behavioural_survivors": 0,
+ "gate_10_reference_architecture_boundary": {
+  "evidence": "test_root_dedup_independent.py::test_reference_module_is_independent enforces the import boundary; every production mutant also had to survive the brute-force reference agreement (representatives, members, exact diameters, partition order, ambiguity) across permutation, randomized, boundary, chain and multi-component fixtures - the reference acts as a second oracle inside every mutation job. The reference module itself is test-only and is not a cosmic-ray target.",
+  "method": "AST architecture test + agreement suite INSIDE the mutation test-command"
+ },
+ "gate_sum_equals_module_total": true,
+ "hardening_rounds": 1,
+ "harness": "tools/run_hardened_mutation.sh + tools/mutation_audit.py --require-clean",
+ "micro_gates": [
+  {
+   "definitions": [
+    "chebyshev_distance",
+    "have_edge"
+   ],
+   "gate": 1,
+   "name": "distance_and_strict_boundary",
+   "result": {
+    "killed": 29,
+    "nonnormal": 0,
+    "survived": 0
+   }
+  },
+  {
+   "definitions": [
+    "connected_components",
+    "find"
+   ],
+   "gate": 2,
+   "name": "graph_edge_construction_and_components",
+   "note": "A1 gates 2+3 (edge construction and connected components) share one code body; tallied together",
+   "result": {
+    "killed": 22,
+    "nonnormal": 0,
+    "survived": 24
+   }
+  },
+  {
+   "definitions": [
+    "component_diameter"
+   ],
+   "gate": 4,
+   "name": "diameter_and_ambiguity_refusal",
+   "result": {
+    "killed": 13,
+    "nonnormal": 0,
+    "survived": 10
+   }
+  },
+  {
+   "definitions": [
+    "representative_key",
+    "select_representative"
+   ],
+   "gate": 5,
+   "name": "canonical_representative",
+   "result": {
+    "killed": 5,
+    "nonnormal": 0,
+    "survived": 0
+   }
+  },
+  {
+   "definitions": [
+    "candidate_fingerprint",
+    "_cluster_provenance_digest",
+    "_validate_finite",
+    "RootCluster",
+    "<module>"
+   ],
+   "gate": 6,
+   "name": "provenance_preservation",
+   "result": {
+    "killed": 11,
+    "nonnormal": 0,
+    "survived": 0
+   }
+  },
+  {
+   "definitions": [
+    "cluster_order_key"
+   ],
+   "gate": 7,
+   "name": "canonical_ordering",
+   "result": {
+    "killed": 0,
+    "nonnormal": 0,
+    "survived": 0
+   }
+  },
+  {
+   "definitions": [
+    "deduplicate_roots",
+    "ambiguous",
+    "representatives",
+    "DedupReason",
+    "RootDeduplicationResult"
+   ],
+   "gate": 8,
+   "name": "public_status_mapping_and_result_assembly",
+   "result": {
+    "killed": 19,
+    "nonnormal": 0,
+    "survived": 12
+   }
+  },
+  {
+   "definitions": [
+    "serialize",
+    "digest"
+   ],
+   "gate": 9,
+   "name": "serialization_and_digest",
+   "result": {
+    "killed": 14,
+    "nonnormal": 0,
+    "survived": 0
+   }
+  }
+ ],
+ "per_definition": {
+  "<module>": {
+   "killed": 5,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "RootDeduplicationResult": {
+   "killed": 1,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "_validate_finite": {
+   "killed": 6,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "ambiguous": {
+   "killed": 6,
+   "nonnormal": 0,
+   "survived": 1
+  },
+  "chebyshev_distance": {
+   "killed": 22,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "component_diameter": {
+   "killed": 13,
+   "nonnormal": 0,
+   "survived": 10
+  },
+  "connected_components": {
+   "killed": 16,
+   "nonnormal": 0,
+   "survived": 22
+  },
+  "deduplicate_roots": {
+   "killed": 12,
+   "nonnormal": 0,
+   "survived": 11
+  },
+  "digest": {
+   "killed": 12,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "find": {
+   "killed": 6,
+   "nonnormal": 0,
+   "survived": 2
+  },
+  "have_edge": {
+   "killed": 7,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "representative_key": {
+   "killed": 5,
+   "nonnormal": 0,
+   "survived": 0
+  },
+  "serialize": {
+   "killed": 2,
+   "nonnormal": 0,
+   "survived": 0
+  }
+ },
+ "rounds_detail": {
+  "round_0": {
+   "killed": 106,
+   "survived": 53
+  },
+  "round_1": {
+   "added": "exact-diameter + partition-order reference comparisons; absolute sha256 digest pins; exact-tolerance-diameter chain; searched fingerprint-order-inversion fixtures",
+   "killed": 113,
+   "survived": 46
+  }
+ },
+ "session": {
+  "config": "docs/evidence/stage3-cross-market-audit/scripts/cr_root_dedup.toml",
+  "killed": 113,
+  "module": "sport_tennis/coherence/root_dedup.py",
+  "nonnormal": 0,
+  "survived": 46,
+  "total_specs": 159,
+  "untested": 0
+ },
+ "session_interruption_note": "The round-1 re-run exceeded the ten-minute window at 155/159 jobs; it was stopped, ~10 orphaned pytest workers were terminated by targeted PID (TERM then KILL, verified none remained), source was verified byte-identical to HEAD, and the resumable session completed the remaining 4 jobs in a second bounded foreground call. All 159 jobs are NORMAL; no timeout was scored as a survivor.",
+ "status_mapping_wiring_note": "The NON_IDENTIFIABLE mapping of the ambiguity refusal is wired in solver.py (_canonical_roots + _solve_one/identify), pinned by test_root_dedup.py::test_solver_chain_candidates_refuse_as_non_identifiable and the V2 golden; solver.py module-wide mutation remains superseded and deferred to the final consolidated packet (consistent with Milestones B/C disclosures).",
+ "survivor_classes": {
+  "EXACT_ALGEBRAIC_IDENTITY": 23,
+  "IDEMPOTENT_NO_SIDE_EFFECT": 1,
+  "POSTPONED_ANNOTATION_RUNTIME_INERT": 22
+ },
+ "unexplained_survivors": 0
+}
