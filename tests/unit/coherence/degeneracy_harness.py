@@ -16,7 +16,8 @@ from typing import Any
 
 from sport_tennis.coherence import solver as S
 from sport_tennis.coherence.formats import MatchFormat
-from sport_tennis.coherence.rootset import classify_overall, classify_per_solve
+from sport_tennis.coherence.rootset import (classify_overall, classify_per_solve,
+                                            within_boundary_tolerance)
 from sport_tennis.coherence.solver_iteration import residual_norm2_within_tolerance
 from sport_tennis.coherence.solver_scan import rank_seed_nodes
 
@@ -68,15 +69,15 @@ def solve_with_lattice(axis: list[float], a_first: bool, fmt: MatchFormat, line:
         pa, pb, r2 = S._refine(axis[i], axis[j], coarse_step, a_first, fmt, line, tw, to, lo, hi)
         converged = residual_norm2_within_tolerance(r2, S._ROOT_TOL)
         jac = S._jacobian_matrix(pa, pb, a_first, fmt, line, tw, to)
+        jac_det = jac.determinant()
+        on_b = within_boundary_tolerance(pa, pb, lo, hi, S._BOUNDARY_TOL)
         cand = {"seed": (i, j), "seed_coord": (axis[i], axis[j]), "p_a": pa, "p_b": pb,
-                "r2": r2, "converged": converged, "jacobian_det": jac.determinant(),
+                "r2": r2, "converged": converged, "jacobian_det": jac_det,
                 "condition_scale": jac.condition_scale(),
-                "singular": abs(jac.determinant()) < S._JAC_TOL,
-                "on_boundary": S.within_boundary_tolerance(pa, pb, lo, hi, S._BOUNDARY_TOL)}
+                "singular": abs(jac_det) < S._JAC_TOL, "on_boundary": on_b}
         candidates.append(cand)
         if converged:
-            found.append(S.Root(pa, pb, a_first, r2 ** 0.5, cand["jacobian_det"],
-                                cand["on_boundary"]))
+            found.append(S.Root(pa, pb, a_first, r2 ** 0.5, jac_det, on_b))
     roots, ambiguous = S._canonical_roots(found)
     status = classify_per_solve(ambiguous, roots, S._JAC_TOL)
     return {"axis": list(axis), "seeds": seeds, "candidates": candidates,
