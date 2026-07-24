@@ -3,7 +3,7 @@
 A full ``identify`` runs thousands of BO3 match-DP evaluations (~6s), so pinning solver numerics
 only through ``identify`` makes mutation testing take hours. Almost every solver mutant lives in a
 pure helper — ``_validate_domain``, ``_clamp``, ``_r2``, ``_residual``, ``_jacobian``,
-``_jacobian_det``, ``_dedup``, ``_refine`` — each callable directly with a handful of match-DP
+``_jacobian_det``, ``_canonical_roots``, ``_refine`` — each callable directly with a handful of match-DP
 evaluations (sub-millisecond to ~0.1s). Pinning their exact outputs here kills the residual/
 refinement/Jacobian/dedup arithmetic in milliseconds; only the ``_solve_one``/``identify``
 orchestration then needs the expensive identify (covered by test_solver_mutation_fast.py and
@@ -19,8 +19,8 @@ from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.scoring import CoherenceMathError
 from sport_tennis.coherence.solver import (
     Root,
+    _canonical_roots,
     _clamp,
-    _dedup,
     _jacobian,
     _jacobian_det,
     _r2,
@@ -91,14 +91,24 @@ def test_jacobian_det_is_cross_product() -> None:
         2.3626453508959155, abs=1e-6)
 
 
-# ----------------------------------------------------------------- _dedup
-def test_dedup_merges_within_tol_keeps_distinct() -> None:
+# ----------------------------------------------------------------- _canonical_roots
+# GOVERNED TEST REPLACEMENT (STAGE3-0006C-D-A1, specs/programme/
+# cross-market-coherence-root-dedup-amendment-v1.yaml): the previous test here pinned the removed
+# sequence-defined greedy first-seen _dedup (kept[0] is r1 by DISCOVERY order) — the exact defect
+# the founder amendment corrects. It is replaced, under the amendment's authority, by the
+# set-defined canonical pin: same merge/keep expectations, canonical (p_a-ascending) output order
+# and a canonical-key representative instead of first-seen.
+def test_canonical_roots_merges_within_tol_keeps_distinct() -> None:
     r1 = Root(0.68, 0.58, True, 0.0, 1.0, False)
     r2 = Root(0.6801, 0.5801, True, 0.0, 1.0, False)   # within _DEDUP_TOL of r1
     r3 = Root(0.40, 0.42, True, 0.0, 1.0, False)       # a distinct basin
-    kept = _dedup([r1, r2, r3])
+    kept, ambiguous = _canonical_roots([r1, r2, r3])
+    assert not ambiguous
     assert len(kept) == 2
-    assert kept[0] is r1 and kept[1] is r3              # first-seen kept; near-duplicate dropped
+    # canonical order (p_a ascending): r3 first; the r1/r2 cluster's representative is r1
+    # (residual tie 0.0 -> lower p_a wins), independent of input order.
+    assert kept == (r3, r1)
+    assert _canonical_roots([r2, r3, r1])[0] == (r3, r1)   # permutation-invariant
 
 
 # ----------------------------------------------------------------- _refine

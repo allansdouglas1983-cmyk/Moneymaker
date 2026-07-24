@@ -25,6 +25,7 @@ from decimal import Decimal
 from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.match import match_distribution
 from sport_tennis.coherence.pmf import over_under
+from sport_tennis.coherence.root_dedup import deduplicate_roots
 from sport_tennis.coherence.solver_contracts import (
     Jacobian2x2,
     ResidualVector2,
@@ -219,12 +220,13 @@ def _jacobian_det(p_a: float, p_b: float, a_first: bool, fmt: MatchFormat, line:
     return _jacobian_matrix(p_a, p_b, a_first, fmt, line, tw, to).determinant()
 
 
-def _dedup(roots: list[Root]) -> list[Root]:
-    kept: list[Root] = []
-    for r in roots:
-        if not any(max(abs(r.p_a - k.p_a), abs(r.p_b - k.p_b)) < _DEDUP_TOL for k in kept):
-            kept.append(r)
-    return kept
+def _canonical_roots(candidates: list[Root]) -> tuple[tuple[Root, ...], bool]:
+    """Set-defined canonical deduplication (STAGE3-0006C-D-A1, replaces the sequence-defined
+    greedy first-seen rule). Returns the canonically ordered valid-cluster representatives and
+    whether any non-transitive tolerance chain was refused (AMBIGUOUS_ROOT_TOLERANCE_CHAIN —
+    mapped by callers to the existing public NON_IDENTIFIABLE)."""
+    result = deduplicate_roots(candidates, _DEDUP_TOL)
+    return result.representatives(), result.ambiguous
 
 
 def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
@@ -250,20 +252,23 @@ def _solve_one(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: fl
             jd = _jacobian_det(pa, pb, a_first, fmt, line, tw, to)
             found.append(Root(pa, pb, a_first, r2 ** 0.5, jd, on_b))
 
-    found = _dedup(found)
-    if not found:
+    roots, ambiguous = _canonical_roots(found)
+    if ambiguous:
+        # a non-transitive tolerance chain: the root set is not well-defined (amendment §4.3)
+        status = NON_IDENTIFIABLE
+    elif not roots:
         status = NO_ROOT
-    elif len(found) > 1:
+    elif len(roots) > 1:
         status = MULTIPLE_ROOTS
     else:
-        r = found[0]
+        r = roots[0]
         if is_singular(r.jacobian_det, _JAC_TOL):
             status = NON_IDENTIFIABLE
         elif r.on_boundary:
             status = BOUNDARY_SOLUTION
         else:
             status = IDENTIFIED
-    return ServerSolve(a_serves_first=a_first, status=status, roots=tuple(found))
+    return ServerSolve(a_serves_first=a_first, status=status, roots=roots)
 
 
 def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: MatchFormat, *,
@@ -285,8 +290,11 @@ def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: 
         overall = MULTIPLE_ROOTS
     else:
         valid = [s for s in per if s.status in (IDENTIFIED, BOUNDARY_SOLUTION)]
-        union = _dedup([r for s in valid for r in s.roots])
-        if not union:
+        union, union_ambiguous = _canonical_roots([r for s in valid for r in s.roots])
+        if union_ambiguous:
+            # a cross-assignment tolerance chain: refusal dominates (amendment §4.3)
+            overall = NON_IDENTIFIABLE
+        elif not union:
             overall = NO_ROOT
         elif len(union) == 1:
             overall = BOUNDARY_SOLUTION if union[0].on_boundary else IDENTIFIED
@@ -294,9 +302,11 @@ def identify(target_match_win_a: float, target_over: float, line: Decimal, fmt: 
             # Serve assignments disagree on (p_a, p_b): first server matters here. The solver
             # flags sensitivity; it does NOT judge materiality (founder-pending threshold).
             overall = FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
-        return IdentificationResult(status=overall, roots=tuple(union), per_server=per,
+        return IdentificationResult(status=overall, roots=union, per_server=per,
                                     domain=domain, line=line, fmt=fmt)
 
-    union = _dedup([r for s in per for r in s.roots])
-    return IdentificationResult(status=overall, roots=tuple(union), per_server=per,
+    union, union_ambiguous = _canonical_roots([r for s in per for r in s.roots])
+    if union_ambiguous:
+        overall = NON_IDENTIFIABLE
+    return IdentificationResult(status=overall, roots=union, per_server=per,
                                 domain=domain, line=line, fmt=fmt)
