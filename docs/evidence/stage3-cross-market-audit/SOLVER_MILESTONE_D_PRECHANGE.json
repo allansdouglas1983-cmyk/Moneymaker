@@ -1,0 +1,77 @@
+{
+ "approved_by": null,
+ "boundary_root_definition": "min(pa-lo, hi-pa, pb-lo, hi-pb) < _BOUNDARY_TOL (0.005) \u2014 strict <, computed per root at acceptance time",
+ "canonical_ordering": "NONE \u2014 roots appear in DISCOVERY ORDER (seed rank order within a solve; sa-then-sb within the union); no sort is applied to the public roots tuple (the golden test sorts for comparison, the solver does not)",
+ "commit": "30155aaf6c08c669e76088ea3352e21ae0d8d531",
+ "comparison_boundary": "STRICT <: distance < _DEDUP_TOL merges; distance == _DEDUP_TOL keeps both (solver.py _dedup)",
+ "deduplication_algorithm": "greedy first-seen: iterate candidates in sequence order; keep a candidate iff its Chebyshev distance to EVERY already-kept root is >= _DEDUP_TOL (literally: not any(dist < tol)); the FIRST-SEEN representative of an equivalence neighbourhood is retained, later equivalents are discarded",
+ "digests": {
+  "golden_oracle": "sha256:e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+  "solver.py": "sha256:5de7f898d18a6044656442387ed3f13ce1440f73fa1d933986c1e706a0d63584",
+  "solver_contracts.py": "sha256:de9e9e72598bc2770f361a1e82e0a28bc51f5e73097e7a43f7aa916db031ce6d",
+  "solver_iteration.py": "sha256:90dd7ca6a804ca6f0221756db4066ed3335b7be2d27bc77205bd2d31eaea6dea",
+  "solver_scan.py": "sha256:79b37d67c1fd479d74dc967ab226edf63933c0e43c952906d1135b22acb75f8c"
+ },
+ "equivalence_relation_transitivity": "NOT transitive (tolerance relation): A~B and B~C do not imply A~C \u2014 demonstrated below",
+ "exception_behaviour": "CoherenceMathError on invalid domain/targets/line (validators) and on math-layer refusals; no exception from iteration exhaustion",
+ "existing_root_types": {
+  "IdentificationResult": "frozen dataclass (status, roots tuple, per_server pair, domain, line, fmt) \u2014 the public result",
+  "Root": "frozen dataclass (p_a, p_b, a_serves_first, residual=sqrt(r2), jacobian_det, on_boundary) \u2014 the existing RootCandidate; finite-only via the root gate",
+  "ServerSolve": "frozen dataclass (a_serves_first, status, roots tuple) \u2014 per-assignment"
+ },
+ "first_server_semantics": "both assignments solved independently (_solve_one twice); per_server preserves both verbatim; overall: NON_IDENTIFIABLE > MULTIPLE_ROOTS > union of roots from assignments with status in {IDENTIFIED, BOUNDARY_SOLUTION}, deduplicated; empty union -> NO_ROOT; single union root -> BOUNDARY_SOLUTION/IDENTIFIED; >1 union root -> FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD (never averaged, never merged beyond the dedup)",
+ "golden_root_sets": "tests/unit/coherence/golden/solver_behaviour_golden.json \u2014 6 identify cases (IDENTIFIED x2, MULTIPLE_ROOTS x2, NON_IDENTIFIABLE, NO_ROOT)",
+ "milestone": "STAGE3-0006C-D-REV1",
+ "mirror_handling": "NONE STRUCTURALLY: no mirror transformation, detection or classification exists anywhere in the solver; a mirror pair (p_a, p_b)/(1-p_a, 1-p_b) surfaces only generically as two roots -> MULTIPLE_ROOTS. (Module docstring commentary about mirror degeneracy describes the mathematics, not any implemented machinery.)",
+ "order_dependence_audit": {
+  "chain_fixture": {
+   "A": 0.5,
+   "B": 0.5009,
+   "C": 0.5018,
+   "pairwise": "|A-B|=9e-4 (equiv), |B-C|=9e-4 (equiv), |A-C|=1.8e-3 (NOT equiv)"
+  },
+  "chain_results_p_a_kept": {
+   "A_B_C": [
+    0.5,
+    0.5018
+   ],
+   "B_A_C": [
+    0.5009
+   ],
+   "C_B_A": [
+    0.5018,
+    0.5
+   ]
+  },
+  "chain_root_counts": {
+   "A_B_C": 2,
+   "B_A_C": 1,
+   "C_B_A": 2
+  },
+  "first_server_union_note": "identify's union dedup (sa roots then sb roots, same predicate) retains the A-serves-first representative whenever the two assignments produce equivalent roots \u2014 reversing evaluation order would retain the B-first representative (different float coordinates and a_serves_first provenance in the public output).",
+  "method": "executed against the REAL production _dedup with constructed Root instances",
+  "output_depends_on_candidate_order": true,
+  "production_determinism_note": "the PRODUCTION pipeline feeds _dedup a DETERMINISTIC candidate order (rank_seed_nodes residual-norm/index ranking -> per-seed refinement -> _solve_one append order; identify unions sa-roots-then-sb-roots), so the public result is a deterministic function of public inputs and the golden is stable. The gap is SEMANTIC: the deduplicated root set is a function of the candidate SEQUENCE, not of the candidate SET.",
+  "public_status_impact": "a permutation that changes the kept-root count changes the public status (2 kept -> MULTIPLE_ROOTS; 1 kept -> IDENTIFIED/NON_IDENTIFIABLE/BOUNDARY_SOLUTION path)",
+  "representative_results_p_a_kept": {
+   "A_B": [
+    0.5
+   ],
+   "B_A": [
+    0.5009
+   ]
+  },
+  "root_count_changes_under_permutation": true,
+  "tolerance": 0.001
+ },
+ "root_comparison_metric": "Chebyshev / infinity norm on coordinates: max(|p_a1-p_a2|, |p_b1-p_b2|)",
+ "root_coordinate_representation": "float (p_a, p_b), produced by grid refinement + Newton polish, clamped into [lo, hi]",
+ "root_count_logic": {
+  "multiple": "MULTIPLE_ROOTS (per-solve: len(found) > 1 BEFORE the degeneracy check \u2014 multiplicity dominates singularity per-root classification; identify: NON_IDENTIFIABLE under EITHER assignment dominates, then MULTIPLE_ROOTS under either, then the union path)",
+  "one": "NON_IDENTIFIABLE if abs(jacobian_det) < _JAC_TOL (strict); else BOUNDARY_SOLUTION if on_boundary; else IDENTIFIED (per-solve); identify: BOUNDARY_SOLUTION if the single union root is on_boundary else IDENTIFIED",
+  "zero": "status NO_ROOT"
+ },
+ "root_equivalence_tolerance": 0.001,
+ "section": "\u00a74 pre-change root-semantics freeze",
+ "serialization": "NONE built into the result types (frozen dataclasses only; the golden test serializes ad hoc); no digest method exists on Root/ServerSolve/IdentificationResult"
+}
