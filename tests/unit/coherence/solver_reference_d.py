@@ -66,9 +66,13 @@ def _jac_det(pa: float, pb: float, a_first: bool, fmt: MatchFormat, line: Decima
 
 
 def ref_solve_assignment(a_first: bool, fmt: MatchFormat, line: Decimal, tw: float, to: float,
-                         lo: float, hi: float, n: int = 27) -> list[RefRoot]:
-    """Own dense scan (n x n, deliberately != production 13) + own shrink refinement."""
-    axis = [lo + (hi - lo) * k / (n - 1) for k in range(n)]
+                         lo: float, hi: float, n: int = 27,
+                         axis: list[float] | None = None) -> list[RefRoot]:
+    """Own dense scan (n x n, deliberately != production 13) + own shrink refinement. A2 §7:
+    an explicit axis may be supplied for the predeclared R1/R2 resolution audit."""
+    if axis is None:
+        axis = [lo + (hi - lo) * k / (n - 1) for k in range(n)]
+    n = len(axis)
     norms = [[_norm2(ref_residual(a, b, a_first, fmt, line, tw, to)) for b in axis] for a in axis]
     seeds = []
     for i in range(n):
@@ -112,11 +116,11 @@ def ref_solve_assignment(a_first: bool, fmt: MatchFormat, line: Decimal, tw: flo
 
 
 def ref_identify(fmt: MatchFormat, line: Decimal, tw: float, to: float,
-                 lo: float, hi: float) -> dict[str, Any]:
+                 lo: float, hi: float, axis: list[float] | None = None) -> dict[str, Any]:
     """Literal end-to-end reference: both assignments, literal per-solve status, literal union."""
     per = {}
     for a_first in (True, False):
-        cands = ref_solve_assignment(a_first, fmt, line, tw, to, lo, hi)
+        cands = ref_solve_assignment(a_first, fmt, line, tw, to, lo, hi, axis=axis)
         dd = ref_dedup(cands, _DEDUP_TOL)
         reps = dd["representatives"]
         if dd["ambiguous"]:
