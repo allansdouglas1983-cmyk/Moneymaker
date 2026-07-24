@@ -1,15 +1,12 @@
 {
  "approved_by": null,
  "behavioural_survivors": 0,
- "gate_6_transition_nonconvergence": {
-  "disclosure": "The wired transition loop lives in solver.py, whose module-wide mutation campaign was superseded (SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE.md) and is NOT resumed here per REV1 \u00a721. Its mutation evidence is deferred to the final consolidated solver packet after Milestone D.",
-  "evidence": "SOLVER_MILESTONE_C_DIFFERENTIAL.json \u2014 8/8 fixtures exact-equal finals with equal _residual call counts; all four termination reasons exercised (CONVERGED, BUDGET_EXHAUSTED at exactly 40 iterations raising nothing, STAGNANT, SINGULAR); golden oracle byte-identical post-wiring.",
-  "method": "FROZEN_LOOP_DIFFERENTIAL + GOLDEN (not cosmic-ray)"
- },
+ "damping_mutation_gate": "NOT_APPLICABLE",
+ "damping_mutation_gate_reason": "DAMPING_NOT_PRESENT_IN_REGISTERED_SOLVER",
  "gate_definition_coverage": {
-  "covered_by_gates_1_to_5": 229,
+  "covered_by_gates_1_to_6": 229,
   "module_total": 229,
-  "note": "every mutation spec maps to a gate-1..5 definition; the two <module>-scope specs are the NewtonStep2 @dataclass(frozen=True) decorator mutants (frozen->False and decorator removal), attributed to gate 3 and killed by the frozen-contract test; newton_converged, inf_norm and serialize contain no mutable operators and so carry zero specs"
+  "note": "every mutation spec maps to a gate-1..6 definition; the two <module>-scope specs are the NewtonStep2 @dataclass(frozen=True) decorator mutants (frozen->False and decorator removal), attributed to gate 3 and killed by the frozen-contract test; newton_converged, inf_norm and serialize contain no mutable operators and so carry zero specs"
  },
  "hardening_rounds": 0,
  "harness": "tools/run_hardened_mutation.sh (isolated_exec-wrapped; source restored + proven byte-identical to HEAD on exit; audited by tools/mutation_audit.py --require-clean).",
@@ -20,12 +17,12 @@
     "residual_norm2_within_tolerance"
    ],
    "gate": 1,
+   "name": "convergence",
    "result": {
     "killed": 18,
     "nonnormal": 0,
     "survived": 0
-   },
-   "seam": "convergence (residual-only, inclusive)"
+   }
   },
   {
    "definitions": [
@@ -34,12 +31,12 @@
     "_require_index"
    ],
    "gate": 2,
+   "name": "iteration_budget",
    "result": {
     "killed": 32,
     "nonnormal": 0,
     "survived": 0
-   },
-   "seam": "iteration budget (range semantics + increment + type refusal)"
+   }
   },
   {
    "definitions": [
@@ -51,12 +48,12 @@
     "<module>"
    ],
    "gate": 3,
+   "name": "newton_step",
    "result": {
     "killed": 97,
     "nonnormal": 0,
     "survived": 0
-   },
-   "seam": "Newton step (exact 2x2 Cramer + NewtonStep2 contract)"
+   }
   },
   {
    "definitions": [
@@ -64,25 +61,36 @@
     "apply_step_clamped"
    ],
    "gate": 4,
+   "name": "clamp_projection",
    "result": {
     "killed": 38,
     "nonnormal": 0,
     "survived": 0
-   },
-   "seam": "clamp projection + full-step application (damping WITHDRAWN by REV1 \u00a71)"
+   }
   },
   {
    "definitions": [
-    "is_stagnant",
-    "prefer_newton_candidate"
+    "is_stagnant"
    ],
    "gate": 5,
+   "name": "stagnation_and_transition",
    "result": {
-    "killed": 44,
+    "killed": 37,
     "nonnormal": 0,
     "survived": 0
-   },
-   "seam": "stagnation + final grid-vs-Newton selection"
+   }
+  },
+  {
+   "definitions": [
+    "prefer_newton_candidate"
+   ],
+   "gate": 6,
+   "name": "final_grid_vs_newton_selection_and_exhaustion",
+   "result": {
+    "killed": 7,
+    "nonnormal": 0,
+    "survived": 0
+   }
   }
  ],
  "milestone": "STAGE3-0006C-C-REV1",
@@ -154,5 +162,10 @@
   "untested": 0
  },
  "survivor_classes": {},
+ "transition_and_exhaustion_wiring_evidence": {
+  "disclosure": "The wired transition loop itself lives in solver.py, whose module-wide mutation campaign was superseded (SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE.md) and is NOT resumed here per REV1 \u00a722. Its own mutation evidence is deferred to the final consolidated solver packet after Milestone D.",
+  "evidence": "SOLVER_MILESTONE_C_DIFFERENTIAL.json \u2014 8/8 fixtures exact-equal finals with equal _residual call counts; all four termination reasons exercised (CONVERGED, BUDGET_EXHAUSTED at exactly 40 iterations raising nothing, STAGNANT, SINGULAR); golden oracle byte-identical post-wiring.",
+  "method": "FROZEN_LOOP_DIFFERENTIAL + GOLDEN (complements the gate-5/gate-6 seam mutants)"
+ },
  "unexplained_survivors": 0
 }

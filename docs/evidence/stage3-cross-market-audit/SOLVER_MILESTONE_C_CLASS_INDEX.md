@@ -13,9 +13,11 @@ hardening rounds: 0
 
 ## Revised micro-gates
 
-- gate 1 convergence (residual-only, inclusive): killed 18, survived 0, nonnormal 0
-- gate 2 iteration budget (range semantics + increment + type refusal): killed 32, survived 0, nonnormal 0
-- gate 3 Newton step (exact 2x2 Cramer + NewtonStep2 contract): killed 97, survived 0, nonnormal 0
-- gate 4 clamp projection + full-step application (damping WITHDRAWN by REV1 §1): killed 38, survived 0, nonnormal 0
-- gate 5 stagnation + final grid-vs-Newton selection: killed 44, survived 0, nonnormal 0
-- gate 6 iteration transition + non-convergence: FROZEN_LOOP_DIFFERENTIAL + GOLDEN (8/8 exact, all termination reasons; solver.py module-wide mutation deferred to the final consolidated packet)
+- gate 1 convergence: killed 18, survived 0, nonnormal 0
+- gate 2 iteration_budget: killed 32, survived 0, nonnormal 0
+- gate 3 newton_step: killed 97, survived 0, nonnormal 0
+- gate 4 clamp_projection: killed 38, survived 0, nonnormal 0
+- gate 5 stagnation_and_transition: killed 37, survived 0, nonnormal 0
+- gate 6 final_grid_vs_newton_selection_and_exhaustion: killed 7, survived 0, nonnormal 0
+- damping gate: NOT_APPLICABLE (DAMPING_NOT_PRESENT_IN_REGISTERED_SOLVER)
+- transition/exhaustion wiring: FROZEN_LOOP_DIFFERENTIAL + GOLDEN (8/8 exact, all termination reasons; solver.py module-wide mutation deferred to the final consolidated packet)

@@ -72,14 +72,18 @@ One hardened foreground session (isolated_exec harness; source restored & proven
 audited clean): **229 specs, 229 killed, 0 survivors, 0 non-normal, 0 untested. Hardening
 rounds: 0.**
 
-| gate | seam | killed |
-|------|------|-------:|
+| gate | REV1 name | killed |
+|------|-----------|-------:|
 | 1 | convergence | 18 |
-| 2 | iteration budget | 32 |
-| 3 | Newton step + NewtonStep2 (incl. 2 frozen-decorator mutants) | 97 |
-| 4 | clamp projection + step application | 38 |
-| 5 | stagnation + final selection | 44 |
-| 6 | transition/non-convergence | frozen-loop differential + golden (see disclosure) |
+| 2 | iteration_budget | 32 |
+| 3 | newton_step (incl. 2 frozen-decorator mutants) | 97 |
+| 4 | clamp_projection | 38 |
+| 5 | stagnation_and_transition | 37 |
+| 6 | final_grid_vs_newton_selection_and_exhaustion | 7 |
+
+`damping_mutation_gate: NOT_APPLICABLE` — `reason: DAMPING_NOT_PRESENT_IN_REGISTERED_SOLVER`.
+The session was re-run fresh against the FINAL test set (including the full-text §7/§10/§11/§13
+pins added in commit efdb879): identical 229/229 result, audited clean.
 
 **Gate-6 disclosure:** the wired transition loop lives in `solver.py`, whose module-wide mutation
 campaign was superseded (`SOLVER_MUTATION_PARTIAL_SESSION_CLOSURE.md`) and is not resumed per
@@ -94,9 +98,17 @@ classes: none. Behavioural survivors: 0. Unexplained survivors: 0.
 ## Artifacts
 
 `SOLVER_MILESTONE_C_PRECHANGE.json` (amended, `29abda9b…`) · `SOLVER_MILESTONE_C_DIFFERENTIAL.json`
-(`e6def3ed…`) · `SOLVER_MILESTONE_C_MUTATION_CONSOLIDATION.json` (`e68e8ff7…`) ·
-`SOLVER_MILESTONE_C_CLASS_INDEX.md` (`c39756b9…`) · `SOLVER_MILESTONE_C_RECONCILIATION.json`
-(`bd255be6…`) · `scripts/` (freeze/differential/consolidation builders + cosmic-ray config).
+(`e6def3ed…`) · `SOLVER_MILESTONE_C_MUTATION_CONSOLIDATION.json` ·
+`SOLVER_MILESTONE_C_CLASS_INDEX.md` · `SOLVER_MILESTONE_C_RECONCILIATION.json` ·
+`SOLVER_MILESTONE_C_NOT_USED_FEATURES.json` (seven §1 findings with source-line evidence,
+architecture implication and no-placeholder confirmation; the §14
+NON_CONVERGED_STATUS_REGISTERED_BUT_NOT_EMITTED record; and the separately-identified
+NONFINITE_PASSTHROUGH_INCIDENTAL behaviour, identified and deliberately not corrected) ·
+`scripts/` (freeze/differential/consolidation/NOT_USED builders + cosmic-ray config).
+
+*Directive-text note:* REV1 first arrived truncated mid-§5; the milestone was executed and then
+gap-checked against the full text when it arrived (commit efdb879 closes the deltas: the §20
+NOT_USED artifact, exact §19 gate names + NOT_APPLICABLE record, and the §7/§10/§11/§13 pins).
 
 `FULL_VERIFY_PENDING_DEDICATED_FOREGROUND_TURN` — targeted verification only in this milestone;
 full `make verify` remains reserved for the dedicated turn.
