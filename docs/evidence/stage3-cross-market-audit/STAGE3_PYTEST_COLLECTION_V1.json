@@ -1,0 +1,12 @@
+{
+ "collection_command": "uv run pytest tests/unit tests/integration tests/properties tests/stateful tests/failure_injection --collect-only -q",
+ "collection_end_utc": "2026-07-24T23:59:51Z",
+ "collection_exit_code": 0,
+ "collection_start_utc": "2026-07-24T23:59:29Z",
+ "duplicate_node_ids": 0,
+ "node_id_digest": "sha256:89c40f9548466f49e42f1a59af9d4065f3fce82edc171705cf6bd7fea8c075ae",
+ "second_collection_identical": true,
+ "skipped_at_collection": 0,
+ "total_collected": 3097,
+ "unique_test_file_count": 209
+}

@@ -1,0 +1,28 @@
+# APPEND-ONLY execution-policy amendment. Does NOT modify the Makefile verify target.
+amendment_id: STAGE3_SHARDED_VERIFICATION_POLICY_V1
+authority: founder
+directive: STAGE3-0006C-D-A3-VERIFY-V1
+reason: >
+  The execution environment imposes a hard ~600s foreground-command cap. The full-repository
+  pytest workload selected by `make verify` cannot complete in one attached command, and
+  detached/background execution is prohibited. This authorises one deterministic,
+  coverage-complete, foreground-sharded execution of the EXACT `make verify` gate.
+original_gate: "the exact current `make verify` Makefile target (Makefile sha256 sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae)"
+permitted_substitute_in_this_environment: FULL_VERIFY_SHARDED_V1
+rules:
+  - every non-pytest gate runs through its exact Makefile command
+  - the pytest collection equals the exact collection selected by the current make verify pytest command
+  - every collected pytest node is executed in exactly one successful shard
+  - no test, file, marker, directory or plugin may be omitted
+  - no xfail, skip, timeout, tolerance, assertion or expected result may be changed
+  - no test may be rewritten to run faster
+  - no source behavior may be changed to satisfy verification
+  - adding JUnit/logging arguments is permitted only where behavior-neutral
+  - timed-out attempts are operational incidents, never passing evidence
+  - a timed-out shard is split and rerun from clean source state
+  - a single test node that cannot finish within the foreground cap -> STOP_SINGLE_TEST_EXCEEDS_CAP
+  - FULL_VERIFY_SHARDED_PASS is accepted for Stage-3 engineering, founder adjudication and
+    synthetic/research progression
+  - a monolithic `make verify` remains REQUIRED in a capable environment before public release,
+    multi-user exposure, real-money canary, automated execution, production deployment
+  - this policy does not authorise June coherence, outcomes, tips or execution

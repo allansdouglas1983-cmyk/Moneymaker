@@ -1,0 +1,33 @@
+{
+ "active_pytest_make_cosmic_python_workers": "NONE",
+ "branch": "claude/project-files-followup-dif8al",
+ "clean_working_tree": false,
+ "commit": "b712b3b9d6d50883f283b13d9b26e21f17e4bd9f",
+ "governing_golden_digest": "sha256:f21e2aa72c7d3f75810d3bdc98230af56c1fbcc9217eed5249238ac41f63f980",
+ "governing_registration_digest": "sha256:45bc96caf28de7ad1bc456d7d3f98cfcedf2e3060418f6519d712a6c91cc816b",
+ "installed_plugins": {
+  "hypothesis": "6.156.6",
+  "pytest": "9.1.1"
+ },
+ "integrity": "PASS",
+ "makefile_sha256": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
+ "prior_interrupted_verify_record_digest": "sha256:5b2d6652baefde33a45f4823dbbc42b5f64a88aaada3ffdc94c5ba5847165cab",
+ "pytest_addopts_env": "<unset>",
+ "pytest_affecting_env_vars": "(none present)",
+ "pytest_ini_addopts": "--strict-markers",
+ "pytest_version": "9.1.1",
+ "python_implementation": "CPython",
+ "python_version_full": "3.11.15 (main, Mar  3 2026, 09:26:23) [GCC 13.3.0]",
+ "stage3_source_digests": {
+  "sport_tennis/coherence/discretisation_stability.py": "59f85bbd494808360aa25e0be19b5fab88eeec84",
+  "sport_tennis/coherence/scan_variants.py": "972763cb167bac3d2c89dc0dd7b4bf589f360344",
+  "sport_tennis/coherence/solver.py": "3548340a44a51835916b1a012d1b843e122f0c97"
+ },
+ "tool_versions": {
+  "cosmic-ray": "8.4.6",
+  "mypy": "2.3.0",
+  "pylint": "4.0.6",
+  "ruff": "0.15.21"
+ },
+ "venv_digest_uv_lock": "sha256:460babf89cb6efb9111404830832c2cb928e9e711682c031665fe552f70fffe6"
+}
