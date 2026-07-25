@@ -1,0 +1,102 @@
+# APPEND-ONLY release record. Extends (never rewrites) personal-tennis-assistant-v0-registration.yaml.
+record_id: PERSONAL_TENNIS_ASSISTANT_V0_RELEASE_V1
+authority: founder
+directive: PROGRAMME RESET AND OPERATIONAL V0 RELEASE §6/§7
+recorded_utc: '2026-07-25'
+status: OPERATIONAL_V0_RELEASED
+tier: TIER_B                      # user-visible prediction output (programme-operating-model-v1)
+
+posture:
+  private: true
+  single_user: true
+  local_only: true
+  offline: true                   # no network call anywhere in the package
+  manual_input_capable: true
+  research_shadow_only: true
+  paid_api_required: false
+  public_server: false
+  automatic_betting: false
+  stake_recommendation: false
+
+final_probability:
+  source: MARKET
+  method: info-price-v2 (sport_tennis.market_yardstick.market_probabilities_from_book)
+  rule: the market probability is the ONLY final V0 probability
+f2_v1:
+  role: DIAGNOSTIC ONLY
+  label: MODEL_DIAGNOSTIC_NOT_MARKET_PROVEN
+  rule: >
+    displayed separately; never replaces, overrides or perturbs the final probability;
+    unavailable (never fabricated) when identity is unresolved or history is below the floor
+  rating_state: read from a founder-supplied frozen F2-v1 JSON snapshot; no model is fitted
+
+manual_input_contract:
+  required: [competitor_a, competitor_b, tour(ATP|WTA), scheduled_start_ms, input_timestamp_ms,
+             source, back_a, back_a_size, lay_a, lay_a_size, back_b, back_b_size, lay_b,
+             lay_b_size, market_status, in_play]
+  optional: [competitor_a_id, competitor_b_id, market_id, event_id]
+  sources: [MANUAL_BETFAIR_UI, LOCAL_SNAPSHOT_JSON]
+validation:
+  - canonical Betfair ladder tick validation (exact Decimal; floats refused)
+  - finite positive prices (ladder membership)
+  - two-sided book (positive size on both sides of both competitors) -> ONE_SIDED_BOOK
+  - no crossed book -> CROSSED_BOOK
+  - pre-match only (in_play refused; input_timestamp_ms <= scheduled_start_ms)
+  - open market only -> MARKET_SUSPENDED
+  - timestamp required (positive int)
+  - immutable input (frozen dataclass)
+  - unresolved identity visible -> IDENTITY_UNRESOLVED
+  - no retrospective pre-match entry after the scheduled start
+
+output_contract:
+  - market probability per competitor
+  - back/lay implied-probability interval per competitor
+  - market fair odds per competitor
+  - market timestamp + quote age
+  - data-quality status
+  - F2-v1 diagnostic probability + label + history coverage
+  - market-versus-F2 disagreement
+  - deterministic reason codes
+  - final V0 status + economic posture
+  - data / model-view / policy digests
+prohibited_outputs: [expected value, betting edge, recommended side, stake, ROI, P&L, CLV,
+                     order instruction, tip]
+
+statuses:
+  allowed: [INSUFFICIENT_DATA, MARKET_UNAVAILABLE, MARKET_ONLY, MODEL_VIEW_ONLY,
+            NO_BET_RESEARCH_ONLY]
+  structurally_prohibited: [SHADOW_CANDIDATE, BET_CANDIDATE, BET_AUTHORIZED, PLACE_BET,
+                            STAKE_RECOMMENDATION]
+reason_code_registry: assistant-v0-reasons-v2   # append-only extension adding ONE_SIDED_BOOK
+status_registry: assistant-v0-status-v1
+
+interface:
+  entry_point: "python -m assistant_v0.cli"
+  subcommands:
+    assess: --snapshot --reference-time-ms [--ratings --out --html --ledger --record-id --created-at-ms]
+    settle: --ledger --record-id --winner{A|B}
+    ledger: --ledger
+  banner: "RESEARCH / SHADOW ONLY — NO BET RECOMMENDATION"
+  server_required: false
+  account_system: false
+  credentials_in_repo: false
+
+shadow_ledger:
+  format: append-only JSONL
+  pre_match_record: immutable; NO outcome/winner/P&L/bet field is representable
+  settlement: separate append; references an existing pre-match record; refuses duplicates
+  scores: log loss + Brier, market and F2 diagnostic kept separate
+  exclusions: explicit reason (NO_MARKET_PROBABILITY); a missing number is never invented
+  money_fields: none
+
+quarantine:
+  proven_by: tools/check_import_quarantine.py (in make verify) + an acceptance test
+  forbidden_from_assistant_v0: [l5_decision, l5b_risk, l6_broker, l7_settle, research.xmarket,
+                                sport_tennis.coherence]
+coherence_usage: NONE — the coherence programme is PARKED and unused by V0
+
+evidence:
+  quickstart: docs/v0/QUICKSTART.md
+  sample: docs/v0/sample/ (snapshot, ratings, JSON output, rendered HTML report)
+  acceptance_tests: tests/unit/assistant_v0/test_v0_acceptance_end_to_end.py
+  property_tests: tests/properties/assistant_v0/test_v0_properties.py

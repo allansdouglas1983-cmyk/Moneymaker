@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from enum import Enum
 
-REASON_CODE_REGISTRY_VERSION = "assistant-v0-reasons-v1"
+# v2 (PROGRAMME RESET AND OPERATIONAL V0 RELEASE §6): APPEND-ONLY extension adding
+# ONE_SIDED_BOOK for the mandated two-sided-book validation. No token was removed or
+# renamed; every v1 token retains its exact meaning.
+REASON_CODE_REGISTRY_VERSION = "assistant-v0-reasons-v2"
 
 
 class ReasonCode(Enum):
@@ -27,5 +30,6 @@ class ReasonCode(Enum):
     MARKET_SUSPENDED = "MARKET_SUSPENDED"
     MARKET_IN_PLAY = "MARKET_IN_PLAY"
     CROSSED_BOOK = "CROSSED_BOOK"
+    ONE_SIDED_BOOK = "ONE_SIDED_BOOK"
     IDENTITY_UNRESOLVED = "IDENTITY_UNRESOLVED"
     RESEARCH_ONLY_NO_BET = "RESEARCH_ONLY_NO_BET"

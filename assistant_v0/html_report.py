@@ -48,6 +48,7 @@ def render_html(output: dict[str, Any], *, xmarket_view: dict[str, Any] | None =
         ("Best back / lay A", f"{output.get('best_back_a')} / {output.get('best_lay_a')}"),
         ("Best back / lay B", f"{output.get('best_back_b')} / {output.get('best_lay_b')}"),
         ("Implied interval A", output.get("market_prob_interval_a")),
+        ("Implied interval B", output.get("market_prob_interval_b")),
         ("Info-price method", output.get("info_price_method")),
     ])
     f2 = _rows([

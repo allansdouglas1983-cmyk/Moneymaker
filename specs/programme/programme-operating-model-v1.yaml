@@ -1,0 +1,129 @@
+# APPEND-ONLY programme governance amendment. Does not rewrite or reinterpret prior evidence.
+amendment_id: PROGRAMME_OPERATING_MODEL_V1
+authority: founder
+directive: PROGRAMME RESET AND OPERATIONAL V0 RELEASE
+recorded_utc: '2026-07-25'
+supersedes_practice: turn-by-turn founder micromanagement of reversible engineering detail
+reason: >
+  The programme spent disproportionate turns treating reversible engineering details as founder
+  decisions. The critical path is now a usable, private, local Personal Tennis Assistant V0.
+  Optional cross-market coherence research is removed from the critical path.
+
+# ---------------------------------------------------------------- §1 preserved state (accepted)
+preserved_state:
+  f2_v1: FROZEN historical sporting baseline and diagnostic only
+  f3: CLOSED FAIL_HARM
+  dp1: CLOSED STOP_DP1_HARM
+  cross_market_coherence: synthetic/research-only
+  discretisation_stability_amendment: engineering-complete
+  coherence_milestone_d: PAUSED
+  june_coherence_run: none has occurred
+  coherence_outcome_reads: none
+  p_market_info: authoritative, unchanged
+  personal_tennis_assistant_v0: market-only
+  authorised_economic_actions: none (no tip, EV, stake, order, paid action)
+  budget_freeze: in force (GBP 0)
+  rule: prior evidence is never reopened, rewritten or reinterpreted
+
+# ---------------------------------------------------------------- §3 autonomy model
+operating_model:
+  default: >
+    Claude completes all reversible engineering work without requesting founder approval between
+    internal slices. No milestone-by-milestone checkpoints for reversible implementation.
+  stop_only_for_irreversible_or_externally_binding:
+    - new expenditure or subscription
+    - purchase, deposit or paid API action
+    - live key creation or account action
+    - real-money betting or order placement
+    - opening a still-sealed outcome/evidence period
+    - public, multi-user, friend-access or third-party exposure
+    - data-rights uncertainty affecting intended use
+    - changing a frozen scientific endpoint, threshold, model, evidence role or verdict AFTER
+      results have been inspected
+    - deleting or rewriting immutable evidence
+    - an integrity failure that makes the evidence unreliable
+  never_stop_for_reversible_matters:
+    - naming
+    - file placement
+    - internal helper design
+    - test organization
+    - minor refactors
+    - type annotations
+    - lint fixes
+    - documentation wording
+    - co-author trailers
+    - process batching
+    - choosing between equivalent repository-conventional implementations
+  method_for_reversible_matters: best engineering judgment + repository conventions
+
+# ---------------------------------------------------------------- §4 risk-tiered verification
+verification_tiers:
+  TIER_A:
+    name: IRREVERSIBLE MONEY / OUTCOME / EXECUTION
+    examples: [outcome-opening code, live broker/order code, settlement and reservation release,
+               real-money risk controls]
+    requirements:
+      - complete unit/property/stateful/failure-injection coverage
+      - deterministic replay
+      - full mutation killed-or-founder-approved bar
+      - founder approval before exposure
+  TIER_B:
+    name: USER-VISIBLE PREDICTION / DECISION OUTPUT
+    examples: [market probability, model probability display, status mapping, fair-odds display,
+               shadow ledger grading]
+    requirements:
+      - unit tests
+      - property tests
+      - chronological/leakage tests where relevant
+      - deterministic replay
+      - independent reference where numerical
+      - targeted mutation testing of decision-critical branches
+      - behavioural survivors killed
+      - equivalent-survivor review occurs ONCE AT RELEASE, not after every internal slice
+  TIER_C:
+    name: RESEARCH-ONLY / DIAGNOSTIC / QUARANTINED
+    examples: [optional coherence research, descriptive audits, non-production research scripts]
+    requirements:
+      - unit/property tests appropriate to the claim
+      - deterministic artifacts
+      - provenance
+      - no founder mutation adjudication until promotion to TIER_B or TIER_A
+    explicit_rule: >
+      Founder approval of every Tier-C survivor is NOT retroactively required while the component
+      remains parked and quarantined.
+
+# ---------------------------------------------------------------- §5 verification execution
+verification_execution:
+  sharded_policy: FULL_VERIFY_SHARDED_V1 (stage3-sharded-verification-policy-v1.yaml)
+  sharded_pass_sufficient_for: private local V0 release
+  monolithic_make_verify_still_required_before:
+    - public exposure
+    - multi-user use
+    - real-money canary
+    - automated execution
+  rule: >
+    Never claim monolithic `make verify` exit 0 in this environment unless that literal command
+    actually completes.
+
+# ---------------------------------------------------------------- current classification
+component_tiers:
+  assistant_v0: TIER_B
+  sport_tennis.market_yardstick: TIER_B
+  assistant_v0.shadow_ledger (grading): TIER_B
+  sport_tennis.coherence.*: TIER_C (PARKED)
+  xmarket_contracts / research.xmarket: TIER_C
+  l6_broker / l7_settle / l5b_risk / l8_evidence.tennis_outcomes: TIER_A (unbuilt or gated)
+
+still_prohibited:
+  - resume coherence Milestone D
+  - adjudicate parked Tier-C coherence survivors
+  - run real June coherence
+  - start new Deep Research
+  - build another rating model
+  - alter F2/F3/DP1 evidence
+  - calculate tips, EV, ROI, P&L, CLV or stakes
+  - create or buy an API key
+  - place an order
+  - spend money
+  - expose the system publicly
+  - add friend or multi-user access

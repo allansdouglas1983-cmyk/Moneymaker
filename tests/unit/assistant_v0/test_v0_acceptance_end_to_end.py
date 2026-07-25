@@ -51,7 +51,7 @@ def _ratings(tmp: Path, players: dict[str, object], name: str = "ratings.json") 
     return p
 
 
-def _assess(snapshot: Path, tmp: Path, *, ratings: Path | None = None,
+def _assess(snapshot: Path, *, ratings: Path | None = None,
             ledger: Path | None = None, record_id: str | None = None,
             html: Path | None = None, out: Path | None = None) -> dict[str, object]:
     argv = ["assess", "--snapshot", str(snapshot), "--reference-time-ms", "1000"]
@@ -95,7 +95,7 @@ def test_fixture_1_atp_with_f2_diagnostic(tmp_path: Path) -> None:
     ratings = _ratings(tmp_path, {"ATP": {"A Player": {"rating": 1600.0, "matches": 40},
                                           "B Player": {"rating": 1500.0, "matches": 30}}})
     html_p, out_p = tmp_path / "r.html", tmp_path / "r.json"
-    payload = _assess(snap, tmp_path, ratings=ratings, html=html_p, out=out_p)
+    payload = _assess(snap, ratings=ratings, html=html_p, out=out_p)
     html = html_p.read_text()
 
     assert payload["status"] == "MODEL_VIEW_ONLY"
@@ -107,7 +107,7 @@ def test_fixture_1_atp_with_f2_diagnostic(tmp_path: Path) -> None:
     _assert_universal_invariants(payload, html)
 
     # determinism: JSON, HTML and digest are stable across identical runs
-    again = _assess(snap, tmp_path, ratings=ratings, html=tmp_path / "r2.html")
+    again = _assess(snap, ratings=ratings, html=tmp_path / "r2.html")
     assert again == payload
     assert (tmp_path / "r2.html").read_text() == html
     assert out_p.read_text().strip() == json.dumps(payload, sort_keys=True,
@@ -121,7 +121,7 @@ def test_fixture_2_wta_with_f2_diagnostic(tmp_path: Path) -> None:
     ratings = _ratings(tmp_path, {"WTA": {"C Player": {"rating": 1580.0, "matches": 25},
                                           "D Player": {"rating": 1520.0, "matches": 18}}})
     html_p = tmp_path / "wta.html"
-    payload = _assess(snap, tmp_path, ratings=ratings, html=html_p)
+    payload = _assess(snap, ratings=ratings, html=html_p)
     assert payload["tour"] == "WTA"
     assert payload["status"] == "MODEL_VIEW_ONLY"
     assert payload["f2_available"] is True
@@ -135,11 +135,13 @@ def test_fixture_3_insufficient_f2_history_falls_back_to_market_only(tmp_path: P
     ratings = _ratings(tmp_path, {"ATP": {"A Player": {"rating": 1600.0, "matches": 2},
                                           "B Player": {"rating": 1500.0, "matches": 1}}})
     html_p = tmp_path / "thin.html"
-    payload = _assess(snap, tmp_path, ratings=ratings, html=html_p)
+    payload = _assess(snap, ratings=ratings, html=html_p)
     assert payload["status"] == "MARKET_ONLY"
     assert payload["f2_available"] is False
     assert payload["f2_probability_a"] is None              # never fabricated
-    assert "MODEL_HISTORY_INSUFFICIENT" in payload["reason_codes"]
+    reasons = payload["reason_codes"]
+    assert isinstance(reasons, (list, tuple))
+    assert "MODEL_HISTORY_INSUFFICIENT" in reasons
     assert payload["market_probability_a"] is not None      # market still available
     _assert_universal_invariants(payload, html_p.read_text())
 
@@ -155,11 +157,13 @@ def test_fixture_4_unusable_market_refuses_with_no_probability(
         tmp_path: Path, over: dict[str, object], expect_reason: str) -> None:
     snap = _snapshot(tmp_path, "bad.json", **over)
     html_p = tmp_path / "bad.html"
-    payload = _assess(snap, tmp_path, html=html_p)
+    payload = _assess(snap, html=html_p)
     assert payload["status"] == "MARKET_UNAVAILABLE"
     assert payload["market_probability_a"] is None          # refuses, never invents
     assert payload["final_probability_a"] is None
-    assert expect_reason in payload["reason_codes"]
+    reasons = payload["reason_codes"]
+    assert isinstance(reasons, (list, tuple))
+    assert expect_reason in reasons
     _assert_universal_invariants(payload, html_p.read_text())
 
 
@@ -167,7 +171,7 @@ def test_fixture_4b_malformed_snapshot_refuses_at_input(tmp_path: Path) -> None:
     from assistant_v0.manual_input import ManualInputError
     bad = _snapshot(tmp_path, "offladder.json", back_a="1.905")   # off the canonical ladder
     with pytest.raises(ManualInputError):
-        _assess(bad, tmp_path)
+        _assess(bad)
 
 
 # --------------------------------------------------------------- fixture 5: ledger + grading
@@ -176,7 +180,7 @@ def test_fixture_5_immutable_pre_match_then_outcome_append_and_grading(tmp_path:
     ratings = _ratings(tmp_path, {"ATP": {"A Player": {"rating": 1600.0, "matches": 40},
                                           "B Player": {"rating": 1500.0, "matches": 30}}})
     ledger_p = tmp_path / "ledger.jsonl"
-    payload = _assess(snap, tmp_path, ratings=ratings, ledger=ledger_p, record_id="m1")
+    payload = _assess(snap, ratings=ratings, ledger=ledger_p, record_id="m1")
 
     led = ShadowLedger(ledger_p)
     rec = led.pre_match_by_id("m1")
@@ -226,9 +230,11 @@ def test_f2_can_never_become_the_final_probability(tmp_path: Path) -> None:
     snap = _snapshot(tmp_path, "f2.json")
     ratings = _ratings(tmp_path, {"ATP": {"A Player": {"rating": 2400.0, "matches": 99},
                                           "B Player": {"rating": 1000.0, "matches": 99}}})
-    payload = _assess(snap, tmp_path, ratings=ratings)
+    payload = _assess(snap, ratings=ratings)
     assert payload["f2_available"] is True
-    assert payload["f2_probability_a"] > 0.95               # F2 is extremely confident
-    assert payload["final_probability_a"] == payload["market_probability_a"]
-    assert payload["final_probability_a"] < 0.6             # the market's view, not F2's
+    f2_a, final_a = payload["f2_probability_a"], payload["final_probability_a"]
+    assert isinstance(f2_a, float) and isinstance(final_a, float)
+    assert f2_a > 0.95                                      # F2 is extremely confident
+    assert final_a == payload["market_probability_a"]
+    assert final_a < 0.6                                    # the market's view, not F2's
     assert payload["final_probability_source"] == "MARKET"

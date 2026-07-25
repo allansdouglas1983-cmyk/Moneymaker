@@ -1,0 +1,10 @@
+{
+  "rating_state_version": "F2_V1_FROZEN",
+  "source": "SYNTHETIC EXAMPLE — replace with the frozen F2-v1 rating state",
+  "players": {
+    "ATP": {
+      "Player A (synthetic)": {"rating": 1585.0, "matches": 42},
+      "Player B (synthetic)": {"rating": 1524.0, "matches": 37}
+    }
+  }
+}

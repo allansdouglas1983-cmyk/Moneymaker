@@ -57,15 +57,23 @@ def test_confidence_in_the_winner_never_scores_worse(p: float) -> None:
     assert a_hi.market_brier <= a_lo.market_brier + 1e-12
 
 
+# The symmetry property is exact in real arithmetic, but the test itself must reconstruct
+# (1 - p); near the unit boundary that subtraction loses most of its significant digits
+# (catastrophic cancellation), so the property is stated over a numerically sane range. The
+# extreme tails are still covered by the finiteness/non-negativity property above.
+_symmetric_probs = st.floats(min_value=1e-3, max_value=1 - 1e-3,
+                             allow_nan=False, allow_infinity=False)
+
+
 @settings(max_examples=150, deadline=None)
-@given(p=_probs)
+@given(p=_symmetric_probs)
 def test_winner_symmetry(p: float) -> None:
     """Scoring p for a win by A equals scoring (1-p) for a win by B."""
     a = G.grade_settlement(_rec(p), winner="A")
     b = G.grade_settlement(_rec(1.0 - p), winner="B")
     assert a.market_log_loss is not None and b.market_log_loss is not None
-    assert a.market_log_loss == b.market_log_loss
-    assert a.market_brier == b.market_brier
+    assert a.market_log_loss == pytest.approx(b.market_log_loss, rel=1e-12)
+    assert a.market_brier == pytest.approx(b.market_brier, rel=1e-12)
 
 
 @settings(max_examples=100, deadline=None)

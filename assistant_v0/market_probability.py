@@ -37,6 +37,13 @@ class MarketResult:
     reason_codes: tuple[ReasonCode, ...]
 
 
+def _one_sided(snap: ManualMarketSnapshot) -> bool:
+    # a genuinely two-sided book quotes real size on both sides of both competitors;
+    # a zero-size quote is not a tradeable side and yields no governed probability
+    return any(sz <= 0 for sz in (snap.back_a_size, snap.lay_a_size,
+                                  snap.back_b_size, snap.lay_b_size))
+
+
 def _crossed(back: Decimal, lay: Decimal) -> bool:
     # a normal book has best back price < best lay price; back >= lay is crossed/locked
     return back >= lay
@@ -60,6 +67,9 @@ def assess_market(snap: ManualMarketSnapshot, *, reference_time_ms: int) -> Mark
         return _with(unavailable, (ReasonCode.MARKET_IN_PLAY, ReasonCode.MARKET_PRICE_UNAVAILABLE))
     if _crossed(snap.back_a, snap.lay_a) or _crossed(snap.back_b, snap.lay_b):
         return _with(unavailable, (ReasonCode.CROSSED_BOOK, ReasonCode.MARKET_PRICE_UNAVAILABLE))
+    if _one_sided(snap):
+        return _with(unavailable, (ReasonCode.ONE_SIDED_BOOK,
+                                   ReasonCode.MARKET_PRICE_UNAVAILABLE))
 
     book = {
         _SEL_A: BookLevel(back_tick=index_of(snap.back_a), lay_tick=index_of(snap.lay_a)),

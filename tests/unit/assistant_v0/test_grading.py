@@ -98,7 +98,8 @@ def test_ledger_summary_aggregates_only_scored_records(tmp_path: Path) -> None:
     led = ShadowLedger(tmp_path / "l.jsonl")
     led.append_pre_match(_rec("r1", p_market_a=0.6, p_f2_a=0.7))
     led.append_pre_match(_rec("r2", p_market_a=0.5, p_f2_a=None))
-    led.append_pre_match(_rec("r3", p_market_a=None, status="MARKET_UNAVAILABLE"))
+    led.append_pre_match(_rec("r3", p_market_a=None, p_f2_a=None,
+                              status="MARKET_UNAVAILABLE"))
     G.settle_in_ledger(led, record_id="r1", winner="A")
     G.settle_in_ledger(led, record_id="r2", winner="B")
     G.settle_in_ledger(led, record_id="r3", winner="A")
@@ -113,6 +114,18 @@ def test_ledger_summary_aggregates_only_scored_records(tmp_path: Path) -> None:
     assert s["market_brier_mean"] == pytest.approx(((0.6 - 1) ** 2 + (0.5 - 0) ** 2) / 2)
     assert s["model_scored"] == 1                               # only r1 carried an F2 view
     assert s["model_log_loss_mean"] == pytest.approx(-math.log(0.7))
+
+
+def test_market_excluded_but_f2_still_graded_separately() -> None:
+    """The two views are scored independently: a missing market probability excludes the
+    MARKET score without suppressing the F2 diagnostic score (and never substitutes it)."""
+    app = G.grade_settlement(_rec(p_market_a=None, p_f2_a=0.7,
+                                  status="MARKET_UNAVAILABLE"), winner="A")
+    assert app.scored is False                       # 'scored' tracks the FINAL (market) view
+    assert app.market_log_loss is None and app.market_brier is None
+    assert app.exclusion_reason == G.NO_MARKET_PROBABILITY
+    assert app.model_log_loss is not None            # F2 graded on its own terms
+    assert app.model_brier is not None
 
 
 def test_ledger_summary_of_empty_ledger_is_explicit_not_zero(tmp_path: Path) -> None:

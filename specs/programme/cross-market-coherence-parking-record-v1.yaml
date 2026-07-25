@@ -1,0 +1,64 @@
+# APPEND-ONLY parking record. Preserves, never rewrites, the coherence programme's evidence.
+record_id: CROSS_MARKET_COHERENCE_PARKING_RECORD_V1
+authority: founder
+directive: PROGRAMME RESET AND OPERATIONAL V0 RELEASE §2
+recorded_utc: '2026-07-25'
+status: PARKED_AFTER_ENGINEERING_CHECKPOINT
+
+reason:
+  - optional to an operational personal assistant
+  - not yet proven to improve decisions
+  - has consumed disproportionate engineering and governance time
+  - the current checkpoint is reproducible and preserved
+  - continuing it now would delay the usable product
+
+checkpoint_state:
+  discretisation_stability_amendment: engineering-complete
+  milestone_d: PAUSED (never resumed)
+  governing_golden: SOLVER_GOLDEN_V3_DISCRETISATION_STABLE.json
+  golden_digest: sha256:f21e2aa72c7d3f75810d3bdc98230af56c1fbcc9217eed5249238ac41f63f980
+  registration: cross-market-coherence-discretisation-stability-amendment-v1.yaml
+  registration_digest: sha256:45bc96caf28de7ad1bc456d7d3f98cfcedf2e3060418f6519d712a6c91cc816b
+  differential_unexpected_change: 0
+  pytest_state_at_parking: all coherence suites green under FULL_VERIFY_SHARDED_V1
+  june_coherence_run: none has occurred
+  outcome_reads: none
+
+preserved_artifacts:
+  root: docs/evidence/stage3-cross-market-audit/
+  categories:
+    - registrations (specs/programme/cross-market-coherence-*.yaml)
+    - mutation session databases (preserved + digested in the A3 packets)
+    - survivor packets, class indexes and reconciliations
+    - stop records (SOLVER_MILESTONE_D_STOP_RECORD.md, SOLVER_MILESTONE_D_REV2_STOP_RECORD.md)
+    - golden vintages V1, V2, V3 (all retained immutably)
+    - degeneracy diagnostics (SOLVER_DEGENERACY_*)
+    - the A3 finalisation bundle and full-verify records
+  rule: preserve all; delete or rewrite nothing
+
+do_not_continue:
+  - Milestone D
+  - survivor adjudication for coherence
+  - further solver refactors
+  - June coherence diagnostics
+  - coherence thresholds
+  - coherence/V0 integration
+  - new cross-market research
+
+survivor_disposition:
+  coherence_survivors_total: 293 (Stage-3 path inventory)
+  approved_by: null
+  tier: TIER_C
+  rule: >
+    Per PROGRAMME_OPERATING_MODEL_V1 §4, no founder mutation adjudication is required while the
+    component remains parked and quarantined. Survivors stay approved_by: null and are NOT
+    approved by this record.
+
+reopening_condition: >
+  The coherence programme may be reopened ONLY by a later explicit founder directive, after V0 is
+  operational.
+
+quarantine_proof: >
+  assistant_v0 has no import path to sport_tennis.coherence (enforced by
+  tools/check_import_quarantine.py --forbid sport_tennis.coherence --from assistant_v0 l4_pricing,
+  run as part of make verify). Coherence remains unused by the operational product.

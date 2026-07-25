@@ -1,18 +1,34 @@
-"""PERSONAL_TENNIS_ASSISTANT_V0 — local CLI (STAGE3-0003 §9A).
+"""PERSONAL_TENNIS_ASSISTANT_V0 — local CLI (STAGE3-0003 §9A; completed for V0 release).
 
-Accepts a manual market snapshot (a local JSON file), produces deterministic JSON. No
-network, no accounts, no credentials, no order placement. Stdlib only.
+Private, single-user, local, offline. Three subcommands:
+
+  assess  — read one manual Match-Odds snapshot JSON, produce the deterministic V0 JSON,
+            optionally render the static HTML report and append an immutable pre-match
+            record to the local shadow ledger.
+  settle  — append a governed outcome to an existing pre-match record and grade the
+            probabilities (log loss + Brier). The pre-match record is never rewritten.
+  ledger  — print the deterministic probability-quality summary of a local ledger.
+
+No network, no accounts, no credentials, no server, no order placement, no stake, no EV.
+Stdlib only (plus the governed local packages).
 """
 from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+from assistant_v0 import grading as G
+from assistant_v0 import html_report
 from assistant_v0.manual_input import ManualMarketSnapshot
-from assistant_v0.pipeline import RatingLookup, assemble
+from assistant_v0.pipeline import RatingLookup, assemble, to_pre_match_record
+from assistant_v0.ratings_store import load_rating_lookup
+from assistant_v0.shadow_ledger import ShadowLedger
+
+BANNER = "RESEARCH / SHADOW ONLY — NO BET RECOMMENDATION"
 
 
 def _snapshot_from_dict(d: dict[str, Any]) -> ManualMarketSnapshot:
@@ -39,16 +55,77 @@ def run_snapshot_file(path: str, *, reference_time_ms: int,
     return out.to_json()
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description="PERSONAL_TENNIS_ASSISTANT_V0 (research/shadow only)")
-    ap.add_argument("--snapshot", required=True, help="path to a manual market snapshot JSON")
-    ap.add_argument("--reference-time-ms", type=int, required=True)
-    ap.add_argument("--out", default=None, help="optional path to write the JSON output")
-    args = ap.parse_args()
-    result = run_snapshot_file(args.snapshot, reference_time_ms=args.reference_time_ms)
+def _cmd_assess(args: argparse.Namespace) -> dict[str, Any]:
+    lookup: RatingLookup | None = load_rating_lookup(args.ratings) if args.ratings else None
+    data = json.loads(Path(args.snapshot).read_text())
+    snap = _snapshot_from_dict(data)
+    out = assemble(snap, reference_time_ms=args.reference_time_ms, rating_lookup=lookup)
+    payload: dict[str, Any] = out.to_dict()
+
     if args.out:
-        Path(args.out).write_text(result + "\n")
-    print(result)
+        Path(args.out).write_text(out.to_json() + "\n")
+    if args.html:
+        Path(args.html).write_text(html_report.render_html(payload))
+    if args.ledger:
+        if not args.record_id:
+            raise SystemExit("--record-id is required when --ledger is given")
+        created = args.created_at_ms if args.created_at_ms is not None else args.reference_time_ms
+        ledger = ShadowLedger(args.ledger)
+        ledger.append_pre_match(to_pre_match_record(out, record_id=args.record_id,
+                                                    created_at_ms=created))
+    return payload
+
+
+def _cmd_settle(args: argparse.Namespace) -> dict[str, Any]:
+    ledger = ShadowLedger(args.ledger)
+    app = G.settle_in_ledger(ledger, record_id=args.record_id, winner=args.winner)
+    return {
+        "record_id": app.record_id, "winner": app.winner, "scored": app.scored,
+        "market_log_loss": app.market_log_loss, "market_brier": app.market_brier,
+        "model_log_loss": app.model_log_loss, "model_brier": app.model_brier,
+        "exclusion_reason": app.exclusion_reason,
+    }
+
+
+def _cmd_ledger(args: argparse.Namespace) -> dict[str, Any]:
+    return G.summarise_ledger(ShadowLedger(args.ledger))
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(
+        prog="assistant_v0",
+        description=f"PERSONAL_TENNIS_ASSISTANT_V0 — {BANNER}")
+    sub = ap.add_subparsers(dest="command", required=True)
+
+    a = sub.add_parser("assess", help="assess one manual Match-Odds snapshot")
+    a.add_argument("--snapshot", required=True, help="path to a manual market snapshot JSON")
+    a.add_argument("--reference-time-ms", type=int, required=True)
+    a.add_argument("--ratings", default=None,
+                   help="optional frozen F2-v1 rating snapshot JSON (diagnostic only)")
+    a.add_argument("--out", default=None, help="optional path to write the JSON output")
+    a.add_argument("--html", default=None, help="optional path to write the static HTML report")
+    a.add_argument("--ledger", default=None, help="optional shadow-ledger JSONL path")
+    a.add_argument("--record-id", default=None, help="ledger record id (required with --ledger)")
+    a.add_argument("--created-at-ms", type=int, default=None)
+    a.set_defaults(func=_cmd_assess)
+
+    s = sub.add_parser("settle", help="append a governed outcome and grade the probabilities")
+    s.add_argument("--ledger", required=True)
+    s.add_argument("--record-id", required=True)
+    s.add_argument("--winner", required=True, choices=["A", "B"])
+    s.set_defaults(func=_cmd_settle)
+
+    lg = sub.add_parser("ledger", help="print the probability-quality summary of a ledger")
+    lg.add_argument("--ledger", required=True)
+    lg.set_defaults(func=_cmd_ledger)
+    return ap
+
+
+def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
+    args = build_parser().parse_args(argv)
+    payload: dict[str, Any] = args.func(args)
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return payload
 
 
 if __name__ == "__main__":

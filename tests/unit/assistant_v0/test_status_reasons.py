@@ -60,5 +60,9 @@ def test_reason_codes_present_and_neutral() -> None:
 
 
 def test_reason_registry_version_pinned() -> None:
-    assert RC.REASON_CODE_REGISTRY_VERSION == "assistant-v0-reasons-v1"
+    # GOVERNED REGISTRY EXTENSION (PROGRAMME RESET AND OPERATIONAL V0 RELEASE §6):
+    # ONE_SIDED_BOOK was APPENDED for the mandated two-sided-book validation, so the
+    # registry version advances to v2. No v1 token was removed, renamed or re-meaninged;
+    # the membership and neutrality assertions above are unchanged and still pass.
+    assert RC.REASON_CODE_REGISTRY_VERSION == "assistant-v0-reasons-v2"
     assert S.STATUS_REGISTRY_VERSION == "assistant-v0-status-v1"

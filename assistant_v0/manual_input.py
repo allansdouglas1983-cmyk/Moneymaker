@@ -22,6 +22,8 @@ from decimal import Decimal
 from price_contracts.ladder import is_on_ladder
 
 MANUAL_SOURCE = "MANUAL_BETFAIR_UI"
+SNAPSHOT_SOURCE = "LOCAL_SNAPSHOT_JSON"
+_ALLOWED_SOURCES = {MANUAL_SOURCE, SNAPSHOT_SOURCE}
 _ALLOWED_TOURS = {"ATP", "WTA"}
 _ALLOWED_STATUSES = {"OPEN", "SUSPENDED", "CLOSED", "INACTIVE"}
 
@@ -70,8 +72,9 @@ class ManualMarketSnapshot:
     event_id: str | None
 
     def __post_init__(self) -> None:
-        if self.source != MANUAL_SOURCE:
-            raise ManualInputError(f"source must be {MANUAL_SOURCE!r}, got {self.source!r}")
+        if self.source not in _ALLOWED_SOURCES:
+            raise ManualInputError(
+                f"source must be one of {sorted(_ALLOWED_SOURCES)}, got {self.source!r}")
         if self.tour not in _ALLOWED_TOURS:
             raise ManualInputError(f"tour must be one of {sorted(_ALLOWED_TOURS)}, got {self.tour!r}")
         if self.market_status not in _ALLOWED_STATUSES:

@@ -1,0 +1,16 @@
+{
+  "competitor_a": "Player A (synthetic)",
+  "competitor_b": "Player B (synthetic)",
+  "competitor_a_id": null,
+  "competitor_b_id": null,
+  "tour": "ATP",
+  "scheduled_start_ms": 1750000000000,
+  "input_timestamp_ms": 1749999400000,
+  "source": "MANUAL_BETFAIR_UI",
+  "back_a": "1.90", "back_a_size": "120", "lay_a": "1.95", "lay_a_size": "95",
+  "back_b": "2.04", "back_b_size": "88", "lay_b": "2.12", "lay_b_size": "60",
+  "market_status": "OPEN",
+  "in_play": false,
+  "market_id": "1.SYNTHETIC",
+  "event_id": "E-SYNTHETIC"
+}
