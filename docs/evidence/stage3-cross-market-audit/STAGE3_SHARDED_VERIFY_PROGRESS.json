@@ -2,11 +2,83 @@
  "collection_digest": "sha256:89c40f9548466f49e42f1a59af9d4065f3fce82edc171705cf6bd7fea8c075ae",
  "commit": "b712b3b9d6d50883f283b13d9b26e21f17e4bd9f",
  "complete": false,
- "cumulative_passed_nodes": 3005,
+ "cumulative_passed_nodes": 3095,
  "directive": "STAGE3-0006C-D-A3-VERIFY-V1 \u00a78",
  "frozen_collection_count": 3097,
- "pending_nodes": 92,
+ "pending_nodes": 2,
  "per_shard": {
+  "S002": {
+   "elapsed_s": 136.74,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:e015bcb64f6d909a939daccb08d1ccafb8f131dc59cbba320119dcc23c33a606",
+   "log_digest": "sha256:d10efb47ef567b8ccc1cea80afa05fa1a74f34a9cbb5f9939a5551c9f7dd8055",
+   "outcome": "PASS",
+   "passed": 18,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S003": {
+   "elapsed_s": 255.72,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:68fb64364de6ed77746aa25acd0d004a8ff890387f719ee04f3f466c3f65087a",
+   "log_digest": "sha256:9471368216d9cf3c5f33b68d72888df92cc495b5e9f03c9fc16cfd9d8498882b",
+   "outcome": "PASS",
+   "passed": 35,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S004": {
+   "elapsed_s": 506.46,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:eea3dca60458f659cd23b92314f2d533b53acc0247a08b6cb378c642d4fb214b",
+   "log_digest": "sha256:f4098e072a4b9c69546a3e7ce9a252cd9abe37e9cf38a225b551716cdc4d1cde",
+   "outcome": "PASS",
+   "passed": 6,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S005": {
+   "elapsed_s": 500.11,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:9f0827a329894f49ddef670a41f463b3afa4afa2c43d385879abc3b4d88d6578",
+   "log_digest": "sha256:34ba49afac6929e96d2a23b6273ef3d7e0c844bd4b2f154669693265ca994b91",
+   "outcome": "PASS",
+   "passed": 11,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S006": {
+   "elapsed_s": 318.75,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:91ee8b35800b4fcd104e8be04e0915fa175a5090723d6f61e55a75fae1689c15",
+   "log_digest": "sha256:3f6e322a95aa3765323f7fe39a49f8bb937a241eee734aee291f8c6b8d4487d6",
+   "outcome": "PASS",
+   "passed": 3,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S007": {
+   "elapsed_s": 59.57,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:56af1130abf652f4002748cac14fe7812ee4e405158a28525ccb4fae6903c885",
+   "log_digest": "sha256:bb35e20eb3d5f933f68a009440979c75cf57a5206c783bb89c3e2032cb7c2797",
+   "outcome": "PASS",
+   "passed": 17,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
   "S008": {
    "elapsed_s": 21.54,
    "errors": 0,
@@ -165,12 +237,12 @@
   }
  },
  "shards_other": [],
- "shards_passed": 13,
+ "shards_passed": 19,
  "shards_total": 21,
  "totals": {
   "errors": 0,
   "failed": 0,
-  "passed": 3005,
+  "passed": 3095,
   "skipped": 0
  }
 }
