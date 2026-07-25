@@ -53,6 +53,12 @@ DATE_TOLERANCE_DAYS = 1
 #: enough out to be actionable and close enough to be informative.
 DEFAULT_HORIZON_SECONDS = 600
 
+#: Comparison books in preference order, sharpest first. NOT a single hardcoded book:
+#: Tennis-Data carries no Pinnacle quotes at all for June 2026 (0 of 761 matches), so
+#: naming one book silently drops every row of a recent period. Whichever book is used is
+#: reported, because the benchmark means something different depending on which it was.
+COMPARISON_BOOKS: tuple[str, ...] = ("pinnacle", "b365", "avg")
+
 
 @unique
 class LinkOutcome(Enum):
@@ -63,6 +69,7 @@ class LinkOutcome(Enum):
     AMBIGUOUS_MATCH = "AMBIGUOUS_MATCH"
     NO_PRICE_AT_HORIZON = "NO_PRICE_AT_HORIZON"
     ALREADY_CLAIMED = "ALREADY_CLAIMED"
+    NO_BOOKMAKER_PRICE = "NO_BOOKMAKER_PRICE"
 
 
 @dataclass(frozen=True)
@@ -199,7 +206,10 @@ class BenchmarkReport:
     """Exchange against bookmaker, scored on exactly the same matches."""
 
     universe: int
+    linked: int
     scored: int
+    #: Which comparison book the bookmaker figure came from, or None if nothing scored.
+    bookmaker_book: str | None
     exchange_log_loss: float | None
     bookmaker_log_loss: float | None
     mean_exchange_overround: float | None
@@ -207,12 +217,14 @@ class BenchmarkReport:
 
     def report(self) -> str:
         lines = [
-            f"markets: {self.universe:,}  linked and scored: {self.scored:,}",
+            f"markets: {self.universe:,}  linked: {self.linked:,}  "
+            f"scored: {self.scored:,}",
         ]
         if self.exchange_log_loss is not None:
             lines.append(f"  exchange   log loss {self.exchange_log_loss:.5f}")
         if self.bookmaker_log_loss is not None:
-            lines.append(f"  bookmaker  log loss {self.bookmaker_log_loss:.5f}")
+            lines.append(f"  bookmaker  log loss {self.bookmaker_log_loss:.5f} "
+                         f"({self.bookmaker_book})")
         if self.mean_exchange_overround is not None:
             lines.append(f"  mean exchange overround {self.mean_exchange_overround:.4f}")
         if self.exclusions:
@@ -226,27 +238,43 @@ def exchange_benchmark(result: LinkResult) -> BenchmarkReport:
     from tennis_edge.backtest import market_probability
     from tennis_edge.devig import DevigMethod
 
+    exclusions: dict[str, int] = {}
+    for excluded in result.excluded:
+        exclusions[excluded.outcome.value] = exclusions.get(excluded.outcome.value, 0) + 1
+
+    # Choose the comparison book ONCE, across the whole linked set, so every scored row is
+    # measured against the same book. Picking per row would silently mix benchmarks.
+    chosen: str | None = None
+    for candidate in COMPARISON_BOOKS:
+        if any(market_probability(r.match, book=candidate, method=DevigMethod.POWER)
+               is not None for r in result.linked):
+            chosen = candidate
+            break
+
     exchange: list[float] = []
     bookmaker: list[float] = []
     outcomes: list[int] = []
     overrounds: list[float] = []
 
     for row in result.linked:
-        book = market_probability(row.match, book="pinnacle", method=DevigMethod.POWER)
+        book = (None if chosen is None else
+                market_probability(row.match, book=chosen, method=DevigMethod.POWER))
         if book is None:
+            # A row dropped inside the benchmark is invisible; a row excluded by name is
+            # not. This is the failure that reported "scored: 0" from 416 linked markets.
+            key = LinkOutcome.NO_BOOKMAKER_PRICE.value
+            exclusions[key] = exclusions.get(key, 0) + 1
             continue
         exchange.append(row.exchange_probability_a)
         bookmaker.append(book)
         outcomes.append(1 if row.match.winner_is_a else 0)
         overrounds.append(row.quote.raw_overround)
 
-    exclusions: dict[str, int] = {}
-    for excluded in result.excluded:
-        exclusions[excluded.outcome.value] = exclusions.get(excluded.outcome.value, 0) + 1
-
     return BenchmarkReport(
         universe=result.universe,
+        linked=len(result.linked),
         scored=len(outcomes),
+        bookmaker_book=chosen if outcomes else None,
         exchange_log_loss=log_loss(exchange, outcomes) if outcomes else None,
         bookmaker_log_loss=log_loss(bookmaker, outcomes) if outcomes else None,
         mean_exchange_overround=(math.fsum(overrounds) / len(overrounds)

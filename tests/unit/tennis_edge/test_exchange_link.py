@@ -166,3 +166,47 @@ def test_the_report_counts_exclusions_by_reason() -> None:
     report = exchange_benchmark(link_markets(markets, (_match(),)))
     assert report.exclusions[LinkOutcome.NO_MATCH_ON_DATE.value] == 1
     assert report.exclusions[LinkOutcome.UNRESOLVED_NAME.value] == 1
+
+
+# ------------------------------------------------------------------ bookmaker fallback
+
+
+def _match_priced(book: str | None) -> Match:
+    quotes = {"pinnacle": OddsQuotes(pinnacle_a=1.9, pinnacle_b=2.0),
+              "b365": OddsQuotes(b365_a=1.9, b365_b=2.0),
+              None: OddsQuotes()}[book]
+    base = _match()
+    return Match(**{**base.__dict__, "odds": quotes})
+
+
+def test_the_benchmark_falls_back_when_the_sharpest_book_is_absent() -> None:
+    """Tennis-Data carries no Pinnacle quotes for June 2026 (0 of 761). Hardcoding one book
+    silently drops every row; the comparison book is chosen by preference order instead."""
+    report = exchange_benchmark(link_markets((_history(),), (_match_priced("b365"),)))
+    assert report.scored == 1
+    assert report.bookmaker_book == "b365"
+
+
+def test_the_sharpest_available_book_is_preferred() -> None:
+    report = exchange_benchmark(link_markets((_history(),), (_match_priced("pinnacle"),)))
+    assert report.bookmaker_book == "pinnacle"
+
+
+def test_a_linked_row_with_no_bookmaker_price_is_an_explicit_exclusion() -> None:
+    """The failure that produced 'scored: 0' from 416 linked markets. A row dropped inside
+    the benchmark is invisible; a row excluded by name is not."""
+    report = exchange_benchmark(link_markets((_history(),), (_match_priced(None),)))
+    assert report.scored == 0
+    assert report.exclusions[LinkOutcome.NO_BOOKMAKER_PRICE.value] == 1
+
+
+def test_linked_and_scored_are_reported_separately() -> None:
+    result = link_markets((_history(),), (_match_priced(None),))
+    report = exchange_benchmark(result)
+    assert report.linked == 1 and report.scored == 0
+
+
+def test_every_market_is_still_accounted_for_after_scoring() -> None:
+    markets = (_history(), _history(day=20, market_id="1.2"))
+    report = exchange_benchmark(link_markets(markets, (_match_priced(None),)))
+    assert report.scored + sum(report.exclusions.values()) == report.universe
