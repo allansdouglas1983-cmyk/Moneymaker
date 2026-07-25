@@ -281,3 +281,129 @@ def test_history_is_hashable_and_frozen(tmp_path: Path) -> None:
     assert isinstance(history, MarketHistory)
     with pytest.raises(Exception):
         history.market_id = "nope"  # type: ignore[misc]
+
+
+# ------------------------------------------------------------------ ADVANCED ladders
+
+
+def _ladder_msg(pt: int, *, back: dict[int, list] | None = None,
+                lay: dict[int, list] | None = None) -> str:
+    """An ADVANCED runner-change message. batb/batl entries are [level, price, size]."""
+    rc = []
+    for sid in sorted({*(back or {}), *(lay or {})}):
+        entry: dict = {"id": sid}
+        if back and sid in back:
+            entry["batb"] = back[sid]
+        if lay and sid in lay:
+            entry["batl"] = lay[sid]
+        rc.append(entry)
+    return json.dumps({"op": "mcm", "pt": pt, "mc": [{"id": MARKET_ID, "rc": rc}]})
+
+
+def test_the_best_back_price_and_size_are_read(tmp_path: Path) -> None:
+    """ADVANCED carries batb = best available TO BACK, as [level, price, size]. Level 0 is
+    the best. This is a crossable price with depth — the thing BASIC cannot give."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 600_000,
+                    back={A: [[0, 2.0, 180.0], [1, 1.99, 703.98]],
+                          B: [[0, 2.02, 95.0]]}),
+    ])
+    (history,) = read_markets(path)
+    level = history.best_back_at(A, seconds_before_off=300)
+    assert level is not None
+    assert level.price == Decimal("2.0") and level.size == Decimal("180.0")
+
+
+def test_the_best_level_is_taken_regardless_of_message_order(tmp_path: Path) -> None:
+    """Betfair does not guarantee level 0 comes first in the array."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 600_000, back={A: [[2, 1.9, 10.0], [0, 2.0, 180.0], [1, 1.95, 5.0]]}),
+    ])
+    (history,) = read_markets(path)
+    level = history.best_back_at(A, seconds_before_off=300)
+    assert level is not None and level.price == Decimal("2.0")
+
+
+def test_a_ladder_carries_forward_like_a_price(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 1_800_000, back={A: [[0, 2.0, 180.0]]}),
+        _ladder_msg(OFF_MS - 300_000, back={A: [[0, 2.5, 40.0]]}),
+    ])
+    (history,) = read_markets(path)
+    early = history.best_back_at(A, seconds_before_off=900)
+    late = history.best_back_at(A, seconds_before_off=60)
+    assert early is not None and early.price == Decimal("2.0")
+    assert late is not None and late.price == Decimal("2.5")
+
+
+def test_an_emptied_ladder_removes_the_level(tmp_path: Path) -> None:
+    """Betfair signals 'nothing available' with an empty array. Carrying the old price
+    forward there would invent liquidity that no longer exists."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 1_800_000, back={A: [[0, 2.0, 180.0]]}),
+        _ladder_msg(OFF_MS - 600_000, back={A: []}),
+    ])
+    (history,) = read_markets(path)
+    assert history.best_back_at(A, seconds_before_off=300) is None
+
+
+def test_a_zero_size_level_is_not_liquidity(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 600_000, back={A: [[0, 2.0, 0.0]]}),
+    ])
+    (history,) = read_markets(path)
+    assert history.best_back_at(A, seconds_before_off=300) is None
+
+
+def test_ladder_observations_stop_at_the_off(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 300_000, back={A: [[0, 2.0, 180.0]]}),
+        _msg(OFF_MS + 60_000, definition=_definition(in_play=True)),
+        _ladder_msg(OFF_MS + 120_000, back={A: [[0, 9.0, 500.0]]}),
+    ])
+    (history,) = read_markets(path)
+    level = history.best_back_at(A, seconds_before_off=0)
+    assert level is not None and level.price == Decimal("2.0")
+
+
+def test_the_lay_side_is_read_too(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 600_000, back={A: [[0, 2.0, 180.0]]},
+                    lay={A: [[0, 2.02, 60.0]]}),
+    ])
+    (history,) = read_markets(path)
+    back = history.best_back_at(A, seconds_before_off=300)
+    lay = history.best_lay_at(A, seconds_before_off=300)
+    assert back is not None and lay is not None
+    assert back.price < lay.price, "a healthy book has back below lay"
+
+
+def test_a_zero_last_traded_price_means_no_trade_yet(tmp_path: Path) -> None:
+    """ADVANCED sends ltp: 0.0 before anything has traded. It is a sentinel, not a price —
+    0.0 implies infinite odds. Treating it as a price makes the whole market unreadable;
+    treating it as a trade would invent one. It reads as absent."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _msg(OFF_MS - 1_800_000, ltps={A: 0.0}),
+        _msg(OFF_MS - 600_000, ltps={A: 2.0}),
+    ])
+    (history,) = read_markets(path)
+    assert history.ltp_at(A, seconds_before_off=1200) is None, "no trade had happened yet"
+    assert history.ltp_at(A, seconds_before_off=300) == Decimal("2.0")
+
+
+def test_a_genuinely_off_ladder_price_is_still_refused(tmp_path: Path) -> None:
+    """The sentinel carve-out must not become a general tolerance for bad prices."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _msg(OFF_MS - 600_000, ltps={A: 2.03}),
+    ])
+    with pytest.raises(ValueError, match="off-ladder"):
+        read_markets(path)

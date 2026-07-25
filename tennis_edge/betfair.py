@@ -48,6 +48,8 @@ __all__ = [
     "InPlayRefusedError",
     "Runner",
     "LtpObservation",
+    "LadderLevel",
+    "LadderObservation",
     "GradingView",
     "MarketHistory",
     "read_markets",
@@ -91,6 +93,33 @@ class LtpObservation:
 
 
 @dataclass(frozen=True)
+class LadderLevel:
+    """One side of the book: a price you could transact at, and how much is there."""
+
+    price: Decimal
+    size: Decimal
+
+    @property
+    def tick_index(self) -> int:
+        return index_of(self.price)
+
+
+@dataclass(frozen=True)
+class LadderObservation:
+    """Best back/lay for one selection at one instant (ADVANCED ``batb``/``batl``).
+
+    ``None`` on a side means the book was empty there. Betfair signals that with an empty
+    array, and carrying the previous level forward would invent liquidity that no longer
+    exists — the difference between a price you could have taken and one you could not.
+    """
+
+    publish_time_ms: int
+    selection_id: int
+    best_back: LadderLevel | None
+    best_lay: LadderLevel | None
+
+
+@dataclass(frozen=True)
 class GradingView:
     """Settlement-time facts. Reachable only after the market closed, never from features.
 
@@ -123,6 +152,8 @@ class MarketHistory:
     runners: tuple[Runner, ...]
     observations: tuple[LtpObservation, ...]
     went_in_play: bool
+    #: ADVANCED only. Empty for BASIC, which carries no ladder at all.
+    ladders: tuple[LadderObservation, ...] = ()
     _grading: GradingView | None = None
 
     def ltp_at(self, selection_id: int, *, seconds_before_off: int) -> Decimal | None:
@@ -151,6 +182,43 @@ class MarketHistory:
         price = self.ltp_at(selection_id, seconds_before_off=seconds_before_off)
         return None if price is None else index_of(price)
 
+    def _ladder_at(
+        self, selection_id: int, seconds_before_off: int
+    ) -> LadderObservation | None:
+        if seconds_before_off < 0:
+            raise InPlayRefusedError(
+                f"seconds_before_off={seconds_before_off} is at or after the off; "
+                "this platform is pre-off only and does not serve in-play prices"
+            )
+        cutoff = self.market_time_ms - seconds_before_off * 1000
+        latest: LadderObservation | None = None
+        for observation in self.ladders:
+            if observation.publish_time_ms > cutoff:
+                break
+            if observation.selection_id == selection_id:
+                latest = observation
+        return latest
+
+    def best_back_at(
+        self, selection_id: int, *, seconds_before_off: int
+    ) -> LadderLevel | None:
+        """Best price available **to back** at a horizon, with its size.
+
+        This is the crossable price — what you could actually have taken — as distinct from
+        :meth:`ltp_at`, which is a print of something that already happened and may not have
+        been available to you.
+        """
+        observation = self._ladder_at(selection_id, seconds_before_off)
+        return None if observation is None else observation.best_back
+
+    def best_lay_at(
+        self, selection_id: int, *, seconds_before_off: int
+    ) -> LadderLevel | None:
+        """Best price available to lay. Recorded for spread and book-health diagnostics;
+        v1 never lays (hard prohibition)."""
+        observation = self._ladder_at(selection_id, seconds_before_off)
+        return None if observation is None else observation.best_lay
+
     def grading_view(self) -> GradingView | None:
         """Settlement facts, or ``None`` if the market has not settled in this file."""
         return self._grading
@@ -169,6 +237,31 @@ class MarketHistory:
                 "A reconciled closing benchmark joins at grading time only and must not be "
                 "reachable from a pre-event feature (SPEC-021)."
             )
+
+
+def _best_level(raw: object, *, market_id: str) -> LadderLevel | None:
+    """Level 0 of a batb/batl array, or ``None`` when the side is empty.
+
+    Betfair does not guarantee level 0 appears first, so the level index is honoured rather
+    than the array order. A zero-size level is not liquidity and reads as absent.
+    """
+    if not isinstance(raw, list) or not raw:
+        return None
+    best: LadderLevel | None = None
+    best_index: int | None = None
+    for entry in raw:
+        if not isinstance(entry, list) or len(entry) < 3:
+            continue
+        level = int(entry[0])
+        size = Decimal(str(entry[2]))
+        if size <= 0:
+            continue
+        if best_index is None or level < best_index:
+            best_index = level
+            best = LadderLevel(
+                price=_decimal_price(entry[1], market_id=market_id), size=size
+            )
+    return best
 
 
 def _decimal_price(raw: object, *, market_id: str) -> Decimal:
@@ -239,12 +332,15 @@ class _Accumulator:
 
     definition: dict[str, object] | None = None
     observations: list[LtpObservation] | None = None
+    ladders: list[LadderObservation] | None = None
     went_in_play: bool = False
     settled: dict[str, object] | None = None
 
     def __post_init__(self) -> None:
         if self.observations is None:
             self.observations = []
+        if self.ladders is None:
+            self.ladders = []
 
 
 def _market_time_ms(definition: Mapping[str, object]) -> int:
@@ -291,7 +387,23 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
             if state.went_in_play or not isinstance(publish_time, int):
                 continue
             for runner_change in change.get("rc", ()) or ():
-                if not isinstance(runner_change, dict) or "ltp" not in runner_change:
+                if not isinstance(runner_change, dict) or "id" not in runner_change:
+                    continue
+                if "batb" in runner_change or "batl" in runner_change:
+                    assert state.ladders is not None
+                    state.ladders.append(
+                        LadderObservation(
+                            publish_time_ms=publish_time,
+                            selection_id=int(runner_change["id"]),
+                            best_back=_best_level(runner_change.get("batb"),
+                                                  market_id=market_id),
+                            best_lay=_best_level(runner_change.get("batl"),
+                                                 market_id=market_id),
+                        )
+                    )
+                # ltp == 0 is ADVANCED's "nothing has traded yet" sentinel, not a price.
+                # 0.0 implies infinite odds; it is absence, and absence is what it reads as.
+                if not runner_change.get("ltp"):
                     continue
                 assert state.observations is not None
                 state.observations.append(
@@ -311,6 +423,7 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
             continue
         off_ms = _market_time_ms(definition)
         assert state.observations is not None
+        assert state.ladders is not None
         pre_off = tuple(sorted(
             (o for o in state.observations if o.publish_time_ms <= off_ms),
             key=lambda o: (o.publish_time_ms, o.selection_id),
@@ -326,6 +439,10 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
                 runners=_runners(definition),
                 observations=pre_off,
                 went_in_play=state.went_in_play,
+                ladders=tuple(sorted(
+                    (rung for rung in state.ladders if rung.publish_time_ms <= off_ms),
+                    key=lambda rung: (rung.publish_time_ms, rung.selection_id),
+                )),
                 _grading=_grading_view(market_id, state.settled),
             )
         )
