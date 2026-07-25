@@ -2,7 +2,7 @@
  "active_pytest_make_cosmic_python_workers": "NONE",
  "branch": "claude/project-files-followup-dif8al",
  "clean_working_tree": false,
- "commit": "b712b3b9d6d50883f283b13d9b26e21f17e4bd9f",
+ "commit": "24dd552170ab7d65b1f7dc635c9e6b62b171d25a",
  "governing_golden_digest": "sha256:f21e2aa72c7d3f75810d3bdc98230af56c1fbcc9217eed5249238ac41f63f980",
  "governing_registration_digest": "sha256:45bc96caf28de7ad1bc456d7d3f98cfcedf2e3060418f6519d712a6c91cc816b",
  "installed_plugins": {
