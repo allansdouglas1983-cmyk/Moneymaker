@@ -1,9 +1,9 @@
-# Sharded verify progress — 3095/3097 nodes (19/21 shards PASS)
+# Sharded verify progress — 3097/3097 nodes (21/21 shards PASS)
 
 Commit b712b3b9d6d50883f283b13d9b26e21f17e4bd9f. Collection sha256:89c40f9548466f49e42f1a59af9d4065f3fce82edc171705cf6bd7fea8c075ae.
 
-- S000: PENDING passed=- failed=- elapsed=-s src==HEAD=-
-- S001: PENDING passed=- failed=- elapsed=-s src==HEAD=-
+- S000: PASS passed=1 failed=0 elapsed=518.1s src==HEAD=True
+- S001: PASS passed=1 failed=0 elapsed=510.61s src==HEAD=True
 - S002: PASS passed=18 failed=0 elapsed=136.74s src==HEAD=True
 - S003: PASS passed=35 failed=0 elapsed=255.72s src==HEAD=True
 - S004: PASS passed=6 failed=0 elapsed=506.46s src==HEAD=True

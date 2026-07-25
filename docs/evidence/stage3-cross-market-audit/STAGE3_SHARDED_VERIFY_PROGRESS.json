@@ -1,12 +1,36 @@
 {
  "collection_digest": "sha256:89c40f9548466f49e42f1a59af9d4065f3fce82edc171705cf6bd7fea8c075ae",
  "commit": "b712b3b9d6d50883f283b13d9b26e21f17e4bd9f",
- "complete": false,
- "cumulative_passed_nodes": 3095,
+ "complete": true,
+ "cumulative_passed_nodes": 3097,
  "directive": "STAGE3-0006C-D-A3-VERIFY-V1 \u00a78",
  "frozen_collection_count": 3097,
- "pending_nodes": 2,
+ "pending_nodes": 0,
  "per_shard": {
+  "S000": {
+   "elapsed_s": 518.1,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:5c5d8f79a6db7e80e27d3f7d934bd0b253a8b0efec59c2bfcbe8c735add03146",
+   "log_digest": "sha256:f91ad4f4684ee5d7d1f59a175026da4cd1e936b40e6bb2b07a94f69b6ef2359a",
+   "outcome": "PASS",
+   "passed": 1,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
+  "S001": {
+   "elapsed_s": 510.61,
+   "errors": 0,
+   "failed": 0,
+   "junit_digest": "sha256:9aadfd2b0ad1ac2e8d1f475bcdbc46658d1333045d23ca3899a4727ae3b2a24f",
+   "log_digest": "sha256:8119b2b379bdfaac4b52af1b1ce6af7bf2328d56ad233a34e06e950c28bdcec8",
+   "outcome": "PASS",
+   "passed": 1,
+   "process_cleanup": "OK",
+   "skipped": 0,
+   "source_after_equals_head": true
+  },
   "S002": {
    "elapsed_s": 136.74,
    "errors": 0,
@@ -237,12 +261,12 @@
   }
  },
  "shards_other": [],
- "shards_passed": 19,
+ "shards_passed": 21,
  "shards_total": 21,
  "totals": {
   "errors": 0,
   "failed": 0,
-  "passed": 3095,
+  "passed": 3097,
   "skipped": 0
  }
 }
