@@ -29,6 +29,7 @@ dev = [
     "types-PyYAML>=6",
     "cosmic-ray>=8.3",
     "types-openpyxl>=3.1.5.20260724",
+    "playwright>=1.61.0",
 ]
 
 [tool.uv]
