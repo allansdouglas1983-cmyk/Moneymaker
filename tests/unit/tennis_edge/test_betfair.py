@@ -407,3 +407,44 @@ def test_a_genuinely_off_ladder_price_is_still_refused(tmp_path: Path) -> None:
     ])
     with pytest.raises(ValueError, match="off-ladder"):
         read_markets(path)
+
+
+def test_an_absent_side_carries_forward_but_an_empty_one_clears(tmp_path: Path) -> None:
+    """Betfair sends batb and batl as SEPARATE deltas. An absent key means 'unchanged';
+    an empty array means 'cleared'. Treating absent as empty wipes the other side of the
+    book on every one-sided update, and the market stops having a midpoint at all."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 1_800_000,
+                    back={A: [[0, 2.0, 180.0]]}, lay={A: [[0, 2.02, 60.0]]}),
+        _ladder_msg(OFF_MS - 900_000, back={A: [[0, 2.02, 90.0]]}),   # back only
+    ])
+    (history,) = read_markets(path)
+    back = history.best_back_at(A, seconds_before_off=300)
+    lay = history.best_lay_at(A, seconds_before_off=300)
+    assert back is not None and back.price == Decimal("2.02"), "the new back applies"
+    assert lay is not None and lay.price == Decimal("2.02"), "the lay was not wiped"
+
+
+def test_an_explicitly_emptied_side_is_cleared_not_carried(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 1_800_000,
+                    back={A: [[0, 2.0, 180.0]]}, lay={A: [[0, 2.02, 60.0]]}),
+        _ladder_msg(OFF_MS - 900_000, lay={A: []}),
+    ])
+    (history,) = read_markets(path)
+    assert history.best_back_at(A, seconds_before_off=300) is not None
+    assert history.best_lay_at(A, seconds_before_off=300) is None
+
+
+def test_one_selection_update_does_not_disturb_the_other(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        _ladder_msg(OFF_MS - 1_800_000, back={A: [[0, 2.0, 180.0]], B: [[0, 2.0, 95.0]]},
+                    lay={A: [[0, 2.02, 60.0]], B: [[0, 2.02, 40.0]]}),
+        _ladder_msg(OFF_MS - 900_000, back={A: [[0, 1.9, 200.0]]}),
+    ])
+    (history,) = read_markets(path)
+    assert history.best_lay_at(B, seconds_before_off=300) is not None
+    assert history.best_back_at(B, seconds_before_off=300).price == Decimal("2.0")

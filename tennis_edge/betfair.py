@@ -333,6 +333,8 @@ class _Accumulator:
     definition: dict[str, object] | None = None
     observations: list[LtpObservation] | None = None
     ladders: list[LadderObservation] | None = None
+    #: Running best back/lay per selection, so a one-sided delta carries the other side.
+    book: dict[int, tuple["LadderLevel | None", "LadderLevel | None"]] | None = None
     went_in_play: bool = False
     settled: dict[str, object] | None = None
 
@@ -341,6 +343,8 @@ class _Accumulator:
             self.observations = []
         if self.ladders is None:
             self.ladders = []
+        if self.book is None:
+            self.book = {}
 
 
 def _market_time_ms(definition: Mapping[str, object]) -> int:
@@ -391,14 +395,24 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
                     continue
                 if "batb" in runner_change or "batl" in runner_change:
                     assert state.ladders is not None
+                    assert state.book is not None
+                    selection = int(runner_change["id"])
+                    back, lay = state.book.get(selection, (None, None))
+                    # Betfair sends batb and batl as SEPARATE deltas. An ABSENT key means
+                    # unchanged and must carry forward; an EMPTY ARRAY means the side was
+                    # cleared. Conflating them wipes half the book on every one-sided
+                    # update, and the market stops having a midpoint at all.
+                    if "batb" in runner_change:
+                        back = _best_level(runner_change["batb"], market_id=market_id)
+                    if "batl" in runner_change:
+                        lay = _best_level(runner_change["batl"], market_id=market_id)
+                    state.book[selection] = (back, lay)
                     state.ladders.append(
                         LadderObservation(
                             publish_time_ms=publish_time,
-                            selection_id=int(runner_change["id"]),
-                            best_back=_best_level(runner_change.get("batb"),
-                                                  market_id=market_id),
-                            best_lay=_best_level(runner_change.get("batl"),
-                                                 market_id=market_id),
+                            selection_id=selection,
+                            best_back=back,
+                            best_lay=lay,
                         )
                     )
                 # ltp == 0 is ADVANCED's "nothing has traded yet" sentinel, not a price.
