@@ -30,8 +30,8 @@ from __future__ import annotations
 
 import datetime as dt
 from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Iterable, Sequence
+from dataclasses import dataclass
+from typing import Iterable
 
 from sport_tennis.identity_bridge import _betfair_keys, _td_key, normalize_name
 
