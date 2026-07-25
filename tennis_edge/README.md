@@ -19,10 +19,19 @@ test in `tests/integration/tennis_edge/test_market_benchmark.py`).
 All four are flat. That is the same answer the published literature reports for closing
 tennis prices, and it is the honest conclusion from the data reachable here.
 
-Two follow-ups are walled rather than concluded. Betfair returns **403 from every
-endpoint** for this container's IP, so historical exchange prices are unreachable; the
-cross-book work above therefore rests on bookmaker closing prices, which is a weaker test
-than exchange prices would be.
+Every one of those uses **bookmaker closing prices**: 4.4% overround, and a displayed line
+rather than a transactable one. **Exchange prices are the one genuinely untested case** —
+no overround, commission on the net result only, and a price someone will actually trade at.
+
+That test is now built and waiting on data. `betfair.py`, `exchange.py` and
+`exchange_link.py` turn a Betfair Historical BASIC download into the same benchmark the
+bookmaker prices were measured against. Betfair returns 403 to this container (US IP,
+regional block), so the archives have to be fetched from a UK connection and dropped under
+`TENNIS_EDGE_DATA`; nothing else is required.
+
+```
+uv run python -m tennis_edge.exchange_link --betfair <path>
+```
 
 ### The Challenger/ITF tier thesis — tested 2026-07-25
 
@@ -78,6 +87,9 @@ ever appeared.
 | `policy.py` | The frozen decision rule and its digest. |
 | `ledger.py` | Append-only JSONL evidence store. |
 | `weekly.py` | The unattended job. |
+| `betfair.py` | Betfair Historical BASIC reader. Pre-off only; BSP quarantined behind `grading_view()`. |
+| `exchange.py` | Exchange probability and EV — no overround, commission on the net result. |
+| `exchange_link.py` | Joins Betfair markets to corpus matches with typed exclusions, and benchmarks exchange against bookmaker on the same matches. |
 
 Odds columns are usable for evaluation and execution but remain **banned as model
 features** — `features.py::assert_no_price_features` enforces that.
