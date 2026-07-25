@@ -29,9 +29,14 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def _tracked_source_dirty() -> str:
-    """Non-empty string listing tracked files that differ from HEAD (untracked files ignored)."""
-    out = _run(["git", "diff", "--name-only", "HEAD"]).stdout.strip()
-    return out
+    """Tracked SOURCE/TEST files differing from HEAD (untracked files ignored).
+
+    Evidence artifacts under ``docs/evidence/`` are excluded: this runner writes its own
+    shard results, logs and JUnit XML there, and once those are committed a later shard's
+    rewrite of its own output would otherwise be misread as source drift. Any drift in
+    production code or tests still fails closed."""
+    out = _run(["git", "diff", "--name-only", "HEAD"]).stdout.split()
+    return "\n".join(f for f in out if not f.startswith("docs/evidence/"))
 
 
 def _unexplained_worker() -> str:
