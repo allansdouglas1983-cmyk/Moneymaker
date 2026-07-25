@@ -1,0 +1,339 @@
+{
+ "all_non_pytest_pass": false,
+ "commit": "93f0ea696c211201505dece3d9df641bf518af50",
+ "directive": "STAGE3-0006C-D-A3-VERIFY-V1 \u00a711",
+ "failed_gates": [
+  [
+   6,
+   "ruff"
+  ],
+  [
+   25,
+   "mypy"
+  ]
+ ],
+ "gates": [
+  {
+   "command": "uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified",
+   "elapsed_s": 0.86,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 1,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:94b97ad7d37409d1cdefd02e3ac122158b9f8af6626d192ea57e9d8ae9861c21",
+   "stdout_tail": [
+    "[spec-coverage] OK: 47 enforced ID(s) covered and consistent"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified --require-causal-declarations --require-properties-for money",
+   "elapsed_s": 0.76,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 2,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:94b97ad7d37409d1cdefd02e3ac122158b9f8af6626d192ea57e9d8ae9861c21",
+   "stdout_tail": [
+    "[spec-coverage] OK: 47 enforced ID(s) covered and consistent"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_facts_freshness.py --registry docs/facts.yaml",
+   "elapsed_s": 0.11,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 3,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:0a0c01667865b835139311938cee371bf3215894b07f28ea526eef963fc0c037",
+   "stdout_tail": [
+    "[facts-freshness] OK: 8 fact(s) fresh as of 2026-07-25"
+   ]
+  },
+  {
+   "command": "uv run python -m tools.check_licensed_sources --registry docs/licensed-sources.yaml",
+   "elapsed_s": 0.11,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 4,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:eca3123b439055cc925a5a47d7cb3a19dbc36dc9beb7e407143289bd0577bed3",
+   "stdout_tail": [
+    "[licensed-sources] OK: 7 source(s) in registry, 0 operational and fully licensed"
+   ]
+  },
+  {
+   "command": "uv run pytest tests/unit tests/integration tests/properties tests/stateful tests/failure_injection -q",
+   "kind": "pytest",
+   "line": 5,
+   "reference": "STAGE3_PYTEST_SHARDED_RECONCILIATION_V1.json (3097/3097 PASS)",
+   "status": "EXECUTED_VIA_SHARDS"
+  },
+  {
+   "command": "uv run ruff check --select ARG .",
+   "elapsed_s": 0.08,
+   "exit_code": 1,
+   "kind": "non-pytest",
+   "line": 6,
+   "result": "FAIL",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:7a0596de539957d095cd00c075e7f7cd9f4ed227ef39e6d9b06f758f8bdceba3",
+   "stdout_tail": [
+    "",
+    "Found 11 errors."
+   ]
+  },
+  {
+   "command": "uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts sport_core sport_tennis",
+   "elapsed_s": 10.34,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 7,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:4a15072557fec678e0188a69264861d257a409bb69451c3d66d68631e93fcaeb",
+   "stdout_tail": [
+    "--------------------------------------------------------------------",
+    "Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)"
+   ]
+  },
+  {
+   "command": "! grep -rinE '(notimplementederror|\\btodo\\b|\\bfixme\\b|\\bxxx\\b|\\bhack\\b|\\bplaceholder\\b|\\bstub\\b|raise\\s+notimplemented|\\bpass\\b\\s*(#.*)?$)' l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts sport_core sport_tennis --include='*.py'",
+   "elapsed_s": 0.02,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 8,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:9f3f0a9698fa98ea3b18499eb24bd36f34b447a47b846922e828930d0b0a8707",
+   "stdout_tail": []
+  },
+  {
+   "command": "! grep -rinE '(notimplementederror|\\btodo\\b|\\bfixme\\b|\\bxxx\\b|\\bhack\\b|\\bplaceholder\\b|\\bstub\\b|raise\\s+notimplemented|\\bpass\\b\\s*(#.*)?$)' l0_raw l1_reduce l3_features --include='*.py'",
+   "elapsed_s": 0.01,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 9,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:9f3f0a9698fa98ea3b18499eb24bd36f34b447a47b846922e828930d0b0a8707",
+   "stdout_tail": []
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker",
+   "elapsed_s": 1.54,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 10,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:67c731fdcb560ddb75f971dbdbecc776663902bdc2359805c42309b9a8eb3813",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from l5_decision, l5b_risk, l6_broker reaches research.scraping"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from l5_decision l5b_risk l6_broker l7_settle l3_features l4_pricing",
+   "elapsed_s": 1.57,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 11,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:048f79074ac7a8fc1625d7cda9648ece9da979272c4b691322ac8245eb179939",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from l5_decision, l5b_risk, l6_broker, l7_settle, l3_features, l4_pricing reaches research.xmarket"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from assistant_v0",
+   "elapsed_s": 1.46,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 12,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:073a23c945c86455dbfb7861bfc9ddd80e01b2bc9d950726d93c272e693f136c",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from assistant_v0 reaches l6_broker"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from assistant_v0",
+   "elapsed_s": 1.49,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 13,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:ac3e8d663634b66aff9aa7bf9bad24434751a1ca5c4f1ba80ff685201f8f76be",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from assistant_v0 reaches research.xmarket"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from xmarket_contracts",
+   "elapsed_s": 1.45,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 14,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:21d8439a4639d79d43331acc7df540910944e9e90ab21abe3877248effb217dd",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from xmarket_contracts reaches l6_broker"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from xmarket_contracts",
+   "elapsed_s": 1.37,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 15,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:346f2441844dadf0b7311c4b90dda5c580dfdcb9aff4c16a7ce1bb62718b9da3",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from xmarket_contracts reaches research.xmarket"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features",
+   "elapsed_s": 1.37,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 16,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:468a3052630c16f98981a36bfcbee1d8ff07617c78c8568a74294b09bae6da11",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from l3_features reaches l8_evidence.reconciled_bsp"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l8_evidence.tennis_outcomes --from l3_features l4_pricing",
+   "elapsed_s": 1.4,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 17,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:d92dcd635164acf7c1ee4c14fc83aba31d8c90b31cccd7d5d3acb54b6d27cfbb",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from l3_features, l4_pricing reaches l8_evidence.tennis_outcomes"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l5_decision --from sport_tennis.coherence",
+   "elapsed_s": 1.36,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 18,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:d667af6d95588ecbbc3b06833c27927e3c5b70906b3d3c86bb5eedf56d69b5ee",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches l5_decision"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l5b_risk --from sport_tennis.coherence",
+   "elapsed_s": 1.37,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 19,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:0c777acffbe846df7e4c22963e3a5ea3be1f85f552bdf3a1e7fb68d9aa4f4bba",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches l5b_risk"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from sport_tennis.coherence",
+   "elapsed_s": 1.4,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 20,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:7c60942b80a4ee5c729c2c5683914fc625eb607ac9cbf52d4f4329c7e5287f9e",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches l6_broker"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l7_settle --from sport_tennis.coherence",
+   "elapsed_s": 1.44,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 21,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:c4802a0484aa8dd02d3de124dc1bcdd78d80505e2ba8c620a74e46ec3d58380c",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches l7_settle"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid assistant_v0 --from sport_tennis.coherence",
+   "elapsed_s": 1.31,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 22,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:b1b31447d145833c071c574495be692f8de58564cd24064dbb4f4e5c5d4ad54e",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches assistant_v0"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from sport_tennis.coherence",
+   "elapsed_s": 1.32,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 23,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:79cc5eb08a99b942515aa7395e0616afa5de6f4c405760d68f96bd7264da7702",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from sport_tennis.coherence reaches research.xmarket"
+   ]
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid sport_tennis.coherence --from assistant_v0 l4_pricing",
+   "elapsed_s": 1.38,
+   "exit_code": 0,
+   "kind": "non-pytest",
+   "line": 24,
+   "result": "PASS",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:2055bc9a2824090913aff3540042645ee0b3ccf82903b56685ac36a77da6fb48",
+   "stdout_tail": [
+    "[import-quarantine] OK: no path from assistant_v0, l4_pricing reaches sport_tennis.coherence"
+   ]
+  },
+  {
+   "command": "uv run mypy --strict .",
+   "elapsed_s": 0.41,
+   "exit_code": 1,
+   "kind": "non-pytest",
+   "line": 25,
+   "result": "FAIL",
+   "source_drift_after": [],
+   "stdout_stderr_digest": "sha256:1274cebb58732230dedec0e1362b4863b49d74146f2bf357fffda1cbb6f558c6",
+   "stdout_tail": [
+    "tests/unit/coherence/test_holdout_metrics.py:106: error: Argument \"per_server\" to \"IdentificationResult\" has incompatible type \"tuple[()]\"; expected \"tuple[ServerSolve, ServerSolve]\"  [arg-type]",
+    "Found 38 errors in 10 files (checked 421 source files)"
+   ]
+  }
+ ],
+ "makefile_sha256": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
+ "non_pytest_fail": 2,
+ "non_pytest_gate_count": 24,
+ "non_pytest_pass": 22
+}
