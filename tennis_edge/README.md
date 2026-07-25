@@ -53,7 +53,8 @@ ever appeared.
 | `serve_stats.py`, `point_model.py` | Shrunk serve estimates and the Barnett–Clarke / O'Malley hierarchical match model. |
 | `consensus.py` | Cross-book consensus deviation. CLV is measured against a reference **outside** the consensus, or it raises. |
 | `backtest.py` | Walk-forward harness, one-tick slippage, trial log. |
-| `refresh.py` | Immutable data vintages with per-file SHA-256 provenance and conditional GET. |
+| `refresh.py` | Immutable Tennis-Data vintages with per-file SHA-256 provenance and conditional GET. |
+| `archive.py` | Restores the Sackmann archive from Software Heritage, pinned to an exact snapshot and verified against a pinned digest. |
 | `policy.py` | The frozen decision rule and its digest. |
 | `ledger.py` | Append-only JSONL evidence store. |
 | `weekly.py` | The unattended job. |
@@ -76,8 +77,28 @@ decided from state that has observed only *earlier* days, which
 that actually priced each match.
 
 Raw provider data lives outside the repository (`TENNIS_EDGE_DATA`, default
-`~/tennis_edge_data`) so a push never redistributes someone else's corpus. The Sackmann
-archives are CC BY-NC-SA 4.0 and are likewise kept out of the repo.
+`~/tennis_edge_data`) so a push never redistributes someone else's corpus.
+
+Both corpora restore themselves. Tennis-Data is fetched by `refresh.py`; the Sackmann
+archive by `archive.py`, which matters because **both upstream GitHub repositories are
+deleted** and Software Heritage is now the only route to the data:
+
+```
+python -m tennis_edge.archive            # restore whatever is missing (~88 MB, ~20s)
+python -m tennis_edge.archive --verify   # check the local corpus, fetch nothing
+```
+
+It is pinned rather than resolved live — the exact snapshot, revision and directory of the
+last successful crawl, plus a digest over the git blob hashes of all 258 consumed match
+files. A restore that does not reproduce that digest is refused, and a corpus that already
+verifies costs zero requests. Two consequences: the corpus is reproducible, which is what a
+frozen policy needs underneath it; and the **coverage asymmetry is permanent** — ATP was
+last archived 2026-05-08 and WTA 2025-01-03, so ATP runs to May 2026 and WTA only to the end
+of the 2024 season. Any split has to respect that.
+
+The archive is CC BY-NC-SA 4.0 (attribution to Jeff Sackmann / Tennis Abstract,
+non-commercial). If it is missing entirely the weekly job **refuses to run** rather than
+quietly pricing every row with the rating blend alone under the point-model policy digest.
 
 ## Verification
 

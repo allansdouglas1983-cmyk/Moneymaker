@@ -23,6 +23,7 @@ from tennis_edge.archive import (
     restore,
     verify,
 )
+from tennis_edge.sackmann import available_files, default_root
 
 
 def _tarball(entries: dict[str, bytes], *, prefix: str) -> bytes:
@@ -203,3 +204,37 @@ def test_a_corrupted_local_file_triggers_a_refetch(tmp_path: Path) -> None:
 
 def test_manifest_of_a_missing_directory_is_empty(tmp_path: Path) -> None:
     assert manifest_of(tmp_path / "nope") == {}
+
+
+def test_the_installed_set_is_exactly_what_the_loader_consumes(tmp_path: Path) -> None:
+    """archive.py decides what to install; sackmann.available_files decides what gets read.
+    If those two drift apart the restore either wastes bandwidth on files nothing opens or,
+    far worse, omits files the corpus needs. This holds them in step."""
+    directory = tmp_path / "tennis_atp"
+    directory.mkdir()
+    names = [
+        "atp_matches_2003.csv", "atp_matches_qual_chall_2003.csv",
+        "atp_matches_futures_2003.csv", "atp_matches_doubles_2003.csv",
+        "atp_matches_amateur_1968.csv", "README.md", "atp_players.csv",
+    ]
+    for name in names:
+        (directory / name).write_bytes(b"x")
+
+    installed = set(manifest_of(directory))
+    readable = {
+        p.name for p in available_files(
+            tmp_path, tours=("atp",), families=("main", "qual_chall", "futures")
+        )
+    }
+    assert installed == readable
+
+
+@pytest.mark.skipif(
+    not (default_root() / "tennis_atp").is_dir(),
+    reason="the Sackmann corpus is not present on this machine",
+)
+def test_the_pinned_digests_reproduce_the_corpus_actually_in_use() -> None:
+    """The pins are only worth anything if they describe the data the measurements were
+    made on. Every published result in tennis_edge/README.md rests on this corpus."""
+    problems = [p for p in (verify(a, default_root()) for a in PINNED) if p is not None]
+    assert problems == []

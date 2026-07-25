@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from tennis_edge import weekly
+from tennis_edge.archive import RestoreResult
 from tennis_edge.corpus import Completion, CorpusStats, Match, OddsQuotes
 from tennis_edge.ledger import (
     MIN_INTERPRETABLE_BETS,
@@ -217,6 +218,7 @@ def _stub_environment(
     monkeypatch.setattr(weekly, "load_corpus", lambda _root: (matches, stats))
     monkeypatch.setattr(weekly, "load_matches", lambda **_kwargs: ())
     monkeypatch.setattr(weekly, "available_files", lambda **_kwargs: [tmp_path / "a.csv"])
+    monkeypatch.setattr(weekly, "restore_archive", lambda: RestoreResult(root=tmp_path))
 
 
 def test_a_decision_never_sees_a_result_from_its_own_day_or_later(

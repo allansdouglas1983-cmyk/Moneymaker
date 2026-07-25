@@ -19,6 +19,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from tennis_edge.archive import restore as restore_archive
 from tennis_edge.corpus import Match, default_vintage_root, group_by_day, load_corpus
 from tennis_edge.ledger import Ledger, LedgerRow, Summary, match_key, summarise
 from tennis_edge.policy import POLICY_VERSION, Status, decide, policy_digest
@@ -89,7 +90,7 @@ def _require_serve_archive() -> None:
             "no Sackmann match files found: the serve archive is missing, so the point "
             "model could not contribute to any decision. Refusing rather than recording a "
             "rating-only ledger under the point-model policy digest. Restore the archive "
-            "(see tennis_edge/sackmann.py) or set TENNIS_EDGE_DATA."
+            "with `python -m tennis_edge.archive` or set TENNIS_EDGE_DATA."
         )
 
 
@@ -129,6 +130,7 @@ def run(
     ledger_path: Path | str,
     data_root: Path | str | None = None,
     do_refresh: bool = True,
+    do_restore: bool = True,
     dry_run: bool = False,
     now_utc: dt.datetime | None = None,
     ledger_from: dt.date = LEDGER_FROM,
@@ -153,6 +155,8 @@ def run(
     known = ledger.keys()
     engine = RatingEngine()
     estimator = ServeEstimator()
+    if do_restore:
+        print(restore_archive().report(), file=sys.stderr)
     _require_serve_archive()
     estimator.queue(
         load_matches(
@@ -210,6 +214,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", default=None)
     parser.add_argument("--no-refresh", action="store_true",
                         help="evaluate against the local vintage without contacting the source")
+    parser.add_argument("--no-archive-restore", action="store_true",
+                        help="skip the Sackmann archive restore (it is a no-op when the "
+                             "local corpus already verifies)")
     parser.add_argument("--dry-run", action="store_true",
                         help="evaluate and report without writing to the ledger")
     parser.add_argument("--from-date", default=None,
@@ -218,7 +225,8 @@ def main(argv: list[str] | None = None) -> int:
 
     result = run(
         ledger_path=args.ledger, data_root=args.data_root,
-        do_refresh=not args.no_refresh, dry_run=args.dry_run,
+        do_refresh=not args.no_refresh, do_restore=not args.no_archive_restore,
+        dry_run=args.dry_run,
         ledger_from=dt.date.fromisoformat(args.from_date) if args.from_date else LEDGER_FROM,
     )
     print(result.report())
