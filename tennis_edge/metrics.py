@@ -38,6 +38,8 @@ __all__ = [
     "summarise_bets",
     "clustered_bootstrap",
     "bootstrap_ratio_by_cluster",
+    "expected_max_sharpe",
+    "deflated_sharpe_ratio",
 ]
 
 EPS = 1e-15
@@ -328,6 +330,72 @@ def summarise_bets(
         max_drawdown=drawdown, t_stat=t_stat, roi_ci95=(lo, hi),
         bets_for_significance=needed,
     )
+
+
+def _normal_cdf(z: float) -> float:
+    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+
+def _normal_ppf(p: float) -> float:
+    """Inverse normal CDF by bisection — adequate here and avoids a scipy dependency."""
+    if not 0.0 < p < 1.0:
+        raise ValueError(f"probability must be in (0,1), got {p}")
+    low, high = -40.0, 40.0
+    for _ in range(200):
+        mid = (low + high) / 2.0
+        if _normal_cdf(mid) < p:
+            low = mid
+        else:
+            high = mid
+    return (low + high) / 2.0
+
+
+def expected_max_sharpe(trials: int, sharpe_sd: float) -> float:
+    """The Sharpe ratio the *best* of ``trials`` variants shows when none has any edge.
+
+    Bailey & Lopez de Prado's expression. This is the number a backtest has to beat before
+    it means anything: search a hundred variants over noise and the winner will look about
+    2.5 standard deviations good, entirely by construction.
+    """
+    if trials < 1:
+        raise ValueError(f"trials must be at least 1, got {trials}")
+    if trials == 1:
+        return 0.0
+    gamma = 0.5772156649015329  # Euler-Mascheroni
+    first = _normal_ppf(1.0 - 1.0 / trials)
+    second = _normal_ppf(1.0 - 1.0 / (trials * math.e))
+    return sharpe_sd * ((1.0 - gamma) * first + gamma * second)
+
+
+def deflated_sharpe_ratio(
+    returns: Sequence[float], *, trials: int, sharpe_sd: float | None = None
+) -> float:
+    """Probability the observed Sharpe is real once selection bias is removed.
+
+    Corrects for three things a raw Sharpe ignores: how many variants were tried, the skew of
+    betting returns (long odds are strongly positively skewed), and their fat tails. A value
+    below ~0.95 means the result is not distinguishable from the best of a random search.
+    """
+    n = len(returns)
+    if n < 3:
+        raise ValueError("need at least three observations to deflate a Sharpe ratio")
+    mean = sum(returns) / n
+    variance = sum((r - mean) ** 2 for r in returns) / (n - 1)
+    sd = math.sqrt(variance)
+    if sd <= 0:
+        return 0.0
+    sharpe = mean / sd
+    skew = sum((r - mean) ** 3 for r in returns) / (n * sd**3)
+    kurtosis = sum((r - mean) ** 4 for r in returns) / (n * sd**4)
+    # Without an explicit spread across trials, the sampling error of a single Sharpe is the
+    # natural stand-in for how much the best of N could drift upward by luck alone.
+    spread = sharpe_sd if sharpe_sd is not None else 1.0 / math.sqrt(n - 1)
+    benchmark = expected_max_sharpe(trials, spread)
+    denominator = 1.0 - skew * sharpe + ((kurtosis - 1.0) / 4.0) * sharpe**2
+    if denominator <= 0:
+        return 0.0
+    statistic = (sharpe - benchmark) * math.sqrt(n - 1) / math.sqrt(denominator)
+    return _normal_cdf(statistic)
 
 
 def bootstrap_ratio_by_cluster(
