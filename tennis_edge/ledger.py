@@ -20,7 +20,13 @@ from typing import Iterator, Sequence
 
 from tennis_edge.metrics import brier, log_loss
 
-__all__ = ["LedgerRow", "Ledger", "Summary", "summarise"]
+__all__ = ["MIN_INTERPRETABLE_BETS", "LedgerRow", "Ledger", "Summary", "summarise"]
+
+#: Below this many recommendations a return-per-unit figure is reported as a total only,
+#: never as a percentage. A handful of bets can show any yield at all — two winners at 3.0
+#: read as "+77% per unit", which is a number about sample size, not about edge. The same
+#: floor guards the variant sweep in ``consensus.py`` for the same reason.
+MIN_INTERPRETABLE_BETS = 200
 
 
 @dataclass(frozen=True)
@@ -153,11 +159,15 @@ class Summary:
             f"{k}={v}" for k, v in sorted(self.status_counts.items())))
         if self.recommendations:
             assert self.recommendation_return is not None
-            roi = 100.0 * self.recommendation_return / self.recommendations
-            lines.append(
-                f"  recommendations: {self.recommendations:,}, "
-                f"unit return {self.recommendation_return:+.2f} ({roi:+.2f}% per unit)"
-            )
+            line = (f"  recommendations: {self.recommendations:,}, "
+                    f"unit return {self.recommendation_return:+.2f}")
+            if self.recommendations >= MIN_INTERPRETABLE_BETS:
+                roi = 100.0 * self.recommendation_return / self.recommendations
+                line += f" ({roi:+.2f}% per unit)"
+            else:
+                line += (f" (no rate shown: under {MIN_INTERPRETABLE_BETS} bets a "
+                         f"percentage is noise, not a yield)")
+            lines.append(line)
         else:
             lines.append("  recommendations: none")
         return "\n".join(lines)

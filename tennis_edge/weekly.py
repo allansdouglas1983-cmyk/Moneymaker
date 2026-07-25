@@ -24,7 +24,7 @@ from tennis_edge.ledger import Ledger, LedgerRow, Summary, match_key, summarise
 from tennis_edge.policy import POLICY_VERSION, Status, decide, policy_digest
 from tennis_edge.ratings import RatingEngine, elo_expected
 from tennis_edge.refresh import latest_vintage, refresh
-from tennis_edge.sackmann import load_matches
+from tennis_edge.sackmann import available_files, load_matches
 from tennis_edge.serve_stats import ServeEstimator
 
 __all__ = ["WeeklyResult", "run", "main"]
@@ -67,6 +67,30 @@ def _code_commit() -> str:
         return result.stdout.strip() or "unknown"
     except OSError:  # pragma: no cover - git absent is not worth failing a run over
         return "unknown"
+
+
+def _require_serve_archive() -> None:
+    """Refuse to run without the serve archive, rather than quietly changing architecture.
+
+    :func:`_model_view` degrades to the rating blend alone when serve statistics are missing
+    for a pairing, which is correct for an individual match. But if the whole archive is
+    absent — a fresh container, an unset ``TENNIS_EDGE_DATA``, a half-restored corpus — then
+    *every* row would be priced by a different model than the one the policy was frozen
+    against, and the ledger would record that under the same policy digest. Silently
+    substituting one architecture for another is exactly the failure the digest exists to
+    prevent, so this stops instead.
+
+    The archive is large and lives outside the repository, so its absence is a routine
+    environment problem, not an exotic one.
+    """
+    files = available_files(families=("main", "qual_chall"))
+    if not files:
+        raise RuntimeError(
+            "no Sackmann match files found: the serve archive is missing, so the point "
+            "model could not contribute to any decision. Refusing rather than recording a "
+            "rating-only ledger under the point-model policy digest. Restore the archive "
+            "(see tennis_edge/sackmann.py) or set TENNIS_EDGE_DATA."
+        )
 
 
 def _model_view(
@@ -129,6 +153,7 @@ def run(
     known = ledger.keys()
     engine = RatingEngine()
     estimator = ServeEstimator()
+    _require_serve_archive()
     estimator.queue(
         load_matches(
             families=("main", "qual_chall"), since=_ARCHIVE_FROM, require_serve_stats=True

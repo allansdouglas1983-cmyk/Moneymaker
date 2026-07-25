@@ -11,7 +11,13 @@ import pytest
 
 from tennis_edge import weekly
 from tennis_edge.corpus import Completion, CorpusStats, Match, OddsQuotes
-from tennis_edge.ledger import Ledger, LedgerRow, match_key, summarise
+from tennis_edge.ledger import (
+    MIN_INTERPRETABLE_BETS,
+    Ledger,
+    LedgerRow,
+    match_key,
+    summarise,
+)
 from tennis_edge.policy import (
     MODEL_SHRINKAGE,
     TIP_MARGIN,
@@ -210,6 +216,7 @@ def _stub_environment(
     monkeypatch.setattr(weekly, "latest_vintage", lambda _root: vintage)
     monkeypatch.setattr(weekly, "load_corpus", lambda _root: (matches, stats))
     monkeypatch.setattr(weekly, "load_matches", lambda **_kwargs: ())
+    monkeypatch.setattr(weekly, "available_files", lambda **_kwargs: [tmp_path / "a.csv"])
 
 
 def test_a_decision_never_sees_a_result_from_its_own_day_or_later(
@@ -295,3 +302,31 @@ def test_matches_before_the_ledger_start_build_state_without_being_recorded(
                         do_refresh=False, dry_run=True, ledger_from=dt.date(2025, 6, 6))
     recorded = {m for m in matches if m.match_date >= dt.date(2025, 6, 6)}
     assert result.evaluated == len(recorded)
+
+
+def test_a_missing_serve_archive_stops_the_job(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Without the archive every row would be priced by the rating blend alone — a
+    different architecture recorded under the same policy digest. That must stop, not
+    silently proceed."""
+    _stub_environment(monkeypatch, tmp_path, _synthetic_corpus())
+    monkeypatch.setattr(weekly, "available_files", lambda **_kwargs: [])
+
+    with pytest.raises(RuntimeError, match="serve archive is missing"):
+        weekly.run(ledger_path=tmp_path / "l.jsonl", data_root=tmp_path,
+                   do_refresh=False, dry_run=True, ledger_from=dt.date(2025, 1, 1))
+
+def test_a_handful_of_bets_never_reports_a_yield() -> None:
+    """Two winners at 3.0 read as '+77% per unit'. That is a fact about the sample size,
+    not about edge, so the rate is withheld until there are enough bets to mean anything."""
+    few = summarise([_row(f"k{i}", odds=3.0, side="A", winner_is_a=True) for i in range(3)])
+    assert few.recommendations == 3
+    assert "% per unit" not in few.report()
+    assert "noise" in few.report()
+
+    many = summarise([
+        _row(f"k{i}", odds=3.0, side="A", winner_is_a=i % 3 == 0)
+        for i in range(MIN_INTERPRETABLE_BETS)
+    ])
+    assert "% per unit" in many.report()
