@@ -20,9 +20,29 @@ All four are flat. That is the same answer the published literature reports for 
 tennis prices, and it is the honest conclusion from the data reachable here.
 
 Two follow-ups are walled rather than concluded. Betfair returns **403 from every
-endpoint** for this container's IP, so historical exchange prices and Challenger coverage
-are unreachable; the cross-book work above therefore rests on bookmaker closing prices,
-which is a weaker test than exchange prices would be.
+endpoint** for this container's IP, so historical exchange prices are unreachable; the
+cross-book work above therefore rests on bookmaker closing prices, which is a weaker test
+than exchange prices would be.
+
+### The Challenger/ITF tier thesis — tested 2026-07-25
+
+Published operator figures put the achievable yield near **9% in Challenger/ITF against
+2.4% on main tour**, which would mean we had been measuring the wrong tier all along. That
+thesis is now tested and **does not survive contact with the data**
+(`docs/research/findings/TE-0001-challenger-itf-tier-efficiency.md`).
+
+| tier | overround | model b₁ | t | bets | ROI at the quoted price |
+|---|---:|---:|---:|---:|---:|
+| main | 4.4% | 0.160 | 6.69 | 19,221 | **−5.51%** |
+| challenger | 7.3% | 0.170 | 5.61 | 13,523 | **−7.44%** |
+| itf | 8.0% | 0.528 | 19.09 | 10,471 | +1.24% |
+
+Two things kill it. First, the lower tiers are **twice as expensive to trade** — 7.3–8.0%
+overround against 4.4%. Second, and decisively, they have **no real prices**: ITF quotes
+are 100% OddsPortal aggregate and Challenger 94.2%, so only 152 Challenger matches and
+**zero** ITF matches carry two or more actual books. The ITF +1.24% is measured against an
+aggregator average no one quotes, is ~1.3 standard errors from zero, and is gross of
+commission. Where real prices exist, the method loses.
 
 ## What the weekly job is — and is not
 

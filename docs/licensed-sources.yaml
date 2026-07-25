@@ -141,3 +141,44 @@
   verified_at: "2026-07-18"
   recheck_by: "2027-07-18"   # 12 months from attestation; earlier if provider-specified or published terms change
   data_classification: personal-scope commercial-restricted (single-user research)
+
+- source_id: kaggle-hallmar-atp-itf-betting
+  provider: Kaggle redistributor "Evan Hallmark" (original sources not disclosed)
+  dataset: '"A large Tennis dataset for ATP and ITF betting" — all_matches.csv (1,676,338
+    deduped singles incl. Challenger/ITF with full serve-return stats), betting_moneyline
+    (217,599 quotes, 11 books, 2008-2018), spreads, totals. Retrieved 2026-07-25,
+    zip sha256 8a075d87bf55cd99ac165c8fbb8354c256c4bc6821e55014c1ae28cf5b25c3c0'
+  status: candidate
+  operational: false
+  permitted_uses:
+    offline_research: null
+    model_training: null
+    automated_betting: null
+    cloud_processing: null
+    retention: null
+    derived_models: null
+  prohibited_uses: []
+  verified_by: null
+  verified_at: null
+  recheck_by: null
+  data_classification: null
+  notes: |
+    RIGHTS UNVERIFIED, AND LIKELY UNOBTAINABLE — flagged on acquisition, not after use.
+
+    Kaggle's API reports licenseName "Unknown". The dataset description states provenance
+    only as "Pulled from ITF and ATP sources", and 83,617 of the 217,599 moneyline rows
+    carry book_name "OddsPortal" with book_id -1 — a third-party odds aggregator, i.e.
+    scraped rather than licensed. The redistributor's own right to license this onward is
+    therefore not established, and no contactable rights holder is identified.
+
+    Consequences, per SPEC-100 / SPEC-044 / SPEC-101:
+      - research-only. It MUST NOT acquire an import path into anything reachable from
+        l5_decision, l5b_risk or l6_broker.
+      - it cannot support any commercial or customer-facing output, and cannot make an
+        output publication-eligible.
+      - it must not become an operational source without a rights determination that is
+        currently not available to make.
+
+    Acquired to answer one question that no licensed source could answer: whether the
+    Challenger/ITF tiers are less efficient than main tour. That is a measurement, and the
+    measurement is all it may be used for.
