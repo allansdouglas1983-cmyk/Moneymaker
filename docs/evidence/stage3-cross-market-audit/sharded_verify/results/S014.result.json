@@ -1,0 +1,20 @@
+{
+ "elapsed_s": 8.39,
+ "errors": 0,
+ "expected_head": "57dc0ac75954f5c2b50ea732b817b0f7f11f4eac",
+ "failed": 0,
+ "junit_digest": "sha256:2ebf6c4342e5e212a4b799b7cc9ea8f0a5aee795e478eb9e1fe1e7037b68caf5",
+ "limit_seconds": 540.0,
+ "log_digest": "sha256:1465cd9f725415046713b2de33ed7600e4846c76cd5bb7b41ee115c5b73ecfff",
+ "manifest": "docs/evidence/stage3-cross-market-audit/sharded_verify/shard_manifests/S014.txt",
+ "manifest_digest": "sha256:c0e6bdb684451ac67fe5aee8474980376706c3dac65214b1ad4234c39426cb53",
+ "outcome": "PASS",
+ "passed": 311,
+ "process_cleanup": "OK",
+ "pytest_exit": 0,
+ "requested_count": 311,
+ "shard_id": "S014",
+ "skipped": 0,
+ "source_after_equals_head": true,
+ "source_before_diffstat_empty": true
+}
