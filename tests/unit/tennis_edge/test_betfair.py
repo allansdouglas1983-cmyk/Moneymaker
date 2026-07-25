@@ -13,6 +13,7 @@ import bz2
 import io
 import json
 import tarfile
+import datetime as dt
 from decimal import Decimal
 from pathlib import Path
 
@@ -26,14 +27,19 @@ from tennis_edge.betfair import (
 )
 
 MARKET_ID = "1.198765432"
-OFF_MS = 1_750_000_000_000
+#: The scheduled off, as both an ISO string in the definition and epoch ms in the fixture.
+#: These MUST be the same instant — the reader computes horizons from marketTime, so a
+#: fixture where they disagree tests nothing it claims to.
+OFF_ISO = "2025-06-15T14:00:00.000Z"
+OFF_MS = int(dt.datetime.fromisoformat(OFF_ISO.replace("Z", "+00:00")).timestamp() * 1000)
 A, B = 111, 222
 
 
 def _definition(*, in_play: bool = False, status: str = "OPEN",
-                bsp_reconciled: bool = False, runner_status: str = "ACTIVE") -> dict:
+                bsp_reconciled: bool = False,
+                runner_status: tuple[str, str] = ("ACTIVE", "ACTIVE")) -> dict:
     return {
-        "marketTime": "2025-06-15T14:00:00.000Z",
+        "marketTime": OFF_ISO,
         "marketType": "MATCH_ODDS",
         "eventName": "Alcaraz v Sinner",
         "eventId": "34567",
@@ -42,8 +48,8 @@ def _definition(*, in_play: bool = False, status: str = "OPEN",
         "inPlay": in_play,
         "bspReconciled": bsp_reconciled,
         "runners": [
-            {"id": A, "name": "Carlos Alcaraz", "status": runner_status, "sortPriority": 1},
-            {"id": B, "name": "Jannik Sinner", "status": runner_status, "sortPriority": 2},
+            {"id": A, "name": "Carlos Alcaraz", "status": runner_status[0], "sortPriority": 1},
+            {"id": B, "name": "Jannik Sinner", "status": runner_status[1], "sortPriority": 2},
         ],
     }
 
@@ -181,7 +187,7 @@ def test_asking_for_a_price_after_the_off_is_refused(tmp_path: Path) -> None:
 def test_bsp_is_not_reachable_from_the_price_path(tmp_path: Path) -> None:
     """BSP is a reconciled settlement-time closing benchmark. SPEC-021: it must not be
     reachable from any pre-event feature, and it joins only at grading time."""
-    definition = _definition(bsp_reconciled=True, status="CLOSED", runner_status="WINNER")
+    definition = _definition(bsp_reconciled=True, status="CLOSED", runner_status=("WINNER", "LOSER"))
     definition["runners"][0]["bsp"] = 2.14
     path = _write_jsonl(tmp_path / "m.jsonl", [
         _msg(OFF_MS - 600_000, definition=_definition()),
@@ -195,7 +201,7 @@ def test_bsp_is_not_reachable_from_the_price_path(tmp_path: Path) -> None:
 
 
 def test_bsp_is_available_only_through_the_explicit_grading_channel(tmp_path: Path) -> None:
-    definition = _definition(bsp_reconciled=True, status="CLOSED", runner_status="WINNER")
+    definition = _definition(bsp_reconciled=True, status="CLOSED", runner_status=("WINNER", "LOSER"))
     definition["runners"][0]["bsp"] = 2.14
     definition["runners"][1]["bsp"] = 1.88
     path = _write_jsonl(tmp_path / "m.jsonl", [
