@@ -1,11 +1,20 @@
 {
- "dirty_tracked_files": "docs/evidence/stage3-cross-market-audit/sharded_verify/results/S012.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S013.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S014.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S015.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S016.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S017.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S018.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S019.result.json",
- "expected_head": "7747e160439b3ffaca7b340cd47cb6d2b05cbd28",
- "head": "7747e160439b3ffaca7b340cd47cb6d2b05cbd28",
+ "elapsed_s": 7.74,
+ "errors": 0,
+ "expected_head": "63d35c2143839433b0ce1c32e47a854835907e6b",
+ "failed": 0,
+ "junit_digest": "sha256:74f63549d62f8cde790fb26e98d76f7b323fb5f01cb36ec75a629732b30048ff",
  "limit_seconds": 540.0,
+ "log_digest": "sha256:fc9468ec85f6bbafc7834f06881bb50f527e16a6dd6d1f5e529721c60a857847",
  "manifest": "docs/evidence/stage3-cross-market-audit/sharded_verify/shard_manifests/S020.txt",
  "manifest_digest": "sha256:d29d0848358114793044790f9cfd11db13aca4888fcfa7645e7b0e08c9ecd7f8",
- "outcome": "SOURCE_DRIFT",
+ "outcome": "PASS",
+ "passed": 21,
+ "process_cleanup": "OK",
+ "pytest_exit": 0,
  "requested_count": 21,
- "shard_id": "S020"
+ "shard_id": "S020",
+ "skipped": 0,
+ "source_after_equals_head": true,
+ "source_before_diffstat_empty": false
 }

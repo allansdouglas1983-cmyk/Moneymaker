@@ -1,11 +1,20 @@
 {
- "dirty_tracked_files": "docs/evidence/stage3-cross-market-audit/sharded_verify/results/S012.result.json\ndocs/evidence/stage3-cross-market-audit/sharded_verify/results/S013.result.json",
- "expected_head": "7747e160439b3ffaca7b340cd47cb6d2b05cbd28",
- "head": "7747e160439b3ffaca7b340cd47cb6d2b05cbd28",
+ "elapsed_s": 8.88,
+ "errors": 0,
+ "expected_head": "63d35c2143839433b0ce1c32e47a854835907e6b",
+ "failed": 0,
+ "junit_digest": "sha256:d63a1105735851a5e4ea35f7879eedef5ad422542b7547799eff13290994e01c",
  "limit_seconds": 540.0,
+ "log_digest": "sha256:9ba9ea69a603941821e793189f9a681ace780a146e5185c07a3ba31e35e2cb3d",
  "manifest": "docs/evidence/stage3-cross-market-audit/sharded_verify/shard_manifests/S014.txt",
  "manifest_digest": "sha256:c0e6bdb684451ac67fe5aee8474980376706c3dac65214b1ad4234c39426cb53",
- "outcome": "SOURCE_DRIFT",
+ "outcome": "PASS",
+ "passed": 311,
+ "process_cleanup": "OK",
+ "pytest_exit": 0,
  "requested_count": 311,
- "shard_id": "S014"
+ "shard_id": "S014",
+ "skipped": 0,
+ "source_after_equals_head": true,
+ "source_before_diffstat_empty": false
 }
