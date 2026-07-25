@@ -1,126 +1,99 @@
 {
  "approved_by": null,
- "commit": "93f0ea696c211201505dece3d9df641bf518af50",
- "directive": "STAGE3-0006C-D-A3-VERIFY-V1 \u00a712",
- "environment": {
-  "hypothesis": "6.156.6",
-  "mypy": "2.3.0",
-  "pylint": "4.0.6",
-  "pytest": "9.1.1",
-  "python": "CPython 3.11.15",
-  "ruff": "0.15.21"
- },
- "final_process_audit": "no pytest/make/cosmic/python worker running",
- "makefile_digest": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
- "monolithic_make_verify_status": "NOT COMPLETED in this environment (600s foreground cap); this sharded run executed the EXACT make-verify pytest selection with complete coverage and every exact non-pytest Makefile command. A monolithic one-process `make verify` remains required in a capable environment before release/exposure/canary/automation/deployment (policy).",
- "non_pytest_gates": {
-  "count": 24,
-  "fail": 2,
-  "failed": [
-   [
-    6,
-    "ruff"
-   ],
-   [
-    25,
-    "mypy"
-   ]
-  ],
-  "mypy_strict": {
-   "a3_introduced": 0,
-   "a3_touched_files_failing_on_pre_existing_lines": [
-    "tests/unit/coherence/test_solver_golden.py"
-   ],
-   "detail": "STAGE3_VERIFY_MYPY_FAILURES.txt",
-   "detail_digest": "sha256:7825717e8a0af0120f0de66ce3905f54692361a875f811b76c6742b9c301c69c",
-   "error_count": 38,
-   "exit": 1,
-   "pre_existing_files": [
-    "scratchpad/milestone_b_differential.py",
-    "tests/properties/coherence/test_root_dedup_props.py",
-    "tests/unit/coherence/dedup_reference.py",
-    "tests/unit/coherence/test_holdout_metrics.py",
-    "tests/unit/coherence/test_match_ref_bo3_fast.py",
-    "tests/unit/tools/test_isolated_exec.py",
-    "tests/unit/tools/test_mutation_harness.py",
-    "tests/unit/xmarket_contracts/test_linkage.py",
-    "tests/unit/xmarket_contracts/test_parsers.py"
-   ]
-  },
-  "pass": 22,
-  "ruff_arg": {
-   "detail": "STAGE3_VERIFY_RUFF_ARG_FAILURES.txt",
-   "detail_digest": "sha256:0bdaf572964706510ab0bbe6f39f3454d49162ed8042625e4ab41022f793b6c9",
-   "error_count": 11,
-   "exit": 1,
-   "files": [
-    "tests/unit/coherence/test_root_dedup.py",
-    "tests/unit/coherence/test_solver_nonfinite_reachability.py"
-   ],
-   "files_all_pre_existing": true
-  }
- },
- "nonpytest_gates_digest": "sha256:85a2c37e4d28063a0116db3478c0b8c26b799f036b25766db8b8c3410577606e",
- "policy_digest": "sha256:7bd4bbc8d2fe9a75a6fe33e5dd4628982dbcbb19e9409cee3a5bfbf08e6639d7",
- "preflight_digest": "sha256:1808a8ed152e2ea0da826f9f2c9b12e04917831971886a5d0d7ef1cce4dad4e8",
- "pytest": {
-  "claim": "EXACT_TEST_SELECTION_EXECUTED_WITH_COMPLETE_SHARDED_COVERAGE",
-  "duplicate": 0,
-  "extra": 0,
-  "longest_shard": [
-   518.1,
-   "S000"
-  ],
-  "missing": 0,
-  "pending": 0,
-  "per_shard_result_digest": {
-   "S000": "sha256:af456336b484548edc919b4dc3b5d1b703b3cc53fd4f5c6448f92da06ce8df2d",
-   "S001": "sha256:c3aa42685c94e2312532bb7d4a0c723c0ff595396b4965b1107a3d056d347e9c",
-   "S002": "sha256:1a205a2b0b6ea20d83f5b887d9ec12e07372bbb172576758cee5a567cc344cb6",
-   "S003": "sha256:b591c84811bab67d9733a4f613c70ae5d3eabbea80fb784ea86bc59472b54ec7",
-   "S004": "sha256:6149c3ab609070372130cc45f4b62073bcb3509abbc7a1b7b533096c915e7a77",
-   "S005": "sha256:b86d920d3bafeb76e9dc4eeb100150456a584e9ae5adddcefaf442d2a2055bf6",
-   "S006": "sha256:dbe96a3478b4779bbc7378ea919287d73daf722fc3ad2eb86bb107f4e2cd169b",
-   "S007": "sha256:098a68b7c9c6dfe3e47dee8dc241b8ff7b2be5010d64ed726258cc4ac91f2355",
-   "S008": "sha256:0fd94f888071ea9949e07876b5dd5c257593583aab1ad1f580ec0b8b77f8aa36",
-   "S009": "sha256:ef4482ad96d57d22fdd7f4b2accd4f432cbdbb8106c85efc2059965e4599c240",
-   "S010": "sha256:1ebb121960e8fc4fbec7050147121f215aab638225428b90bdc1b68ef807771c",
-   "S011": "sha256:e97c0b0fc7e2f52216533f83c52b60d8ef0ca77233747a18e93109833eb682d8",
-   "S012": "sha256:793c044e927e70ce9f69bd3f97aba96036bea0478010c3d1ce692e1bfa75b8b2",
-   "S013": "sha256:baa057c2d414ec000bdf9a70056f23a0bdf4aa012509a0fc76f9452d47d24e2f",
-   "S014": "sha256:17dda85c82bf9ee3bd6a20ed8f96ca8440662645ec1bea9ae93202668436e33d",
-   "S015": "sha256:06a0fe775e3e4de86a1b34dccaac1d7502498e0a63b83f4b7d6135a98562e401",
-   "S016": "sha256:2c6b5e0060f120b4eb7f84cfd7602673e4ab06fa18eb1b73ce710376e4c46762",
-   "S017": "sha256:5bdae5b0aaccb65f31d45191b52d5744bfadf2a1664c67bc701d98663bcf6729",
-   "S018": "sha256:131f376dcf454b29e3995a0454d0cf7c2b120b1958ff493b21c0e2a505b10dea",
-   "S019": "sha256:9601a904bacf3b8f1f1619d1c3a1924c382c20eebafa57b1a4133ca418399f93",
-   "S020": "sha256:b1fbb1b98e43ee8be259135e484a114fa13650bc95768f073e9bd1a8deb22e7c"
-  },
-  "total_collected": 3097,
-  "total_failed": 0,
-  "total_pass": 3097,
-  "total_shards": 21,
-  "total_skip": 0,
-  "total_xfail": 0,
-  "total_xpass": 0
- },
- "pytest_collection_digest": "sha256:89c40f9548466f49e42f1a59af9d4065f3fce82edc171705cf6bd7fea8c075ae",
- "pytest_reconciliation_digest": "sha256:decd9241cb3e17187dbd1992b8ace63724e7b011cf7bd2a584b7c6731e761710",
- "record": "STAGE3_FULL_VERIFY_SHARDED_V1_RECORD",
- "shard_plan_digest": "sha256:d055e0ed6f201905e5ab9da88907392b930a3365577606d777741f3db57c2026",
- "source_digests": {
-  "sport_tennis/coherence/discretisation_stability.py": "59f85bbd494808360aa25e0be19b5fab88eeec84",
-  "sport_tennis/coherence/scan_variants.py": "972763cb167bac3d2c89dc0dd7b4bf589f360344",
-  "sport_tennis/coherence/solver.py": "3548340a44a51835916b1a012d1b843e122f0c97"
- },
- "split_shard_amendments": "none (no runner-level 540s TIMEOUT_CLEANED occurred; all 21 shards PASSed within the per-shard limit)",
- "timeout_incidents": [
+ "blocked_nodes": [
   {
-   "incident": "S002+S004 batched in one Bash call exceeded the 600s tool cap while S004 ran; SIGKILLed externally, reaped clean, stale lock removed, S004 unscored and rerun ALONE -> PASS (506s). No node lost; not scored as pass."
+   "attempts": 2,
+   "cleanup": "OK both attempts; source byte-identical to HEAD; no orphan process",
+   "node_id": "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[True-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+   "observed": [
+    "TIMEOUT_CLEANED at 540.60s",
+    "TIMEOUT_CLEANED at 540.60s"
+   ],
+   "shard": "S000"
+  },
+  {
+   "attempts": 1,
+   "cleanup": "OK; source byte-identical to HEAD; no orphan process",
+   "node_id": "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[False-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+   "observed": [
+    "TIMEOUT_CLEANED at 540.60s"
+   ],
+   "shard": "S001"
   }
  ],
- "verdict": "FULL_VERIFY_SHARDED_FAIL",
- "verdict_reason": "Two non-pytest make-verify gates exit non-zero: `ruff check --select ARG .` (11 errors) and `mypy --strict .` (38 errors). Per \u00a711/\u00a712 any non-zero non-pytest gate produces FULL_VERIFY_SHARDED_FAIL. ALL 49 errors are in PRE-EXISTING code unrelated to A3: every ruff-ARG file and 9/10 mypy files were untouched by this session; the one A3-touched file (test_solver_golden.py) fails only on its pre-existing untyped `mk` helper (lines 86,90-101) and a pre-existing type:ignore (line 46), NOT on the block A3 added. A3's own changed source+test files pass ruff-ARG and mypy --strict individually. Per \u00a713 no source or test was changed to make verify pass; the issue is returned for founder decision.",
- "verify_plan_digest": "sha256:4aa462ebca8ca7fa6dd081d0b049507091516773368048010036cbedb67eb315",
- "working_tree": "clean of tracked source/test changes (only docs/evidence artifacts added)"
+ "collection_digest": "sha256:93e3b5292d9c17c8c8a312aad44bc3f1fbe8731251aa0eb848d74b9bce60fedb",
+ "commit": "b1d17262b209f1c0219776e54997395b76069cd7",
+ "context_not_claimed_as_equivalent_evidence": "Earlier in this session, on commit b712b3b, these same two nodes PASSED at 518.10s and 510.61s. Neither the test file nor the coherence source has changed since. This run is measurably slower (~1.2x on every comparable shard). Per \u00a77 that earlier run is NOT claimed as equivalent evidence for this verification.",
+ "directive": "PROGRAMME RESET AND OPERATIONAL V0 RELEASE \u00a75",
+ "makefile_digest": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
+ "monolithic_make_verify": "NOT completed in this environment (600s foreground cap). Never claimed.",
+ "non_pytest_gates": {
+  "count": 24,
+  "fail": 0,
+  "pass": 24
+ },
+ "nonpytest_gates_digest": "sha256:e2abbf17a37dc4587548884619a5209101a66dac65991c3f6b5cd891526b5ec1",
+ "policy_digest": "sha256:7bd4bbc8d2fe9a75a6fe33e5dd4628982dbcbb19e9409cee3a5bfbf08e6639d7",
+ "preflight_digest": "sha256:e656a72520be5a9463d8ad0f2d0beb96c896ac9a429192369aedea7fcfe488f8",
+ "pytest": {
+  "collected": 3140,
+  "duplicate": 0,
+  "executed_passed": 3138,
+  "extra": 0,
+  "failed": 0,
+  "longest_shard": [
+   "S006",
+   3,
+   376.39
+  ],
+  "missing": 0,
+  "pass_shards": 22,
+  "pending": 2,
+  "skipped": 0,
+  "total_pytest_elapsed_s": 2598.8
+ },
+ "pytest_pending_nodes": [
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[False-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[True-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]"
+ ],
+ "pytest_reconciliation_digest": "sha256:8d0751c17a9c5aba552d85a8e8c3e8b7e51fd97bad1fe257aeb208b9e6f95641",
+ "record": "STAGE3_FULL_VERIFY_SHARDED_V1_RECORD",
+ "shard_plan_amendments": "sha256:294ffdad6e83db82b63ee78708e5db85cb41d037b610a5f17d461fbaf2616a46",
+ "shard_plan_digest": "sha256:0bdc061451a2d988c5727bf57742e72aef7ff9af0301b49812aa88c388ce4436",
+ "timeout_incidents": [
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.TIMEOUT_ATTEMPT1.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S001.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S001"
+  },
+  {
+   "elapsed_s": 540.53,
+   "file": "S004.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004"
+  },
+  {
+   "elapsed_s": 540.61,
+   "file": "S004a.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004a"
+  }
+ ],
+ "verdict": "STOP_SINGLE_TEST_EXCEEDS_CAP",
+ "verdict_reason": "3138 of 3140 collected pytest nodes executed and PASSED across 22 successful foreground shards; all 24 exact non-pytest Makefile gates PASSED (including ruff --select ARG . and mypy --strict ., the two gates that were red before this pass). TWO nodes could not complete inside the environment's ~600s foreground-command cap under the policy's 540s hard shard limit. Per \u00a77, a one-node shard that reaches the limit twice yields STOP_SINGLE_TEST_EXCEEDS_CAP. No test, test data, internal timeout or expected value was changed, and no shorter substitute was introduced.",
+ "verdict_scope": "repository-wide sharded verification only; the V0 product itself is complete and green",
+ "verify_plan_digest": "sha256:4aa462ebca8ca7fa6dd081d0b049507091516773368048010036cbedb67eb315"
 }

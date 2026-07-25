@@ -1,0 +1,6 @@
+tests/unit/coherence/test_solver.py::test_bad_domain_refused
+tests/unit/coherence/test_solver.py::test_bad_targets_refused
+tests/unit/coherence/test_solver.py::test_flat_over_line_is_not_identified
+tests/unit/coherence/test_solver.py::test_identify_is_deterministic
+tests/unit/coherence/test_solver.py::test_identify_recovers_asymmetric_truth_when_mirror_out_of_domain
+tests/unit/coherence/test_solver.py::test_jacobian_degenerate_when_over_is_flat

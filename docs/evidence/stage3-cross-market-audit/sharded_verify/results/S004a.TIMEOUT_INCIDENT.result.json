@@ -1,0 +1,15 @@
+{
+ "elapsed_s": 540.61,
+ "expected_head": "b1d17262b209f1c0219776e54997395b76069cd7",
+ "junit_digest": "ABSENT",
+ "limit_seconds": 540.0,
+ "log_digest": "sha256:5ec1f7e700f37c3d0b2981d04855fc34b94aaa15457b05ca571817442d228f81",
+ "manifest": "docs/evidence/stage3-cross-market-audit/sharded_verify/shard_manifests/S004a.txt",
+ "manifest_digest": "sha256:edb5473e7ca700377ac1a660f067cd85bd45d60207f7b89266d3899112558437",
+ "outcome": "TIMEOUT_CLEANED",
+ "process_cleanup": "OK",
+ "requested_count": 3,
+ "shard_id": "S004a",
+ "source_after_equals_head": true,
+ "source_before_diffstat_empty": true
+}
