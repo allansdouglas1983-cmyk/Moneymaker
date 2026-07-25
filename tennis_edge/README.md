@@ -33,6 +33,25 @@ regional block), so the archives have to be fetched from a UK connection and dro
 uv run python -m tennis_edge.exchange_link --betfair <path>
 ```
 
+### Exchange vs bookmaker prices — tested 2026-07-25
+
+Every measurement above uses **bookmaker closing prices**. The one venue that matters for
+actually betting is the exchange, and the June 2026 Betfair ADVANCED corpus answers it
+(`docs/research/findings/TE-0003-exchange-vs-bookmaker-june-2026.md`, 416 linked markets).
+
+| | exchange | bookmaker (b365) |
+|---|---:|---:|
+| log loss (midpoint) | 0.59316 | 0.59454 |
+| round-trip margin | **1.12%** | **4.4%** |
+
+**As a forecast they are indistinguishable** — paired advantage +0.00138 nats, t = +0.70
+over 416 matches on 30 days. **As a venue the exchange is ~1.6 points cheaper per bet**,
+which is the whole of its advantage. Median size at best back £250 on the linkable
+(main-tour, liquid) subset.
+
+So the exchange should be the assumed venue for any future economic test, but no model that
+fails against bookmaker closing prices becomes viable just by moving there.
+
 ### The Challenger/ITF tier thesis — tested 2026-07-25
 
 Published operator figures put the achievable yield near **9% in Challenger/ITF against
