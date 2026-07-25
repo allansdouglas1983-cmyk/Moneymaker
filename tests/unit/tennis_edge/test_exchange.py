@@ -173,3 +173,66 @@ def test_a_quote_is_frozen() -> None:
     assert isinstance(quote, ExchangeQuote)
     with pytest.raises(Exception):
         quote.probability_a = 0.9  # type: ignore[misc]
+
+
+# ------------------------------------------------------------------ crossable prices
+
+
+def _with_ladder(back: dict[int, tuple[str, str]], *, minutes_before: int = 30
+                 ) -> MarketHistory:
+    from tennis_edge.betfair import LadderLevel, LadderObservation
+    at = OFF_MS - minutes_before * 60_000
+    return MarketHistory(
+        market_id="1.1", event_id="9", event_name="A v B", market_type="MATCH_ODDS",
+        country_code="GB", market_time_ms=OFF_MS,
+        runners=(Runner(A, "Player A", "ACTIVE", 1), Runner(B, "Player B", "ACTIVE", 2)),
+        observations=(), went_in_play=False,
+        ladders=tuple(
+            LadderObservation(publish_time_ms=at, selection_id=sid,
+                              best_back=LadderLevel(Decimal(p), Decimal(s)), best_lay=None)
+            for sid, (p, s) in back.items()
+        ),
+    )
+
+
+def test_the_ladder_gives_a_real_overround_where_last_trades_do_not() -> None:
+    """Two last-traded prints are separate moments and can sum UNDER 1.0, which reads as a
+    free market and is an artefact. Two best-BACK prices are a genuine two-sided crossable
+    book and sum above 1.0 — the real cost of crossing, and the honest number."""
+    # A real book: backing BOTH sides at the best available price costs more than 1.0,
+    # because the two best-back prices sit either side of the spread. (2.0/2.0 would be a
+    # zero-spread book — degenerate, and not what any real market looks like.)
+    history = _with_ladder({A: ("2.0", "180"), B: ("1.98", "95")})
+    quote = exchange_probability(history, seconds_before_off=600, use_ladder=True)
+    assert quote is not None
+    assert quote.raw_overround > 1.0
+
+    # The same market read from last trades can imply LESS than 1.0 — the artefact.
+    trades = exchange_probability(_history({A: "2.5", B: "2.5"}), seconds_before_off=600)
+    assert trades is not None and trades.raw_overround < 1.0
+    assert trades.crossable is False and quote.crossable is True
+
+
+def test_the_ladder_price_is_the_one_you_could_have_taken() -> None:
+    history = _with_ladder({A: ("2.5", "180"), B: ("1.7", "95")})
+    quote = exchange_probability(history, seconds_before_off=600, use_ladder=True)
+    assert quote is not None
+    assert quote.price_a == Decimal("2.5") and quote.price_b == Decimal("1.7")
+
+
+def test_the_ladder_records_available_size() -> None:
+    history = _with_ladder({A: ("2.5", "180"), B: ("1.7", "95")})
+    quote = exchange_probability(history, seconds_before_off=600, use_ladder=True)
+    assert quote is not None
+    assert quote.size_a == Decimal("180") and quote.size_b == Decimal("95")
+
+
+def test_an_empty_ladder_side_yields_no_quote() -> None:
+    history = _with_ladder({A: ("2.0", "180")})
+    assert exchange_probability(history, seconds_before_off=600, use_ladder=True) is None
+
+
+def test_last_traded_mode_reports_no_size() -> None:
+    quote = exchange_probability(_history({A: "2.0", B: "2.0"}), seconds_before_off=600)
+    assert quote is not None
+    assert quote.size_a is None, "a last trade carries no available size"

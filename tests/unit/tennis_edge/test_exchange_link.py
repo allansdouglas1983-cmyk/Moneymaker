@@ -15,7 +15,13 @@ from decimal import Decimal
 
 import pytest
 
-from tennis_edge.betfair import LtpObservation, MarketHistory, Runner
+from tennis_edge.betfair import (
+    LadderLevel,
+    LadderObservation,
+    LtpObservation,
+    MarketHistory,
+    Runner,
+)
 from tennis_edge.corpus import Completion, Match, OddsQuotes
 from tennis_edge.exchange_link import (
     LinkOutcome,
@@ -36,18 +42,27 @@ def _history(
     market_id: str = "1.1",
 ) -> MarketHistory:
     off = _off(day)
-    observations = ()
+    observations: tuple[LtpObservation, ...] = ()
+    ladders: tuple[LadderObservation, ...] = ()
     if prices is not None:
+        # A realistic market carries BOTH: last trades and a two-sided ladder. The linker
+        # prices from the ladder by default, because that is the crossable price.
         observations = tuple(
             LtpObservation(publish_time_ms=off - 1_800_000, selection_id=sid,
                            price=Decimal(p))
+            for sid, p in ((A, prices[0]), (B, prices[1]))
+        )
+        ladders = tuple(
+            LadderObservation(publish_time_ms=off - 1_800_000, selection_id=sid,
+                              best_back=LadderLevel(Decimal(p), Decimal("120")),
+                              best_lay=None)
             for sid, p in ((A, prices[0]), (B, prices[1]))
         )
     return MarketHistory(
         market_id=market_id, event_id="9", event_name=" v ".join(names),
         market_type="MATCH_ODDS", country_code="GB", market_time_ms=off,
         runners=(Runner(A, names[0], "ACTIVE", 1), Runner(B, names[1], "ACTIVE", 2)),
-        observations=observations, went_in_play=False,
+        observations=observations, ladders=ladders, went_in_play=False,
     )
 
 
@@ -153,6 +168,16 @@ def test_a_confident_correct_exchange_price_scores_better() -> None:
 def test_the_exchange_overround_is_reported() -> None:
     report = exchange_benchmark(link_markets((_history(),), (_match(),)))
     assert report.mean_exchange_overround == pytest.approx(1.0)
+    assert report.crossable is True, "the default price is the one you could have taken"
+    assert report.median_size == pytest.approx(120.0)
+
+
+def test_last_traded_mode_is_marked_as_an_artefact() -> None:
+    """A last-traded overround must never be presented as a cost of trading."""
+    report = exchange_benchmark(
+        link_markets((_history(),), (_match(),), use_ladder=False)
+    )
+    assert report.crossable is False and report.median_size is None
 
 
 def test_an_empty_link_scores_nothing_rather_than_zero() -> None:

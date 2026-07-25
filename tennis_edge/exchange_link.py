@@ -134,6 +134,7 @@ def link_markets(
     matches: Sequence[Match],
     *,
     horizon_seconds: int = DEFAULT_HORIZON_SECONDS,
+    use_ladder: bool = True,
 ) -> LinkResult:
     """Join markets to matches. Every market ends up linked or explicitly excluded."""
     resolved = _resolve_names(markets, matches)
@@ -185,7 +186,9 @@ def link_markets(
             ))
             continue
 
-        quote = exchange_probability(market, seconds_before_off=horizon_seconds)
+        quote = exchange_probability(
+            market, seconds_before_off=horizon_seconds, use_ladder=use_ladder
+        )
         if quote is None:
             excluded.append(ExcludedMarket(
                 market.market_id, market.event_name, LinkOutcome.NO_PRICE_AT_HORIZON,
@@ -213,6 +216,10 @@ class BenchmarkReport:
     exchange_log_loss: float | None
     bookmaker_log_loss: float | None
     mean_exchange_overround: float | None
+    #: True when prices came from the ladder. A last-traded overround is an artefact and
+    #: must not be read as a cost of trading.
+    crossable: bool
+    median_size: float | None
     exclusions: dict[str, int]
 
     def report(self) -> str:
@@ -226,7 +233,11 @@ class BenchmarkReport:
             lines.append(f"  bookmaker  log loss {self.bookmaker_log_loss:.5f} "
                          f"({self.bookmaker_book})")
         if self.mean_exchange_overround is not None:
-            lines.append(f"  mean exchange overround {self.mean_exchange_overround:.4f}")
+            source = "best-back, crossable" if self.crossable else "LAST TRADED — artefact"
+            lines.append(f"  mean exchange overround {self.mean_exchange_overround:.4f} "
+                         f"({source})")
+        if self.median_size is not None:
+            lines.append(f"  median size at best back GBP {self.median_size:,.2f}")
         if self.exclusions:
             lines.append("  exclusions: " + ", ".join(
                 f"{k}={v}" for k, v in sorted(self.exclusions.items())))
@@ -255,6 +266,7 @@ def exchange_benchmark(result: LinkResult) -> BenchmarkReport:
     bookmaker: list[float] = []
     outcomes: list[int] = []
     overrounds: list[float] = []
+    sizes: list[float] = []
 
     for row in result.linked:
         book = (None if chosen is None else
@@ -269,6 +281,9 @@ def exchange_benchmark(result: LinkResult) -> BenchmarkReport:
         bookmaker.append(book)
         outcomes.append(1 if row.match.winner_is_a else 0)
         overrounds.append(row.quote.raw_overround)
+        for side in (row.quote.size_a, row.quote.size_b):
+            if side is not None:
+                sizes.append(float(side))
 
     return BenchmarkReport(
         universe=result.universe,
@@ -279,6 +294,8 @@ def exchange_benchmark(result: LinkResult) -> BenchmarkReport:
         bookmaker_log_loss=log_loss(bookmaker, outcomes) if outcomes else None,
         mean_exchange_overround=(math.fsum(overrounds) / len(overrounds)
                                  if overrounds else None),
+        crossable=all(r.quote.crossable for r in result.linked) if result.linked else False,
+        median_size=(sorted(sizes)[len(sizes) // 2] if sizes else None),
         exclusions=exclusions,
     )
 
@@ -293,6 +310,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", default=None)
     parser.add_argument("--horizon", type=int, default=DEFAULT_HORIZON_SECONDS,
                         help="seconds before the scheduled off (default 600)")
+    parser.add_argument("--last-traded", action="store_true",
+                        help="price from last trades instead of the ladder. Only for feeds "
+                             "with no ladder (BASIC); the resulting overround is an "
+                             "artefact, not a cost of trading")
     args = parser.parse_args(argv)
 
     markets = read_markets(args.betfair)
@@ -306,7 +327,8 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError(f"no Tennis-Data vintage under {root}")
     matches, _stats = load_corpus(vintage.root)
 
-    result = link_markets(markets, matches, horizon_seconds=args.horizon)
+    result = link_markets(markets, matches, horizon_seconds=args.horizon,
+                          use_ladder=not args.last_traded)
     print(exchange_benchmark(result).report())
     return 0
 
