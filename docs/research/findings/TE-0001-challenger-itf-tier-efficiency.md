@@ -124,3 +124,67 @@ The corpus stays outside the repository and is research-quarantined (SPEC-100): 
 acquire an import path into anything reachable from `l5_decision`, `l5b_risk` or
 `l6_broker`, and its unverified rights make it unusable for any commercial output
 (SPEC-044, SPEC-101).
+
+---
+
+# Addendum — the multi-book consensus anomaly (UNRESOLVED, NOT AN EDGE)
+
+Recorded because it is anomalous and because the temptation to bank it is exactly what the
+programme exists to resist. **Nothing here is a finding. No money should move on it.**
+
+Consensus deviation — back a selection when one book is out of line with the consensus of
+the others — is the only tennis method in the literature with real-money verification. Our
+earlier test used Tennis-Data, which carries two real books plus two *aggregates*, so it was
+really two books wide (CLV −1.59%, deflated Sharpe 0.048). This corpus carries ten genuine
+books on 16,059 main-tour matches with four or more quoting, which is the first data here
+that could test the mechanism properly. Target book always excluded from its own consensus.
+
+The result is not credible:
+
+| edge > | bets | strike | ROI | t |
+|---:|---:|---:|---:|---:|
+| 0% | 21,259 | 0.606 | +6.77% | 7.89 |
+| 2% | 7,698 | 0.505 | +17.11% | 8.72 |
+| 5% | 3,503 | 0.478 | +32.95% | 8.81 |
+| 10% | 1,899 | 0.500 | +55.83% | 8.97 |
+
+Per book at the 5% threshold, **Pinnacle +52.33%** on 1,362 bets. Pinnacle is the sharpest
+book in the world. Nobody takes 52% off it. Published real-money consensus results are in
+the 3–6% range; this is an order of magnitude out. ROI also *rises* monotonically with the
+threshold, which is the signature of an artefact rather than an edge.
+
+## What was ruled out
+
+- **Outcome mapping.** Null test: mean implied P(lo) 0.5097 against an actual 0.4936, and
+  betting every quote loses 5.24% (5.78% including both sides). The join is sound.
+- **Corrupt prices.** Only 10 of 127,127 rows have an impossible overround (<1.00).
+  Selected rows have a *normal* overround profile (median 1.0325).
+- **Longshots.** Restricted to decimal odds ≤ 3.0 it is still +19.76% on 2,085 bets;
+  dropping the 50 best winners still leaves +15.73%. Not a few lucky payouts.
+- **Capture timing.** 19,529 of 19,817 matches carry a single betting_date across all
+  books, so this is not stale-price arbitrage across capture times.
+
+## What was NOT ruled out, and the invalid test
+
+- **A shuffled-outcome placebo was attempted and is invalid.** Shuffling breaks the
+  price–outcome coupling, and with asymmetric payoffs that inflates returns mechanically —
+  it returned +42% on *bet-everything*, which proves nothing about the pipeline. Recorded
+  so nobody re-runs it and mistakes it for evidence either way.
+- **Swapped-player rows are present.** 19.3% of selected rows sit closer to the consensus
+  when their price is *inverted* — a labelling error the overround check cannot see, because
+  inverting both sides leaves the overround intact. Excluding them still leaves +30.39% on
+  2,826 bets, so swaps are a real defect in the corpus but not the whole explanation.
+
+## Verdict
+
+**Unresolved anomaly in a corpus with undisclosed provenance, an "Unknown" licence, and
+demonstrated labelling corruption.** The prior that a scraped 2008–2018 aggregation contains
+a genuine 33% return against Pinnacle is very low. The prior that such a corpus has
+systematic join or labelling errors is very high, and 19.3% inversion-consistency is direct
+evidence of the latter.
+
+Treated as a suspected data defect. It is not promoted, not traded, and not counted as
+evidence for or against market efficiency. Settling it needs quotes with verified provenance
+and synchronised timestamps — which is the same blocker as everything else here.
+
+Reproduction: `tennis_edge/experiments/consensus_multibook.py`.
