@@ -14,7 +14,7 @@ from typing import Any
 
 
 def ref_distance(a: Any, b: Any) -> float:
-    return max(abs(a.p_a - b.p_a), abs(a.p_b - b.p_b))
+    return float(max(abs(a.p_a - b.p_a), abs(a.p_b - b.p_b)))
 
 
 def ref_fingerprint(c: Any) -> str:

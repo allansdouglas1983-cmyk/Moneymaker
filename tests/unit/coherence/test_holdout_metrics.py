@@ -11,13 +11,15 @@ diagnostics.
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import cast
 
 import pytest
 
 from sport_tennis.coherence import holdout as H
 from sport_tennis.coherence.formats import MatchFormat
 from sport_tennis.coherence.scoring import CoherenceMathError
-from sport_tennis.coherence.solver import IDENTIFIED, IdentificationResult, Root
+from sport_tennis.coherence.solver import (IDENTIFIED, IdentificationResult, Root,
+                                           ServerSolve)
 
 _FMT = MatchFormat.BO3_AD_TB7_ALL_SETS
 
@@ -103,7 +105,10 @@ def test_model_prob_at_routes_handicap_to_a_covers_not_over() -> None:
 
 # ----------------------------------------------------------------- evaluate_holdout assembly
 def _ident(*roots: Root) -> IdentificationResult:
-    return IdentificationResult(status=IDENTIFIED, roots=tuple(roots), per_server=(),
+    # per_server is deliberately empty: evaluate_holdout must not consult it. The cast keeps
+    # the runtime value exactly () while satisfying the declared pair type.
+    empty = cast("tuple[ServerSolve, ServerSolve]", ())
+    return IdentificationResult(status=IDENTIFIED, roots=tuple(roots), per_server=empty,
                                 domain=(0.35, 0.90), line=Decimal("22.5"), fmt=_FMT)
 
 

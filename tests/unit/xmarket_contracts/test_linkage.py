@@ -121,14 +121,14 @@ def test_mo_event_index_break_would_truncate_committed_loop() -> None:
     """L69 `continue` ContinueWithBreak::0 — an absent committed id precedes a valid one;
     `break` would drop the valid MO."""
     cat = L.build_catalogue([_ref("1.mo", "E1", "MATCH_ODDS")])
-    assert L.mo_event_index(cat, ["1.skip", "1.mo"]) == {"E1": ["1.mo"]}
+    assert L.mo_event_index(cat, {"1.skip", "1.mo"}) == {"E1": ["1.mo"]}
 
 
 def test_mo_event_index_sorts_ids_per_event() -> None:
     """L71 `for ev in idx: idx[ev].sort()` ZeroIterationForLoop::2 — ids appended in
     reverse; skipping the sort would leave them reversed."""
     cat = L.build_catalogue([_ref("1.mo1", "E1", "MATCH_ODDS"), _ref("1.mo2", "E1", "MATCH_ODDS")])
-    assert L.mo_event_index(cat, ["1.mo2", "1.mo1"]) == {"E1": ["1.mo1", "1.mo2"]}
+    assert L.mo_event_index(cat, {"1.mo2", "1.mo1"}) == {"E1": ["1.mo1", "1.mo2"]}
 
 
 def test_multiple_mo_not_flagged_at_zero_count() -> None:

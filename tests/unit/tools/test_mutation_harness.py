@@ -9,7 +9,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from tools.mutation_harness import STOP_STATES, MutationOutcome, revalidate_mutant
+from tools.mutation_harness import (STOP_STATES, SURVIVOR_STATE, MutationOutcome,
+                                    revalidate_mutant)
 
 _PY = sys.executable
 
@@ -42,7 +43,7 @@ def test_h_source_restored_on_timeout(tmp_path: Path) -> None:
     r = revalidate_mutant(p, b"MUTATED = 1\n", [_PY, "-c", "while True: pass"],
                           timeout=1.5, grace=1)
     assert r.outcome is MutationOutcome.TIMEOUT_CLEANED       # a hang is a detected fault
-    assert r.outcome is not MutationOutcome.NORMAL            # never a survivor
+    assert r.outcome is not SURVIVOR_STATE                     # never a survivor
     assert r.source_restored
     assert p.read_bytes() == b"ORIGINAL = 1\n"                # byte-identical restoration
 

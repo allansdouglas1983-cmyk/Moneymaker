@@ -259,8 +259,8 @@ def test_solver_chain_candidates_refuse_as_non_identifiable(
     from sport_tennis.coherence.formats import MatchFormat
 
     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
-    monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
-    monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+    monkeypatch.setattr(S, "rank_seed_nodes", lambda _grid, _n, _r: [(0, 0), (6, 6), (12, 12)])
+    monkeypatch.setattr(S, "_refine", lambda *_a, **_k: next(chain_points))
     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
                          0.6, 0.5, (0.35, 0.90))
     assert solve.status == S.NON_IDENTIFIABLE

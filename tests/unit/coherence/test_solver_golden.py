@@ -43,7 +43,7 @@ def test_derived_targets_match_golden() -> None:
 def test_identify_matches_golden() -> None:
     for case in _GOLDEN["identify"]:
         r = S.identify(case["tw"], case["to"], Decimal(case["line"]), _FMT,
-                       domain=tuple(case["domain"]))  # type: ignore[arg-type]
+                       domain=tuple(case["domain"]))
         got = {
             "status": r.status,
             "roots": sorted([[_rnd(rt.p_a), _rnd(rt.p_b), rt.a_serves_first, _rnd(rt.residual),
@@ -83,7 +83,8 @@ def test_dedup_unit_fixtures_match_golden() -> None:
     du = _GOLDEN["dedup_unit"]
     tol = du["tolerance"]
 
-    def mk(pa, pb, res=1e-5, a_first=True, jd=1.0, boundary=False):  # noqa: ANN001, ANN202
+    def mk(pa: float, pb: float, res: float = 1e-5, a_first: bool = True,
+           jd: float = 1.0, boundary: bool = False) -> S.Root:
         return S.Root(p_a=pa, p_b=pb, a_serves_first=a_first, residual=res, jacobian_det=jd,
                       on_boundary=boundary)
 

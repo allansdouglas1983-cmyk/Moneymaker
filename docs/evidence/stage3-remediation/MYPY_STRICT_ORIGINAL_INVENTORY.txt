@@ -1,0 +1,47 @@
+tests/unit/coherence/dedup_reference.py:17: error: Returning Any from function declared to return "float"  [no-any-return]
+tests/unit/tools/test_isolated_exec.py:29: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:30: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:40: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:41: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:53: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:54: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:64: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:65: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:75: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:76: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:94: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:94: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:113: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:114: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:134: error: "object" has no attribute "state"  [attr-defined]
+tests/unit/tools/test_isolated_exec.py:134: error: "object" has no attribute "survivors"  [attr-defined]
+tests/unit/tools/test_mutation_harness.py:45: error: Non-overlapping identity check (left operand type: "Literal[MutationOutcome.TIMEOUT_CLEANED]", right operand type: "Literal[MutationOutcome.NORMAL]")  [comparison-overlap]
+tests/unit/coherence/test_solver_golden.py:46: error: Unused "type: ignore" comment  [unused-ignore]
+tests/unit/coherence/test_solver_golden.py:86: error: Function is missing a type annotation  [no-untyped-def]
+tests/unit/coherence/test_solver_golden.py:90: error: Call to untyped function "mk" in typed context  [no-untyped-call]
+tests/unit/coherence/test_solver_golden.py:95: error: Call to untyped function "mk" in typed context  [no-untyped-call]
+tests/unit/coherence/test_solver_golden.py:97: error: Call to untyped function "mk" in typed context  [no-untyped-call]
+tests/unit/coherence/test_solver_golden.py:99: error: Call to untyped function "mk" in typed context  [no-untyped-call]
+tests/unit/coherence/test_solver_golden.py:101: error: Call to untyped function "mk" in typed context  [no-untyped-call]
+scratchpad/milestone_b_differential.py:77: error: Incompatible types in assignment (expression has type "tuple[float, float]", variable has type "list[float]")  [assignment]
+scratchpad/milestone_b_differential.py:78: error: Incompatible types in assignment (expression has type "tuple[float, float]", variable has type "list[float]")  [assignment]
+scratchpad/milestone_b_differential.py:126: error: Unused "type: ignore" comment  [unused-ignore]
+scratchpad/milestone_b_differential.py:126: error: No overload variant of "int" matches argument type "object"  [call-overload]
+scratchpad/milestone_b_differential.py:126: note: Error code "call-overload" not covered by "type: ignore[arg-type]" comment
+scratchpad/milestone_b_differential.py:126: note: Possible overload variants:
+scratchpad/milestone_b_differential.py:126: note:     def int(str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc = ..., /) -> int
+scratchpad/milestone_b_differential.py:126: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+scratchpad/milestone_b_differential.py:134: error: Unused "type: ignore" comment  [unused-ignore]
+scratchpad/milestone_b_differential.py:134: error: No overload variant of "int" matches argument type "object"  [call-overload]
+scratchpad/milestone_b_differential.py:134: note: Error code "call-overload" not covered by "type: ignore[arg-type]" comment
+scratchpad/milestone_b_differential.py:134: note: Possible overload variants:
+scratchpad/milestone_b_differential.py:134: note:     def int(str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc = ..., /) -> int
+scratchpad/milestone_b_differential.py:134: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+tests/properties/coherence/test_root_dedup_props.py:48: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/unit/xmarket_contracts/test_parsers.py:188: error: Unused "type: ignore" comment  [unused-ignore]
+tests/unit/xmarket_contracts/test_parsers.py:194: error: Unused "type: ignore" comment  [unused-ignore]
+tests/unit/xmarket_contracts/test_linkage.py:124: error: Argument 2 to "mo_event_index" has incompatible type "list[str]"; expected "set[str]"  [arg-type]
+tests/unit/xmarket_contracts/test_linkage.py:131: error: Argument 2 to "mo_event_index" has incompatible type "list[str]"; expected "set[str]"  [arg-type]
+tests/unit/coherence/test_match_ref_bo3_fast.py:60: error: Unused "type: ignore" comment, use narrower [call-arg] instead of [misc] code  [unused-ignore]
+tests/unit/coherence/test_holdout_metrics.py:106: error: Argument "per_server" to "IdentificationResult" has incompatible type "tuple[()]"; expected "tuple[ServerSolve, ServerSolve]"  [arg-type]
+Found 38 errors in 10 files (checked 421 source files)

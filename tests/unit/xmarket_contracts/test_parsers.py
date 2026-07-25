@@ -185,13 +185,13 @@ def test_total_games_non_list_runners_refused() -> None:
     """L85 `not isinstance(runners, list) or not runners` ReplaceOrWithAnd::4 — `and`
     lets a truthy non-list through (then TypeError, not MarketParseError)."""
     with pytest.raises(P.MarketParseError):
-        P.parse_total_games(5)  # type: ignore[arg-type]
+        P.parse_total_games(5)
 
 
 def test_game_handicap_non_list_runners_refused() -> None:
     """L117 `not isinstance(runners, list) or not runners` ReplaceOrWithAnd::5."""
     with pytest.raises(P.MarketParseError):
-        P.parse_game_handicap(5)  # type: ignore[arg-type]
+        P.parse_game_handicap(5)
 
 
 def test_total_games_name_sorting_below_over_refused() -> None:

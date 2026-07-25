@@ -9,6 +9,8 @@ connected chains must be detected and refused instead.
 """
 from __future__ import annotations
 
+import random
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -45,7 +47,8 @@ _cand_lists = st.lists(roots(), min_size=0, max_size=7)
 
 @settings(max_examples=120, deadline=None)
 @given(cands=_cand_lists, seed=st.randoms(use_true_random=False))
-def test_permutation_invariance_and_determinism(cands: list[Root], seed) -> None:  # noqa: ANN001
+def test_permutation_invariance_and_determinism(cands: list[Root],
+                                                seed: random.Random) -> None:
     base = deduplicate_roots(list(cands), TOL)
     shuffled = list(cands)
     seed.shuffle(shuffled)

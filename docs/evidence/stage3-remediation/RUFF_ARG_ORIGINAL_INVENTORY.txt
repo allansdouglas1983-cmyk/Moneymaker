@@ -1,0 +1,12 @@
+tests/unit/coherence/test_root_dedup.py:262:54: ARG005 Unused lambda argument: `grid`
+tests/unit/coherence/test_root_dedup.py:262:60: ARG005 Unused lambda argument: `n`
+tests/unit/coherence/test_root_dedup.py:262:63: ARG005 Unused lambda argument: `r`
+tests/unit/coherence/test_root_dedup.py:263:47: ARG005 Unused lambda argument: `a`
+tests/unit/coherence/test_root_dedup.py:263:52: ARG005 Unused lambda argument: `k`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:62:49: ARG005 Unused lambda argument: `a`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:62:54: ARG005 Unused lambda argument: `k`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:71:49: ARG005 Unused lambda argument: `a`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:71:54: ARG005 Unused lambda argument: `k`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:87:33: ARG005 Unused lambda argument: `a`
+tests/unit/coherence/test_solver_nonfinite_reachability.py:87:38: ARG005 Unused lambda argument: `k`
+Found 11 errors.

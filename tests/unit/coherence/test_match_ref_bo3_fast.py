@@ -57,4 +57,4 @@ def test_match_distribution_serves_first_is_keyword_only() -> None:
     # the correct signature; the mutant would accept it.
     import pytest
     with pytest.raises(TypeError):
-        match_distribution(0.6, 0.5, MatchFormat.BO3_AD_TB7_ALL_SETS, True)  # type: ignore[misc]
+        match_distribution(0.6, 0.5, MatchFormat.BO3_AD_TB7_ALL_SETS, True)  # type: ignore[call-arg]

@@ -59,7 +59,7 @@ def test_injected_nan_residual_is_contained_no_root_no_nonfinite_output(
     """Even if EVERY residual evaluation returned NaN, the frozen root gate (inclusive <= against
     the tolerance; False for NaN) prevents any Root construction: the public result is NO_ROOT
     with an empty root tuple — no non-finite value reaches Root, dedup, selection or the result."""
-    monkeypatch.setattr(S, "_residual", lambda *a, **k: (_NAN, _NAN))
+    monkeypatch.setattr(S, "_residual", lambda *_a, **_k: (_NAN, _NAN))
     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
     assert r.status == S.NO_ROOT
     assert r.roots == ()
@@ -68,7 +68,7 @@ def test_injected_nan_residual_is_contained_no_root_no_nonfinite_output(
 
 
 def test_injected_inf_residual_is_contained(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(S, "_residual", lambda *a, **k: (_INF, -_INF))
+    monkeypatch.setattr(S, "_residual", lambda *_a, **_k: (_INF, -_INF))
     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
     assert r.status == S.NO_ROOT and r.roots == ()
 
@@ -84,7 +84,7 @@ def test_injected_nan_jacobian_is_refused_by_the_math_layer(
     or reach Root construction."""
     from sport_tennis.coherence.solver_contracts import Jacobian2x2
     monkeypatch.setattr(S, "_jacobian_matrix",
-                        lambda *a, **k: Jacobian2x2(_NAN, _NAN, _NAN, _NAN))
+                        lambda *_a, **_k: Jacobian2x2(_NAN, _NAN, _NAN, _NAN))
     tw, to = S.derived_targets(0.68, 0.58, _FMT, _LINE, a_serves_first=True)
     with pytest.raises(CoherenceMathError):
         S._refine(0.66, 0.60, (0.90 - 0.35) / 12, True, _FMT, _LINE, tw, to, 0.35, 0.90)

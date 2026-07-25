@@ -13,14 +13,14 @@ from __future__ import annotations
 import sys
 import threading
 
-from tools.isolated_exec import RunState, run_isolated
+from tools.isolated_exec import IsolatedResult, RunState, run_isolated
 
 _PY = sys.executable
 _T = 1.5      # per-case timeout
 _G = 1.0      # grace
 
 
-def _run(code: str) -> object:
+def _run(code: str) -> IsolatedResult:
     return run_isolated([_PY, "-u", "-c", code], _T, grace=_G)
 
 
@@ -77,7 +77,7 @@ def test_e_child_ignores_sigterm() -> None:
 
 
 def test_f_concurrent_timeouts_each_cleaned() -> None:
-    results: list[object] = []
+    results: list[IsolatedResult] = []
     lock = threading.Lock()
 
     def go() -> None:
@@ -98,7 +98,7 @@ def test_g_completed_run_does_not_kill_a_concurrent_group() -> None:
     # a fast COMPLETED run must not disturb a concurrently-looping run's group (each cleans only its
     # own session pgid). Start the looper, run several quick completions, then confirm the looper
     # still times out cleanly rather than being pre-empted.
-    looper_result: list[object] = []
+    looper_result: list[IsolatedResult] = []
 
     def looper() -> None:
         looper_result.append(_run("\nwhile True:\n    pass\n"))
