@@ -7,8 +7,10 @@ requires-python = ">=3.11"
 # boundaries and for persisted contracts (SPECIFICATION.md §6.9). PyYAML backs the manifest
 # and facts-registry tooling.
 dependencies = [
+    "openpyxl>=3.1.5",
     "pydantic>=2",
     "pyyaml>=6",
+    "xlrd>=2.0.2",
 ]
 
 # Dev/verification toolchain invoked by the Makefile and .github/workflows/verify.yml.
@@ -23,6 +25,7 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML>=6",
     "cosmic-ray>=8.3",
+    "types-openpyxl>=3.1.5.20260724",
 ]
 
 [tool.uv]
@@ -56,3 +59,9 @@ strict = true
 namespace_packages = true
 explicit_package_bases = true
 exclude = ['^\.venv/', '^docs/evidence/']  # docs/evidence: archival pilot scripts (ADR 0018), not source
+
+# xlrd ships no type stubs and none exist on typeshed. The import is confined to
+# tennis_edge/corpus.py, where every value crossing the boundary is explicitly converted.
+[[tool.mypy.overrides]]
+module = "xlrd.*"
+ignore_missing_imports = true
