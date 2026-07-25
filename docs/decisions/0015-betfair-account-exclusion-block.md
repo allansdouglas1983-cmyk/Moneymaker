@@ -105,3 +105,50 @@ Updated operational state:
 6. The purchase runbook (specification, download, checksums, local-only ingestion) is
    prepared in advance at docs/procurement/betfair-pilot-runbook.md so the pilot can
    execute promptly once (3) and (4) resolve.
+
+---
+
+## AMENDMENT 1 — block LIFTED by founder directive, 2026-07-25
+
+**Status of this ADR is now: SUPERSEDED.** Not relaxed, not excepted — superseded.
+
+The founder directed in this workspace on 2026-07-25 that the blocks recorded above are
+lifted: *"I'm unblocking any blocks in an old adr."*
+
+### Why it dissolves rather than being overridden
+
+This ADR rests on a **belief**, stated in its own opening line: *"The founder believes they
+self-excluded from, or permanently closed, their Betfair account approximately ten years ago
+(~2016)."* Every restriction under it was conditional on that belief being both true and
+unresolved.
+
+The founder has since stated directly that the **account is active and usable now**. Direct
+knowledge from the account holder supersedes a ten-year-old recollection. The triggering
+condition does not hold, so the conditional restrictions fall with it:
+
+1. The Historical Data purchase pause is **lifted**. BASIC is free in any case, so no
+   purchase decision is pending.
+2. The prohibition on account access, recovery and credential use is **lifted** — it was
+   scoped to "while this block stands", and it does not stand.
+
+### The permanent invariant is untouched and blocks nothing here
+
+Founder directive 6 stands as written: no other person's account and no alternate account
+may be used to bypass a self-exclusion or account closure.
+
+**It is not a restriction on any current activity.** The account is active and in the
+founder's own name, so there is no exclusion to bypass and the invariant has nothing to bite
+on. It is retained only because it is written as permanent and unconditional. It must not be
+cited as an obstacle to this work again — recording that explicitly is half the purpose of
+this amendment.
+
+### Geo-blocking is an operational fact, not a governance block
+
+Betfair returns HTTP 403 to this execution environment (IP 160.79.106.67, region US). That
+is Betfair's own regulatory geo-block on a US-hosted container and has nothing to do with
+this ADR. It is not circumvented: outbound traffic is pinned to a fixed agent proxy, and
+defeating a geo-block would breach the operator terms that protect the founder's account.
+
+The working route needs no permission from anyone and is not blocked by anything: the
+founder downloads the free BASIC archives over their own UK connection and drops them under
+`TENNIS_EDGE_DATA`. `tennis_edge/betfair.py` reads them as shipped.
