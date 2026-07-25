@@ -15,6 +15,7 @@ from decimal import Decimal
 
 import pytest
 
+from price_contracts.ladder import index_of, price_of
 from tennis_edge.betfair import (
     LadderLevel,
     LadderObservation,
@@ -52,10 +53,14 @@ def _history(
                            price=Decimal(p))
             for sid, p in ((A, prices[0]), (B, prices[1]))
         )
+        # A real book is two-sided: lay sits one tick above back on the canonical ladder.
+        # The midpoint estimator needs both sides and refuses without them.
         ladders = tuple(
-            LadderObservation(publish_time_ms=off - 1_800_000, selection_id=sid,
-                              best_back=LadderLevel(Decimal(p), Decimal("120")),
-                              best_lay=None)
+            LadderObservation(
+                publish_time_ms=off - 1_800_000, selection_id=sid,
+                best_back=LadderLevel(Decimal(p), Decimal("120")),
+                best_lay=LadderLevel(price_of(index_of(Decimal(p)) + 1), Decimal("120")),
+            )
             for sid, p in ((A, prices[0]), (B, prices[1]))
         )
     return MarketHistory(
@@ -167,8 +172,9 @@ def test_a_confident_correct_exchange_price_scores_better() -> None:
 
 def test_the_exchange_overround_is_reported() -> None:
     report = exchange_benchmark(link_markets((_history(),), (_match(),)))
-    assert report.mean_exchange_overround == pytest.approx(1.0)
-    assert report.crossable is True, "the default price is the one you could have taken"
+    assert report.mean_exchange_overround == pytest.approx(1.0, abs=0.02)
+    assert report.crossable is True
+    assert report.price_source == "MIDPOINT", "the probability comes from the midpoint"
     assert report.median_size == pytest.approx(120.0)
 
 

@@ -21,6 +21,7 @@ import pytest
 from tennis_edge.betfair import LtpObservation, MarketHistory, Runner
 from tennis_edge.exchange import (
     ExchangeQuote,
+    PriceSource,
     expected_value,
     exchange_probability,
     net_odds,
@@ -236,3 +237,85 @@ def test_last_traded_mode_reports_no_size() -> None:
     quote = exchange_probability(_history({A: "2.0", B: "2.0"}), seconds_before_off=600)
     assert quote is not None
     assert quote.size_a is None, "a last trade carries no available size"
+
+
+# ------------------------------------------------------------------ midpoint
+
+
+def _two_sided(book: dict[int, tuple[str, str]], *, minutes_before: int = 30
+               ) -> MarketHistory:
+    """book: selection -> (best_back_price, best_lay_price)."""
+    from tennis_edge.betfair import LadderLevel, LadderObservation
+    at = OFF_MS - minutes_before * 60_000
+    return MarketHistory(
+        market_id="1.1", event_id="9", event_name="A v B", market_type="MATCH_ODDS",
+        country_code="GB", market_time_ms=OFF_MS,
+        runners=(Runner(A, "Player A", "ACTIVE", 1), Runner(B, "Player B", "ACTIVE", 2)),
+        observations=(), went_in_play=False,
+        ladders=tuple(
+            LadderObservation(
+                publish_time_ms=at, selection_id=sid,
+                best_back=LadderLevel(Decimal(back), Decimal("120")),
+                best_lay=LadderLevel(Decimal(lay), Decimal("120")),
+            )
+            for sid, (back, lay) in book.items()
+        ),
+    )
+
+
+def test_the_midpoint_sits_between_back_and_lay() -> None:
+    """Best-back is the worst price on each side, so it is the right price to TRANSACT at
+    and the wrong one to estimate a probability from. The midpoint is the estimator."""
+    history = _two_sided({A: ("2.0", "2.04"), B: ("1.96", "2.0")})
+    mid = exchange_probability(history, seconds_before_off=600,
+                               source=PriceSource.MIDPOINT)
+    back = exchange_probability(history, seconds_before_off=600,
+                                source=PriceSource.BEST_BACK)
+    assert mid is not None and back is not None
+    assert mid.raw_overround < back.raw_overround, "the midpoint carries less margin"
+
+
+def test_a_symmetric_two_sided_book_prices_at_a_half() -> None:
+    history = _two_sided({A: ("1.98", "2.02"), B: ("1.98", "2.02")})
+    quote = exchange_probability(history, seconds_before_off=600,
+                                 source=PriceSource.MIDPOINT)
+    assert quote is not None
+    assert quote.probability_a == pytest.approx(0.5)
+
+
+def test_the_midpoint_needs_both_sides_of_the_book() -> None:
+    """A one-sided book has no midpoint. It is not inferred from the side that exists."""
+    from tennis_edge.betfair import LadderLevel, LadderObservation
+    at = OFF_MS - 1_800_000
+    history = MarketHistory(
+        market_id="1.1", event_id="9", event_name="A v B", market_type="MATCH_ODDS",
+        country_code="GB", market_time_ms=OFF_MS,
+        runners=(Runner(A, "Player A", "ACTIVE", 1), Runner(B, "Player B", "ACTIVE", 2)),
+        observations=(), went_in_play=False,
+        ladders=tuple(
+            LadderObservation(publish_time_ms=at, selection_id=sid,
+                              best_back=LadderLevel(Decimal("2.0"), Decimal("50")),
+                              best_lay=None)
+            for sid in (A, B)
+        ),
+    )
+    assert exchange_probability(history, seconds_before_off=600,
+                                source=PriceSource.MIDPOINT) is None
+
+
+def test_the_midpoint_still_reports_the_backable_price_and_size() -> None:
+    """Even when the probability comes from the midpoint, EV must be computed at the price
+    you could actually take — so the backable price and its size travel with the quote."""
+    history = _two_sided({A: ("2.0", "2.04"), B: ("1.96", "2.0")})
+    quote = exchange_probability(history, seconds_before_off=600,
+                                 source=PriceSource.MIDPOINT)
+    assert quote is not None
+    assert quote.price_a == Decimal("2.0"), "the backable price, not the midpoint"
+    assert quote.size_a == Decimal("120")
+
+
+def test_the_price_source_is_recorded_on_the_quote() -> None:
+    history = _two_sided({A: ("2.0", "2.04"), B: ("1.96", "2.0")})
+    for source in (PriceSource.MIDPOINT, PriceSource.BEST_BACK):
+        quote = exchange_probability(history, seconds_before_off=600, source=source)
+        assert quote is not None and quote.source is source

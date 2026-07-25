@@ -31,7 +31,7 @@ from typing import Sequence
 from sport_tennis.identity_bridge import build_bridge
 from tennis_edge.betfair import MarketHistory, read_markets
 from tennis_edge.corpus import Match, default_vintage_root, load_corpus
-from tennis_edge.exchange import ExchangeQuote, exchange_probability
+from tennis_edge.exchange import ExchangeQuote, PriceSource, exchange_probability
 from tennis_edge.metrics import log_loss
 
 __all__ = [
@@ -135,6 +135,7 @@ def link_markets(
     *,
     horizon_seconds: int = DEFAULT_HORIZON_SECONDS,
     use_ladder: bool = True,
+    source: PriceSource = PriceSource.MIDPOINT,
 ) -> LinkResult:
     """Join markets to matches. Every market ends up linked or explicitly excluded."""
     resolved = _resolve_names(markets, matches)
@@ -187,7 +188,8 @@ def link_markets(
             continue
 
         quote = exchange_probability(
-            market, seconds_before_off=horizon_seconds, use_ladder=use_ladder
+            market, seconds_before_off=horizon_seconds, use_ladder=use_ladder,
+            source=source if use_ladder else PriceSource.LAST_TRADED,
         )
         if quote is None:
             excluded.append(ExcludedMarket(
@@ -219,6 +221,8 @@ class BenchmarkReport:
     #: True when prices came from the ladder. A last-traded overround is an artefact and
     #: must not be read as a cost of trading.
     crossable: bool
+    price_source: str | None
+    median_exchange_overround: float | None
     median_size: float | None
     exclusions: dict[str, int]
 
@@ -233,9 +237,13 @@ class BenchmarkReport:
             lines.append(f"  bookmaker  log loss {self.bookmaker_log_loss:.5f} "
                          f"({self.bookmaker_book})")
         if self.mean_exchange_overround is not None:
-            source = "best-back, crossable" if self.crossable else "LAST TRADED — artefact"
-            lines.append(f"  mean exchange overround {self.mean_exchange_overround:.4f} "
-                         f"({source})")
+            label = self.price_source or "?"
+            if not self.crossable:
+                label += " — ARTEFACT, not a cost of trading"
+            lines.append(f"  exchange overround  mean {self.mean_exchange_overround:.4f}"
+                         + (f"  median {self.median_exchange_overround:.4f}"
+                            if self.median_exchange_overround is not None else "")
+                         + f"  ({label})")
         if self.median_size is not None:
             lines.append(f"  median size at best back GBP {self.median_size:,.2f}")
         if self.exclusions:
@@ -295,6 +303,9 @@ def exchange_benchmark(result: LinkResult) -> BenchmarkReport:
         mean_exchange_overround=(math.fsum(overrounds) / len(overrounds)
                                  if overrounds else None),
         crossable=all(r.quote.crossable for r in result.linked) if result.linked else False,
+        price_source=(result.linked[0].quote.source.value if result.linked else None),
+        median_exchange_overround=(sorted(overrounds)[len(overrounds) // 2]
+                                   if overrounds else None),
         median_size=(sorted(sizes)[len(sizes) // 2] if sizes else None),
         exclusions=exclusions,
     )
@@ -310,6 +321,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", default=None)
     parser.add_argument("--horizon", type=int, default=DEFAULT_HORIZON_SECONDS,
                         help="seconds before the scheduled off (default 600)")
+    parser.add_argument("--price", choices=[s.value for s in PriceSource],
+                        default=PriceSource.MIDPOINT.value,
+                        help="MIDPOINT estimates the probability (default); BEST_BACK is "
+                             "the transactable price and distorts a probability estimate")
     parser.add_argument("--last-traded", action="store_true",
                         help="price from last trades instead of the ladder. Only for feeds "
                              "with no ladder (BASIC); the resulting overround is an "
@@ -328,7 +343,8 @@ def main(argv: list[str] | None = None) -> int:
     matches, _stats = load_corpus(vintage.root)
 
     result = link_markets(markets, matches, horizon_seconds=args.horizon,
-                          use_ladder=not args.last_traded)
+                          use_ladder=not args.last_traded,
+                          source=PriceSource(args.price))
     print(exchange_benchmark(result).report())
     return 0
 
