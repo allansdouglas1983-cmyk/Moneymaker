@@ -46,7 +46,8 @@ __all__ = [
 #: Bump on ANY change to what a feature means or which features exist. Nothing else
 #: invalidates a cache after a feature edit, because the corpus and archive digests do not
 #: change when the code that reads them does.
-FEATURE_SET_VERSION = "residual-v1"
+#: v2 adds the decomposed serve/return layer (serve_detail).
+FEATURE_SET_VERSION = "residual-v2"
 
 _KIND = "tennis-edge-feature-cache-v1"
 

@@ -51,6 +51,7 @@ from tennis_edge.pyramid import PyramidRatings, pyramid_features
 from tennis_edge.ratings import RatingEngine, elo_expected
 from tennis_edge.refresh import Vintage, latest_vintage
 from tennis_edge.sackmann import available_files, load_matches
+from tennis_edge.serve_detail import DetailEstimator, serve_detail_features
 from tennis_edge.serve_stats import ServeEstimator
 
 __all__ = [
@@ -85,6 +86,16 @@ RESIDUAL_FEATURE_NAMES: tuple[str, ...] = (
     "pyramid_tier_gap",
     "pyramid_workload_gap",
     "pyramid_rest_gap",
+    # The decomposed serve/return layer. The aggregate estimator above collapses nine
+    # archive fields into one ratio; these are the components it discards, and first/second
+    # serve split and break-point performance are the two the literature cites most.
+    "first_serve_rate_gap",
+    "first_win_rate_gap",
+    "second_win_rate_gap",
+    "ace_rate_gap",
+    "double_fault_rate_gap",
+    "break_save_rate_gap",
+    "return_rate_gap",
 )
 
 #: Minimum main-tour matches per player before a row is priceable. Below this the rating is
@@ -120,13 +131,17 @@ def _build(matches: tuple[Match, ...]) -> list[FeatureRow]:
     engine = RatingEngine()
     pyramid = PyramidRatings()
     estimator = ServeEstimator()
-    estimator.queue(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM,
-                                 require_serve_stats=True))
+    detail = DetailEstimator()
+    serve_rows = list(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM,
+                                   require_serve_stats=True))
+    estimator.queue(serve_rows)
+    detail.queue(serve_rows)
     pyramid.queue(load_matches(families=("main", "qual_chall", "futures"),
                                since=ARCHIVE_FROM))
     rows: list[FeatureRow] = []
     for day, batch in group_by_day(matches):
         estimator.advance_to(day)
+        detail.advance_to(day)
         pyramid.advance_to(day)
         for match in sorted(batch, key=lambda m: (m.tour, m.player_a, m.player_b)):
             market = market_probability(match, book=PRICING_BOOK, method=DEVIG)
@@ -153,6 +168,7 @@ def _build(matches: tuple[Match, ...]) -> list[FeatureRow]:
                 point = estimate.match_probability(best_of=match.best_of)
                 features["point_model_residual"] = _logit(point) - _logit(market)
             features.update(pyramid_features(pyramid, tour, a, b, day, match.surface))
+            features.update(serve_detail_features(detail, tour, a, b))
 
             odds_a: dict[str, float] = {}
             odds_b: dict[str, float] = {}
