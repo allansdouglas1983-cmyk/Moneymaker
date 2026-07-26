@@ -223,10 +223,34 @@ the old artefact, so predictions already recorded still name the model that made
 power available, and turning an undecided statistical result into a financial instruction is
 the specific failure this programme exists to avoid.
 
+Two frozen policy vintages exist and each writes its own ledger:
+
 ```
-python -m tennis_edge.weekly --dry-run     # evaluate and report, write nothing
-python -m tennis_edge.weekly               # refresh, evaluate, append to the ledger
+python -m tennis_edge.weekly --dry-run                        # v1, evaluate, write nothing
+python -m tennis_edge.weekly                                  # v1 -> ledger.jsonl
+python -m tennis_edge.weekly --policy residual-policy-v2      # v2 -> ledger-v2.jsonl
 ```
+
+**v1 is not superseded, it is a different record.** Its rule treats the market as the answer
+and the model as a challenger, and its ledger means what it meant. v2 uses the residual
+model directly. Editing v1 would retroactively change the meaning of rows already written
+under its digest, so v2 is a new vintage with its own digest, its own file, and its own
+record starting from zero.
+
+**A v2 ledger starts empty and that is correct.** The job refuses to score any match at or
+before the frozen model's `trained_through` date, because those matches are in-sample and a
+row derived from one would look prospective without being it. A prospective record has to
+begin when the rule was frozen, not when someone decided to look.
+
+| policy | rule | ledger |
+|---|---|---|
+| `frozen-policy-v1` | market is the answer, model shrunk hard toward it | `ledger.jsonl` |
+| `residual-policy-v2` | residual model's probability against a commission-aware break-even | `ledger-v2.jsonl` |
+
+What v2 does over history, at the threshold frozen before it was measured: Pinnacle +3.55%
+[+1.45%, +5.68%] on 12,355 bets against a control of −1.01%
+(`docs/research/findings/TE-0008-what-the-frozen-policy-does.md`). Recommendations in a
+ledger are a measurement instrument, not advice.
 
 The job is idempotent by construction: matches already in the ledger are skipped, so a run
 that dies halfway, or a schedule that fires twice, changes nothing on the second pass.
