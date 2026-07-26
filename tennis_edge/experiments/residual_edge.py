@@ -136,6 +136,26 @@ def build(matches: tuple[Match, ...]) -> list[Row]:
     return rows
 
 
+def _compile(rows: list[Row], names: list[str]) -> list[tuple[float, int, list[tuple[int, float]]]]:
+    """Rows as ``(offset, outcome, [(feature index, value)])``, present features only.
+
+    The fit is a Python inner loop over tens of millions of row-feature pairs, and hashing a
+    feature name on every one of them dominates the cost. Compiling once to positional
+    indices makes a full walk-forward minutes rather than hours, which is the difference
+    between an experiment that can be re-run after a correction and one that cannot.
+
+    Only present features are emitted, which is also what keeps a partially-covered feature
+    honest: a row without the point model contributes nothing to that coefficient rather
+    than contributing an imputed zero.
+    """
+    index = {name: i for i, name in enumerate(names)}
+    return [
+        (row.market_logit, row.won,
+         [(index[n], v) for n, v in row.features.items() if n in index])
+        for row in rows
+    ]
+
+
 def fit(rows: list[Row], names: list[str]) -> dict[str, float]:
     """Ridge logistic on the residual, with the market logit as an unpenalised offset.
 
@@ -143,27 +163,27 @@ def fit(rows: list[Row], names: list[str]) -> dict[str, float]:
     how a feature available on only part of the sample (the point model needs serve
     coverage) is used where it exists without imputing a value where it does not.
     """
-    beta = {name: 0.0 for name in names}
+    compiled = _compile(rows, names)
+    width = len(names)
+    beta = [0.0] * width
     for _ in range(50):
-        gradient = {name: -L2 * beta[name] for name in names}
-        hessian = {name: L2 for name in names}
-        for row in rows:
-            z = row.market_logit + math.fsum(
-                beta[n] * row.features[n] for n in names if n in row.features)
-            p = _sigmoid(z)
-            residual, weight = row.won - p, p * (1 - p)
-            for name in names:
-                x = row.features.get(name)
-                if x is None:
-                    continue
-                gradient[name] += x * residual
-                hessian[name] += x * x * weight
-        step = max(abs(gradient[n] / hessian[n]) for n in names)
-        for name in names:
-            beta[name] += gradient[name] / hessian[name]
-        if step < 1e-10:
+        gradient = [-L2 * b for b in beta]
+        hessian = [L2] * width
+        for offset, won, pairs in compiled:
+            z = offset
+            for i, x in pairs:
+                z += beta[i] * x
+            p = 1.0 / (1.0 + math.exp(-max(min(z, 30.0), -30.0)))
+            residual, weight = won - p, p * (1 - p)
+            for i, x in pairs:
+                gradient[i] += x * residual
+                hessian[i] += x * x * weight
+        steps = [g / h for g, h in zip(gradient, hessian)]
+        for i, delta in enumerate(steps):
+            beta[i] += delta
+        if max(abs(s) for s in steps) < 1e-10:
             break
-    return beta
+    return dict(zip(names, beta))
 
 
 def predict(row: Row, beta: dict[str, float]) -> float:
