@@ -1,7 +1,13 @@
-# TE-0007 findings — a real forecasting edge, and the venue where it disappears
+# TE-0007 findings — a real forecasting edge, and the venue it has not been tested at
 
 **Measured:** 2026-07-26, in-workspace. Reproducible from
 `tennis_edge/experiments/residual_edge.py` against the pinned Tennis-Data vintage.
+
+> **Read the addendum before Finding 3.** Finding 3 below concluded that the edge fails at
+> the exchange. A second, independent exchange measurement arrived the same day with the
+> opposite sign, and both are too small to decide anything. The corrected position — the
+> exchange is *untested at usable power*, not shown to fail — is in the addendum, with the
+> body left standing as the record of what was concluded when.
 
 **Question:** TE-0005 established that the closing price has a measurable defect and that
 the largest single-feature correction was two orders of magnitude too small to trade. It
@@ -10,9 +16,9 @@ directions*, so bundling them into one composite probability cancels them. That 
 obvious next move — fit them jointly, each free to take its own sign, and add the one input
 the main-tour market plausibly has not absorbed: a rating that knows the lower tiers.
 
-**Answer, in one line: the model genuinely beats the closing price, it converts to money
-against bookmakers, and it does not convert at the exchange — which is the only venue that
-matters for a personal bettor.**
+**Answer, in one line: the model genuinely beats the closing price and converts to money
+against bookmakers; at the exchange — the only venue that matters for a personal bettor —
+the two available measurements disagree in sign and neither has the power to settle it.**
 
 ---
 
@@ -118,8 +124,9 @@ Stated plainly, because the arithmetic and the venue constraint point the same w
   placebo-controlled and replicated across two independent settlement books. That is a
   genuine change from where this programme stood a day ago, when six architectures had
   returned nothing.
-- **It is not usable at the exchange**, which is the only venue that cannot limit or close
-  a winning account. The one exchange measurement available is negative.
+- **It is unproven at the exchange**, which is the only venue that cannot limit or close a
+  winning account. Two measurements exist and they disagree in sign; see the addendum. What
+  is certain is that it has not been *shown* to work there.
 - **At bookmakers it is worth about +1% at Pinnacle** — and that number's confidence
   interval includes zero. It would take roughly 62,000 bets to distinguish it from zero at
   95%. The +3.05% at Max is significant but Max is not a venue: it is the best of twenty
