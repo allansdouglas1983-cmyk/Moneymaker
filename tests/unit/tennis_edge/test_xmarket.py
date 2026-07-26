@@ -189,25 +189,55 @@ class TestSideAlignment:
 
     def test_sides_are_matched_by_name(self) -> None:
         assert align_sides(
-            match_odds_names=("Zverev A.", "Alcaraz C."),
-            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
-                               "Zverev A. 2-0", "Zverev A. 2-1"),
+            match_odds_names=("Alexander Zverev", "Carlos Alcaraz"),
+            set_betting_names=("Alcaraz 2-0", "Alcaraz 2-1",
+                               "A Zverev 2-0", "A Zverev 2-1"),
         ) == ((2, 3), (0, 1))
+
+    def test_the_markets_abbreviate_differently_and_still_match(self) -> None:
+        """Match Odds carries full names; Set Betting abbreviates inconsistently."""
+        assert align_sides(
+            match_odds_names=("Dane Sweeny", "Jacob Fearnley"),
+            set_betting_names=("Sweeny 2-0", "Sweeny 2-1",
+                               "Fearnley 2-0", "Fearnley 2-1"),
+        ) == ((0, 1), (2, 3))
+
+    def test_a_truncated_forename_still_matches(self) -> None:
+        assert align_sides(
+            match_odds_names=("Yunchaokete Bu", "Otto Virtanen"),
+            set_betting_names=("Yu Bu 2-0", "Yu Bu 2-1",
+                               "Ot Virtanen 2-0", "Ot Virtanen 2-1"),
+        ) == ((0, 1), (2, 3))
+
+    def test_a_multi_word_surname_matches_on_its_final_token(self) -> None:
+        assert align_sides(
+            match_odds_names=("Botic Van De Zandschulp", "Hugo Gaston"),
+            set_betting_names=("B Van De Zandschulp 2-0", "B Van De Zandschulp 2-1",
+                               "Hug Gaston 2-0", "Hug Gaston 2-1"),
+        ) == ((0, 1), (2, 3))
+
+    def test_two_players_sharing_a_surname_are_refused(self) -> None:
+        """Unambiguous within a match is the whole justification; here it is not."""
+        assert align_sides(
+            match_odds_names=("Carlos Alcaraz", "Alvaro Alcaraz"),
+            set_betting_names=("C Alcaraz 2-0", "C Alcaraz 2-1",
+                               "A Alcaraz 2-0", "A Alcaraz 2-1"),
+        ) is None
 
     def test_alphabetical_order_is_not_assumed(self) -> None:
         """The Match Odds order here is the reverse of alphabetical — the failing case."""
-        first, second = align_sides(
-            match_odds_names=("Zverev A.", "Alcaraz C."),
-            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
-                               "Zverev A. 2-0", "Zverev A. 2-1"),
+        aligned = align_sides(
+            match_odds_names=("Alexander Zverev", "Carlos Alcaraz"),
+            set_betting_names=("Alcaraz 2-0", "Alcaraz 2-1",
+                               "A Zverev 2-0", "A Zverev 2-1"),
         )
-        assert first != (0, 1)
+        assert aligned is not None and aligned[0] != (0, 1)
 
     def test_a_name_that_does_not_appear_is_refused(self) -> None:
         assert align_sides(
-            match_odds_names=("Zverev A.", "Sinner J."),
-            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
-                               "Zverev A. 2-0", "Zverev A. 2-1"),
+            match_odds_names=("Alexander Zverev", "Jannik Sinner"),
+            set_betting_names=("Alcaraz 2-0", "Alcaraz 2-1",
+                               "A Zverev 2-0", "A Zverev 2-1"),
         ) is None
 
     def test_an_unparseable_runner_is_refused(self) -> None:

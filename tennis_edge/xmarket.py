@@ -34,9 +34,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Sequence
 
+from sport_tennis.identity_bridge import normalize_name
+
 __all__ = [
     "Leg",
     "align_sides",
+    "surname_of",
     "FillableDutch",
     "MINIMUM_LEG_SIZE",
     "SetBettingView",
@@ -186,6 +189,12 @@ def align_sides(
 
     Returns ``(indices for match_odds_names[0], indices for match_odds_names[1])``.
 
+    **Matched on surname, because the two markets do not name players the same way.** Match
+    Odds carries the full name — "Dane Sweeny", "Felix Gill" — while Set Betting abbreviates
+    the forename inconsistently: "Sweeny", "Fe Gill", "Yu Bu", "A Kalinskaya". The surname is
+    the only part both markets agree on. Within a single match that is unambiguous, and where
+    it is not — two players sharing a surname — the pair is refused rather than guessed.
+
     **This must be done by name, never by position or by sorting.** Betfair lists Match Odds
     runners in its own order and names the players inside the Set Betting runner strings; the
     two orders frequently disagree. Grouping set scores alphabetically and pairing them with
@@ -206,13 +215,27 @@ def align_sides(
     grouped: dict[str, list[int]] = {}
     for index, entry in enumerate(parsed):
         assert entry is not None
-        grouped.setdefault(entry[0], []).append(index)
+        grouped.setdefault(surname_of(entry[0]), []).append(index)
+    if len(grouped) != 2:
+        return None
+    wanted = [surname_of(name) for name in match_odds_names]
+    if wanted[0] == wanted[1] or not all(wanted):
+        return None
     sides: list[tuple[int, ...]] = []
-    for name in match_odds_names:
-        indices = grouped.get(name.strip())
+    for key in wanted:
+        indices = grouped.get(key)
         if not indices:
             return None
         sides.append(tuple(indices))
-    if len(grouped) != 2:
-        return None
     return sides[0], sides[1]
+
+
+def surname_of(name: str) -> str:
+    """Last token of a normalised name — the part both markets spell the same way.
+
+    Multi-word surnames reduce consistently on both sides ("Botic Van De Zandschulp" and
+    "B Van De Zandschulp" both end in the same token), so taking the final token is stable
+    even though it discards information.
+    """
+    tokens = normalize_name(name).split(" ")
+    return tokens[-1] if tokens else ""
