@@ -199,3 +199,69 @@ class TestFeatures:
         ratings.advance_to(LATER)
         features = pyramid_features(ratings, "ATP", "Smith A.", "Jones B.", LATER, "Hard")
         assert features["pyramid_workload_gap"] == pytest.approx(1.0)
+
+
+class TestSnapshot:
+    """A snapshot exists so a scoring pass can be split across processes."""
+
+    def test_it_carries_the_ratings_and_counts(self) -> None:
+        ratings = PyramidRatings()
+        ratings.queue([make(winner="Alan Smith", loser="Bob Jones", week=WEEK)])
+        ratings.advance_to(LATER)
+        frozen = ratings.snapshot()
+        assert frozen.elo_for("ATP", ("smith", "a")) == ratings.elo("ATP", "Smith A.")
+        assert frozen.matches_for("ATP", ("smith", "a")) == 1
+        assert frozen.known_players("ATP") == {("smith", "a"), ("jones", "b")}
+
+    def test_it_cannot_absorb_anything(self) -> None:
+        """The property that makes it safe to hand to workers on different days."""
+        frozen = PyramidRatings().snapshot()
+        assert not hasattr(frozen, "advance_to")
+        assert not hasattr(frozen, "queue")
+
+    def test_it_does_not_change_when_the_engine_moves_on(self) -> None:
+        ratings = PyramidRatings()
+        ratings.queue([
+            make(winner="Alan Smith", loser="Bob Jones", week=WEEK, num=1),
+            make(winner="Alan Smith", loser="Bob Jones",
+                 week=WEEK + dt.timedelta(days=7), num=2),
+        ])
+        ratings.advance_to(LATER)
+        frozen = ratings.snapshot()
+        before = frozen.elo_for("ATP", ("smith", "a"))
+        ratings.advance_to(LATER + dt.timedelta(days=14))
+        assert frozen.elo_for("ATP", ("smith", "a")) == before
+        assert ratings.elo("ATP", "Smith A.") > before
+
+    def test_an_unseen_player_reads_as_the_population_mean(self) -> None:
+        frozen = PyramidRatings().snapshot()
+        assert frozen.elo_for("ATP", ("nobody", "n")) == 1500.0
+        assert frozen.matches_for("ATP", ("nobody", "n")) == 0
+
+
+class TestPendingAfter:
+    """Lets a caller check, rather than assume, that no evidence arrives mid-window."""
+
+    def test_it_counts_queued_matches_beyond_the_cutoff(self) -> None:
+        ratings = PyramidRatings()
+        ratings.queue([
+            make(winner="Alan Smith", loser="Bob Jones", week=WEEK, num=1),
+            make(winner="Alan Smith", loser="Bob Jones",
+                 week=WEEK + dt.timedelta(days=28), num=2),
+        ])
+        ratings.advance_to(LATER)
+        assert ratings.pending_after(WEEK + dt.timedelta(days=21)) == 1
+        assert ratings.pending_after(WEEK + dt.timedelta(days=60)) == 0
+
+    def test_an_exhausted_archive_has_nothing_pending(self) -> None:
+        """The condition that makes a whole scoring window safe from one frozen state."""
+        ratings = PyramidRatings()
+        ratings.queue([make(winner="Alan Smith", loser="Bob Jones", week=WEEK)])
+        ratings.advance_to(LATER)
+        assert ratings.pending_after(LATER) == 0
+
+    def test_absorbed_through_reports_the_cutoff_not_the_date_asked_for(self) -> None:
+        ratings = PyramidRatings()
+        assert ratings.absorbed_through is None
+        ratings.advance_to(LATER)
+        assert ratings.absorbed_through == LATER - dt.timedelta(days=TOURNAMENT_LAG_DAYS)

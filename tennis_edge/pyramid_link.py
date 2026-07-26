@@ -34,15 +34,15 @@ from __future__ import annotations
 import datetime as dt
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import Mapping, Sequence
+from typing import Mapping, Protocol, Sequence
 
 from sport_tennis.identity_bridge import _betfair_keys, normalize_name
 from tennis_edge.betfair import GradingView, MarketHistory
-from tennis_edge.pyramid import PyramidRatings
 from tennis_edge.serve_stats import PlayerKey
 
 __all__ = [
     "PyramidLinkOutcome",
+    "RatingLookup",
     "ExcludedExchangeMarket",
     "LinkedExchangeMarket",
     "ExchangeLinkResult",
@@ -50,6 +50,21 @@ __all__ = [
     "resolve_tour",
     "link_to_pyramid",
 ]
+
+
+class RatingLookup(Protocol):
+    """The read-only slice of a rating state that linking needs.
+
+    A protocol rather than the concrete engine, because linking must work equally against
+    the live walk-forward engine and against a frozen snapshot of it — and, more to the
+    point, because everything linking is allowed to do to a rating state is *read* it. A
+    parameter typed as the full engine would carry ``advance_to`` into a function that has
+    no business absorbing a result.
+    """
+
+    def known_players(self, tour: str) -> set[PlayerKey]: ...
+
+    def matches_for(self, tour: str, key: PlayerKey) -> int: ...
 
 
 @unique
@@ -163,7 +178,7 @@ def _settled_winner(grading: GradingView, selections: Sequence[int]) -> int | No
 def link_to_pyramid(
     markets: Sequence[MarketHistory],
     gradings: Mapping[str, GradingView],
-    ratings: PyramidRatings,
+    ratings: RatingLookup,
     *,
     minimum_matches: int = 10,
     tours: Sequence[str] = ("ATP", "WTA"),
@@ -172,8 +187,9 @@ def link_to_pyramid(
 
     ``ratings`` must already have been advanced past every market's date — the caller owns
     the walk-forward, because only the caller knows what "before this market" means for the
-    experiment being run. This function never advances it, so it cannot accidentally supply
-    a rating built from a result it is about to be scored on.
+    experiment being run. The parameter is typed as :class:`RatingLookup`, which has no way
+    to advance anything, so this cannot accidentally supply a rating built from a result it
+    is about to be scored on.
     """
     pools = {tour: ratings.known_players(tour) for tour in tours}
     linked: list[LinkedExchangeMarket] = []

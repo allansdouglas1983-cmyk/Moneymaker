@@ -38,14 +38,15 @@ import collections
 import datetime as dt
 import math
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Sequence, cast
 
 from tennis_edge.exchange import COMMISSION
 from tennis_edge.metrics import BetResult, clustered_bootstrap, summarise_bets
-from tennis_edge.pyramid import PyramidRatings
-from tennis_edge.pyramid_link import link_to_pyramid
+from tennis_edge.pyramid import PyramidRatings, RatingSnapshot
+from tennis_edge.pyramid_link import LinkedExchangeMarket, link_to_pyramid
 from tennis_edge.ratings import elo_expected
 from tennis_edge.sackmann import load_matches
 
@@ -58,6 +59,7 @@ BOOTSTRAP_DRAWS = 2000
 #: draw is full of players with a handful of recorded results, and a rating built on three
 #: matches is a prior wearing a number.
 MIN_HISTORY = 20
+WORKERS = 3
 
 
 MONTHS = {name: number for number, name in enumerate(
@@ -106,61 +108,106 @@ def day_directories(root: str) -> list[Path]:
                                        MONTHS.get(p.parent.name, 0), int(p.name)))
 
 
-def collect() -> tuple[list[Observation], dict[str, int]]:
-    """One pass over the corpus, every horizon. Parsing is the cost; do it once."""
+_SNAPSHOT: RatingSnapshot | None = None
+
+
+def _set_snapshot(frozen: RatingSnapshot) -> None:
+    """Worker initialiser. Each process gets the same frozen state, once."""
+    global _SNAPSHOT
+    _SNAPSHOT = frozen
+
+
+def one_day(path_text: str) -> tuple[str, int, int, list[Observation], dict[str, int]]:
+    """Read, link and score a single day against the frozen rating state."""
     from tennis_edge.betfair import read_markets
 
+    assert _SNAPSHOT is not None
+    day = Path(path_text)
+    markets = read_markets(day)
+    if not markets:
+        return path_text, 0, 0, [], {}
+    gradings = {m.market_id: g for m in markets if (g := m.grading_view()) is not None}
+    result = link_to_pyramid(markets, gradings, _SNAPSHOT,
+                             minimum_matches=MIN_HISTORY)
+    observations = _score(result.linked, _SNAPSHOT)
+    counts = dict(result.counts())
+    return path_text, len(markets), len(result.linked), observations, counts
+
+
+def _score(linked: Sequence[LinkedExchangeMarket],
+           frozen: RatingSnapshot) -> list[Observation]:
+    observations: list[Observation] = []
+    for row in linked:
+        # The rating is read once per market, not once per horizon: it is the same frozen
+        # state either way, and reading it inside the horizon loop would invite someone
+        # later to make it horizon-dependent, which it must never be.
+        model_p = elo_expected(frozen.elo_for(row.tour, row.key_a),
+                               frozen.elo_for(row.tour, row.key_b))
+        for horizon in HORIZONS:
+            back_a = row.market.best_back_at(row.selection_a, seconds_before_off=horizon)
+            back_b = row.market.best_back_at(row.selection_b, seconds_before_off=horizon)
+            lay_a = row.market.best_lay_at(row.selection_a, seconds_before_off=horizon)
+            lay_b = row.market.best_lay_at(row.selection_b, seconds_before_off=horizon)
+            if back_a is None or back_b is None or lay_a is None or lay_b is None:
+                continue
+            imp_a = (1 / float(back_a.price) + 1 / float(lay_a.price)) / 2
+            imp_b = (1 / float(back_b.price) + 1 / float(lay_b.price)) / 2
+            observations.append(Observation(
+                date=row.off_date, tour=row.tour, horizon=horizon,
+                model_p=model_p,
+                market_p=imp_a / (imp_a + imp_b),
+                back_a=float(back_a.price), back_b=float(back_b.price),
+                won_a=row.won_a,
+                overround=1 / float(back_a.price) + 1 / float(back_b.price),
+            ))
+    return observations
+
+
+def collect() -> tuple[list[Observation], dict[str, int]]:
+    """Freeze the rating state, prove it is constant across the window, then fan out.
+
+    The parallelism rests on one fact, and the fact is **checked rather than assumed**: the
+    archive ends before the scored period, so no result arrives during it and every day is
+    scored from identical state. :meth:`PyramidRatings.pending_after` is asked directly, and
+    a non-zero answer aborts — because if evidence did arrive mid-window, days would no
+    longer be independent and running them in parallel would score some of them against
+    state that had already absorbed their own results.
+    """
     ratings = PyramidRatings()
     ratings.queue(load_matches(families=("main", "qual_chall", "futures"),
                                since=ARCHIVE_FROM))
+    days = day_directories(ROOT)
+    if not days:
+        return [], {}
+    first = dt.date(int(days[0].parent.parent.name),
+                    MONTHS[days[0].parent.name], int(days[0].name))
+    last = dt.date(int(days[-1].parent.parent.name),
+                   MONTHS[days[-1].parent.name], int(days[-1].name))
+    ratings.advance_to(first)
+    arriving = ratings.pending_after(last)
+    if arriving:
+        raise RuntimeError(
+            f"{arriving} archive matches fall inside the scored window {first}..{last}. "
+            f"Days are not independent and must be walked in order, not in parallel."
+        )
+    print(f"rating state frozen at {ratings.absorbed_through}; "
+          f"0 archive matches arrive between {first} and {last}", flush=True)
+    frozen = ratings.snapshot()
+
     observations: list[Observation] = []
     excluded: collections.Counter[str] = collections.Counter()
-
-    for day in day_directories(ROOT):
-        markets = read_markets(day)
-        if not markets:
-            continue
-        off = dt.datetime.fromtimestamp(
-            min(m.market_time_ms for m in markets) / 1000, tz=dt.timezone.utc).date()
-        ratings.advance_to(off)
-        gradings = {m.market_id: g for m in markets
-                    if (g := m.grading_view()) is not None}
-        result = link_to_pyramid(markets, gradings, ratings,
-                                 minimum_matches=MIN_HISTORY)
-        excluded.update(result.counts())
-
-        for row in result.linked:
-            # The rating is read once per market, not once per horizon: it is the same
-            # end-of-May state either way, and reading it inside the horizon loop would
-            # invite someone later to make it horizon-dependent, which it must never be.
-            model_p = elo_expected(ratings.elo_for(row.tour, row.key_a),
-                                   ratings.elo_for(row.tour, row.key_b))
-            for horizon in HORIZONS:
-                back_a = row.market.best_back_at(row.selection_a,
-                                                 seconds_before_off=horizon)
-                back_b = row.market.best_back_at(row.selection_b,
-                                                 seconds_before_off=horizon)
-                lay_a = row.market.best_lay_at(row.selection_a,
-                                               seconds_before_off=horizon)
-                lay_b = row.market.best_lay_at(row.selection_b,
-                                               seconds_before_off=horizon)
-                if back_a is None or back_b is None or lay_a is None or lay_b is None:
-                    excluded[f"NO_PRICE_AT_T-{horizon}"] += 1
-                    continue
-                imp_a = (1 / float(back_a.price) + 1 / float(lay_a.price)) / 2
-                imp_b = (1 / float(back_b.price) + 1 / float(lay_b.price)) / 2
-                observations.append(Observation(
-                    date=row.off_date, tour=row.tour, horizon=horizon,
-                    model_p=model_p,
-                    market_p=imp_a / (imp_a + imp_b),
-                    back_a=float(back_a.price), back_b=float(back_b.price),
-                    won_a=row.won_a,
-                    overround=1 / float(back_a.price) + 1 / float(back_b.price),
-                ))
-        print(f"  {day.parent.parent.name}-{day.parent.name}-{day.name}: "
-              f"{len(markets):>4} markets, {len(result.linked):>3} linked, "
-              f"{len(observations):>5} observations", flush=True)
-        sys.stdout.flush()
+    with ProcessPoolExecutor(max_workers=WORKERS, initializer=_set_snapshot,
+                             initargs=(frozen,)) as pool:
+        for text, markets, linked, produced, counts in pool.map(
+            one_day, [str(d) for d in days], chunksize=1
+        ):
+            observations.extend(produced)
+            excluded.update(counts)
+            day = Path(text)
+            print(f"  {day.parent.parent.name}-{day.parent.name}-{day.name}: "
+                  f"{markets:>4} markets, {linked:>3} linked, "
+                  f"{len(observations):>5} observations", flush=True)
+            sys.stdout.flush()
     return observations, dict(excluded)
 
 

@@ -44,7 +44,7 @@ from __future__ import annotations
 import datetime as dt
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Iterable
+from typing import Iterable, Mapping
 
 from tennis_edge.ratings import INITIAL_RATING, RatingConfig, elo_expected
 from tennis_edge.sackmann import Level, SackmannMatch
@@ -54,6 +54,7 @@ __all__ = [
     "TOURNAMENT_LAG_DAYS",
     "TOUR_LEVELS",
     "PyramidRatings",
+    "RatingSnapshot",
     "pyramid_features",
 ]
 
@@ -211,6 +212,29 @@ class PyramidRatings:
             return INITIAL_RATING
         return state.surface.get(surface or "Hard", state.elo)
 
+    def snapshot(self) -> "RatingSnapshot":
+        """Freeze the current state into something that cannot absorb another result."""
+        return RatingSnapshot(
+            ratings={key: state.elo for key, state in self._players.items()},
+            counts={key: state.matches for key, state in self._players.items()},
+            as_of=self._absorbed_through,
+        )
+
+    @property
+    def absorbed_through(self) -> dt.date | None:
+        """The cutoff last advanced to, or ``None`` if never advanced."""
+        return self._absorbed_through
+
+    def pending_after(self, cutoff: dt.date) -> int:
+        """Queued matches whose tournament week closes after ``cutoff``.
+
+        Lets a caller *check* rather than assume that no new evidence arrives during a
+        scoring window — which is what makes it safe to score that window from a single
+        frozen state instead of walking it day by day.
+        """
+        return sum(1 for match in self._pending[self._cursor:]
+                   if match.tourney_date > cutoff)
+
     def elo(self, tour: str, name: str) -> float:
         """Pyramid Elo. Falls back to the population mean for a player never seen."""
         state = self._lookup(tour, name)
@@ -254,6 +278,33 @@ class PyramidRatings:
         if state is None or state.matches == 0:
             return None
         return state.tour_level_matches / state.matches
+
+
+@dataclass(frozen=True)
+class RatingSnapshot:
+    """A frozen, cheaply-copyable view of the rating state at one instant.
+
+    Exists so a scoring pass can be split across processes. The full engine carries the
+    whole pending archive and is expensive to send; this carries only what scoring reads.
+
+    It is a **snapshot**, and deliberately has no way to advance. Anything holding one is by
+    construction unable to absorb a result, which is the property that makes it safe to hand
+    the same state to workers processing different days: they cannot disagree about what was
+    known, because none of them can change it.
+    """
+
+    ratings: Mapping[tuple[str, PlayerKey], float]
+    counts: Mapping[tuple[str, PlayerKey], int]
+    as_of: dt.date | None
+
+    def known_players(self, tour: str) -> set[PlayerKey]:
+        return {key for (t, key) in self.counts if t == tour}
+
+    def matches_for(self, tour: str, key: PlayerKey) -> int:
+        return self.counts.get((tour, key), 0)
+
+    def elo_for(self, tour: str, key: PlayerKey) -> float:
+        return self.ratings.get((tour, key), INITIAL_RATING)
 
 
 def pyramid_features(
