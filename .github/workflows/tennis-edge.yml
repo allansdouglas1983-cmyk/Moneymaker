@@ -56,10 +56,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: What can this job actually see
+        # Two runs arrived with both variables empty, which means a name did not resolve
+        # rather than that a value was wrong. GitHub gives no error for a missing secret,
+        # it substitutes nothing — so the only way to tell them apart is to ask. Prints
+        # presence and length, never a value; a length is enough to spot a paste that
+        # picked up the anon key or a trailing newline.
+        env:
+          A: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          B: ${{ secrets.SUPABASE_KEY }}
+          C: ${{ secrets.SUPABASE_SECRET_KEY }}
+          D: ${{ secrets.SERVICE_ROLE_KEY }}
+          E: ${{ vars.SUPABASE_SERVICE_ROLE_KEY }}
+          U1: ${{ secrets.SUPABASE_URL }}
+          U2: ${{ vars.SUPABASE_URL }}
+        run: |
+          for name in A B C D E U1 U2; do
+            value="${!name}"
+            if [ -n "$value" ]; then echo "$name: present (${#value} chars)"
+            else echo "$name: EMPTY"; fi
+          done
+
       - name: Push model and rating state
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # The project URL is not a secret — it is in the README and in every page the
+          # site serves — so it defaults rather than being a second thing that can go
+          # missing. Only the service-role key has to come from the secret store.
+          SUPABASE_URL: https://sujrylzzxcqxxfygptns.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: >-
+            ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY
+             || secrets.SUPABASE_SECRET_KEY || secrets.SERVICE_ROLE_KEY }}
         run: python tennis-edge/tools/push_state.py artifacts
 
   refresh:
@@ -104,8 +130,10 @@ jobs:
 
       - name: Push refreshed state
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: https://sujrylzzxcqxxfygptns.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: >-
+            ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY
+             || secrets.SUPABASE_SECRET_KEY || secrets.SERVICE_ROLE_KEY }}
         run: python tennis-edge/tools/push_state.py artifacts
 
       - name: Commit the refreshed artefacts
