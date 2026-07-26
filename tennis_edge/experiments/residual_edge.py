@@ -56,14 +56,19 @@ BOOTSTRAP_DRAWS = 2000
 #: the price toward zero, which is the correct prior: absent evidence, the price is right.
 L2 = 25.0
 
-#: Books the money test settles at, in the order reported. Pinnacle first because it is the
-#: conservative one: sharp, always available, and it does not close winning accounts.
-SETTLE_BOOKS = ("pinnacle", "b365", "max")
-
-#: Betfair charges commission on net market winnings; a bookmaker charges none, its margin
-#: being already inside the quoted price. Settling bookmaker bets at 0% is therefore correct
-#: and not a favour to the strategy.
-BOOKMAKER_COMMISSION = 0.0
+#: Books the money test settles at, with the commission each charges, in report order.
+#:
+#: Pinnacle first because it is the conservative one: sharp, always available, and it does
+#: not close winning accounts. ``betfair`` last because it is the venue that actually
+#: matters for a personal bettor — it is the only one here that charges commission rather
+#: than burying its margin in the quote, and it is the only one that cannot limit a winner.
+#: Its coverage in this corpus starts in 2025, so its sample is small and its row must be
+#: read as an indication rather than a measurement.
+#:
+#: A bookmaker's margin is already inside its quoted price, so settling those at 0%
+#: commission is correct and not a favour to the strategy.
+SETTLE_BOOKS = ("pinnacle", "b365", "max", "betfair")
+COMMISSIONS = {"pinnacle": 0.0, "b365": 0.0, "max": 0.0, "betfair": 0.02}
 
 
 @dataclass(frozen=True)
@@ -315,10 +320,13 @@ def _settle_at(scored: list[tuple[Row, float]], book: str,
             (probability, row.odds_a.get(book), bool(row.won)),
             (1.0 - probability, row.odds_b.get(book), not row.won),
         ):
-            if odds is None or odds <= 1.0 or side * odds <= 1.0:
+            # Commission applies to winnings, so the break-even price is above 1/p. Using
+            # 1/p on the exchange would credit the strategy with money Betfair keeps.
+            net = 1.0 + (odds - 1.0) * (1.0 - COMMISSIONS[book]) if odds else 0.0
+            if odds is None or odds <= 1.0 or side * net <= 1.0:
                 continue
             results.append(BetResult(cluster=row.date, odds=odds, stake=1.0,
-                                     won=won, commission=BOOKMAKER_COMMISSION))
+                                     won=won, commission=COMMISSIONS[book]))
     return results
 
 
