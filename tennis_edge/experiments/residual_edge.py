@@ -69,6 +69,9 @@ BOOKMAKER_COMMISSION = 0.0
 @dataclass(frozen=True)
 class Row:
     date: dt.date
+    tour: str
+    player_a: str
+    player_b: str
     market_logit: float
     features: dict[str, float]
     won: int
@@ -127,7 +130,7 @@ def build(matches: tuple[Match, ...]) -> list[Row]:
                 pair = match.odds.pair(book)
                 if pair is not None:
                     odds_a[book], odds_b[book] = float(pair[0]), float(pair[1])
-            rows.append(Row(match.match_date, _logit(market), features,
+            rows.append(Row(match.match_date, tour, a, b, _logit(market), features,
                             1 if match.winner_is_a else 0, odds_a, odds_b))
         engine.observe(batch)
     return rows

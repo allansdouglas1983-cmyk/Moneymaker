@@ -84,7 +84,14 @@ class HorizonState:
 
 @dataclass(frozen=True)
 class MarketSnapshot:
-    """One market: its identity, its states, and its settled result."""
+    """One market: its identity, its states, and its settled result.
+
+    ``player_a``/``player_b`` are the **corpus** names the identity bridge resolved this
+    market to, not the Betfair aliases. They are carried so a downstream experiment can join
+    a snapshot back to a model's view of the same match by name instead of guessing from
+    date and outcome, which on a busy day pairs the wrong two things — and a wrong pairing is
+    indistinguishable from a wrong model.
+    """
 
     market_id: str
     event_name: str
@@ -94,6 +101,8 @@ class MarketSnapshot:
     best_of: int
     market_time_ms: int
     won_a: int
+    player_a: str
+    player_b: str
     states: tuple[HorizonState, ...]
 
     def at(self, horizon: int) -> HorizonState | None:
@@ -147,6 +156,8 @@ def extract_snapshots(
             best_of=row.match.best_of,
             market_time_ms=row.market.market_time_ms,
             won_a=1 if row.match.winner_is_a else 0,
+            player_a=row.match.player_a,
+            player_b=row.match.player_b,
             states=states,
         ))
     return out
@@ -161,7 +172,7 @@ def write_snapshots(
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("w", encoding="utf-8") as handle:
         handle.write(json.dumps({
-            "kind": "market-snapshot-cache-v1",
+            "kind": "market-snapshot-cache-v2",
             "source": source,
             "horizons": list(horizons),
             "markets": len(snapshots),
@@ -184,7 +195,7 @@ def load_snapshots(
     if not lines:
         raise ValueError(f"empty snapshot cache: {path}")
     header = json.loads(lines[0])
-    if header.get("kind") != "market-snapshot-cache-v1":
+    if header.get("kind") != "market-snapshot-cache-v2":
         raise ValueError(f"not a snapshot cache: {path}")
     if tuple(header.get("horizons", ())) != tuple(horizons):
         raise ValueError(
