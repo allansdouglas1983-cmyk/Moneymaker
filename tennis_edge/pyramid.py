@@ -183,6 +183,34 @@ class PyramidRatings:
             return None
         return self._players.get((tour, key))
 
+    def known_players(self, tour: str) -> set[PlayerKey]:
+        """Every player with pyramid history in one tour's namespace.
+
+        Exposed because an exchange market does not say whether it is men's or women's
+        tennis, so the tour has to be inferred from which pool contains both players.
+        """
+        return {key for (t, key) in self._players if t == tour}
+
+    def matches_for(self, tour: str, key: PlayerKey) -> int:
+        """Match count by key rather than by display name.
+
+        The name-keyed accessors go through the Tennis-Data naming convention, which is the
+        right door for the priced main-tour corpus and the wrong one for a Betfair runner
+        name. Callers that already hold a resolved key use this and skip the round trip.
+        """
+        state = self._players.get((tour, key))
+        return 0 if state is None else state.matches
+
+    def elo_for(self, tour: str, key: PlayerKey) -> float:
+        state = self._players.get((tour, key))
+        return INITIAL_RATING if state is None else state.elo
+
+    def surface_elo_for(self, tour: str, key: PlayerKey, surface: str) -> float:
+        state = self._players.get((tour, key))
+        if state is None:
+            return INITIAL_RATING
+        return state.surface.get(surface or "Hard", state.elo)
+
     def elo(self, tour: str, name: str) -> float:
         """Pyramid Elo. Falls back to the population mean for a player never seen."""
         state = self._lookup(tour, name)
