@@ -92,3 +92,55 @@ class TestPredict:
     def test_a_coefficient_for_an_absent_feature_is_ignored(self) -> None:
         subject = row(logit=0.0, won=1)
         assert predict(subject, {"x": 5.0}) == pytest.approx(0.5)
+
+
+class TestCorrelatedFeatures:
+    """The case that broke the first implementation.
+
+    Updating every coefficient by its own second derivative, all at once, is Jacobi
+    iteration: it ignores the off-diagonal curvature and diverges whenever features are
+    correlated. Real features are strongly correlated — ranking, Elo and surface Elo all
+    measure roughly the same thing — so this is the normal case, not an edge case, and the
+    divergence showed up as coefficients in the thousands and a log score nine nats worse
+    than the market it was supposed to be correcting.
+    """
+
+    def correlated(self, wins: int, losses: int) -> list[Row]:
+        """Three features that are near-copies of each other, as real ones are."""
+        return ([row(logit=0.0, won=1, a=1.0, b=0.99, c=1.01)] * wins
+                + [row(logit=0.0, won=0, a=1.0, b=0.99, c=1.01)] * losses)
+
+    def test_correlated_features_do_not_diverge(self) -> None:
+        beta = fit(self.correlated(700, 300), ["a", "b", "c"])
+        assert all(abs(v) < 5.0 for v in beta.values()), beta
+
+    def test_their_combined_effect_is_still_recovered(self) -> None:
+        """Individually unidentified, jointly they must still explain the outcome."""
+        rows = self.correlated(700, 300)
+        beta = fit(rows, ["a", "b", "c"])
+        subject = rows[0]
+        assert predict(subject, beta) > 0.5
+
+    def test_a_duplicated_feature_does_not_double_the_correction(self) -> None:
+        single = fit(balanced(1.0, 700, 300, name="a"), ["a"])
+        pair = fit(
+            ([row(logit=0.0, won=1, a=1.0, b=1.0)] * 700
+             + [row(logit=0.0, won=0, a=1.0, b=1.0)] * 300),
+            ["a", "b"],
+        )
+        assert (pair["a"] + pair["b"]) == pytest.approx(single["a"], rel=0.35)
+
+    def test_the_fit_improves_the_likelihood_it_is_maximising(self) -> None:
+        """The property a diverging optimiser violates, stated directly."""
+        rows = self.correlated(700, 300)
+        names = ["a", "b", "c"]
+        beta = fit(rows, names)
+
+        def loglik(coefficients: dict[str, float]) -> float:
+            return math.fsum(
+                math.log(p if r.won else 1 - p)
+                for r in rows
+                for p in (predict(r, coefficients),)
+            )
+
+        assert loglik(beta) > loglik({n: 0.0 for n in names})

@@ -156,19 +156,73 @@ def _compile(rows: list[Row], names: list[str]) -> list[tuple[float, int, list[t
     ]
 
 
+def _solve(matrix: list[list[float]], vector: list[float]) -> list[float]:
+    """Solve ``matrix @ x = vector`` by Gaussian elimination with partial pivoting.
+
+    Small and dense — one row and column per feature — so an explicit solve is cheap and
+    exact enough. Partial pivoting because the penalised Hessian is well conditioned but not
+    diagonally dominant when features are near-copies of each other, which they are.
+    """
+    width = len(vector)
+    augmented = [row[:] + [vector[i]] for i, row in enumerate(matrix)]
+    for column in range(width):
+        pivot = max(range(column, width), key=lambda r: abs(augmented[r][column]))
+        if abs(augmented[pivot][column]) < 1e-12:
+            raise ValueError("singular Hessian — features are exactly collinear")
+        augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
+        scale = augmented[column][column]
+        for r in range(width):
+            if r == column:
+                continue
+            factor = augmented[r][column] / scale
+            if factor == 0.0:
+                continue
+            for c in range(column, width + 1):
+                augmented[r][c] -= factor * augmented[column][c]
+    return [augmented[i][width] / augmented[i][i] for i in range(width)]
+
+
+def _penalised_loglik(
+    compiled: list[tuple[float, int, list[tuple[int, float]]]], beta: list[float]
+) -> float:
+    total = -0.5 * L2 * math.fsum(b * b for b in beta)
+    for offset, won, pairs in compiled:
+        z = offset + math.fsum(beta[i] * x for i, x in pairs)
+        z = max(min(z, 30.0), -30.0)
+        # log sigmoid(z) for a win, log sigmoid(-z) for a loss, written to avoid overflow.
+        total += -math.log1p(math.exp(-z)) if won else -math.log1p(math.exp(z))
+    return total
+
+
 def fit(rows: list[Row], names: list[str]) -> dict[str, float]:
     """Ridge logistic on the residual, with the market logit as an unpenalised offset.
 
-    Newton with a fixed penalty. Rows missing a feature contribute nothing to it, which is
-    how a feature available on only part of the sample (the point model needs serve
-    coverage) is used where it exists without imputing a value where it does not.
+    Full Newton — the whole Hessian, not just its diagonal — with a backtracking line
+    search. Both parts are there for the same reason.
+
+    The first implementation updated each coefficient by its own second derivative and
+    applied all the updates at once. That is Jacobi iteration: it ignores the off-diagonal
+    curvature, and it diverges as soon as features are correlated. These features are
+    strongly correlated — ranking, Elo and surface Elo all measure roughly the same thing —
+    so it diverged to coefficients in the thousands and a log score nine nats *worse* than
+    the market it was meant to be correcting. That looked like a finding and was a bug.
+
+    The line search is the guard rather than the cure: a Newton step on a well-posed
+    penalised problem is almost always accepted whole, and halving it when the penalised
+    likelihood fails to improve means the fit can no longer walk away from its own optimum
+    without that showing up as a refusal to converge.
+
+    Rows missing a feature contribute nothing to it, which is how a feature available on
+    only part of the sample (the point model needs serve coverage) is used where it exists
+    without imputing a value where it does not.
     """
     compiled = _compile(rows, names)
     width = len(names)
     beta = [0.0] * width
+    current = _penalised_loglik(compiled, beta)
     for _ in range(50):
         gradient = [-L2 * b for b in beta]
-        hessian = [L2] * width
+        hessian = [[L2 if i == j else 0.0 for j in range(width)] for i in range(width)]
         for offset, won, pairs in compiled:
             z = offset
             for i, x in pairs:
@@ -177,11 +231,24 @@ def fit(rows: list[Row], names: list[str]) -> dict[str, float]:
             residual, weight = won - p, p * (1 - p)
             for i, x in pairs:
                 gradient[i] += x * residual
-                hessian[i] += x * x * weight
-        steps = [g / h for g, h in zip(gradient, hessian)]
-        for i, delta in enumerate(steps):
-            beta[i] += delta
-        if max(abs(s) for s in steps) < 1e-10:
+                wx = weight * x
+                for j, y in pairs:
+                    hessian[i][j] += wx * y
+        try:
+            step = _solve(hessian, gradient)
+        except ValueError:
+            break
+        scale = 1.0
+        for _attempt in range(20):
+            candidate = [b + scale * s for b, s in zip(beta, step)]
+            value = _penalised_loglik(compiled, candidate)
+            if value >= current:
+                beta, current = candidate, value
+                break
+            scale *= 0.5
+        else:
+            break
+        if max(abs(scale * s) for s in step) < 1e-10:
             break
     return dict(zip(names, beta))
 
