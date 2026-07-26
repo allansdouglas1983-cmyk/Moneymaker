@@ -448,3 +448,29 @@ def test_one_selection_update_does_not_disturb_the_other(tmp_path: Path) -> None
     (history,) = read_markets(path)
     assert history.best_lay_at(B, seconds_before_off=300) is not None
     assert history.best_back_at(B, seconds_before_off=300).price == Decimal("2.0")
+
+
+def test_traded_volume_is_captured_and_carries_forward(tmp_path: Path) -> None:
+    """tv is cumulative matched volume on a selection. Volume imbalance is one of the few
+    genuinely non-tennis signals available — how the money is actually distributed rather
+    than what the displayed price says."""
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        json.dumps({"op": "mcm", "pt": OFF_MS - 1_800_000,
+                    "mc": [{"id": MARKET_ID, "rc": [{"id": A, "tv": 1250.5}]}]}),
+        json.dumps({"op": "mcm", "pt": OFF_MS - 600_000,
+                    "mc": [{"id": MARKET_ID, "rc": [{"id": A, "ltp": 2.0}]}]}),
+    ])
+    (history,) = read_markets(path)
+    assert history.traded_volume_at(A, seconds_before_off=1200) == Decimal("1250.5")
+    assert history.traded_volume_at(A, seconds_before_off=300) == Decimal("1250.5")
+
+
+def test_traded_volume_before_any_trade_is_none(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", [
+        _msg(OFF_MS - 3_600_000, definition=_definition()),
+        json.dumps({"op": "mcm", "pt": OFF_MS - 600_000,
+                    "mc": [{"id": MARKET_ID, "rc": [{"id": A, "tv": 100.0}]}]}),
+    ])
+    (history,) = read_markets(path)
+    assert history.traded_volume_at(A, seconds_before_off=1800) is None

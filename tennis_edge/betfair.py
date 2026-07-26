@@ -50,6 +50,7 @@ __all__ = [
     "LtpObservation",
     "LadderLevel",
     "LadderObservation",
+    "VolumeObservation",
     "GradingView",
     "MarketHistory",
     "read_markets",
@@ -105,6 +106,19 @@ class LadderLevel:
 
 
 @dataclass(frozen=True)
+class VolumeObservation:
+    """Cumulative matched volume on one selection at one instant (ADVANCED ``tv``).
+
+    Where the money actually went, as opposed to what the displayed price says. It is one
+    of the few signals available here that is not a restatement of the price itself.
+    """
+
+    publish_time_ms: int
+    selection_id: int
+    volume: Decimal
+
+
+@dataclass(frozen=True)
 class LadderObservation:
     """Best back/lay for one selection at one instant (ADVANCED ``batb``/``batl``).
 
@@ -154,6 +168,7 @@ class MarketHistory:
     went_in_play: bool
     #: ADVANCED only. Empty for BASIC, which carries no ladder at all.
     ladders: tuple[LadderObservation, ...] = ()
+    volumes: tuple[VolumeObservation, ...] = ()
     _grading: GradingView | None = None
 
     def ltp_at(self, selection_id: int, *, seconds_before_off: int) -> Decimal | None:
@@ -218,6 +233,21 @@ class MarketHistory:
         v1 never lays (hard prohibition)."""
         observation = self._ladder_at(selection_id, seconds_before_off)
         return None if observation is None else observation.best_lay
+
+    def traded_volume_at(
+        self, selection_id: int, *, seconds_before_off: int
+    ) -> Decimal | None:
+        """Cumulative matched volume at a horizon, carried forward. None before any trade."""
+        if seconds_before_off < 0:
+            raise InPlayRefusedError("pre-off only")
+        cutoff = self.market_time_ms - seconds_before_off * 1000
+        latest: Decimal | None = None
+        for observation in self.volumes:
+            if observation.publish_time_ms > cutoff:
+                break
+            if observation.selection_id == selection_id:
+                latest = observation.volume
+        return latest
 
     def grading_view(self) -> GradingView | None:
         """Settlement facts, or ``None`` if the market has not settled in this file."""
@@ -333,6 +363,7 @@ class _Accumulator:
     definition: dict[str, object] | None = None
     observations: list[LtpObservation] | None = None
     ladders: list[LadderObservation] | None = None
+    volumes: list[VolumeObservation] | None = None
     #: Running best back/lay per selection, so a one-sided delta carries the other side.
     book: dict[int, tuple["LadderLevel | None", "LadderLevel | None"]] | None = None
     went_in_play: bool = False
@@ -345,6 +376,8 @@ class _Accumulator:
             self.ladders = []
         if self.book is None:
             self.book = {}
+        if self.volumes is None:
+            self.volumes = []
 
 
 def _market_time_ms(definition: Mapping[str, object]) -> int:
@@ -417,6 +450,13 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
                     )
                 # ltp == 0 is ADVANCED's "nothing has traded yet" sentinel, not a price.
                 # 0.0 implies infinite odds; it is absence, and absence is what it reads as.
+                if runner_change.get("tv") is not None:
+                    assert state.volumes is not None
+                    state.volumes.append(VolumeObservation(
+                        publish_time_ms=publish_time,
+                        selection_id=int(runner_change["id"]),
+                        volume=Decimal(str(runner_change["tv"])),
+                    ))
                 if not runner_change.get("ltp"):
                     continue
                 assert state.observations is not None
@@ -438,6 +478,7 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
         off_ms = _market_time_ms(definition)
         assert state.observations is not None
         assert state.ladders is not None
+        assert state.volumes is not None
         pre_off = tuple(sorted(
             (o for o in state.observations if o.publish_time_ms <= off_ms),
             key=lambda o: (o.publish_time_ms, o.selection_id),
@@ -453,6 +494,10 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
                 runners=_runners(definition),
                 observations=pre_off,
                 went_in_play=state.went_in_play,
+                volumes=tuple(sorted(
+                    (v for v in state.volumes if v.publish_time_ms <= off_ms),
+                    key=lambda v: (v.publish_time_ms, v.selection_id),
+                )),
                 ladders=tuple(sorted(
                     (rung for rung in state.ladders if rung.publish_time_ms <= off_ms),
                     key=lambda rung: (rung.publish_time_ms, rung.selection_id),
