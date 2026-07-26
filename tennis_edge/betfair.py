@@ -57,9 +57,17 @@ __all__ = [
     "iter_messages",
 ]
 
-#: v1 prices Match Odds only. Set/game markets are a different settlement policy and a
-#: different choice set; they are skipped rather than silently treated as a match market.
+#: v1 prices Match Odds only, and that stays the default. Set and game markets are a
+#: different settlement policy and a different choice set, so they are never silently
+#: treated as a match market — a caller that wants them must ask for them by name.
 MARKET_TYPE = "MATCH_ODDS"
+
+#: Types a cross-market reader may ask for. SET_BETTING is the useful companion to
+#: MATCH_ODDS because the two are related by identity rather than by model: for a
+#: best-of-three, P(A wins) is exactly P(A 2-0) + P(A 2-1). Any gap between them is the two
+#: markets disagreeing with each other, which needs no forecast to detect.
+CROSS_MARKET_TYPES = ("MATCH_ODDS", "SET_BETTING", "NUMBER_OF_SETS", "COMBINED_TOTAL",
+                      "HANDICAP")
 
 
 class InPlayRefusedError(RuntimeError):
@@ -388,13 +396,16 @@ def _market_time_ms(definition: Mapping[str, object]) -> int:
     return int(parsed.timestamp() * 1000)
 
 
-def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
+def read_markets(
+    path: Path | str, *, market_types: Sequence[str] = (MARKET_TYPE,)
+) -> tuple[MarketHistory, ...]:
     """Read every Match Odds market under ``path`` into a pre-off history.
 
     In-play observations are dropped as they are read, so they are never present to be
     filtered later. Settlement data is routed to a :class:`GradingView` and kept off the
     history itself.
     """
+    wanted = set(market_types)
     accumulators: dict[str, _Accumulator] = {}
 
     for message in iter_messages(path):
@@ -473,7 +484,7 @@ def read_markets(path: Path | str) -> tuple[MarketHistory, ...]:
         definition = state.definition
         if definition is None:
             continue
-        if str(definition.get("marketType", "")) != MARKET_TYPE:
+        if str(definition.get("marketType", "")) not in wanted:
             continue
         off_ms = _market_time_ms(definition)
         assert state.observations is not None
