@@ -256,3 +256,15 @@ class ServeEstimator:
             matches_a=matches_a,
             matches_b=matches_b,
         )
+
+
+    def shrunk_for(
+        self, tour: str, key: PlayerKey, when: dt.date
+    ) -> tuple[float, float, float, int]:
+        """Public view of the shrunk rates, for freezing into a live-state snapshot.
+
+        The snapshot stores rates rather than raw counts because the shrinkage carries a
+        recency decay: re-deriving it later would apply the decay from the wrong date and
+        produce numbers that look right and are not.
+        """
+        return self._shrunk(tour, key, when)

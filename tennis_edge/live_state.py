@@ -1,0 +1,332 @@
+"""Everything pricing needs about each player at a date, snapshotted so fixtures are cheap.
+
+This is the module that turns the model into a usable tool. Before it, a fixture could only
+be priced with features handed over by hand, which is a demonstration rather than a product;
+computing them properly meant walking the whole corpus and archive, ten minutes per run.
+
+The state a prediction actually needs is small: a few scalars per player. So the walk happens
+once, the scalars are written to disk with the date they describe, and pricing an upcoming
+match is a dictionary lookup.
+
+**The features here must match the ones the model was fitted on, expression for expression.**
+:mod:`tennis_edge.residual_features` builds them over a whole corpus with live engines;
+this rebuilds the same quantities from frozen scalars. Any drift between the two is a
+predictor quietly using a different feature set than the harness that validated it, which
+would be invisible in the output — so the expressions are kept side by side and
+``RESIDUAL_FEATURE_NAMES`` bounds what either may emit.
+
+**Pricing backwards is refused.** A snapshot taken on the 20th contains ratings that already
+absorbed everything up to the 20th, so pricing a match from the 19th with it would be scoring
+a result the state has already seen. That is the single easiest way to manufacture a
+spectacular backtest, and it raises rather than warns.
+"""
+from __future__ import annotations
+
+import datetime as dt
+import json
+import math
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Mapping
+
+from tennis_edge.point_model import match_probability
+from tennis_edge.ratings import elo_expected
+
+__all__ = [
+    "PlayerState",
+    "StateSnapshot",
+    "live_features",
+    "save_state",
+    "load_state",
+]
+
+_KIND = "tennis-edge-live-state-v1"
+
+#: Mirrors ``residual_features``. Kept as separate constants rather than imported so a
+#: change to one is a visible divergence rather than a silent shared edit.
+MIN_MAIN_TOUR_MATCHES = 5
+MIN_SERVE_COVERAGE = 300.0
+MIN_PYRAMID_MATCHES = 5
+WORKLOAD_DAYS = 14
+
+
+@dataclass(frozen=True)
+class PlayerState:
+    """One player's frozen scalars. Everything a feature needs and nothing else."""
+
+    elo: float
+    weighted_elo: float
+    surface_elo: Mapping[str, float]
+    matches: int
+    last_played: str | None
+    #: Shrunk serve and return rates at the snapshot date, plus their coverage. Stored
+    #: post-shrinkage because the shrinkage is time-dependent (recency decay) and
+    #: re-deriving it later from raw counts would silently use the wrong date.
+    serve_rate: float
+    return_rate: float
+    serve_points: float
+    serve_matches: int
+    pyramid_elo: float
+    pyramid_surface_elo: Mapping[str, float]
+    pyramid_matches: int
+    pyramid_tour_share: float
+    pyramid_last_played: str | None
+    pyramid_recent_14d: int
+
+    def surface_rating(self, surface: str) -> float:
+        """Surface rating, falling back to the overall one for an unplayed surface.
+
+        A player's first match on clay is not a claim that they are average on clay; the
+        overall rating is the honest prior and it is what the training-time engine uses.
+        """
+        return self.surface_elo.get(surface or "Hard", self.elo)
+
+    def pyramid_surface_rating(self, surface: str) -> float:
+        return self.pyramid_surface_elo.get(surface or "Hard", self.pyramid_elo)
+
+
+@dataclass(frozen=True)
+class StateSnapshot:
+    """Per-player state as of one date, with the corpus vintage it came from."""
+
+    as_of: dt.date
+    corpus_vintage: str
+    players: Mapping[tuple[str, str], PlayerState]
+    tour_serve_baseline: Mapping[str, float]
+    #: Head-to-head counts, keyed by (tour, first-sorted name, second-sorted name).
+    head_to_head: Mapping[tuple[str, str, str], tuple[int, int]] = field(
+        default_factory=dict)
+
+    def days_old(self, today: dt.date) -> int:
+        return (today - self.as_of).days
+
+    def get(self, tour: str, player: str) -> PlayerState | None:
+        return self.players.get((tour, player))
+
+
+def _logit(p: float) -> float:
+    q = min(max(p, 1e-12), 1 - 1e-12)
+    return math.log(q / (1 - q))
+
+
+def _days_since(stamp: str | None, when: dt.date) -> int | None:
+    if stamp is None:
+        return None
+    return (when - dt.date.fromisoformat(stamp)).days
+
+
+def live_features(
+    snapshot: StateSnapshot,
+    tour: str,
+    player_a: str,
+    player_b: str,
+    *,
+    surface: str,
+    best_of: int,
+    market_probability: float,
+    match_date: dt.date | None = None,
+    rank_a: int | None = None,
+    rank_b: int | None = None,
+) -> dict[str, float]:
+    """Residual features for an upcoming match, or ``{}`` when the state cannot support them.
+
+    Returning nothing rather than zeros is the same discipline as everywhere else: a zero gap
+    claims the two players are equal, and absence claims nothing. A debutant priced with
+    zeros would sit at the exact centre of every distribution, which is both false and
+    systematically so.
+
+    Rankings are supplied by the caller rather than snapshotted, because a ranking belongs to
+    the fixture and not to the rating state — it moves weekly, it is published freely, and
+    the value that matters is the one current at the match. Omitting them drops ``rank_gap``,
+    which the model handles as an absent feature rather than a zero one.
+    """
+    when = match_date or snapshot.as_of
+    if when < snapshot.as_of:
+        raise ValueError(
+            f"cannot price {when} from a snapshot taken on {snapshot.as_of}: the match is "
+            f"before the snapshot, so the state has already absorbed its result"
+        )
+    a = snapshot.get(tour, player_a)
+    b = snapshot.get(tour, player_b)
+    if a is None or b is None:
+        return {}
+    if a.matches < MIN_MAIN_TOUR_MATCHES or b.matches < MIN_MAIN_TOUR_MATCHES:
+        return {}
+
+    market_logit = _logit(market_probability)
+    blended_a = 0.5 * (a.elo + a.surface_rating(surface))
+    blended_b = 0.5 * (b.elo + b.surface_rating(surface))
+    features = {
+        "elo_residual": _logit(elo_expected(blended_a, blended_b)) - market_logit,
+        "surface_elo_gap": (a.surface_rating(surface)
+                            - b.surface_rating(surface)) / 400.0,
+        "weighted_elo_gap": (a.weighted_elo - b.weighted_elo) / 400.0,
+    }
+    if rank_a is not None and rank_b is not None:
+        features["rank_gap"] = math.log1p(rank_b) - math.log1p(rank_a)
+
+    baseline = snapshot.tour_serve_baseline.get(tour, 0.62)
+    if min(a.serve_points, b.serve_points) >= MIN_SERVE_COVERAGE:
+        # f_ij = f_t + (f_i - f_av) - (g_j - g_av), as in serve_stats.estimate.
+        return_average = 1.0 - baseline
+        p_a = min(max(baseline + (a.serve_rate - baseline)
+                      - (b.return_rate - return_average), 0.30), 0.90)
+        p_b = min(max(baseline + (b.serve_rate - baseline)
+                      - (a.return_rate - return_average), 0.30), 0.90)
+        point = match_probability(p_a, 1.0 - p_b, best_of=best_of)
+        features["point_model_residual"] = _logit(point) - market_logit
+
+    if (a.pyramid_matches >= MIN_PYRAMID_MATCHES
+            and b.pyramid_matches >= MIN_PYRAMID_MATCHES):
+        rest_a = _days_since(a.pyramid_last_played, when)
+        rest_b = _days_since(b.pyramid_last_played, when)
+        if rest_a is not None and rest_b is not None:
+            features.update({
+                "pyramid_elo_gap": (a.pyramid_elo - b.pyramid_elo) / 400.0,
+                "pyramid_surface_gap": (a.pyramid_surface_rating(surface)
+                                        - b.pyramid_surface_rating(surface)) / 400.0,
+                "pyramid_workload_gap": float(a.pyramid_recent_14d - b.pyramid_recent_14d),
+                "pyramid_rest_gap": (min(rest_a, 180) - min(rest_b, 180)) / 30.0,
+                "pyramid_tier_gap": a.pyramid_tour_share - b.pyramid_tour_share,
+            })
+    return features
+
+
+def save_state(path: Path | str, snapshot: StateSnapshot) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "kind": _KIND,
+        "as_of": snapshot.as_of.isoformat(),
+        "corpus_vintage": snapshot.corpus_vintage,
+        "tour_serve_baseline": dict(snapshot.tour_serve_baseline),
+        "players": [
+            {"tour": tour, "name": name, **_player_payload(state)}
+            for (tour, name), state in sorted(snapshot.players.items())
+        ],
+        "head_to_head": [
+            {"tour": t, "first": f, "second": s, "wins": list(w)}
+            for (t, f, s), w in sorted(snapshot.head_to_head.items())
+        ],
+    }
+    scratch = target.with_suffix(target.suffix + ".partial")
+    scratch.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+                       encoding="utf-8")
+    scratch.replace(target)
+
+
+def _player_payload(state: PlayerState) -> dict[str, object]:
+    return {
+        "elo": state.elo, "weighted_elo": state.weighted_elo,
+        "surface_elo": dict(state.surface_elo), "matches": state.matches,
+        "last_played": state.last_played, "serve_rate": state.serve_rate,
+        "return_rate": state.return_rate, "serve_points": state.serve_points,
+        "serve_matches": state.serve_matches, "pyramid_elo": state.pyramid_elo,
+        "pyramid_surface_elo": dict(state.pyramid_surface_elo),
+        "pyramid_matches": state.pyramid_matches,
+        "pyramid_tour_share": state.pyramid_tour_share,
+        "pyramid_last_played": state.pyramid_last_played,
+        "pyramid_recent_14d": state.pyramid_recent_14d,
+    }
+
+
+def load_state(path: Path | str) -> StateSnapshot:
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    if raw.get("kind") != _KIND:
+        raise ValueError(f"not a state snapshot: {path}")
+    players = {
+        (entry["tour"], entry["name"]): PlayerState(
+            **{k: v for k, v in entry.items() if k not in {"tour", "name"}}
+        )
+        for entry in raw["players"]
+    }
+    head_to_head = {
+        (entry["tour"], entry["first"], entry["second"]): (entry["wins"][0],
+                                                           entry["wins"][1])
+        for entry in raw.get("head_to_head", [])
+    }
+    return StateSnapshot(
+        as_of=dt.date.fromisoformat(raw["as_of"]),
+        corpus_vintage=raw["corpus_vintage"],
+        players=players,
+        tour_serve_baseline=raw["tour_serve_baseline"],
+        head_to_head=head_to_head,
+    )
+
+
+
+
+
+def build_state(as_of: dt.date | None = None) -> StateSnapshot:
+    """Walk the corpus and archive once and freeze what pricing needs.
+
+    Every engine is advanced exactly as :mod:`tennis_edge.residual_features` advances it, and
+    the walk observes each day's results only after that day is done — so the snapshot
+    describes the state *entering* ``as_of`` rather than after it. That is the same boundary
+    the model was fitted against, and getting it wrong by one day is the difference between a
+    forecast and a memory.
+    """
+    from tennis_edge.corpus import default_vintage_root, group_by_day, load_corpus
+    from tennis_edge.pyramid import PyramidRatings
+    from tennis_edge.ratings import RatingEngine
+    from tennis_edge.refresh import latest_vintage
+    from tennis_edge.sackmann import load_matches
+    from tennis_edge.serve_stats import ServeEstimator, td_player_key
+
+    vintage = latest_vintage(default_vintage_root())
+    if vintage is None:
+        raise RuntimeError("no corpus vintage on disk — run the refresh first")
+    cutoff = as_of or dt.date.today()
+
+    matches, _stats = load_corpus(vintage.root)
+    engine = RatingEngine()
+    pyramid = PyramidRatings()
+    estimator = ServeEstimator()
+    estimator.queue(load_matches(families=("main", "qual_chall"),
+                                 since=dt.date(2003, 1, 1), require_serve_stats=True))
+    pyramid.queue(load_matches(families=("main", "qual_chall", "futures"),
+                               since=dt.date(2003, 1, 1)))
+
+    seen: set[tuple[str, str]] = set()
+    for day, batch in group_by_day(matches):
+        if day >= cutoff:
+            break
+        estimator.advance_to(day)
+        pyramid.advance_to(day)
+        engine.observe(batch)
+        for match in batch:
+            seen.add((match.tour, match.player_a))
+            seen.add((match.tour, match.player_b))
+    estimator.advance_to(cutoff)
+    pyramid.advance_to(cutoff)
+
+    baselines = {tour: estimator.tour_serve_average(tour) for tour in ("ATP", "WTA")}
+    players: dict[tuple[str, str], PlayerState] = {}
+    for tour, name in sorted(seen):
+        key = td_player_key(name)
+        if key is None:
+            continue
+        serve, returned, points, serve_matches = estimator.shrunk_for(tour, key, cutoff)
+        rest = engine.days_since_last(tour, name, cutoff)
+        pyramid_rest = pyramid.days_since_last(tour, name, cutoff)
+        players[(tour, name)] = PlayerState(
+            elo=engine.elo(tour, name),
+            weighted_elo=engine.weighted_elo(tour, name),
+            surface_elo={s: engine.surface_elo(tour, name, s)
+                         for s in ("Hard", "Clay", "Grass")},
+            matches=engine.matches_played(tour, name),
+            last_played=None if rest is None
+            else (cutoff - dt.timedelta(days=rest)).isoformat(),
+            serve_rate=serve, return_rate=returned, serve_points=points,
+            serve_matches=serve_matches,
+            pyramid_elo=pyramid.elo(tour, name),
+            pyramid_surface_elo={s: pyramid.surface_elo(tour, name, s)
+                                 for s in ("Hard", "Clay", "Grass")},
+            pyramid_matches=pyramid.matches_played(tour, name),
+            pyramid_tour_share=pyramid.tour_level_share(tour, name) or 0.0,
+            pyramid_last_played=None if pyramid_rest is None
+            else (cutoff - dt.timedelta(days=pyramid_rest)).isoformat(),
+            pyramid_recent_14d=pyramid.matches_in_last(tour, name, cutoff, WORKLOAD_DAYS),
+        )
+    return StateSnapshot(as_of=cutoff, corpus_vintage=vintage.vintage_id,
+                         players=players, tour_serve_baseline=baselines)
