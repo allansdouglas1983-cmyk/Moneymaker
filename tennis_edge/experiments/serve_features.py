@@ -33,6 +33,7 @@ import collections
 import datetime as dt
 import math
 from dataclasses import dataclass
+from typing import Sequence, cast
 
 from tennis_edge.backtest import market_probability
 from tennis_edge.corpus import Match, default_vintage_root, group_by_day, load_corpus
@@ -116,6 +117,15 @@ def build(matches: tuple[Match, ...]) -> list[FeatureRow]:
     return rows
 
 
+def _mean_gain(rows: Sequence[object]) -> float:
+    """Mean per-match log-score gain over a bootstrap resample of whole days."""
+    return math.fsum(cast(tuple[dt.date, float], r)[1] for r in rows) / len(rows)
+
+
+def _day_of(row: object) -> dt.date:
+    return cast(tuple[dt.date, float], row)[0]
+
+
 def _fit_single(xs: list[float], offsets: list[float], ys: list[int]) -> tuple[float, float]:
     """Logistic fit of y on one feature with the market logit as a fixed offset.
 
@@ -184,12 +194,8 @@ def main() -> None:
         mean_coef = math.fsum(coefs) / len(coefs)
         mean_se = math.fsum(ses) / len(ses)
         gain = math.fsum(g for _d, g in gains) / len(gains)
-        lo, hi = clustered_bootstrap(
-            gains,
-            statistic=lambda rows: math.fsum(g for _d, g in rows) / len(rows),  # type: ignore[misc]
-            cluster_of=lambda row: row[0],  # type: ignore[index]
-            draws=BOOTSTRAP_DRAWS,
-        )
+        lo, hi = clustered_bootstrap(gains, statistic=_mean_gain, cluster_of=_day_of,
+                                     draws=BOOTSTRAP_DRAWS)
         excludes_zero = lo > 0.0 or hi < 0.0
         results.append((name, len(gains), mean_coef, mean_coef / mean_se, gain,
                         lo, hi, excludes_zero))
