@@ -1,0 +1,151 @@
+# APPEND-ONLY GOVERNANCE AMENDMENT — discretisation-stability contract for the public root set.
+# STAGE3-0006C-D-A3. Does NOT modify the existing CROSS_MARKET_COHERENCE_V1 registration or the
+# A1 root-dedup amendment in place; this file amends them additively. The prior behaviour remains
+# permanent historical evidence (SOLVER_GOLDEN_V1_SEQUENCE_DEFINED, SOLVER_GOLDEN_V2_CANONICAL_
+# SET_DEFINED, SOLVER_DEGENERACY_* diagnostic artifacts).
+amendment_id: CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1
+amendment_authority: founder
+directive: STAGE3-0006C-D-A3
+responds_to: AMENDMENT_DISCRETISATION_STABILITY_REQUIRED  # STAGE3-0006C-D-A2 verdict
+amendment_reason: >
+  On extended sub-tolerance residual valleys the public root count and root locations are
+  properties of the scan-lattice seed layout, not of the mathematical target: the four A2
+  predeclared lattices produced counts G0=3, G1=4, G2=3, G3=4 on the frozen disputed fixture
+  (status MULTIPLE_ROOTS throughout, representatives unpairable one-to-one under the existing
+  strict 1e-3 relation), while the independent reference solver converged from all three of its
+  resolutions to the single singular deepest point (0.5, 0.5) -> NON_IDENTIFIABLE. A
+  discretisation-defined multiplicity must not be published as a set-defined property.
+
+evidence_inputs:  # STAGE3-0006C-D-A2, commit-pinned, duplicate-run byte-identical
+  fixture_freeze: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_FIXTURE_FREEZE_V1.json,
+                   sha256: bd5b43d6ef8abea727469bb091fd2b96e92ce7be44265e00e967792ac422fa37}
+  grid_g0: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_GRID_G0_V1.json,
+            sha256: d475777faa77bbbd1dd5d0cfa90ccab22a44ea0639a5092922b734d06b891392}
+  grid_g1: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_GRID_G1_V1.json,
+            sha256: 0651629e54f46222030ab64031e356083dd49a4d7e2a4681c69a619c15d1a62a}
+  grid_g2: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_GRID_G2_V1.json,
+            sha256: 412473b1a48276af8a94b5b887305e83ae28fa1d908f773d97790674eaafcd8b}
+  grid_g3: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_GRID_G3_V1.json,
+            sha256: b148eaee01526d6cb03b4ecd8f0382519b9df6cb003038a62206ad6db81d63f8}
+  decision: {file: docs/evidence/stage3-cross-market-audit/SOLVER_DEGENERACY_DECISION_V1.json,
+             sha256: 1c213eecb7c67a0937519fbc218f963206735ffe4d49b2fdc855a150d8c5b043}
+  proposal: docs/architecture/cross-market-coherence-degeneracy-amendment-proposal-v1.md
+
+previous_policy: SINGLE_LATTICE_G0_DEFINES_PUBLIC_ROOT_SET
+new_policy: G0_PUBLISHABLE_ONLY_UNDER_REGISTERED_VARIANT_AGREEMENT
+
+registered_scan_variants:
+  base:
+    name: G0_BASELINE
+    lattice: FROZEN_PRODUCTION
+    definition: >
+      The exact production scan axis: build_scan_axis over the governed domain with
+      _COARSE_N = 13 equally spaced nodes, axis[i] = lo + (hi-lo)*i/(_COARSE_N-1).
+      Unchanged in every respect; its numerics, candidates and V2 canonical dedup remain
+      byte-identical to the pre-amendment solver.
+  validation:  # founder-selected set; exactly the A2 frozen definitions, no re-derivation
+    - name: G1_REGISTERED_VALIDATION
+      lattice: NESTED_DOUBLE_DENSITY
+      definition: >
+        Every G0 coordinate retained, plus the exact float midpoint (a+b)/2 of every
+        adjacent G0 pair, in ascending order (25 nodes for _COARSE_N = 13). Strict
+        superset of G0; verified distinct from G0 and G2 against the A2 artifacts.
+      a2_artifact_sha256: 0651629e54f46222030ab64031e356083dd49a4d7e2a4681c69a619c15d1a62a
+    - name: G2_REGISTERED_VALIDATION
+      lattice: HALF_CELL_PHASE_SHIFT
+      definition: >
+        Both boundary coordinates retained exactly; every interior G0 coordinate shifted by
+        half its local right-hand cell width, g0[i] + (g0[i+1]-g0[i])/2, exact duplicates
+        dropped deterministically (13 nodes for _COARSE_N = 13; interior disjoint from the
+        G0 interior). Verified distinct from G0 and G1 against the A2 artifacts.
+      a2_artifact_sha256: 412473b1a48276af8a94b5b887305e83ae28fa1d908f773d97790674eaafcd8b
+  excluded_from_runtime:
+    - name: G3
+      lattice: NESTED_DOUBLE_DENSITY_PHASE_SHIFT
+      status: DIAGNOSTIC_ONLY_NEVER_RUNTIME  # remains available to offline diagnostics only
+  reproducibility_gate: >
+    Before implementation the A2 artifact axes were regenerated from the frozen generator
+    rules and compared: artifact G0/G1/G2 axes reproduce exactly; G1 is a strict superset of
+    G0; the G2 interior is disjoint from the G0 interior; G0 != G1 != G2. Had any variant
+    failed exact reproduction or degenerated into a duplicate, the required verdict was
+    STOP_VARIANT_DEFINITION_GAP. Gate PASSED.
+
+execution_rule: >
+  For EACH first-server assignment independently, the identical production algorithm
+  (residual, ranking, refinement, Newton seams, root acceptance, boundary flag, Jacobian,
+  V2 canonical dedup, per-solve status) runs on G0, then G1, then G2. The three per-variant
+  results for that assignment are compared under the stability contract BEFORE the
+  first-server union is formed. Variant results are NEVER averaged, NEVER majority-voted,
+  and NEVER selected by lowest residual; G1/G2 are validation-only and contribute no
+  coordinate, no root and no status to any published output.
+
+stability_contract:  # agreement holds for an assignment ONLY when ALL of the following hold
+  status_agreement: all three variants produce the identical per-solve SolverStatus string
+  root_count_agreement: all three variants produce the identical canonical root-cluster count
+  location_agreement: >
+    Between every pair of variants there exists EXACTLY ONE complete bipartite matching of
+    root representatives under the EXISTING strict Chebyshev < _DEDUP_TOL (1e-3) relation —
+    set-defined: computed over the full bipartite adjacency, not by a greedy matcher.
+    Zero complete matchings (some root unpairable) is disagreement; two or more distinct
+    complete matchings (ambiguous correspondence) is ALSO disagreement. Equivalence uses
+    coordinates only; residual, jacobian_det, provenance and discovery order never enter it.
+  boundary_agreement: matched representatives carry identical on_boundary flags
+  mirror_agreement: >
+    all three variants produce the identical MirrorRelation classification under the
+    existing classify_mirror_relation decision table
+  degenerate_agreement_is_agreement: >
+    all three variants refusing with NON_IDENTIFIABLE is agreement (stable refusal);
+    all three producing NO_ROOT is agreement. A MIXTURE of NO_ROOT with any rooted or
+    refused status is disagreement.
+  operational_failures_propagate: >
+    An exception or operational failure while executing any variant PROPAGATES unchanged
+    (the existing refusal/exception paths). It is never converted into, or hidden behind,
+    the DISCRETISATION_UNSTABLE_ROOT_SET internal reason.
+
+final_policy:
+  stable: >
+    The G0 result is returned BYTE-IDENTICALLY (same roots, same floats, same statuses,
+    same ordering as the pre-amendment solver), together with immutable per-variant
+    agreement evidence (VariantSolveSnapshots) retained on the result.
+  unstable: >
+    The assignment's solve REFUSES with the EXISTING public NON_IDENTIFIABLE status and the
+    structured INTERNAL reason DISCRETISATION_UNSTABLE_ROOT_SET (mirroring the A1
+    AMBIGUOUS_ROOT_TOLERANCE_CHAIN pattern; no new public SolverStatus; no public roots from
+    any variant). All per-variant snapshots are retained as evidence. There is NO fallback
+    to the G0-only result and no runtime switch restoring the previous policy.
+  first_server_isolation: >
+    Stability is decided per assignment BEFORE the union: one unstable assignment refuses
+    per the existing NON_IDENTIFIABLE dominance rules even when the other is stable.
+  internal_reason: DISCRETISATION_UNSTABLE_ROOT_SET  # founder-selected; internal only
+
+retained_unchanged:
+  - all governed tolerances (_ROOT_TOL, _DEDUP_TOL strict, _JAC_TOL, _BOUNDARY_TOL, _JAC_EPS)
+  - the A1 canonical dedup (root_dedup.py) verbatim, reused for every variant
+  - the public SolverStatus vocabulary (no new public status)
+  - classify_per_solve / classify_overall decision tables
+  - rank_seed_nodes (Milestone-B stable-sort logic) and its approved_by null survivor
+  - the non-finite refusal path (CoherenceMathError; structurally unreachable audit)
+  - first-server union semantics and FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD
+
+serialization_policy: >
+  If attaching the agreement evidence changes any serialized result shape, that change is
+  versioned as serialization V3 alongside the V3 golden; the V1/V2 serialized forms are
+  never rewritten. The public status strings are unchanged.
+
+golden_vintages:
+  retained: [SOLVER_GOLDEN_V1_SEQUENCE_DEFINED, SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED]
+  new: SOLVER_GOLDEN_V3_DISCRETISATION_STABLE  # minted AFTER implementation
+  differential: SOLVER_DISCRETISATION_STABILITY_AMENDMENT_DIFFERENTIAL.json
+  differential_rule: >
+    Every V2->V3 change classified; expected class EXPECTED_STATUS_CHANGE_DISCRETISATION_
+    REFUSAL only (extended-valley/degenerate fixtures); UNEXPECTED_CHANGE must be 0; every
+    stable fixture byte-identical.
+
+still_prohibited:
+  - june_coherence_runs
+  - outcome_reads
+  - parameter_domains_or_thresholds_from_real_data
+  - xmarket_exposure
+  - v0_integration
+  - p_market_info_changes
+  - tip_ev_roi_pnl_clv_stake_order_or_spend

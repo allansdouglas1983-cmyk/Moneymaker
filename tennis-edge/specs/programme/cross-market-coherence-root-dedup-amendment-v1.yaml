@@ -1,0 +1,102 @@
+# APPEND-ONLY GOVERNANCE AMENDMENT — root-deduplication contract correction.
+# STAGE3-0006C-D-A1. Does NOT modify the existing CROSS_MARKET_COHERENCE_V1 registration in
+# place; this file amends it additively. The prior behaviour remains permanent historical
+# evidence (SOLVER_MILESTONE_D_PRECHANGE.json, SOLVER_MILESTONE_D_STOP_RECORD.md,
+# SOLVER_GOLDEN_V1_SEQUENCE_DEFINED).
+amendment_id: CROSS_MARKET_COHERENCE_ROOT_DEDUP_AMENDMENT_V1
+amendment_authority: founder
+directive: STAGE3-0006C-D-A1
+responds_to: STOP_ROOT_DEDUP_CONTRACT_GAP
+amendment_reason: >
+  Root count and public SolverStatus depended on candidate enumeration order: the greedy
+  first-seen deduplication over the non-transitive strict-Chebyshev tolerance relation was
+  sequence-defined, not set-defined (demonstrated: chain A=0.5, B=0.5009, C=0.5018 at tol=1e-3
+  keeps 2 roots under order [A,B,C] and 1 root under [B,A,C]).
+previous_policy: GREEDY_FIRST_SEEN_SEQUENCE_DEFINED
+new_policy: CANONICAL_COMPONENTS_WITH_DIAMETER_REFUSAL
+
+retained_unchanged:
+  metric: chebyshev  # distance = max(|p_a1-p_a2|, |p_b1-p_b2|), coordinates ONLY
+  dedup_tolerance: 1.0e-3          # _DEDUP_TOL, unchanged
+  edge_boundary: strict_less_than  # distance < tol has an edge; distance == tol has NO edge
+  edge_inputs_forbidden: [residual_distance, first_server_assignment, discovery_order,
+                          scan_order, seed_order]
+
+component_construction_rule: >
+  Undirected graph: one node per validated candidate, one edge per pair with strict-Chebyshev
+  distance < 1e-3. Connected components computed over content-derived canonical candidate
+  fingerprints (sha256 over the float.hex() of p_a, p_b, residual, jacobian_det plus the
+  a_serves_first and on_boundary flags), so membership and every downstream result are invariant
+  to input, scan, seed, first-server-evaluation and worker order. Candidates with identical
+  fingerprints are identical values and are interchangeable.
+
+ambiguity_rule: >
+  component_diameter = maximum pairwise Chebyshev distance over all member pairs (0.0 for a
+  singleton). A component is a valid duplicate-root cluster ONLY when diameter < 1e-3 (strict).
+  A component with diameter >= 1e-3 is an overlapping non-transitive tolerance chain: it is
+  never merged, never split by input order or by any canonical sort, and no preferred partition
+  is chosen. Its presence REFUSES the solve: the public status is the EXISTING
+  NON_IDENTIFIABLE with the structured INTERNAL reason AMBIGUOUS_ROOT_TOLERANCE_CHAIN.
+  Dominance: ANY ambiguous component in a per-assignment solve makes that ServerSolve
+  NON_IDENTIFIABLE; ANY ambiguous component in the identify union makes the overall status
+  NON_IDENTIFIABLE (dominating MULTIPLE_ROOTS and the union path). On refusal the public roots
+  tuple carries the canonically-ordered representatives of the VALID clusters only; ambiguous
+  components contribute no public root.
+
+representative_selection_rule: >
+  For a valid cluster, exactly one representative: the member minimising the ordered key
+  (1) governed residual norm (Root.residual, ascending); (2) p_a ascending; (3) p_b ascending;
+  (4) first-server order A_FIRST_THEN_B (a_serves_first=True ranks before False);
+  (5) candidate fingerprint (stable provenance ID, ascending). Discovery order is never a
+  tie-break. Coordinates are never recomputed, averaged, centroided or re-refined; the
+  representative is one of the actual validated candidates.
+
+canonical_output_ordering: >
+  Valid-cluster representatives are ordered by (1) p_a ascending; (2) p_b ascending;
+  (3) residual norm ascending; (4) cluster canonical provenance digest (sha256 over the sorted
+  member fingerprints) ascending. Invariant to candidate discovery order. The Milestone-B
+  rank_seed_nodes tertiary-sort behaviour is NOT the root-set ordering policy, and its
+  stable-sort proposed-equivalent survivor remains separately approved_by: null.
+
+provenance_retention_rule: >
+  Every RootCluster immutably retains ALL member Root candidates in canonical fingerprint
+  order — each carrying its first-server assignment, boundary status, residual norm,
+  jacobian_det and fingerprint. When candidates from both first-server assignments collapse
+  into one valid cluster, BOTH assignments are preserved in the cluster's members; the
+  representative's assignment is never presented as the only one. Provenance never affects
+  coordinate equivalence. Scan-seed identity and iteration count are NOT observable in current
+  candidates (Root carries neither); their provenance is deferred to the Milestone-D RootSet
+  formalisation rather than invented here. Cluster provenance is exposed at the deduplication
+  layer (RootCluster/RootDeduplicationResult); the public IdentificationResult shape is
+  unchanged until Milestone D formalises the RootSet contract.
+
+public_status_mapping: >
+  After canonical clustering: any ambiguous component -> NON_IDENTIFIABLE (reason
+  AMBIGUOUS_ROOT_TOLERANCE_CHAIN); zero valid clusters -> NO_ROOT (existing mapping); one valid
+  cluster -> NON_IDENTIFIABLE if |jacobian_det| < _JAC_TOL (existing rule, on the
+  representative), else BOUNDARY_SOLUTION if the representative is on_boundary, else
+  IDENTIFIED; more than one valid cluster -> MULTIPLE_ROOTS (per-assignment) /
+  FIRST_SERVER_SENSITIVE_PENDING_THRESHOLD (identify union, existing behaviour). Non-finite
+  candidates keep the existing refusal path (CoherenceMathError; structurally unreachable per
+  SOLVER_MILESTONE_D_NONFINITE_AUDIT.json). Mirror pairs are never collapsed or preferred;
+  only coordinate closeness under the retained tolerance governs deduplication.
+
+serialization_contract: >
+  UNCHANGED public serialization: Root, ServerSolve and IdentificationResult keep their exact
+  fields; NON_IDENTIFIABLE remains the same public string; the structured reason is INTERNAL
+  to the deduplication result and does not enter the public result shape — therefore no public
+  serialization versioning is required by this amendment. No new public SolverStatus is added.
+
+golden_vintages:
+  old: SOLVER_GOLDEN_V1_SEQUENCE_DEFINED  # retained unmodified as historical evidence
+  new: SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED  # minted AFTER implementation from the amended solver
+  differential: SOLVER_ROOT_DEDUP_AMENDMENT_DIFFERENTIAL.json  # UNEXPECTED_CHANGE must be 0
+
+still_prohibited:
+  - june_coherence_runs
+  - outcome_reads
+  - parameter_domains_or_thresholds_from_real_data
+  - xmarket_exposure
+  - v0_integration
+  - p_market_info_changes
+  - tip_ev_roi_pnl_clv_stake_order_or_spend

@@ -2,9 +2,15 @@
 
 A market-anchored tennis probability model, and the private website that serves it.
 
-**Live:** https://sujrylzzxcqxxfygptns.supabase.co/functions/v1/tips
+**Page:** https://allansdouglas1983-cmyk.github.io/Moneymaker/ (GitHub Pages, `/docs`)
+**API:** https://sujrylzzxcqxxfygptns.supabase.co/functions/v1/tips
 
 Sign in with the owner email; a code is emailed. Nothing else can sign in.
+
+The two are separate on purpose. Supabase's gateway forces `text/plain` and a
+`default-src 'none'; sandbox` CSP onto every `/functions/v1/*` response so that nobody can
+host web pages on a supabase.co domain — an Edge Function is an API surface, and the view
+belongs somewhere that serves HTML.
 
 ## What it does
 
@@ -64,10 +70,10 @@ log loss unchanged); the Challenger/ITF tier costs 3.67% ATP / 4.66% WTA round-t
 ```
 tennis-edge/                     Python: data, ratings, model, measurement harness
   sport_tennis/coherence/        the cross-market solver (built, not yet wired in)
-  tools/push_state.py            pushes model + rating state to Postgres
   tools/emit_golden_vectors.py   emits the 500 cases the TypeScript is held to
-supabase/functions/tips/         the website (Deno), and the ported scoring maths
-.github/workflows/tennis-edge.yml  weekly rebuild + push, on GitHub's runners
+supabase/functions/tips/         the JSON API (Deno), and the ported scoring maths
+docs/index.html                  the page, one self-contained file
+.github/workflows/tennis-edge.yml  weekly rebuild + commit, on GitHub's runners
 ```
 
 The scoring maths exists twice — Python, where it was measured, and TypeScript, where it
@@ -85,15 +91,19 @@ python -m mypy --strict tennis_edge
 deno test --allow-read supabase/functions/tips/      # from the repo root
 ```
 
-## Two secrets a human has to add
+## No secrets to add
 
-GitHub → Settings → Secrets and variables → Actions:
+There is no Supabase credential anywhere in this system, because none is needed.
 
-- `SUPABASE_URL` = `https://sujrylzzxcqxxfygptns.supabase.co`
-- `SUPABASE_SERVICE_ROLE_KEY` = Supabase dashboard → Project Settings → API → `service_role`
+The GitHub Action rebuilds the walk-forward state and commits it to this repository using
+the token GitHub already gives it. The database then pulls that file itself —
+`tennis.pull_state()` on a `pg_cron` schedule, Mondays 07:00 UTC, an hour after the rebuild.
+Every run is recorded in `tennis.state_pull_log`, so a failed pull is visible rather than
+leaving the site serving last week's ratings as if they were current.
 
-Then run the `tennis-edge` workflow. It loads all 3,075 players and keeps them current every
-Monday. The key never appears in source, in a page, or in a log.
+The first design pushed state into Postgres with the service-role key, which made the whole
+system wait on one secret reaching one settings page. Inverting it removed the wait and the
+key at the same time: there is no credential to leak because there isn't one.
 
 ## Where this came from
 

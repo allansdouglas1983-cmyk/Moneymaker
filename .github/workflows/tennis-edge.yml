@@ -1,29 +1,21 @@
-# Tennis Edge: keep the deployed site's data current without anything of mine running.
+# Tennis Edge: keep the live site's data current with no credential anywhere.
 #
-# Two jobs, deliberately separate.
+# The first design had this job push state into Postgres with the Supabase service-role key,
+# which meant the whole system waited on one secret reaching one settings page. That is now
+# inverted. This workflow rebuilds the walk-forward rating state and commits it to the
+# repository, using the token GitHub already gives it. The database pulls the file itself on
+# a pg_cron schedule (tennis.pull_state, Mondays 07:00 UTC, an hour after this).
 #
-# `sync` pushes whatever model and rating state are committed in the repository. It is fast,
-# needs no downloads, and is what loads all 3,075 players the first time. It runs on any push
-# that touches the artefacts and can be fired by hand.
-#
-# `refresh` rebuilds the walk-forward rating state from the providers before pushing. It is
-# the slow one and runs weekly, because the ratings only move when results land.
-#
-# Both need two repository secrets, and only a human can add them:
-#   SUPABASE_URL                 https://sujrylzzxcqxxfygptns.supabase.co
-#   SUPABASE_SERVICE_ROLE_KEY    Supabase dashboard -> Project Settings -> API -> service_role
-#
-# The service-role key never appears in the site's source, in a page, or in a log; it lives
-# in GitHub Secrets and is handed to one script that talks to PostgREST and exits.
+# So there is no Supabase secret to add, and none to leak, because none exists.
 name: tennis-edge
 
 on:
   push:
     branches: [claude/project-files-followup-dif8al]
     paths:
-      - 'artifacts/live-state.json'
-      - 'artifacts/residual-model.json'
-      - 'tennis-edge/tools/push_state.py'
+      - 'tennis-edge/**'
+      - 'supabase/functions/**'
+      - 'artifacts/**'
       - '.github/workflows/tennis-edge.yml'
   schedule:
     # Monday 06:00 UTC. Tennis-Data publishes a week's results and closing prices together,
@@ -35,10 +27,14 @@ concurrency:
   group: tennis-edge
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   verify:
-    # The port guard runs on every trigger. If the TypeScript serving the site has drifted
-    # from the Python that was measured, nothing downstream should push anything anywhere.
+    # The port guard. If the TypeScript serving the site has drifted from the Python that was
+    # measured, the site is showing numbers no evidence supports — and the two copies look
+    # identical from outside. Nothing downstream runs until these 500 cases agree to 1e-12.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,48 +44,21 @@ jobs:
       - name: 500 golden vectors, Python vs TypeScript, 1e-12
         run: deno test --allow-read supabase/functions/tips/
 
-  sync:
-    needs: verify
+  tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: What can this job actually see
-        # Two runs arrived with both variables empty, which means a name did not resolve
-        # rather than that a value was wrong. GitHub gives no error for a missing secret,
-        # it substitutes nothing — so the only way to tell them apart is to ask. Prints
-        # presence and length, never a value; a length is enough to spot a paste that
-        # picked up the anon key or a trailing newline.
-        env:
-          A: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          B: ${{ secrets.SUPABASE_KEY }}
-          C: ${{ secrets.SUPABASE_SECRET_KEY }}
-          D: ${{ secrets.SERVICE_ROLE_KEY }}
-          E: ${{ vars.SUPABASE_SERVICE_ROLE_KEY }}
-          U1: ${{ secrets.SUPABASE_URL }}
-          U2: ${{ vars.SUPABASE_URL }}
-        run: |
-          for name in A B C D E U1 U2; do
-            value="${!name}"
-            if [ -n "$value" ]; then echo "$name: present (${#value} chars)"
-            else echo "$name: EMPTY"; fi
-          done
-
-      - name: Push model and rating state
-        env:
-          # The project URL is not a secret — it is in the README and in every page the
-          # site serves — so it defaults rather than being a second thing that can go
-          # missing. Only the service-role key has to come from the secret store.
-          SUPABASE_URL: https://sujrylzzxcqxxfygptns.supabase.co
-          SUPABASE_SERVICE_ROLE_KEY: >-
-            ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY
-             || secrets.SUPABASE_SECRET_KEY || secrets.SERVICE_ROLE_KEY }}
-        run: python tennis-edge/tools/push_state.py artifacts
+      - run: pip install --quiet pytest openpyxl xlrd
+      - name: The whole suite, including coherence
+        working-directory: tennis-edge
+        run: python -m pytest tests -q
 
   refresh:
-    needs: verify
+    needs: [verify, tests]
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -98,8 +67,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install
-        run: pip install --quiet openpyxl xlrd
+      - run: pip install --quiet pytest openpyxl xlrd
 
       - name: Rebuild walk-forward state
         env:
@@ -118,7 +86,7 @@ jobs:
           print('players', len(snapshot.players), 'as of', snapshot.as_of)
           "
 
-      - name: Regenerate golden vectors and re-check the port
+      - name: Regenerate golden vectors
         working-directory: tennis-edge
         run: python tools/emit_golden_vectors.py
 
@@ -128,15 +96,7 @@ jobs:
       - name: The port must still agree after a state rebuild
         run: deno test --allow-read supabase/functions/tips/
 
-      - name: Push refreshed state
-        env:
-          SUPABASE_URL: https://sujrylzzxcqxxfygptns.supabase.co
-          SUPABASE_SERVICE_ROLE_KEY: >-
-            ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY
-             || secrets.SUPABASE_SECRET_KEY || secrets.SERVICE_ROLE_KEY }}
-        run: python tennis-edge/tools/push_state.py artifacts
-
-      - name: Commit the refreshed artefacts
+      - name: Commit the refreshed state for the database to pull
         run: |
           set -euo pipefail
           git config user.name  "tennis-edge refresh"
@@ -147,4 +107,9 @@ jobs:
           git commit -m "refresh: walk-forward state as of $(date -u +%F)"
           git push
 
-# Re-run trigger: 2026-07-26T14:50:42Z
+      - name: Confirm the site is answering
+        run: |
+          set -euo pipefail
+          curl -sS --fail \
+            https://sujrylzzxcqxxfygptns.supabase.co/functions/v1/tips/health | tee /dev/stderr \
+            | grep -q '"ok":true'
