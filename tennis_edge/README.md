@@ -33,6 +33,34 @@ regional block), so the archives have to be fetched from a UK connection and dro
 uv run python -m tennis_edge.exchange_link --betfair <path>
 ```
 
+### How much is the model worth? α ≈ 0, seventeen years running — 2026-07-25
+
+The decisive measurement (`docs/research/findings/TE-0004-what-the-model-is-worth.md`).
+Rather than asking "is the model better than the market", fit
+`score = α·logit(model) + β·logit(market)` by MLE, refitted each year on strictly earlier
+years, scored on **72,669 out-of-sample matches**.
+
+| | value | t |
+|---|---:|---:|
+| α (model weight) | ≈ 0, often negative | **−0.4 to +0.3, every year** |
+| β (market weight) | ≈ 0.95 | **55 to 69** |
+
+The control that settles it — β alone, α forced to zero, identical rows:
+
+| | pooled log loss |
+|---|---:|
+| market | 0.58234 |
+| shrink-only (α = 0) | 0.58219 |
+| full combination | 0.58217 |
+
+**Gain from shrinking the market alone +0.00015 nats; gain the model adds on top
++0.00001.** The model contributes 6% of a 0.03% improvement. The one real finding is that
+the de-vigged market is very slightly overconfident and shrinking its logit ~5% is a
+genuine, overwhelming (t≈60), economically trivial improvement.
+
+That is what `predictor.py` implements: **the price, recalibrated**, with the model view
+reported as a labelled diagnostic and `model_weight` on every prediction.
+
 ### Exchange vs bookmaker prices — tested 2026-07-25
 
 Every measurement above uses **bookmaker closing prices**. The one venue that matters for
