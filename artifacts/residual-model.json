@@ -1,0 +1,33 @@
+{
+  "coefficients": {
+    "elo_residual": -0.027842747387063844,
+    "point_model_residual": 0.0793635497743221,
+    "pyramid_elo_gap": 0.11799858823815068,
+    "pyramid_rest_gap": -0.07667532579925819,
+    "pyramid_surface_gap": 0.0692733947810242,
+    "pyramid_tier_gap": 0.04435082299179846,
+    "pyramid_workload_gap": 0.029640855712198613,
+    "rank_gap": -0.060335811543671986,
+    "surface_elo_gap": -0.02998267637868188,
+    "weighted_elo_gap": -0.0017118431451255117
+  },
+  "digest": "sha256:78b95237a216b4763d26ef9717474af4ca270844dd033d2363d5c1f2a3f6c258",
+  "feature_names": [
+    "elo_residual",
+    "point_model_residual",
+    "pyramid_elo_gap",
+    "pyramid_rest_gap",
+    "pyramid_surface_gap",
+    "pyramid_tier_gap",
+    "pyramid_workload_gap",
+    "rank_gap",
+    "surface_elo_gap",
+    "weighted_elo_gap"
+  ],
+  "feature_set_version": "residual-v1",
+  "kind": "tennis-edge-residual-model-v1",
+  "l2": 25.0,
+  "trained_from": "2002-06-10",
+  "trained_rows": 96162,
+  "trained_through": "2026-07-12"
+}
