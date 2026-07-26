@@ -20,6 +20,14 @@ feature hide behind a correlated useless one, and at this stage the question is 
 not attribution. The multiplicity cost of testing many single features is stated with the
 results rather than hidden — with this many tests, one or two will clear t=2 by chance and
 the Bonferroni threshold is given alongside.
+
+**Two significance numbers, and only the second one counts.** The coefficient's ``t`` comes
+from the training fit, so it says how precisely the training set pinned the coefficient down
+— not whether the coefficient helped on data it never saw. The decisive number is the
+out-of-sample log-score gain with a **day-clustered** interval, because matches on the same
+day share tournament conditions and treating them as independent is how noise acquires a
+significant-looking statistic. A feature is only interesting here if that interval excludes
+zero.
 """
 import collections
 import datetime as dt
@@ -29,6 +37,7 @@ from dataclasses import dataclass
 from tennis_edge.backtest import market_probability
 from tennis_edge.corpus import Match, default_vintage_root, group_by_day, load_corpus
 from tennis_edge.devig import DevigMethod
+from tennis_edge.metrics import clustered_bootstrap
 from tennis_edge.ratings import RatingEngine, elo_expected
 from tennis_edge.refresh import latest_vintage
 from tennis_edge.sackmann import load_matches
@@ -38,6 +47,7 @@ BOOK = "b365"
 DEVIG = DevigMethod.POWER
 ARCHIVE_FROM = dt.date(2003, 1, 1)
 FIRST_SCORED_YEAR = 2010
+BOOTSTRAP_DRAWS = 2000
 
 
 @dataclass(frozen=True)
@@ -143,13 +153,14 @@ def main() -> None:
     years = [y for y in sorted(by_year) if y >= FIRST_SCORED_YEAR]
 
     print("Out-of-sample residual test: fit each feature on prior years, score the next.")
-    print("Positive t means the feature explained something the closing price missed.\n")
-    print(f"{'feature':<24}{'n_oos':>9}{'coef':>10}{'t':>8}{'oos gain (nats)':>18}")
+    print("A negative coefficient means the price OVER-weights the feature — the residual")
+    print("is a fade, not a follow. 'gain 95% CI' is day-clustered and is what counts.\n")
+    print(f"{'feature':<24}{'n_oos':>9}{'coef':>9}{'t(fit)':>8}"
+          f"{'oos gain':>12}{'gain 95% CI (day-clustered)':>32}")
 
     results = []
     for name in names:
-        oos_gain = 0.0
-        oos_n = 0
+        gains: list[tuple[dt.date, float]] = []
         coefs: list[float] = []
         ses: list[float] = []
         for year in years:
@@ -166,27 +177,40 @@ def main() -> None:
                 z = r.market_logit + coef * r.features[name]
                 p = 1.0 / (1.0 + math.exp(-max(min(z, 30.0), -30.0)))
                 base = 1.0 / (1.0 + math.exp(-r.market_logit))
-                oos_gain += (math.log(p if r.won else 1 - p)
-                             - math.log(base if r.won else 1 - base))
-                oos_n += 1
-        if not coefs or oos_n == 0:
+                gains.append((r.date, math.log(p if r.won else 1 - p)
+                              - math.log(base if r.won else 1 - base)))
+        if not coefs or not gains:
             continue
         mean_coef = math.fsum(coefs) / len(coefs)
         mean_se = math.fsum(ses) / len(ses)
-        gain = oos_gain / oos_n
-        results.append((name, oos_n, mean_coef, mean_coef / mean_se, gain))
-        print(f"{name:<24}{oos_n:>9,}{mean_coef:>10.4f}{mean_coef / mean_se:>8.2f}"
-              f"{gain:>+18.6f}")
+        gain = math.fsum(g for _d, g in gains) / len(gains)
+        lo, hi = clustered_bootstrap(
+            gains,
+            statistic=lambda rows: math.fsum(g for _d, g in rows) / len(rows),  # type: ignore[misc]
+            cluster_of=lambda row: row[0],  # type: ignore[index]
+            draws=BOOTSTRAP_DRAWS,
+        )
+        excludes_zero = lo > 0.0 or hi < 0.0
+        results.append((name, len(gains), mean_coef, mean_coef / mean_se, gain,
+                        lo, hi, excludes_zero))
+        print(f"{name:<24}{len(gains):>9,}{mean_coef:>9.4f}{mean_coef / mean_se:>8.2f}"
+              f"{gain:>+12.6f}   [{lo:+.6f}, {hi:+.6f}]"
+              f"{'  *' if excludes_zero else '   '}")
 
-    if results:
-        k = len(results)
-        threshold = 2.807 if k <= 8 else 3.0
-        print(f"\n{k} features tested. With that many tests one or two will clear t=2 by "
-              f"chance,\nso the Bonferroni-adjusted threshold is about |t| > {threshold:.2f}.")
-        best = max(results, key=lambda r: abs(r[3]))
-        print(f"Largest |t|: {best[0]} at {best[3]:+.2f} "
-              f"({'CLEARS' if abs(best[3]) > threshold else 'does not clear'} it), "
-              f"out-of-sample gain {best[4]:+.6f} nats.")
+    if not results:
+        return
+    survivors = [r for r in results if r[7]]
+    k = len(results)
+    print(f"\n{k} features tested. Marked * where the day-clustered 95% interval on the "
+          f"out-of-sample\ngain excludes zero — {len(survivors)} of {k}. With {k} tests, "
+          f"expect about {0.05 * k:.1f} by chance,\nso a count materially above that is the "
+          f"signal; a count at or below it is not.")
+    if survivors:
+        print("\nSurviving features, by out-of-sample gain:")
+        for name, n, coef, t, gain, lo, hi, _ in sorted(survivors, key=lambda r: -r[4]):
+            direction = "market UNDER-weights" if coef > 0 else "market OVER-weights"
+            print(f"  {name:<24}{gain:>+11.6f} nats   coef {coef:+.4f} "
+                  f"(t {t:+.2f}) — {direction} it")
 
 
 if __name__ == "__main__":
