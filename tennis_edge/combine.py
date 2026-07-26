@@ -32,7 +32,11 @@ __all__ = [
     "logit",
     "fit_combination",
     "apply_combination",
+    "combination_interval",
 ]
+
+#: 1.959964 — the two-sided 95% normal quantile.
+Z95 = 1.959963984540054
 
 #: Below this a fit is noise, not an estimate.
 MIN_TRAIN_ROWS = 50
@@ -50,6 +54,20 @@ class Combination:
     alpha: float
     beta: float
     n_train: int
+    #: Standard errors from the inverse Hessian at the optimum. Zero for a *defined*
+    #: combination such as MARKET_ONLY, which is not an estimate and has no uncertainty.
+    alpha_se: float = 0.0
+    beta_se: float = 0.0
+    covariance: float = 0.0
+
+    @property
+    def alpha_t(self) -> float:
+        """Is the model's weight distinguishable from zero? The question that matters."""
+        return 0.0 if self.alpha_se == 0.0 else self.alpha / self.alpha_se
+
+    @property
+    def beta_t(self) -> float:
+        return 0.0 if self.beta_se == 0.0 else self.beta / self.beta_se
 
     @property
     def model_share(self) -> float:
@@ -126,7 +144,50 @@ def fit_combination(
             f"combination fit ran away (alpha={alpha:.3g}, beta={beta:.3g}); that is "
             "separation or a degenerate design, not a strong signal"
         )
-    return Combination(alpha=alpha, beta=beta, n_train=len(rows))
+
+    # Observed information at the optimum. The Hessian is already assembled by the last
+    # Newton step, so the standard errors cost one 2x2 inversion and nothing more. A point
+    # estimate with no interval invites reading a noisy weight as a fact.
+    h00 = h01 = h11 = 0.0
+    for x0, x1, _y in design:
+        p = _sigmoid(alpha * x0 + beta * x1)
+        w = p * (1.0 - p)
+        h00 += x0 * x0 * w
+        h01 += x0 * x1 * w
+        h11 += x1 * x1 * w
+    determinant = h00 * h11 - h01 * h01
+    if abs(determinant) < 1e-12:
+        alpha_se = beta_se = covariance = 0.0
+    else:
+        var_alpha = h11 / determinant
+        var_beta = h00 / determinant
+        covariance = -h01 / determinant
+        alpha_se = math.sqrt(var_alpha) if var_alpha > 0 else 0.0
+        beta_se = math.sqrt(var_beta) if var_beta > 0 else 0.0
+    return Combination(alpha=alpha, beta=beta, n_train=len(rows),
+                       alpha_se=alpha_se, beta_se=beta_se, covariance=covariance)
+
+
+def combination_interval(
+    combination: Combination, p_model: float, p_market: float, *, z: float = Z95
+) -> tuple[float, float, float]:
+    """``(low, point, high)`` for the combined probability, by the delta method.
+
+    The interval reflects uncertainty in the fitted WEIGHTS only. It is not a predictive
+    interval for the match: the irreducible uncertainty of a tennis result dwarfs it, and
+    presenting it as though it bounded the outcome would be a serious overclaim.
+    """
+    x0, x1 = logit(p_model), logit(p_market)
+    score = combination.alpha * x0 + combination.beta * x1
+    variance = (x0 * x0 * combination.alpha_se ** 2
+                + x1 * x1 * combination.beta_se ** 2
+                + 2.0 * x0 * x1 * combination.covariance)
+    spread = z * math.sqrt(max(variance, 0.0))
+    return (
+        min(max(_sigmoid(score - spread), 1e-12), 1.0 - 1e-12),
+        min(max(_sigmoid(score), 1e-12), 1.0 - 1e-12),
+        min(max(_sigmoid(score + spread), 1e-12), 1.0 - 1e-12),
+    )
 
 
 def apply_combination(

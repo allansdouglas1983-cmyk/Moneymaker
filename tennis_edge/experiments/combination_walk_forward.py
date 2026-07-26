@@ -187,16 +187,22 @@ def main() -> None:
     scored, fits = walk_forward(rows)
     print(f"scored out-of-sample: {len(scored):,} over {len(fits)} years\n")
 
-    print(f"{'year':<6}{'n':>7}{'alpha':>9}{'beta':>8}{'model share':>13}"
-          f"{'market LL':>11}{'combined':>10}{'gain':>10}")
+    print(f"{'year':<6}{'n':>7}{'alpha':>9}{'t':>7}{'beta':>8}{'t':>8}"
+          f"{'market LL':>11}{'combined':>10}{'shrink-only':>13}{'model adds':>12}")
     for year in sorted(fits):
         block = [(r, b, f) for r, b, f in scored if r.date.year == year]
         market = _log_loss([(r.p_market, r.won) for r, _b, _f in block])
         combined = _log_loss([(b, r.won) for r, b, _f in block])
         fit = fits[year]
-        print(f"{year:<6}{len(block):>7,}{fit.alpha:>9.4f}{fit.beta:>8.4f}"
-              f"{fit.model_share:>12.1%}{market:>11.5f}{combined:>10.5f}"
-              f"{market - combined:>+10.5f}")
+        # THE decisive control: beta alone, alpha forced to zero. If shrink-only matches
+        # the full combination, the model contributes nothing and the entire "gain" is a
+        # calibration correction applied to the market's own logit.
+        shrink = Combination(alpha=0.0, beta=fit.beta, n_train=fit.n_train)
+        shrink_ll = _log_loss([(apply_combination(shrink, r.p_model, r.p_market), r.won)
+                               for r, _b, _f in block])
+        print(f"{year:<6}{len(block):>7,}{fit.alpha:>9.4f}{fit.alpha_t:>7.1f}"
+              f"{fit.beta:>8.4f}{fit.beta_t:>8.1f}{market:>11.5f}{combined:>10.5f}"
+              f"{market - shrink_ll:>+13.5f}{shrink_ll - combined:>+12.5f}")
 
     diffs = _paired(scored)
     n = len(diffs)
@@ -207,8 +213,19 @@ def main() -> None:
     market_all = _log_loss([(r.p_market, r.won) for r, _b, _f in scored])
     combined_all = _log_loss([(b, r.won) for r, b, _f in scored])
 
-    print(f"\npooled market   log loss {market_all:.5f}")
-    print(f"pooled combined log loss {combined_all:.5f}")
+    # Pooled shrink-only control on the identical rows.
+    shrink_pairs = []
+    for row, _b, fit in scored:
+        shrink = Combination(alpha=0.0, beta=fit.beta, n_train=fit.n_train)
+        shrink_pairs.append((apply_combination(shrink, row.p_model, row.p_market), row.won))
+    shrink_all = _log_loss(shrink_pairs)
+
+    print(f"\npooled market      log loss {market_all:.5f}")
+    print(f"pooled SHRINK-ONLY log loss {shrink_all:.5f}  "
+          f"(beta only, alpha forced to 0)")
+    print(f"pooled combined    log loss {combined_all:.5f}")
+    print(f"  gain from shrinking the market alone: {market_all - shrink_all:+.5f} nats")
+    print(f"  gain the MODEL adds on top of that:   {shrink_all - combined_all:+.5f} nats")
     print(f"mean advantage {mean:+.5f} nats   naive SE {se:.5f}   naive t {mean/se:+.2f}")
     print(f"day-clustered bootstrap 95% CI [{lo:+.5f}, {hi:+.5f}]"
           f"  -> {'EXCLUDES' if lo > 0 or hi < 0 else 'INCLUDES'} zero")

@@ -15,8 +15,10 @@ import math
 import pytest
 
 from tennis_edge.combine import (
+    MARKET_ONLY,
     Combination,
     apply_combination,
+    combination_interval,
     fit_combination,
     logit,
 )
@@ -117,3 +119,51 @@ def test_the_output_is_always_a_probability() -> None:
 def test_extreme_inputs_do_not_produce_infinities() -> None:
     combination = Combination(alpha=1.0, beta=1.0, n_train=100)
     assert 0.0 < apply_combination(combination, 0.0, 1.0) < 1.0
+
+
+# ------------------------------------------------------------------ uncertainty
+
+
+def test_the_fit_reports_parameter_uncertainty() -> None:
+    """A point estimate with no interval invites treating a noisy weight as a fact. The
+    Hessian is already computed by the fit; inverting it costs nothing and the standard
+    errors come out of the same arithmetic."""
+    fit = fit_combination(_rows(alpha=0.5, beta=0.8))
+    assert fit.alpha_se > 0.0 and fit.beta_se > 0.0
+    assert math.isfinite(fit.covariance)
+
+
+def test_more_data_narrows_the_interval() -> None:
+    small = fit_combination(_rows(alpha=0.5, beta=0.8, n=500))
+    large = fit_combination(_rows(alpha=0.5, beta=0.8, n=8000))
+    assert large.alpha_se < small.alpha_se
+
+
+def test_a_weight_indistinguishable_from_zero_is_reported_as_such() -> None:
+    """The question that matters: is the model's weight actually different from nothing?"""
+    fit = fit_combination(_rows(alpha=0.0, beta=1.0))
+    assert abs(fit.alpha_t) < 2.5, "a null model must not look significant"
+
+
+def test_a_real_weight_is_distinguishable_from_zero() -> None:
+    fit = fit_combination(_rows(alpha=1.0, beta=0.0))
+    assert fit.alpha_t > 3.0
+
+
+def test_the_probability_interval_brackets_the_point_estimate() -> None:
+    fit = fit_combination(_rows(alpha=0.5, beta=0.8))
+    low, point, high = combination_interval(fit, 0.7, 0.4)
+    assert 0.0 < low < point < high < 1.0
+
+
+def test_the_interval_widens_with_parameter_uncertainty() -> None:
+    tight = fit_combination(_rows(alpha=0.5, beta=0.8, n=8000))
+    loose = fit_combination(_rows(alpha=0.5, beta=0.8, n=500))
+    tight_low, _p, tight_high = combination_interval(tight, 0.7, 0.4)
+    loose_low, _q, loose_high = combination_interval(loose, 0.7, 0.4)
+    assert (loose_high - loose_low) > (tight_high - tight_low)
+
+
+def test_the_market_only_null_carries_no_fitted_uncertainty() -> None:
+    """MARKET_ONLY is a definition, not an estimate. It must not pretend to an interval."""
+    assert MARKET_ONLY.alpha_se == 0.0 and MARKET_ONLY.beta_se == 0.0
