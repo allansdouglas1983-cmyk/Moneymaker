@@ -29,14 +29,14 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from tennis_edge.betfair import MarketHistory, read_markets
+from tennis_edge.betfair import MarketHistory, Runner, read_markets
 from tennis_edge.xmarket import (
     MINIMUM_LEG_SIZE,
     Leg,
     SetBettingView,
+    align_sides,
     coherence_gap,
     fillable_dutch,
-    parse_set_runner,
 )
 
 ROOT = ("/tmp/claude-0/-home-user-Moneymaker/"
@@ -74,18 +74,23 @@ def _best_backs(market: MarketHistory, horizon: int) -> dict[int, Leg] | None:
     return out
 
 
-def _split_sides(market: MarketHistory) -> tuple[list[int], list[int]] | None:
-    """Set-betting selections grouped by which player they belong to."""
-    parsed = [(r.selection_id, parse_set_runner(r.name)) for r in market.runners]
-    if any(p is None for _s, p in parsed):
+def _aligned_sides(
+    match_odds: MarketHistory, set_betting: MarketHistory, active: list[Runner]
+) -> tuple[list[int], list[int]] | None:
+    """Set-betting selection ids grouped to match the Match Odds runner order.
+
+    By name, never by position. The two markets order their runners independently, and
+    assuming they agree backs one player on Match Odds together with that same player's set
+    scores — an unhedged double reported as a locked position.
+    """
+    aligned = align_sides(
+        match_odds_names=tuple(r.name for r in active),
+        set_betting_names=tuple(r.name for r in set_betting.runners),
+    )
+    if aligned is None:
         return None
-    names = sorted({p[0] for _s, p in parsed if p is not None})
-    if len(names) != 2:
-        return None
-    first, second = names
-    a = [s for s, p in parsed if p is not None and p[0] == first]
-    b = [s for s, p in parsed if p is not None and p[0] == second]
-    return (a, b) if a and b else None
+    ids = [r.selection_id for r in set_betting.runners]
+    return [ids[i] for i in aligned[0]], [ids[i] for i in aligned[1]]
 
 
 def main() -> None:
@@ -94,6 +99,7 @@ def main() -> None:
     stakes: dict[int, list[float]] = collections.defaultdict(list)
     unfillable: collections.Counter[int] = collections.Counter()
     paired = 0
+    unaligned = 0
     singles_events = 0
     no_partner = 0
 
@@ -114,10 +120,13 @@ def main() -> None:
             if set_betting is None:
                 no_partner += 1
                 continue
-            sides = _split_sides(set_betting)
             active = [r for r in match_odds.runners
                       if r.status.upper() in {"ACTIVE", "WINNER", "LOSER"}]
-            if sides is None or len(active) != 2:
+            if len(active) != 2:
+                continue
+            sides = _aligned_sides(match_odds, set_betting, active)
+            if sides is None:
+                unaligned += 1
                 continue
             paired += 1
 
@@ -155,6 +164,7 @@ def main() -> None:
     print(f"\nsingles Match Odds markets: {singles_events:,}")
     print(f"  with a Set Betting partner: {paired:,}")
     print(f"  without one:                {no_partner:,}")
+    print(f"  unaligned by name:          {unaligned:,}")
 
     print(f"\n{'horizon':>9}{'n':>8}{'median |gap|':>14}{'p90 |gap|':>12}"
           f"{'gap > 5pts':>12}")

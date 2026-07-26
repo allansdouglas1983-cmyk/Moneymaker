@@ -36,6 +36,7 @@ from typing import Sequence
 
 __all__ = [
     "Leg",
+    "align_sides",
     "FillableDutch",
     "MINIMUM_LEG_SIZE",
     "SetBettingView",
@@ -176,3 +177,42 @@ def fillable_dutch(
         max_total_stake=caps[limiting] * total_implied,
         limiting_leg=limiting,
     )
+
+
+def align_sides(
+    *, match_odds_names: Sequence[str], set_betting_names: Sequence[str]
+) -> tuple[tuple[int, ...], tuple[int, ...]] | None:
+    """Set-betting indices grouped to match the Match Odds runner order, or ``None``.
+
+    Returns ``(indices for match_odds_names[0], indices for match_odds_names[1])``.
+
+    **This must be done by name, never by position or by sorting.** Betfair lists Match Odds
+    runners in its own order and names the players inside the Set Betting runner strings; the
+    two orders frequently disagree. Grouping set scores alphabetically and pairing them with
+    Match Odds by position backs one player on Match Odds *and* that same player's set
+    scores, covering one outcome twice and leaving the other uncovered. That is an unhedged
+    double rather than a dutch, and it can report an arbitrarily large "guaranteed" return —
+    which is exactly what it did.
+
+    ``None`` whenever the two markets cannot be reconciled: an unparseable runner, a name
+    that appears in one market and not the other, or a player with no scorelines. Refusing is
+    the only safe answer, because an assumed alignment is invisible in the output.
+    """
+    if len(match_odds_names) != 2:
+        return None
+    parsed = [parse_set_runner(name) for name in set_betting_names]
+    if any(p is None for p in parsed):
+        return None
+    grouped: dict[str, list[int]] = {}
+    for index, entry in enumerate(parsed):
+        assert entry is not None
+        grouped.setdefault(entry[0], []).append(index)
+    sides: list[tuple[int, ...]] = []
+    for name in match_odds_names:
+        indices = grouped.get(name.strip())
+        if not indices:
+            return None
+        sides.append(tuple(indices))
+    if len(grouped) != 2:
+        return None
+    return sides[0], sides[1]

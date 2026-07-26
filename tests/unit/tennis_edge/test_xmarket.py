@@ -20,6 +20,7 @@ import pytest
 
 from tennis_edge.xmarket import (
     Leg,
+    align_sides,
     SetBettingView,
     coherence_gap,
     dutch_return,
@@ -170,3 +171,53 @@ class TestSizeAwareness:
             match_odds_back_a=Decimal("2.5"),
             set_back_prices_b=(Decimal("5.0"), Decimal("5.0")),
             commission=Decimal("0.02")))
+
+
+class TestSideAlignment:
+    """The bug that produced a 380% "locked return" even after size was enforced.
+
+    Match Odds lists its two runners in Betfair's order; Set Betting names them inside the
+    runner strings. The first scan grouped set scores alphabetically and paired them with
+    Match Odds by position, so whenever those two orders disagreed it backed one player on
+    Match Odds *and* that same player's set scores — covering one outcome twice and leaving
+    the other uncovered. That is not a dutch, it is an unhedged double, and it can report any
+    number at all.
+
+    Sides must be matched by name across the two markets, and a pair that cannot be matched
+    must be refused rather than assumed aligned.
+    """
+
+    def test_sides_are_matched_by_name(self) -> None:
+        assert align_sides(
+            match_odds_names=("Zverev A.", "Alcaraz C."),
+            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
+                               "Zverev A. 2-0", "Zverev A. 2-1"),
+        ) == ((2, 3), (0, 1))
+
+    def test_alphabetical_order_is_not_assumed(self) -> None:
+        """The Match Odds order here is the reverse of alphabetical — the failing case."""
+        first, second = align_sides(
+            match_odds_names=("Zverev A.", "Alcaraz C."),
+            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
+                               "Zverev A. 2-0", "Zverev A. 2-1"),
+        )
+        assert first != (0, 1)
+
+    def test_a_name_that_does_not_appear_is_refused(self) -> None:
+        assert align_sides(
+            match_odds_names=("Zverev A.", "Sinner J."),
+            set_betting_names=("Alcaraz C. 2-0", "Alcaraz C. 2-1",
+                               "Zverev A. 2-0", "Zverev A. 2-1"),
+        ) is None
+
+    def test_an_unparseable_runner_is_refused(self) -> None:
+        assert align_sides(
+            match_odds_names=("A", "B"),
+            set_betting_names=("A 2-0", "Three Sets"),
+        ) is None
+
+    def test_a_side_with_no_scores_is_refused(self) -> None:
+        assert align_sides(
+            match_odds_names=("A", "B"),
+            set_betting_names=("A 2-0", "A 2-1"),
+        ) is None
