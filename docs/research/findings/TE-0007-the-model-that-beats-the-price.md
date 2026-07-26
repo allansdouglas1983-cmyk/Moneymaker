@@ -234,3 +234,43 @@ edge is **not concentrated in one period**, which is a different reassurance fro
 intended and a more useful one.
 
 None of this changes the economics in Finding 3, which remain the binding constraint.
+
+---
+
+# Addendum 2 — is it still there? (2026-07-26)
+
+A pooled result over fifteen years is the wrong summary if the thing being averaged is
+dying, and the pooled number looks identical either way. This matters more here than it
+usually would, because the *reason* the model works is that the closing price under-weights
+information from below the main tour — and lower-tier data has become far more available
+across exactly the period being measured. If anything in this programme was going to decay,
+it is this.
+
+`edge_decay.py`, three views of the same walk-forward, no refit.
+
+**Early versus recent** — the two halves of the out-of-sample period:
+
+| period | n | gain | 95% CI (day-clustered) |
+|---|---:|---:|---|
+| 2012–2018 | 31,704 | +0.000828 | [+0.000333, +0.001347] |
+| 2019–2026 | 31,872 | +0.000895 | [+0.000330, +0.001448] |
+
+Indistinguishable, and **both halves independently exclude zero**. That second point is
+worth as much as the first: the finding does not rest on one lucky stretch, it replicates
+on each half of the sample separately.
+
+**Trend** — per-match gain regressed on year, day-clustered:
+
+    gain per additional year  -0.00003940  [-0.00013020, +0.00004455]
+    -> no detectable trend either way at this power
+
+**Year by year**, only 2019 clears zero on its own (+0.002145, [+0.000669, +0.003626]) —
+which is what fifteen noisy annual estimates of a small persistent effect should look like.
+Two years are negative (2018, 2026), neither significantly. Nothing here suggests the effect
+is concentrated in a period.
+
+**The honest limit on this.** A flat slope is not proof of durability; it is a failure to
+detect decay on fifteen annual points, which is a weak test by construction. What it does
+rule out is the specific worry that prompted it — that the pooled number is an average over
+a large early effect and nothing recent. It is not: the recent half is, if anything,
+fractionally larger.
