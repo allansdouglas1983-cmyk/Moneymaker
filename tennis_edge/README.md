@@ -166,6 +166,23 @@ markets by runner position instead of by name. The sequence 639% → 384% → 0 
 that matters: each intermediate number was internally consistent, produced by clean code, and
 completely wrong.
 
+### The cheapest way to buy a whole match — tested 2026-07-26
+
+The complete form of the question above, and one that cannot be improved on by adding another
+market pair. Match Odds, Set Betting and Number of Sets are all partitions of the same space
+— the final set score — so the question is not "do two books agree" but **what is the
+cheapest way to buy every outcome exactly once, from any runner in any of them**. Under one
+unit is a lock whichever market was wrong.
+
+**It never costs under one unit.** Zero locks in 5,799 exhaustively-searched covers across
+2,281 matches; the best anywhere in June costs 1.0031 (TE-0010). The search *does* find
+cross-market structure — one match in five is cheaper through a mix of markets than through
+Match Odds alone, which improves the best position from −1.21% to −0.31% — and it is still
+never enough to cover the spread.
+
+Because the search is exhaustive over a four- or six-outcome space, a negative best is not
+"we did not find one". It is *there is not one*.
+
 ### The price does not sharpen — tested 2026-07-26
 
 Across eight horizons on the June tick corpus the spread collapses from **44.9 ticks to
@@ -219,6 +236,7 @@ ever appeared.
 | `residual_model.py` | The fitted model as a deployable artefact: coefficients, training window, digest. Full Newton with a line search — the diagonal version diverged. |
 | `upcoming.py` | Prices fixtures that have not been played. Commission-aware break-even; `recommendation` pinned to `NOT_EVALUATED`. |
 | `xmarket.py` | Cross-market arithmetic: the Match Odds / Set Betting identity, size-aware dutch positions, and name alignment between markets that spell players differently. |
+| `cover.py` | The outcome space of a match and exhaustive exact-cover search over every runner in every market that partitions it. |
 | `live_state.py` | Per-player scalars frozen at a date, so an upcoming fixture prices in milliseconds instead of a ten-minute corpus walk. |
 | `policy_v2.py` | The residual-model policy vintage, with the model's digest folded into its own. |
 | `cli.py` | `fit` / `state` / `show` / `price`. |
