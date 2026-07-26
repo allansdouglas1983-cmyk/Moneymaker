@@ -1,0 +1,3 @@
+tests/unit/coherence/test_solver_golden.py::test_derived_targets_match_golden
+tests/unit/coherence/test_solver_golden.py::test_identify_matches_golden
+tests/unit/coherence/test_solver_golden.py::test_dedup_unit_fixtures_match_golden

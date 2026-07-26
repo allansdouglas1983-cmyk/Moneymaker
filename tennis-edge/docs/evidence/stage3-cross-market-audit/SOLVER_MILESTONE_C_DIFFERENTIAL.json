@@ -1,0 +1,255 @@
+{
+ "byte_identical": true,
+ "exception_and_status_behaviour": "UNCHANGED (non-convergence still raises nothing; statuses unchanged; no raise->status remap).",
+ "golden_result": "PASS byte-for-byte (test_solver_golden.py, 2 tests, post-wiring)",
+ "loop_all_exact_equal": true,
+ "loop_fixtures": [
+  {
+   "a_first": true,
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "final": {
+    "p_a": 0.6799995877899631,
+    "p_b": 0.579999705788352,
+    "r2": 3.6926482336488735e-14
+   },
+   "final_exact_equal": true,
+   "fixture": "identified_seed_near",
+   "newton_iterations": 1,
+   "production_calls": 158,
+   "reference_calls": 158,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:a70879c92e831766",
+   "residual_sequence_len": 2,
+   "seed": [
+    0.66,
+    0.6
+   ],
+   "targets": [
+    0.8955587270536368,
+    0.3996558518389512
+   ],
+   "termination_reason": "CONVERGED"
+  },
+  {
+   "a_first": true,
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "final": {
+    "p_a": 0.6800000822383033,
+    "p_b": 0.580000076601956,
+    "r2": 5.480902560361137e-15
+   },
+   "final_exact_equal": true,
+   "fixture": "identified_seed_far",
+   "newton_iterations": 7,
+   "production_calls": 188,
+   "reference_calls": 188,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:a4da42877a73d418",
+   "residual_sequence_len": 8,
+   "seed": [
+    0.44,
+    0.85
+   ],
+   "targets": [
+    0.8955587270536368,
+    0.3996558518389512
+   ],
+   "termination_reason": "CONVERGED"
+  },
+  {
+   "a_first": false,
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "final": {
+    "p_a": 0.6200024575078269,
+    "p_b": 0.6600022580735722,
+    "r2": 1.0902019099603743e-11
+   },
+   "final_exact_equal": true,
+   "fixture": "b_first_target",
+   "newton_iterations": 1,
+   "production_calls": 158,
+   "reference_calls": 158,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:b2b07351af7f938a",
+   "residual_sequence_len": 2,
+   "seed": [
+    0.58,
+    0.7
+   ],
+   "targets": [
+    0.308914247162222,
+    0.5782644846675348
+   ],
+   "termination_reason": "CONVERGED"
+  },
+  {
+   "a_first": true,
+   "domain": [
+    0.5,
+    0.7
+   ],
+   "final": {
+    "p_a": 0.6100342290636785,
+    "p_b": 0.6300345309001323,
+    "r2": 8.378345869057984e-10
+   },
+   "final_exact_equal": true,
+   "fixture": "narrow_domain",
+   "newton_iterations": 5,
+   "production_calls": 178,
+   "reference_calls": 178,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:196f86ff30a57cad",
+   "residual_sequence_len": 6,
+   "seed": [
+    0.55,
+    0.68
+   ],
+   "targets": [
+    0.39961216521713333,
+    0.5875404521951274
+   ],
+   "termination_reason": "CONVERGED"
+  },
+  {
+   "a_first": true,
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "final": {
+    "p_a": 0.710234375,
+    "p_b": 0.529765625,
+    "r2": 0.016311373541177378
+   },
+   "final_exact_equal": true,
+   "fixture": "no_root_targets",
+   "newton_iterations": 40,
+   "production_calls": 352,
+   "reference_calls": 352,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:4dd5e084956d9898",
+   "residual_sequence_len": 40,
+   "seed": [
+    0.62,
+    0.62
+   ],
+   "targets": [
+    0.98,
+    0.02
+   ],
+   "termination_reason": "BUDGET_EXHAUSTED"
+  },
+  {
+   "a_first": false,
+   "domain": [
+    0.5,
+    0.7
+   ],
+   "final": {
+    "p_a": 0.7,
+    "p_b": 0.7,
+    "r2": 0.2615854010316375
+   },
+   "final_exact_equal": true,
+   "fixture": "no_root_narrow",
+   "newton_iterations": 1,
+   "production_calls": 162,
+   "reference_calls": 162,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:114e9dd06513af40",
+   "residual_sequence_len": 2,
+   "seed": [
+    0.6,
+    0.55
+   ],
+   "targets": [
+    0.05,
+    0.95
+   ],
+   "termination_reason": "STAGNANT"
+  },
+  {
+   "a_first": true,
+   "domain": [
+    0.35,
+    0.9
+   ],
+   "final": {
+    "p_a": 0.3584635416666667,
+    "p_b": 0.87734375,
+    "r2": 1.0153872809026845e-16
+   },
+   "final_exact_equal": true,
+   "fixture": "boundary_pull",
+   "newton_iterations": 0,
+   "production_calls": 153,
+   "reference_calls": 153,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:d9ef0b07481495b8",
+   "residual_sequence_len": 1,
+   "seed": [
+    0.4,
+    0.8
+   ],
+   "targets": [
+    6.425145481273791e-11,
+    5.711812692776098e-06
+   ],
+   "termination_reason": "CONVERGED"
+  },
+  {
+   "a_first": false,
+   "domain": [
+    0.5,
+    0.7
+   ],
+   "final": {
+    "p_a": 0.5,
+    "p_b": 0.5,
+    "r2": 0.002691027498258336
+   },
+   "final_exact_equal": true,
+   "fixture": "flat_disagreement",
+   "newton_iterations": 1,
+   "production_calls": 162,
+   "reference_calls": 162,
+   "residual_call_counts_equal": true,
+   "residual_sequence_digest": "sha256:8f270dfdb75829aa",
+   "residual_sequence_len": 2,
+   "seed": [
+    0.65,
+    0.52
+   ],
+   "targets": [
+    0.5,
+    0.5
+   ],
+   "termination_reason": "SINGULAR"
+  }
+ ],
+ "milestone": "STAGE3-0006C-C-REV1",
+ "not_used_confirmed": [
+  "STEP_TOLERANCE_NOT_USED",
+  "DAMPING_SCHEDULE_NOT_USED",
+  "DAMPING_FACTOR_NOT_USED",
+  "MAXIMUM_DAMPING_ATTEMPTS_NOT_USED",
+  "MULTI_FACTOR_LINE_SEARCH_NOT_USED",
+  "PER_STEP_IMPROVEMENT_ACCEPTANCE_NOT_USED",
+  "FIRST_ACCEPTED_FACTOR_POLICY_NOT_USED"
+ ],
+ "prechange_frozen_commit": "383e1e82508871c0271534aba008beec12a13601",
+ "seam_literal_mismatches": 0,
+ "seam_literal_samples": 63,
+ "section": "\u00a716 differential compatibility",
+ "tests_altered": "NONE"
+}

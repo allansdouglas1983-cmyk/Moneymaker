@@ -1,0 +1,46 @@
+{
+ "axis_first_last": [
+  0.35,
+  0.9
+ ],
+ "axis_size": 27,
+ "commit": "615bfaa837b02ba929d3b8e58a792c3d57f0e819",
+ "constants": {
+  "_BOUNDARY_TOL": 0.005,
+  "_CLUSTER_R": 2,
+  "_COARSE_N": 13,
+  "_DEDUP_TOL": 0.001,
+  "_JAC_TOL": 0.005,
+  "_NEWTON_SINGULAR": 1e-10,
+  "_N_SEED": 20,
+  "_ROOT_TOL": 0.0001
+ },
+ "deterministic_seed": null,
+ "generated_at_utc": "2026-07-24T11:20:32.524453+00:00",
+ "per_assignment_status": {
+  "a_first": "NON_IDENTIFIABLE",
+  "b_first": "NON_IDENTIFIABLE"
+ },
+ "resolution": "R0",
+ "roots": [
+  {
+   "jacobian_det": -1.8982993479319973e-08,
+   "on_boundary": false,
+   "p_a": 0.49999999942687845,
+   "p_b": 0.49999999942687845,
+   "residual_norm": 0.0,
+   "singular": true
+  }
+ ],
+ "schema_version": "degeneracy-diagnostic-v1",
+ "source_digests": {
+  "amendment": "473d4d7d56467e76fe56c17e18c2db2dddc5ef530abf1f4e47f36ef7cd458974",
+  "golden_v2": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+  "harness": "4599ede5a6eacee68ab06d171c9a92a8ac219237dc094f829f55f1b78e51c2d3",
+  "reference": "124dced3610d7e26c8723d0ae1d20bc27f648ff58164b6c0f4d2530206f1a67b",
+  "root_dedup.py": "8bf6c65031007f35d35328cd13643f40752199bedbec2931e15fc9acaea101f3",
+  "rootset.py": "b125537aa3a682a0316ec386c3a7e89575a96ec8de8a4e5c0247c2ff14d302b0",
+  "solver.py": "d3727081b27e99b8d1f800b83a49569a9029b88583a9ecf45c876ef9f13f6523"
+ },
+ "status": "NON_IDENTIFIABLE"
+}

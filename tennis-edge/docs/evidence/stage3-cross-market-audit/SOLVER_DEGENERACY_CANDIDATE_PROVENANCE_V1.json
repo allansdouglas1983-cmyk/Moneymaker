@@ -1,0 +1,667 @@
+{
+ "commit": "615bfaa837b02ba929d3b8e58a792c3d57f0e819",
+ "constants": {
+  "_BOUNDARY_TOL": 0.005,
+  "_CLUSTER_R": 2,
+  "_COARSE_N": 13,
+  "_DEDUP_TOL": 0.001,
+  "_JAC_TOL": 0.005,
+  "_NEWTON_SINGULAR": 1e-10,
+  "_N_SEED": 20,
+  "_ROOT_TOL": 0.0001
+ },
+ "deterministic_seed": null,
+ "generated_at_utc": "2026-07-24T11:29:55.985565+00:00",
+ "per_lattice": {
+  "G0": [
+   {
+    "a_serves_first": true,
+    "candidates": [
+     {
+      "condition_scale": 5.366967424073754,
+      "converged": true,
+      "jacobian_det": -0.010783346081659189,
+      "on_boundary": false,
+      "p_a": 0.4996744791666667,
+      "p_b": 0.4996744791666667,
+      "r2": 1.0692977906974011e-13,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.4875,
+       0.4875
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.36656213565897,
+      "converged": true,
+      "jacobian_det": 0.1437650497223909,
+      "on_boundary": false,
+      "p_a": 0.5043404473067422,
+      "p_b": 0.5043404473067423,
+      "r2": 3.3798567058567346e-09,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.625,
+       0.625
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366667178420681,
+      "converged": true,
+      "jacobian_det": -0.12386449770634259,
+      "on_boundary": false,
+      "p_a": 0.4962604999325286,
+      "p_b": 0.49626049993252835,
+      "r2": 1.8621750692638587e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 3,
+    "status": "MULTIPLE_ROOTS"
+   },
+   {
+    "a_serves_first": false,
+    "candidates": [
+     {
+      "condition_scale": 5.36696742407356,
+      "converged": true,
+      "jacobian_det": -0.010783346081659189,
+      "on_boundary": false,
+      "p_a": 0.4996744791666667,
+      "p_b": 0.4996744791666667,
+      "r2": 1.0692977906974011e-13,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.4875,
+       0.4875
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366562135658637,
+      "converged": true,
+      "jacobian_det": 0.14376504972208382,
+      "on_boundary": false,
+      "p_a": 0.5043404473067234,
+      "p_b": 0.5043404473067243,
+      "r2": 3.379856705779281e-09,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.625,
+       0.625
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3666671784210145,
+      "converged": true,
+      "jacobian_det": -0.12386449770307106,
+      "on_boundary": false,
+      "p_a": 0.49626049993259075,
+      "p_b": 0.4962604999325911,
+      "r2": 1.8621750691297124e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 3,
+    "status": "MULTIPLE_ROOTS"
+   }
+  ],
+  "G1": [
+   {
+    "a_serves_first": true,
+    "candidates": [
+     {
+      "condition_scale": 5.366969693779834,
+      "converged": true,
+      "jacobian_det": 0.0010783353859277161,
+      "on_boundary": false,
+      "p_a": 0.5000325520833333,
+      "p_b": 0.5000325520833333,
+      "r2": 1.0692981639069256e-17,
+      "seed": [
+       7,
+       7
+      ],
+      "seed_coord": [
+       0.5104166666666666,
+       0.5104166666666666
+      ],
+      "singular": true
+     },
+     {
+      "condition_scale": 5.366733620100284,
+      "converged": true,
+      "jacobian_det": -0.10942286977790767,
+      "on_boundary": false,
+      "p_a": 0.4966965659663291,
+      "p_b": 0.4966965659663291,
+      "r2": 1.134051238522101e-09,
+      "seed": [
+       4,
+       4
+      ],
+      "seed_coord": [
+       0.44166666666666665,
+       0.44166666666666665
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3665787364355575,
+      "converged": true,
+      "jacobian_det": 0.1408073690771045,
+      "on_boundary": false,
+      "p_a": 0.5042511288424226,
+      "p_b": 0.5042511288424223,
+      "r2": 3.110128636101782e-09,
+      "seed": [
+       10,
+       10
+      ],
+      "seed_coord": [
+       0.5791666666666666,
+       0.5791666666666666
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3663860981620575,
+      "converged": true,
+      "jacobian_det": -0.17202579348179403,
+      "on_boundary": false,
+      "p_a": 0.4948060358255963,
+      "p_b": 0.49480603582559635,
+      "r2": 6.9302056061774486e-09,
+      "seed": [
+       1,
+       1
+      ],
+      "seed_coord": [
+       0.3729166666666667,
+       0.3729166666666667
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366727175635711,
+      "converged": true,
+      "jacobian_det": 0.11090604997573045,
+      "on_boundary": false,
+      "p_a": 0.5033482175221122,
+      "p_b": 0.5033482175221126,
+      "r2": 1.1968078057830464e-09,
+      "seed": [
+       13,
+       13
+      ],
+      "seed_coord": [
+       0.6479166666666667,
+       0.6479166666666667
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 5,
+    "status": "MULTIPLE_ROOTS"
+   },
+   {
+    "a_serves_first": false,
+    "candidates": [
+     {
+      "condition_scale": 5.366969693779584,
+      "converged": true,
+      "jacobian_det": 0.0010783353859277161,
+      "on_boundary": false,
+      "p_a": 0.5000325520833333,
+      "p_b": 0.5000325520833333,
+      "r2": 1.0692981639069256e-17,
+      "seed": [
+       7,
+       7
+      ],
+      "seed_coord": [
+       0.5104166666666666,
+       0.5104166666666666
+      ],
+      "singular": true
+     },
+     {
+      "condition_scale": 5.366733620100617,
+      "converged": true,
+      "jacobian_det": -0.10942286977939868,
+      "on_boundary": false,
+      "p_a": 0.49669656596633177,
+      "p_b": 0.4966965659663319,
+      "r2": 1.134051238522101e-09,
+      "seed": [
+       4,
+       4
+      ],
+      "seed_coord": [
+       0.44166666666666665,
+       0.44166666666666665
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3665787364353905,
+      "converged": true,
+      "jacobian_det": 0.14080736907889055,
+      "on_boundary": false,
+      "p_a": 0.5042511288424258,
+      "p_b": 0.5042511288424254,
+      "r2": 3.110128636101782e-09,
+      "seed": [
+       10,
+       10
+      ],
+      "seed_coord": [
+       0.5791666666666666,
+       0.5791666666666666
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366386098161697,
+      "converged": true,
+      "jacobian_det": -0.17202579347790942,
+      "on_boundary": false,
+      "p_a": 0.49480603582561766,
+      "p_b": 0.49480603582561733,
+      "r2": 6.930205606085024e-09,
+      "seed": [
+       1,
+       1
+      ],
+      "seed_coord": [
+       0.3729166666666667,
+       0.3729166666666667
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366727175635711,
+      "converged": true,
+      "jacobian_det": 0.11090604997692466,
+      "on_boundary": false,
+      "p_a": 0.5033482175221439,
+      "p_b": 0.5033482175221434,
+      "r2": 1.1968078058444993e-09,
+      "seed": [
+       13,
+       13
+      ],
+      "seed_coord": [
+       0.6479166666666667,
+       0.6479166666666667
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 5,
+    "status": "MULTIPLE_ROOTS"
+   }
+  ],
+  "G2": [
+   {
+    "a_serves_first": true,
+    "candidates": [
+     {
+      "condition_scale": 5.366967424073754,
+      "converged": true,
+      "jacobian_det": -0.010783346081659189,
+      "on_boundary": false,
+      "p_a": 0.4996744791666667,
+      "p_b": 0.4996744791666667,
+      "r2": 1.0692977906974011e-13,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.5104166666666666,
+       0.5104166666666666
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3666882050424585,
+      "converged": true,
+      "jacobian_det": 0.1194832274225939,
+      "on_boundary": false,
+      "p_a": 0.5036072043503431,
+      "p_b": 0.5036072043503432,
+      "r2": 1.6123172904937977e-09,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.6479166666666667,
+       0.6479166666666667
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366667178420681,
+      "converged": true,
+      "jacobian_det": -0.12386449770634259,
+      "on_boundary": false,
+      "p_a": 0.4962604999325286,
+      "p_b": 0.49626049993252835,
+      "r2": 1.8621750692638587e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 3,
+    "status": "MULTIPLE_ROOTS"
+   },
+   {
+    "a_serves_first": false,
+    "candidates": [
+     {
+      "condition_scale": 5.36696742407356,
+      "converged": true,
+      "jacobian_det": -0.010783346081659189,
+      "on_boundary": false,
+      "p_a": 0.4996744791666667,
+      "p_b": 0.4996744791666667,
+      "r2": 1.0692977906974011e-13,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.5104166666666666,
+       0.5104166666666666
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3666882050423474,
+      "converged": true,
+      "jacobian_det": 0.11948322742229645,
+      "on_boundary": false,
+      "p_a": 0.5036072043503504,
+      "p_b": 0.5036072043503508,
+      "r2": 1.6123172905205454e-09,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.6479166666666667,
+       0.6479166666666667
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.3666671784210145,
+      "converged": true,
+      "jacobian_det": -0.12386449770307106,
+      "on_boundary": false,
+      "p_a": 0.49626049993259075,
+      "p_b": 0.4962604999325911,
+      "r2": 1.8621750691297124e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 3,
+    "status": "MULTIPLE_ROOTS"
+   }
+  ],
+  "G3": [
+   {
+    "a_serves_first": true,
+    "candidates": [
+     {
+      "condition_scale": 5.366969693779834,
+      "converged": true,
+      "jacobian_det": 0.0010783353859277161,
+      "on_boundary": false,
+      "p_a": 0.5000325520833333,
+      "p_b": 0.5000325520833333,
+      "r2": 1.0692981639069256e-17,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.4989583333333333,
+       0.4989583333333333
+      ],
+      "singular": true
+     },
+     {
+      "condition_scale": 5.3662805538799105,
+      "converged": true,
+      "jacobian_det": 0.18693025624730827,
+      "on_boundary": false,
+      "p_a": 0.5056441620415142,
+      "p_b": 0.505644162041514,
+      "r2": 9.663673014867188e-09,
+      "seed": [
+       9,
+       9
+      ],
+      "seed_coord": [
+       0.5677083333333333,
+       0.5677083333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366764209763531,
+      "converged": true,
+      "jacobian_det": -0.10208912888487742,
+      "on_boundary": false,
+      "p_a": 0.4969179987109119,
+      "p_b": 0.49691799871091213,
+      "r2": 8.592175421541051e-10,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.4302083333333333,
+       0.4302083333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.36678474907309,
+      "converged": true,
+      "jacobian_det": 0.09685368428843855,
+      "on_boundary": false,
+      "p_a": 0.5029239276981491,
+      "p_b": 0.5029239276981489,
+      "r2": 6.960485985069611e-10,
+      "seed": [
+       12,
+       12
+      ],
+      "seed_coord": [
+       0.6364583333333333,
+       0.6364583333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.36671535645294,
+      "converged": true,
+      "jacobian_det": -0.11357586448650514,
+      "on_boundary": false,
+      "p_a": 0.4965711687777418,
+      "p_b": 0.49657116877774177,
+      "r2": 1.3162958482747322e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 5,
+    "status": "MULTIPLE_ROOTS"
+   },
+   {
+    "a_serves_first": false,
+    "candidates": [
+     {
+      "condition_scale": 5.366969693779584,
+      "converged": true,
+      "jacobian_det": 0.0010783353859277161,
+      "on_boundary": false,
+      "p_a": 0.5000325520833333,
+      "p_b": 0.5000325520833333,
+      "r2": 1.0692981639069256e-17,
+      "seed": [
+       6,
+       6
+      ],
+      "seed_coord": [
+       0.4989583333333333,
+       0.4989583333333333
+      ],
+      "singular": true
+     },
+     {
+      "condition_scale": 5.366280553880216,
+      "converged": true,
+      "jacobian_det": 0.18693025624701598,
+      "on_boundary": false,
+      "p_a": 0.5056441620415026,
+      "p_b": 0.5056441620415019,
+      "r2": 9.663673014823533e-09,
+      "seed": [
+       9,
+       9
+      ],
+      "seed_coord": [
+       0.5677083333333333,
+       0.5677083333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366764209763032,
+      "converged": true,
+      "jacobian_det": -0.10208912888636529,
+      "on_boundary": false,
+      "p_a": 0.4969179987109068,
+      "p_b": 0.49691799871090714,
+      "r2": 8.592175421931571e-10,
+      "seed": [
+       3,
+       3
+      ],
+      "seed_coord": [
+       0.4302083333333333,
+       0.4302083333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366784749073479,
+      "converged": true,
+      "jacobian_det": 0.09685368429142355,
+      "on_boundary": false,
+      "p_a": 0.5029239276981939,
+      "p_b": 0.5029239276981938,
+      "r2": 6.960485985538262e-10,
+      "seed": [
+       12,
+       12
+      ],
+      "seed_coord": [
+       0.6364583333333333,
+       0.6364583333333333
+      ],
+      "singular": false
+     },
+     {
+      "condition_scale": 5.366715356452551,
+      "converged": true,
+      "jacobian_det": -0.11357586448501181,
+      "on_boundary": false,
+      "p_a": 0.49657116877776886,
+      "p_b": 0.49657116877776886,
+      "r2": 1.3162958482102845e-09,
+      "seed": [
+       0,
+       0
+      ],
+      "seed_coord": [
+       0.35,
+       0.35
+      ],
+      "singular": false
+     }
+    ],
+    "seed_count": 5,
+    "status": "MULTIPLE_ROOTS"
+   }
+  ]
+ },
+ "schema_version": "degeneracy-diagnostic-v1",
+ "source_digests": {
+  "amendment": "473d4d7d56467e76fe56c17e18c2db2dddc5ef530abf1f4e47f36ef7cd458974",
+  "golden_v2": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+  "harness": "4599ede5a6eacee68ab06d171c9a92a8ac219237dc094f829f55f1b78e51c2d3",
+  "reference": "124dced3610d7e26c8723d0ae1d20bc27f648ff58164b6c0f4d2530206f1a67b",
+  "root_dedup.py": "8bf6c65031007f35d35328cd13643f40752199bedbec2931e15fc9acaea101f3",
+  "rootset.py": "b125537aa3a682a0316ec386c3a7e89575a96ec8de8a4e5c0247c2ff14d302b0",
+  "solver.py": "d3727081b27e99b8d1f800b83a49569a9029b88583a9ecf45c876ef9f13f6523"
+ }
+}

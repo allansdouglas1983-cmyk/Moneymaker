@@ -1,0 +1,10 @@
+{
+ "approved_by": null,
+ "expected_changed_outputs": 0,
+ "milestone": "STAGE3-0006C-D-REV2",
+ "note": "Milestone D REV2 is a pure semantic extraction: the V2 golden (candidates, edges/components/diameters via the dedup_unit section, representatives, roots, order, first-server provenance, statuses, serialization, digests) re-verified byte-for-byte after the rootset wiring (test_solver_golden.py 3/3 post-wiring); the classifier decision tables and boundary seam are pinned equal to the frozen rules by the \u00a716/\u00a714 test tables; no exception behaviour changed.",
+ "observed_changed_outputs": 0,
+ "section": "\u00a718 differential compatibility",
+ "v2_golden_reverified_byte_identical": true,
+ "v2_golden_sha256": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7"
+}

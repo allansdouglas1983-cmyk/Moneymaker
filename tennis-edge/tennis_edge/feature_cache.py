@@ -47,7 +47,8 @@ __all__ = [
 #: invalidates a cache after a feature edit, because the corpus and archive digests do not
 #: change when the code that reads them does.
 #: v2 adds the decomposed serve/return layer (serve_detail).
-FEATURE_SET_VERSION = "residual-v2"
+#: v3 adds durability: head-to-head, retirement risk, workload and surface switch.
+FEATURE_SET_VERSION = "residual-v3"
 
 _KIND = "tennis-edge-feature-cache-v1"
 

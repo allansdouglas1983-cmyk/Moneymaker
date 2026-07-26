@@ -1,0 +1,117 @@
+ARG005 Unused lambda argument: `grid`
+   --> tests/unit/coherence/test_root_dedup.py:262:54
+    |
+261 |     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
+262 |     monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
+    |                                                      ^^^^
+263 |     monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+264 |     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
+    |
+
+ARG005 Unused lambda argument: `n`
+   --> tests/unit/coherence/test_root_dedup.py:262:60
+    |
+261 |     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
+262 |     monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
+    |                                                            ^
+263 |     monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+264 |     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
+    |
+
+ARG005 Unused lambda argument: `r`
+   --> tests/unit/coherence/test_root_dedup.py:262:63
+    |
+261 |     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
+262 |     monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
+    |                                                               ^
+263 |     monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+264 |     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
+    |
+
+ARG005 Unused lambda argument: `a`
+   --> tests/unit/coherence/test_root_dedup.py:263:47
+    |
+261 |     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
+262 |     monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
+263 |     monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+    |                                               ^
+264 |     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
+265 |                          0.6, 0.5, (0.35, 0.90))
+    |
+
+ARG005 Unused lambda argument: `k`
+   --> tests/unit/coherence/test_root_dedup.py:263:52
+    |
+261 |     chain_points = iter([(0.5, 0.5, 0.0), (0.5009, 0.5, 0.0), (0.5018, 0.5, 0.0)])
+262 |     monkeypatch.setattr(S, "rank_seed_nodes", lambda grid, n, r: [(0, 0), (6, 6), (12, 12)])
+263 |     monkeypatch.setattr(S, "_refine", lambda *a, **k: next(chain_points))
+    |                                                    ^
+264 |     solve = S._solve_one(True, MatchFormat.BO3_AD_TB7_ALL_SETS, Decimal("22.5"),
+265 |                          0.6, 0.5, (0.35, 0.90))
+    |
+
+ARG005 Unused lambda argument: `a`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:62:49
+   |
+60 |     the tolerance; False for NaN) prevents any Root construction: the public result is NO_ROOT
+61 |     with an empty root tuple — no non-finite value reaches Root, dedup, selection or the result."""
+62 |     monkeypatch.setattr(S, "_residual", lambda *a, **k: (_NAN, _NAN))
+   |                                                 ^
+63 |     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
+64 |     assert r.status == S.NO_ROOT
+   |
+
+ARG005 Unused lambda argument: `k`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:62:54
+   |
+60 |     the tolerance; False for NaN) prevents any Root construction: the public result is NO_ROOT
+61 |     with an empty root tuple — no non-finite value reaches Root, dedup, selection or the result."""
+62 |     monkeypatch.setattr(S, "_residual", lambda *a, **k: (_NAN, _NAN))
+   |                                                      ^
+63 |     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
+64 |     assert r.status == S.NO_ROOT
+   |
+
+ARG005 Unused lambda argument: `a`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:71:49
+   |
+70 | def test_injected_inf_residual_is_contained(monkeypatch: pytest.MonkeyPatch) -> None:
+71 |     monkeypatch.setattr(S, "_residual", lambda *a, **k: (_INF, -_INF))
+   |                                                 ^
+72 |     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
+73 |     assert r.status == S.NO_ROOT and r.roots == ()
+   |
+
+ARG005 Unused lambda argument: `k`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:71:54
+   |
+70 | def test_injected_inf_residual_is_contained(monkeypatch: pytest.MonkeyPatch) -> None:
+71 |     monkeypatch.setattr(S, "_residual", lambda *a, **k: (_INF, -_INF))
+   |                                                      ^
+72 |     r = S.identify(0.6, 0.5, _LINE, _FMT, domain=(0.35, 0.90))
+73 |     assert r.status == S.NO_ROOT and r.roots == ()
+   |
+
+ARG005 Unused lambda argument: `a`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:87:33
+   |
+85 |     from sport_tennis.coherence.solver_contracts import Jacobian2x2
+86 |     monkeypatch.setattr(S, "_jacobian_matrix",
+87 |                         lambda *a, **k: Jacobian2x2(_NAN, _NAN, _NAN, _NAN))
+   |                                 ^
+88 |     tw, to = S.derived_targets(0.68, 0.58, _FMT, _LINE, a_serves_first=True)
+89 |     with pytest.raises(CoherenceMathError):
+   |
+
+ARG005 Unused lambda argument: `k`
+  --> tests/unit/coherence/test_solver_nonfinite_reachability.py:87:38
+   |
+85 |     from sport_tennis.coherence.solver_contracts import Jacobian2x2
+86 |     monkeypatch.setattr(S, "_jacobian_matrix",
+87 |                         lambda *a, **k: Jacobian2x2(_NAN, _NAN, _NAN, _NAN))
+   |                                      ^
+88 |     tw, to = S.derived_targets(0.68, 0.58, _FMT, _LINE, a_serves_first=True)
+89 |     with pytest.raises(CoherenceMathError):
+   |
+
+Found 11 errors.

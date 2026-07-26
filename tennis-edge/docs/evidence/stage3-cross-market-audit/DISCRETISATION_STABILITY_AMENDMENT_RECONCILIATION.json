@@ -1,0 +1,21 @@
+{
+ "abnormal_worker_jobs": 0,
+ "amendment": "CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1",
+ "approved_by": null,
+ "behavioural_survivors_remaining": 0,
+ "directive": "STAGE3-0006C-D-A3 \u00a716",
+ "gate_executed_sum": 367,
+ "gate_vs_session_executed_delta": 0,
+ "orphaned_processes": 0,
+ "session_executed_sum": 367,
+ "source_byte_identical_to_head": {
+  "discretisation_stability.py": true,
+  "scan_variants.py": true,
+  "solver.py": true
+ },
+ "source_restore_failures": 0,
+ "survivors_accounted": 18,
+ "survivors_classified_or_killed": 18,
+ "unaccounted_survivors": 0,
+ "untested_jobs": 0
+}

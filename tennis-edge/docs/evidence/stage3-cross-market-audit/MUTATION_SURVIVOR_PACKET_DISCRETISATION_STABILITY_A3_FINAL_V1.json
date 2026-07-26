@@ -1,0 +1,621 @@
+{
+ "amendment": "CROSS_MARKET_COHERENCE_DISCRETISATION_STABILITY_AMENDMENT_V1",
+ "approved_by": null,
+ "commit": "37bac01ffbd31cc18cfc7978da51888e6e6e85a5",
+ "directive": "STAGE3-0006C-D-A3-FINALIZE",
+ "environment": {
+  "python_implementation": "CPython",
+  "python_version": "3.11.15",
+  "python_version_full": "3.11.15 (main, Mar  3 2026, 09:26:23) [GCC 13.3.0]",
+  "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+ },
+ "note": "Exactly the 16 classified EXACT residual equivalents remaining after the two round-2 tests-first kills (ds L170, solver L269 are KILLED, excluded). approved_by null throughout; approval is NOT inferred from any return prose.",
+ "packet": "MUTATION_SURVIVOR_PACKET_DISCRETISATION_STABILITY_A3_FINAL_V1",
+ "proof_artifact": "A3_SURVIVOR_EQUIVALENCE_PROOF_V1.json",
+ "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+ "session_digests": {
+  "discretisation_stability": "sha256:cf2508bffec588769f1f69e32a24ffa4a4005ad9f246f0fb24be9690ebfd3df1",
+  "scan_variants": "sha256:423e300f6416c9caef40f2923219ec84c6867912fc9408e3ed186f172c2ad6d2",
+  "solver_wiring": "sha256:abae982fb42dcf037e5678d248fac968580e7fbccca5ac7390f3f4f6b72fa109"
+ },
+ "source_digests": {
+  "sport_tennis/coherence/discretisation_stability.py": "sha256:c9e517d0c7dd780c2845405b0ab50e57b8abce98fff699624a94784b911eaa4c",
+  "sport_tennis/coherence/scan_variants.py": "sha256:4c5b41422385389db63fc97e911da5a185b3bdddcc0ecd34a8de8d666afc0fa1",
+  "sport_tennis/coherence/solver.py": "sha256:34d136d12ff3d16f808397ba67410e23706217e6dfcfd8e1dafa592b75ceadae"
+ },
+ "survivor_count": 16,
+ "survivors": [
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_count_complete_matchings_is_set_defined",
+    "test_10_5_root_count_disagreement_is_unstable"
+   ],
+   "end_column": 19,
+   "end_line": 106,
+   "environment_binding": {
+    "python_implementation": "CPython",
+    "python_version": "3.11.15",
+    "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+   },
+   "job_id": "0c71a135011d43379152c588d2d27bd5",
+   "malformed_input_reachability": "NONE within the cached range; only equal ints > 256 (never reachable here) could distinguish is-not from !=.",
+   "module": "discretisation_stability",
+   "mutated_expression": "len(left) is not len(right)",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "observable_behavior_potentially_affected": "the length-mismatch early-return of _complete_matchings.",
+   "occurrence": 0,
+   "original_expression": "len(left) != len(right)",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "INTEGER_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the Python implementation or version changes, or if a reachable length/index can exceed the small-int cache (256).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 reachable lengths are 0..4 (root counts), all within CPython's small-int cache.",
+   "runtime_type_domain_invariant": "both operands are len() results in [0, 4]; every such int is cached, so identity tracks value equality.",
+   "source_column": 17,
+   "source_expression_fingerprint": "sha256:270841a8cdbf833563c02578b0e5dae8b12ca525e61f71a4c1c455e7fb16ad26",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 106,
+   "survivor_id": "A3-DS-01",
+   "symbol": "_complete_matchings",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_count_complete_matchings_is_set_defined",
+    "test_matching_count_cap_and_length_mismatch_directions"
+   ],
+   "end_column": 15,
+   "end_line": 117,
+   "environment_binding": null,
+   "job_id": "c1a6795a487a4ed9bbfd979f1d019e6a",
+   "malformed_input_reachability": "NONE \u2014 the recursion controls i internally; no external input sets i.",
+   "module": "discretisation_stability",
+   "mutated_expression": "i >= n",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_GtE",
+   "observable_behavior_potentially_affected": "the recursion base-case terminating a complete matching.",
+   "occurrence": 0,
+   "original_expression": "i == n",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "GUARD_DOMINATED",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "guard": "recurse is entered with i in [0, n]; the recursion only calls recurse(i+1) while i < n, so i never exceeds n.",
+     "truth_table": "reachable i in {0..n}: i==n and i>=n both true only at i==n, both false for i<n; no reachable i>n exists."
+    }
+   },
+   "reclassification_trigger": "Reclassify if a preceding guard/invariant is weakened so a distinguishing input can reach the mutated expression.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 the invariant 0<=i<=n makes == and >= identical on every reachable i.",
+   "runtime_type_domain_invariant": "0 <= i <= n throughout the recursion; therefore (i==n) <=> (i>=n).",
+   "source_column": 13,
+   "source_expression_fingerprint": "sha256:e0972b6513a4c398380789a49dbba00a9627c9170189c8e4a80be479c915d2c5",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 117,
+   "survivor_id": "A3-DS-02",
+   "symbol": "recurse",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_count_complete_matchings_is_set_defined",
+    "test_matching_count_cap_and_length_mismatch_directions"
+   ],
+   "end_column": 15,
+   "end_line": 117,
+   "environment_binding": {
+    "python_implementation": "CPython",
+    "python_version": "3.11.15",
+    "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+   },
+   "job_id": "56999d540b404161aa3d23456d93c128",
+   "malformed_input_reachability": "NONE within the cached range.",
+   "module": "discretisation_stability",
+   "mutated_expression": "i is n",
+   "mutation_operator": "core/ReplaceComparisonOperator_Eq_Is",
+   "observable_behavior_potentially_affected": "the recursion base-case that records a complete matching.",
+   "occurrence": 0,
+   "original_expression": "i == n",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "INTEGER_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the Python implementation or version changes, or if a reachable length/index can exceed the small-int cache (256).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 i,n are recursion indices in [0, n] with n <= 4; all cached.",
+   "runtime_type_domain_invariant": "i and n are small non-negative ints (<= root count 4); cached, so is tracks ==.",
+   "source_column": 13,
+   "source_expression_fingerprint": "sha256:e0972b6513a4c398380789a49dbba00a9627c9170189c8e4a80be479c915d2c5",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 117,
+   "survivor_id": "A3-DS-03",
+   "symbol": "recurse",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_comparator_refuses_surplus_snapshots_and_positional_calls",
+    "test_comparator_refuses_malformed_input_rather_than_hiding_it"
+   ],
+   "end_column": 24,
+   "end_line": 145,
+   "environment_binding": {
+    "python_implementation": "CPython",
+    "python_version": "3.11.15",
+    "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+   },
+   "job_id": "8494372324364e9193b27107fe51b6de",
+   "malformed_input_reachability": "NONE within the cached range.",
+   "module": "discretisation_stability",
+   "mutated_expression": "len(snapshots) is not len(REGISTERED_VARIANT_ORDER)",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "observable_behavior_potentially_affected": "the wrong-snapshot-count ValueError guard.",
+   "occurrence": 1,
+   "original_expression": "len(snapshots) != len(REGISTERED_VARIANT_ORDER)",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "INTEGER_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the Python implementation or version changes, or if a reachable length/index can exceed the small-int cache (256).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 both are small ints (len(REGISTERED_VARIANT_ORDER)==3; snapshot counts small).",
+   "runtime_type_domain_invariant": "both operands are small ints (3 and the caller's snapshot count); cached.",
+   "source_column": 22,
+   "source_expression_fingerprint": "sha256:5b17d086824179fa6c074180cceba7f4e2bbdc4f538af4fb88bb8983a6d56519",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 145,
+   "survivor_id": "A3-DS-04",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_comparator_refuses_malformed_input_rather_than_hiding_it"
+   ],
+   "end_column": 30,
+   "end_line": 150,
+   "environment_binding": null,
+   "job_id": "c3eed39bcac74b7093c8b049c169d6d9",
+   "malformed_input_reachability": "NONE for the branch outcome.",
+   "module": "discretisation_stability",
+   "mutated_expression": "snap.variant != variant",
+   "mutation_operator": "core/ReplaceComparisonOperator_IsNot_NotEq",
+   "observable_behavior_potentially_affected": "the registered-order validation ValueError branch.",
+   "occurrence": 0,
+   "original_expression": "snap.variant is not variant",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "ENUM_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the operand can be a non-enum value or a foreign enum with a custom __eq__.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 snap.variant is always a ScanVariant member; is-not and != coincide on singletons.",
+   "runtime_type_domain_invariant": "both operands are ScanVariant members (singletons); Enum.__eq__ is identity.",
+   "source_column": 24,
+   "source_expression_fingerprint": "sha256:7d5f1497490969c10b51dda90d0eddbb74b6721ea2574965aff0f0fc0e078647",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 150,
+   "survivor_id": "A3-DS-05",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_comparator_refuses_malformed_input_rather_than_hiding_it"
+   ],
+   "end_column": 52,
+   "end_line": 154,
+   "environment_binding": null,
+   "job_id": "2d00ccd594e24c20998311d04ac98455",
+   "malformed_input_reachability": "NONE \u2014 a snapshot count != 3 is already refused earlier (len(snapshots) guard); a3_serves_first is a bool.",
+   "module": "discretisation_stability",
+   "mutated_expression": "len({s.a_serves_first for s in snapshots}) > 1",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_Gt",
+   "observable_behavior_potentially_affected": "the mixed-first-server ValueError guard.",
+   "occurrence": 2,
+   "original_expression": "len({s.a_serves_first for s in snapshots}) != 1",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "GUARD_DOMINATED",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "guard": "the set is built from exactly three booleans, so its size is 1 or 2 \u2014 never 0.",
+     "truth_table": "size==1 (all agree): !=1 False, >1 False. size==2 (mixed): !=1 True, >1 True."
+    }
+   },
+   "reclassification_trigger": "Reclassify if a preceding guard/invariant is weakened so a distinguishing input can reach the mutated expression.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 set size in {1,2}, so !=1 <=> >1.",
+   "runtime_type_domain_invariant": "the boolean-set cardinality is in {1, 2}; (size!=1) <=> (size>1).",
+   "source_column": 50,
+   "source_expression_fingerprint": "sha256:4d21445f2e0275346a3ff5026ec599d139de6fc7ba479140e2e45af77105c45b",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 154,
+   "survivor_id": "A3-DS-06",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_6_status_disagreement_and_no_root_mixture_are_unstable",
+    "test_comparison_base_is_g0_for_status_and_mirror"
+   ],
+   "end_column": 27,
+   "end_line": 160,
+   "environment_binding": null,
+   "job_id": "60d46bfe11b1409b98a21c880f1d911f",
+   "malformed_input_reachability": "NONE.",
+   "module": "discretisation_stability",
+   "mutated_expression": "for snap in snapshots[0:]:  (status loop)",
+   "mutation_operator": "core/NumberReplacer",
+   "observable_behavior_potentially_affected": "the STATUS_DISAGREEMENT list (order and content unchanged).",
+   "occurrence": 11,
+   "original_expression": "for snap in snapshots[1:]:  (status loop)",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "IDEMPOTENT_SELF_COMPARISON",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "idempotent": "base = snapshots[0]; the added iteration compares snapshots[0].status against base.status (the same object's status) \u2014 always equal, so nothing is appended."
+    }
+   },
+   "reclassification_trigger": "Reclassify if the loop body gains a side effect (setter/callback/counter/log/provenance/digest/state change).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 the extra self-compare never appends a disagreement; no setter, callback, counter, timestamp, log, provenance, digest or state transition occurs in the branch.",
+   "runtime_type_domain_invariant": "snapshots[0] is base; base.status == base.status; the loop body's only effect is a conditional append that the self-comparison never triggers.",
+   "source_column": 26,
+   "source_expression_fingerprint": "sha256:21edea9617d03ea64e6ccac79418790d2b99108dad7c277eaeece457acc1c36a",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 160,
+   "survivor_id": "A3-DS-07",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_5_root_count_disagreement_is_unstable",
+    "test_pairwise_disagreements_are_exhaustive_and_direction_blind"
+   ],
+   "end_column": 29,
+   "end_line": 176,
+   "environment_binding": {
+    "python_implementation": "CPython",
+    "python_version": "3.11.15",
+    "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+   },
+   "job_id": "28c95f4a29e34c15b02e23e599fbb45d",
+   "malformed_input_reachability": "NONE within the cached range.",
+   "module": "discretisation_stability",
+   "mutated_expression": "len(left.roots) is not len(right.roots)",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "observable_behavior_potentially_affected": "the ROOT_COUNT_DISAGREEMENT branch in the pairwise loop.",
+   "occurrence": 3,
+   "original_expression": "len(left.roots) != len(right.roots)",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "INTEGER_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the Python implementation or version changes, or if a reachable length/index can exceed the small-int cache (256).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 root counts 0..4, cached.",
+   "runtime_type_domain_invariant": "both operands are root-tuple lengths in [0, 4]; cached.",
+   "source_column": 27,
+   "source_expression_fingerprint": "sha256:222bf11c0c23362f63318656bc8c9d4bf56d2228e1a269686b467db97c25c45e",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 176,
+   "survivor_id": "A3-DS-08",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_7_location_mismatch_no_or_ambiguous_matching_is_unstable",
+    "test_pairwise_disagreements_are_exhaustive_and_direction_blind"
+   ],
+   "end_column": 27,
+   "end_line": 186,
+   "environment_binding": null,
+   "job_id": "5ca04eb465574035b7b24c4ce0c28058",
+   "malformed_input_reachability": "NONE \u2014 matchings is produced internally by _complete_matchings; the empty case already continued.",
+   "module": "discretisation_stability",
+   "mutated_expression": "len(matchings) != 1",
+   "mutation_operator": "core/ReplaceComparisonOperator_Gt_NotEq",
+   "observable_behavior_potentially_affected": "the LOCATION_MATCHING_AMBIGUOUS branch.",
+   "occurrence": 1,
+   "original_expression": "len(matchings) > 1",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "GUARD_DOMINATED",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "guard": "reached only after `if not matchings: continue` (line 182), so len(matchings) >= 1.",
+     "truth_table": "len==1: >1 False, !=1 False. len in {2,3}: both True. len==0 unreachable here."
+    }
+   },
+   "reclassification_trigger": "Reclassify if a preceding guard/invariant is weakened so a distinguishing input can reach the mutated expression.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 with len>=1, >1 <=> !=1.",
+   "runtime_type_domain_invariant": "len(matchings) >= 1 at this line; (len>1) <=> (len!=1).",
+   "source_column": 26,
+   "source_expression_fingerprint": "sha256:8bdea1b1a80985598d5ce02a33c1ab938ba32852ee93b28ff22cfe18f1fc7a0e",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 186,
+   "survivor_id": "A3-DS-09",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_7_location_mismatch_no_or_ambiguous_matching_is_unstable",
+    "test_pairwise_disagreements_are_exhaustive_and_direction_blind"
+   ],
+   "end_column": 41,
+   "end_line": 190,
+   "environment_binding": null,
+   "job_id": "86638e8f13b64eccb43986ef3336ba93",
+   "malformed_input_reachability": "NONE \u2014 empty and multi-element matchings already continued; no index value enters provenance or diagnostics.",
+   "module": "discretisation_stability",
+   "mutated_expression": "enumerate(matchings[-1])",
+   "mutation_operator": "core/NumberReplacer",
+   "observable_behavior_potentially_affected": "the boundary-flag comparison over the unique matching.",
+   "occurrence": 17,
+   "original_expression": "enumerate(matchings[0])",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "SINGLE_ELEMENT_INDEX",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "cardinality_guard": "reached only when len(matchings) == 1: `if not matchings: continue` (line 182) refuses empty; `if len(matchings) > 1: continue` (line 186) refuses multi-element. So exactly one element remains."
+    }
+   },
+   "reclassification_trigger": "Reclassify if a preceding guard/invariant is weakened so a distinguishing input can reach the mutated expression.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 with len==1, matchings[0] is matchings[-1] (same object).",
+   "runtime_type_domain_invariant": "len(matchings) == 1 here; matchings[0] is matchings[-1].",
+   "source_column": 40,
+   "source_expression_fingerprint": "sha256:a52b0b3533b18bd5d7643d74700fca24ff468176df5866a95153281ce3dd39ce",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 190,
+   "survivor_id": "A3-DS-10",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_8_boundary_flag_mismatch_is_unstable",
+    "test_pairwise_disagreements_are_exhaustive_and_direction_blind"
+   ],
+   "end_column": 43,
+   "end_line": 191,
+   "environment_binding": null,
+   "job_id": "1c3c0ec765de4c47a744395d768f7ec2",
+   "malformed_input_reachability": "NONE in production; a caller-forged non-bool on_boundary (0/1 int, numpy bool, foreign truthy, None) is not produced by any production path (Root is built only from within_boundary_tolerance).",
+   "module": "discretisation_stability",
+   "mutated_expression": "left.roots[i].on_boundary is not right.roots[j].on_boundary",
+   "mutation_operator": "core/ReplaceComparisonOperator_NotEq_IsNot",
+   "observable_behavior_potentially_affected": "the BOUNDARY_FLAG_DISAGREEMENT branch.",
+   "occurrence": 4,
+   "original_expression": "left.roots[i].on_boundary != right.roots[j].on_boundary",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "BOOLEAN_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "bool_provenance": "Root.on_boundary is produced by within_boundary_tolerance(...) = `min(...) < tolerance`, a closed internal function returning a genuine built-in bool. True/False are unique singletons in every Python implementation."
+    }
+   },
+   "reclassification_trigger": "Reclassify if a caller can supply a non-bool on_boundary.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 on_boundary is always a built-in bool; is-not tracks != on bool singletons.",
+   "runtime_type_domain_invariant": "on_boundary is a built-in bool (True/False singletons); is-not <=> !=.",
+   "source_column": 41,
+   "source_expression_fingerprint": "sha256:695e63149ff8b6981724be5ed2787ebfd1f81d903fa723dd06873d2c5a13127e",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 191,
+   "survivor_id": "A3-DS-11",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_9_mirror_relation_mismatch_is_unstable",
+    "test_comparison_base_is_g0_for_status_and_mirror"
+   ],
+   "end_column": 27,
+   "end_line": 197,
+   "environment_binding": null,
+   "job_id": "53f74f13668c43e2afd64b25d7610a69",
+   "malformed_input_reachability": "NONE.",
+   "module": "discretisation_stability",
+   "mutated_expression": "for snap in snapshots[0:]:  (mirror loop)",
+   "mutation_operator": "core/NumberReplacer",
+   "observable_behavior_potentially_affected": "the MIRROR_RELATION_DISAGREEMENT list.",
+   "occurrence": 19,
+   "original_expression": "for snap in snapshots[1:]:  (mirror loop)",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "IDEMPOTENT_SELF_COMPARISON",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {
+     "idempotent": "base_mirror = classify_mirror_relation(base.roots, ...) with base = snapshots[0]; the added iteration compares mirror(snapshots[0]) against base_mirror (same value) \u2014 always equal, so nothing is appended. classify_mirror_relation is a pure function (no side effects)."
+    }
+   },
+   "reclassification_trigger": "Reclassify if the loop body gains a side effect (setter/callback/counter/log/provenance/digest/state change).",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 the extra self-compare never appends; no setter/callback/counter/timestamp/log/provenance/digest/state change.",
+   "runtime_type_domain_invariant": "snapshots[0] is base; classify(base.roots) == base_mirror; the loop body's only effect is a conditional append the self-comparison never triggers.",
+   "source_column": 26,
+   "source_expression_fingerprint": "sha256:a2207d8c6c44d24b5b52901b14a0be15c9fed495d3726918eb025e8a885b6b30",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 197,
+   "survivor_id": "A3-DS-12",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_10_9_mirror_relation_mismatch_is_unstable",
+    "test_comparison_base_is_g0_for_status_and_mirror"
+   ],
+   "end_column": 24,
+   "end_line": 199,
+   "environment_binding": null,
+   "job_id": "885a8a73b88245a5ac22bad6e8816234",
+   "malformed_input_reachability": "NONE.",
+   "module": "discretisation_stability",
+   "mutated_expression": "mirror != base_mirror",
+   "mutation_operator": "core/ReplaceComparisonOperator_IsNot_NotEq",
+   "observable_behavior_potentially_affected": "whether a MIRROR_RELATION_DISAGREEMENT is appended.",
+   "occurrence": 1,
+   "original_expression": "mirror is not base_mirror",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "ENUM_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "REACHABLE_DOMAIN_DIFFERENTIAL; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the operand can be a non-enum value or a foreign enum with a custom __eq__.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input \u2014 mirror and base_mirror are MirrorRelation members returned by classify_mirror_relation; singletons.",
+   "runtime_type_domain_invariant": "both operands are MirrorRelation members (singletons); Enum.__eq__ is identity.",
+   "source_column": 18,
+   "source_expression_fingerprint": "sha256:716a7cb8a3f08bcf63904645a25b7994899c23dd5adbfa82afa3ed066bcd1ce9",
+   "source_file": "sport_tennis/coherence/discretisation_stability.py",
+   "source_line": 199,
+   "survivor_id": "A3-DS-13",
+   "symbol": "compare_registered_variants",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_variant_axes_reproduce_a2_frozen_rules_exactly",
+    "test_g0_axis_is_the_production_axis",
+    "test_variant_definitions_pin_the_registration"
+   ],
+   "end_column": 17,
+   "end_line": 85,
+   "environment_binding": null,
+   "job_id": "a3f4b7c8fb994aa1a47c1400e7f9e761",
+   "malformed_input_reachability": "NONE \u2014 a non-enum operand takes neither branch under is or == and falls through to the identical ValueError (proven: non_enum_refusal_consistent).",
+   "module": "scan_variants",
+   "mutated_expression": "variant == ScanVariant.G0_BASELINE",
+   "mutation_operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "observable_behavior_potentially_affected": "the selected lattice-construction branch of variant_axis.",
+   "occurrence": 0,
+   "original_expression": "variant is ScanVariant.G0_BASELINE",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "ENUM_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the operand can be a non-enum value or a foreign enum with a custom __eq__.",
+   "registered_domain_reachability": "UNREACHABLE \u2014 variant_axis is only ever called (via _stability_checked_solve -> REGISTERED_VARIANT_ORDER and _solve_one -> build_scan_axis) with genuine ScanVariant members.",
+   "runtime_type_domain_invariant": "operand is guaranteed to be a member of the exact ScanVariant enum; members are process-unique singletons; Enum.__eq__ is identity; no attacker-controlled foreign __eq__ (raw strings / None / foreign types refused via ValueError before use).",
+   "source_column": 15,
+   "source_expression_fingerprint": "sha256:4414a3f0867ca9afd590fe9407357a1e4c8ea70d31d825eb47727175d6cc6bb3",
+   "source_file": "sport_tennis/coherence/scan_variants.py",
+   "source_line": 85,
+   "survivor_id": "A3-SV-01",
+   "symbol": "variant_axis",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_variant_axes_reproduce_a2_frozen_rules_exactly",
+    "test_variant_definitions_pin_the_registration"
+   ],
+   "end_column": 17,
+   "end_line": 87,
+   "environment_binding": null,
+   "job_id": "ea1057a69bee4a5f966dbc2cdf2d0326",
+   "malformed_input_reachability": "NONE.",
+   "module": "scan_variants",
+   "mutated_expression": "variant == ScanVariant.G1_REGISTERED_VALIDATION",
+   "mutation_operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "observable_behavior_potentially_affected": "",
+   "occurrence": 1,
+   "original_expression": "variant is ScanVariant.G1_REGISTERED_VALIDATION",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "ENUM_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the operand can be a non-enum value or a foreign enum with a custom __eq__.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input over the registered variant set.",
+   "runtime_type_domain_invariant": "",
+   "source_column": 15,
+   "source_expression_fingerprint": "sha256:9757587f576dbb6bcb60b24588f74e2e7cf958d2f857fe081f8461cab677be74",
+   "source_file": "sport_tennis/coherence/scan_variants.py",
+   "source_line": 87,
+   "survivor_id": "A3-SV-02",
+   "symbol": "variant_axis",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  },
+  {
+   "approved_by": null,
+   "associated_test_ids": [
+    "test_variant_axes_reproduce_a2_frozen_rules_exactly",
+    "test_variant_definitions_pin_the_registration"
+   ],
+   "end_column": 17,
+   "end_line": 89,
+   "environment_binding": null,
+   "job_id": "31d6c40fd6964158b5fcbd8e08fc562f",
+   "malformed_input_reachability": "NONE.",
+   "module": "scan_variants",
+   "mutated_expression": "variant == ScanVariant.G2_REGISTERED_VALIDATION",
+   "mutation_operator": "core/ReplaceComparisonOperator_Is_Eq",
+   "observable_behavior_potentially_affected": "",
+   "occurrence": 2,
+   "original_expression": "variant is ScanVariant.G2_REGISTERED_VALIDATION",
+   "proof_artifact_digest": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+   "proof_class": "ENUM_IDENTITY",
+   "proof_of_unchanged_behavior": {
+    "differential": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential; reachable_diffs=0 over 4000 trials (enum: over the 3 registered variants + non-enum refusal check)",
+    "structural": {}
+   },
+   "reclassification_trigger": "Reclassify if the operand can be a non-enum value or a foreign enum with a custom __eq__.",
+   "registered_domain_reachability": "UNREACHABLE distinguishing input over the registered variant set.",
+   "runtime_type_domain_invariant": "",
+   "source_column": 15,
+   "source_expression_fingerprint": "sha256:aa45c8d06fda4d37400f6bc512bca023c3b9fe61b8881934ea2255cccce193d1",
+   "source_file": "sport_tennis/coherence/scan_variants.py",
+   "source_line": 89,
+   "survivor_id": "A3-SV-03",
+   "symbol": "variant_axis",
+   "test_outcome": "SURVIVED",
+   "worker_outcome": "NORMAL"
+  }
+ ]
+}

@@ -185,8 +185,30 @@ def default_vintage_root() -> Path:
     return _DATA_CANDIDATES[0]
 
 
+#: A ZIP local-file header. Every real .xlsx is a zip; every legacy .xls is an OLE2
+#: compound document starting D0 CF 11 E0.
+_ZIP_MAGIC = b"PK\x03\x04"
+
+
+def is_xlsx(path: Path) -> bool:
+    """Whether this is really a modern workbook, decided by content and not by name.
+
+    tennis-data.co.uk serves 2002-2012 as legacy OLE2 workbooks from URLs ending ``.xlsx``,
+    so the downloader stores 17 of 45 files with a suffix that lies about the format. Picking
+    the reader by suffix therefore fails on exactly the oldest third of the corpus — and it
+    fails loudly with ``BadZipFile``, which is the good case. The bad case would be a format
+    that half-parses.
+
+    Reading four bytes is cheap and it makes the loader indifferent to how the provider
+    labels its files, which is the property worth having: the format is a fact about the
+    bytes, and the extension is only a claim about them.
+    """
+    with path.open("rb") as handle:
+        return handle.read(4) == _ZIP_MAGIC
+
+
 def _iter_sheet(path: Path) -> Iterator[tuple[list[str], tuple[Any, ...]]]:
-    if path.suffix == ".xlsx":
+    if is_xlsx(path):
         workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
         sheet = workbook.active
         if sheet is not None:

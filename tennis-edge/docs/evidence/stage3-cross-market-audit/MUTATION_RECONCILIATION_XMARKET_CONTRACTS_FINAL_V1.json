@@ -1,0 +1,11 @@
+{
+  "modules": 4,
+  "db_survivor_count_total": 85,
+  "packet_entry_count": 85,
+  "missing": 0,
+  "extra": 0,
+  "duplicate": 0,
+  "stale": 0,
+  "unclassified_count": 0,
+  "per_module_reconciliations_nonzero": []
+}

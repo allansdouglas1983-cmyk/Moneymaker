@@ -1,0 +1,59 @@
+{
+ "algorithm": "RESIDUAL_NORM_COARSE_SCAN + CLUSTERED_SEED_SELECTION + NESTED_REFINE + NEWTON_POLISH",
+ "commit": "20463e2c8d862ac3061cee39f5115a928282c187",
+ "constants": {
+  "_BOUNDARY_TOL": 0.005,
+  "_CLUSTER_R": 2,
+  "_COARSE_N": 13,
+  "_DEDUP_TOL": 0.001,
+  "_JAC_EPS": 0.001,
+  "_JAC_TOL": 0.005,
+  "_NEWTON_ITERS": 40,
+  "_NEWTON_SINGULAR": 1e-10,
+  "_N_SEED": 20,
+  "_REFINE_K": 5,
+  "_REFINE_LEVELS": 6,
+  "_REFINE_SHRINK": 0.5,
+  "_ROOT_TOL": 0.0001
+ },
+ "finding_5_7": "The current solver evaluates the residual NORM at each grid NODE (grid[i][j]) and RANKS/CLUSTERS the lowest-norm nodes as refinement seeds. It does NOT enumerate scan CELLS with four corner residual vectors, and it has NO SIGN_CHANGE / candidate-region classification. Implementing directive \u00a75 (ScanCell corners) and \u00a77 (SIGN_CHANGE candidate regions) as written would REPLACE this algorithm -> STOP_CONTRACT_DRIFT.",
+ "finite_difference": {
+  "clamp_hi": 0.99,
+  "clamp_lo": 0.01,
+  "method": "central",
+  "step": 0.001
+ },
+ "golden_oracle_sha256": "e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+ "grid_node_count_per_solve": 169,
+ "jacobian_col_order": [
+  "p_a",
+  "p_b"
+ ],
+ "jacobian_row_order": [
+  "match_odds",
+  "total_games"
+ ],
+ "residual_component_order": [
+  "match_odds",
+  "total_games"
+ ],
+ "scan_axis": {
+  "0.35_0.9": {
+   "count": 13,
+   "first": 0.35,
+   "last": 0.9
+  },
+  "0.5_0.7": {
+   "count": 13,
+   "first": 0.5,
+   "last": 0.7
+  }
+ },
+ "singularity": {
+  "jac_tol": 0.005,
+  "newton_singular": 1e-10,
+  "operator": "abs(det) < tol"
+ },
+ "solver_contracts_py_sha256": "de9e9e72598bc2770f361a1e82e0a28bc51f5e73097e7a43f7aa916db031ce6d",
+ "solver_py_sha256": "069ff48480eb9cd46c96148c754a71a71883bfec1f09a2004c270d06eb3fb6f8"
+}

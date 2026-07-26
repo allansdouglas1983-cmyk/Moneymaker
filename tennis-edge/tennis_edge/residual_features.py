@@ -51,6 +51,7 @@ from tennis_edge.pyramid import PyramidRatings, pyramid_features
 from tennis_edge.ratings import RatingEngine, elo_expected
 from tennis_edge.refresh import Vintage, latest_vintage
 from tennis_edge.sackmann import available_files, load_matches
+from tennis_edge.durability import DurabilityEstimator, durability_features
 from tennis_edge.serve_detail import DetailEstimator, serve_detail_features
 from tennis_edge.serve_stats import ServeEstimator
 
@@ -96,6 +97,14 @@ RESIDUAL_FEATURE_NAMES: tuple[str, ...] = (
     "double_fault_rate_gap",
     "break_save_rate_gap",
     "return_rate_gap",
+    # Three things a scalar rating cannot hold: who beats whom regardless of rating, who
+    # hands the market a settled loss without being beaten, and who arrives tired or on a
+    # surface they have not competed on since the last event.
+    "h2h_gap",
+    "retirement_risk_gap",
+    "workload_minutes_gap",
+    "workload_long_gap",
+    "surface_switch_gap",
 )
 
 #: Minimum main-tour matches per player before a row is priceable. Below this the rating is
@@ -132,16 +141,21 @@ def _build(matches: tuple[Match, ...]) -> list[FeatureRow]:
     pyramid = PyramidRatings()
     estimator = ServeEstimator()
     detail = DetailEstimator()
+    durability = DurabilityEstimator()
     serve_rows = list(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM,
                                    require_serve_stats=True))
     estimator.queue(serve_rows)
     detail.queue(serve_rows)
+    # Durability sees every match, retirements included: a retirement is the event this
+    # layer exists to count, and the serve-stat filter above would drop all of them.
+    durability.queue(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM))
     pyramid.queue(load_matches(families=("main", "qual_chall", "futures"),
                                since=ARCHIVE_FROM))
     rows: list[FeatureRow] = []
     for day, batch in group_by_day(matches):
         estimator.advance_to(day)
         detail.advance_to(day)
+        durability.advance_to(day)
         pyramid.advance_to(day)
         for match in sorted(batch, key=lambda m: (m.tour, m.player_a, m.player_b)):
             market = market_probability(match, book=PRICING_BOOK, method=DEVIG)
@@ -169,6 +183,8 @@ def _build(matches: tuple[Match, ...]) -> list[FeatureRow]:
                 features["point_model_residual"] = _logit(point) - _logit(market)
             features.update(pyramid_features(pyramid, tour, a, b, day, match.surface))
             features.update(serve_detail_features(detail, tour, a, b))
+            features.update(durability_features(durability, tour, a, b,
+                                                surface=match.surface, when=day))
 
             odds_a: dict[str, float] = {}
             odds_b: dict[str, float] = {}

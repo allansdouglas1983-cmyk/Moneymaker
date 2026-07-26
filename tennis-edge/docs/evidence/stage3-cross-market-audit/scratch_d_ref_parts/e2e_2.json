@@ -1,0 +1,29 @@
+{
+ "fixture": "mirror_pair_multiple_roots",
+ "domain": [
+  0.35,
+  0.9
+ ],
+ "targets": [
+  0.308914247162222,
+  0.5782644846675348
+ ],
+ "production_status": "IDENTIFIED",
+ "reference_status": "IDENTIFIED",
+ "status_agree": true,
+ "production_root_count": 1,
+ "reference_root_count": 1,
+ "root_locations_agree_within_dedup_tol": true,
+ "production_roots": [
+  [
+   0.6199997776604679,
+   0.6599997286371028
+  ]
+ ],
+ "reference_roots": [
+  [
+   0.6202489838577241,
+   0.6602592161068556
+  ]
+ ]
+}

@@ -1,0 +1,99 @@
+{
+ "approved_by": null,
+ "blocked_nodes": [
+  {
+   "attempts": 2,
+   "cleanup": "OK both attempts; source byte-identical to HEAD; no orphan process",
+   "node_id": "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[True-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+   "observed": [
+    "TIMEOUT_CLEANED at 540.60s",
+    "TIMEOUT_CLEANED at 540.60s"
+   ],
+   "shard": "S000"
+  },
+  {
+   "attempts": 1,
+   "cleanup": "OK; source byte-identical to HEAD; no orphan process",
+   "node_id": "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[False-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+   "observed": [
+    "TIMEOUT_CLEANED at 540.60s"
+   ],
+   "shard": "S001"
+  }
+ ],
+ "collection_digest": "sha256:93e3b5292d9c17c8c8a312aad44bc3f1fbe8731251aa0eb848d74b9bce60fedb",
+ "commit": "b1d17262b209f1c0219776e54997395b76069cd7",
+ "context_not_claimed_as_equivalent_evidence": "Earlier in this session, on commit b712b3b, these same two nodes PASSED at 518.10s and 510.61s. Neither the test file nor the coherence source has changed since. This run is measurably slower (~1.2x on every comparable shard). Per \u00a77 that earlier run is NOT claimed as equivalent evidence for this verification.",
+ "directive": "PROGRAMME RESET AND OPERATIONAL V0 RELEASE \u00a75",
+ "makefile_digest": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
+ "monolithic_make_verify": "NOT completed in this environment (600s foreground cap). Never claimed.",
+ "non_pytest_gates": {
+  "count": 24,
+  "fail": 0,
+  "pass": 24
+ },
+ "nonpytest_gates_digest": "sha256:e2abbf17a37dc4587548884619a5209101a66dac65991c3f6b5cd891526b5ec1",
+ "policy_digest": "sha256:7bd4bbc8d2fe9a75a6fe33e5dd4628982dbcbb19e9409cee3a5bfbf08e6639d7",
+ "preflight_digest": "sha256:e656a72520be5a9463d8ad0f2d0beb96c896ac9a429192369aedea7fcfe488f8",
+ "pytest": {
+  "collected": 3140,
+  "duplicate": 0,
+  "executed_passed": 3138,
+  "extra": 0,
+  "failed": 0,
+  "longest_shard": [
+   "S006",
+   3,
+   376.39
+  ],
+  "missing": 0,
+  "pass_shards": 22,
+  "pending": 2,
+  "skipped": 0,
+  "total_pytest_elapsed_s": 2598.8
+ },
+ "pytest_pending_nodes": [
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[False-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[True-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]"
+ ],
+ "pytest_reconciliation_digest": "sha256:8d0751c17a9c5aba552d85a8e8c3e8b7e51fd97bad1fe257aeb208b9e6f95641",
+ "record": "STAGE3_FULL_VERIFY_SHARDED_V1_RECORD",
+ "shard_plan_amendments": "sha256:294ffdad6e83db82b63ee78708e5db85cb41d037b610a5f17d461fbaf2616a46",
+ "shard_plan_digest": "sha256:0bdc061451a2d988c5727bf57742e72aef7ff9af0301b49812aa88c388ce4436",
+ "timeout_incidents": [
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.TIMEOUT_ATTEMPT1.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S001.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S001"
+  },
+  {
+   "elapsed_s": 540.53,
+   "file": "S004.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004"
+  },
+  {
+   "elapsed_s": 540.61,
+   "file": "S004a.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004a"
+  }
+ ],
+ "verdict": "STOP_SINGLE_TEST_EXCEEDS_CAP",
+ "verdict_reason": "3138 of 3140 collected pytest nodes executed and PASSED across 22 successful foreground shards; all 24 exact non-pytest Makefile gates PASSED (including ruff --select ARG . and mypy --strict ., the two gates that were red before this pass). TWO nodes could not complete inside the environment's ~600s foreground-command cap under the policy's 540s hard shard limit. Per \u00a77, a one-node shard that reaches the limit twice yields STOP_SINGLE_TEST_EXCEEDS_CAP. No test, test data, internal timeout or expected value was changed, and no shorter substitute was introduced.",
+ "verdict_scope": "repository-wide sharded verification only; the V0 product itself is complete and green",
+ "verify_plan_digest": "sha256:4aa462ebca8ca7fa6dd081d0b049507091516773368048010036cbedb67eb315"
+}

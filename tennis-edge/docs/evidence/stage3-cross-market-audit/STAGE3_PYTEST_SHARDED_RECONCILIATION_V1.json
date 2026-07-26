@@ -1,0 +1,55 @@
+{
+ "collected": 3140,
+ "collection_digest": "sha256:93e3b5292d9c17c8c8a312aad44bc3f1fbe8731251aa0eb848d74b9bce60fedb",
+ "duplicate": 0,
+ "executed_passed": 3138,
+ "extra": 0,
+ "failed": 0,
+ "longest_shard": [
+  "S006",
+  3,
+  376.39
+ ],
+ "missing": 0,
+ "pass_shards": 22,
+ "pending": 2,
+ "pending_nodes": [
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[False-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]",
+  "tests/unit/coherence/test_match_and_pmf.py::test_match_production_equals_reference[True-MatchFormat.BO5_AD_TB10_FINAL_AT_6_6]"
+ ],
+ "skipped": 0,
+ "timeout_incidents": [
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.TIMEOUT_ATTEMPT1.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S000.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S000"
+  },
+  {
+   "elapsed_s": 540.6,
+   "file": "S001.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S001"
+  },
+  {
+   "elapsed_s": 540.53,
+   "file": "S004.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004"
+  },
+  {
+   "elapsed_s": 540.61,
+   "file": "S004a.TIMEOUT_INCIDENT.result.json",
+   "outcome": "TIMEOUT_CLEANED",
+   "shard": "S004a"
+  }
+ ],
+ "total_pytest_elapsed_s": 2598.8,
+ "verdict": "STOP_SINGLE_TEST_EXCEEDS_CAP"
+}

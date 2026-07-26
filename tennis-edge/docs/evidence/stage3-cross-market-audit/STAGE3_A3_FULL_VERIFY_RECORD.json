@@ -1,0 +1,59 @@
+{
+ "approved_by": null,
+ "bundle_artifact_digests": {
+  "A3_SURVIVOR_EQUIVALENCE_PROOF_V1.json": "sha256:7df52959fe1dece8c7642522f1d44de07011fbaf33a0cf6d4d651dba06e9e054",
+  "MUTATION_RECONCILIATION_DISCRETISATION_STABILITY_A3_FINAL_V1.json": "sha256:25b8c6cceeddf712544ab19866af045851468ce3ea87fbeb884814695f1beb27",
+  "MUTATION_SURVIVOR_CLASS_INDEX_DISCRETISATION_STABILITY_A3_FINAL_V1.md": "sha256:2f108417819f0f9fc36de86797034f3faa40992c1743cf9dcb34661f7c46602d",
+  "MUTATION_SURVIVOR_PACKET_DISCRETISATION_STABILITY_A3_FINAL_V1.json": "sha256:5c65486ec5565eba5ca3123b22bbac5729ca3a2a9dbe81eadb5a1276aabf6c25",
+  "PENDING_FOUNDER_SURVIVOR_INVENTORY_STAGE3_V1.md": "sha256:0ccd4ee5d6656bbdc3f8afe47c966214de926626752c4077622fbeb83bc9ffe7"
+ },
+ "clean_working_tree_excluding_new_export_artifacts": true,
+ "commit": "37bac01ffbd31cc18cfc7978da51888e6e6e85a5",
+ "contains_no_model_outcome_tip_ev_roi_pnl_clv_or_stake": true,
+ "directive": "STAGE3-0006C-D-A3-FINALIZE \u00a78/\u00a79",
+ "elapsed_s": 586,
+ "end_utc": "2026-07-24T18:43:10Z",
+ "exit_code": 124,
+ "full_verify_command": "uv run make verify  (foreground, inner `timeout 585` for a clean flush before the 600s tool cap)",
+ "gate_results": {
+  "check_facts_freshness": "PASS \u2014 8 facts fresh as of 2026-07-24",
+  "check_licensed_sources": "PASS \u2014 7 sources, 0 operational-and-fully-licensed",
+  "check_spec_coverage (active,verified)": "PASS \u2014 47 enforced IDs covered and consistent",
+  "check_spec_coverage (causal + money properties)": "PASS \u2014 47 enforced IDs covered and consistent",
+  "escape-hatch greps (MONEY, EVIDENCE)": "NOT_REACHED",
+  "import quarantines (x15)": "NOT_REACHED",
+  "mypy --strict .": "NOT_REACHED",
+  "pylint W0613 (MONEY)": "NOT_REACHED",
+  "pytest (unit+integration+properties+stateful+failure_injection)": "INTERRUPTED at ~6% (600s cap); only passing dots observed, zero failures in the executed portion",
+  "ruff --select ARG": "NOT_REACHED"
+ },
+ "governing_registration_digest": "sha256:45bc96caf28de7ad1bc456d7d3f98cfcedf2e3060418f6519d712a6c91cc816b",
+ "make_verify_log": "/tmp/claude-0/-home-user-Moneymaker/b09554bc-9729-5d86-bb7c-43d4f555802d/scratchpad/make_verify_full.log",
+ "make_verify_log_digest": "sha256:8d6618191a4a320344ba2adae2044a17e97c3d97c9dfdd330d23d2e44dcc21cf",
+ "mutation_session_digests": {
+  "discretisation_stability": "sha256:cf2508bffec588769f1f69e32a24ffa4a4005ad9f246f0fb24be9690ebfd3df1",
+  "scan_variants": "sha256:423e300f6416c9caef40f2923219ec84c6867912fc9408e3ed186f172c2ad6d2",
+  "solver_wiring": "sha256:abae982fb42dcf037e5678d248fac968580e7fbccca5ac7390f3f4f6b72fa109"
+ },
+ "no_process_running_after_interrupt": true,
+ "record": "STAGE3_A3_FULL_VERIFY_RECORD",
+ "source_digests_git_hash_object": {
+  "sport_tennis/coherence/discretisation_stability.py": "59f85bbd494808360aa25e0be19b5fab88eeec84",
+  "sport_tennis/coherence/scan_variants.py": "972763cb167bac3d2c89dc0dd7b4bf589f360344",
+  "sport_tennis/coherence/solver.py": "3548340a44a51835916b1a012d1b843e122f0c97"
+ },
+ "start_utc": "2026-07-24T18:33:24Z",
+ "status": "FULL_VERIFY_INTERRUPTED",
+ "status_reason": "The foreground execution environment hard-caps a single attached command at 600s; `make verify`'s pytest step (tests/unit+integration+properties+stateful+failure_injection) requires far longer (the two BO5 production_equals_reference coherence tests alone are ~13 min). No background/detached run is permitted (directive \u00a71), so full verify cannot complete in one foreground call. Interruption is environmental, not a test failure; no defect was exposed.",
+ "supplementary_targeted_verification_this_slice (\u00a718, NOT a substitute for make verify)": {
+  "all 19 import-quarantine invocations (earlier this slice)": "PASS",
+  "mypy --strict (3 modules)": "clean",
+  "ruff (modules+tests)": "clean",
+  "test_degeneracy_diagnostic.py": "18 passed",
+  "test_discretisation_stability.py": "35 passed",
+  "test_immutability + reference_independence + signatures": "20 passed",
+  "test_solver_golden.py (V3)": "3 passed",
+  "test_stability_independent.py + properties": "20 passed"
+ },
+ "v3_golden_digest": "sha256:f21e2aa72c7d3f75810d3bdc98230af56c1fbcc9217eed5249238ac41f63f980"
+}

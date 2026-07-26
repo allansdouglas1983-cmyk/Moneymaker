@@ -1,0 +1,173 @@
+{
+ "all_equivalent": true,
+ "directive": "STAGE3-0006C-D-A3-FINALIZE \u00a73/\u00a74",
+ "environment": {
+  "python_implementation": "CPython",
+  "python_version": "3.11.15",
+  "python_version_full": "3.11.15 (main, Mar  3 2026, 09:26:23) [GCC 13.3.0]",
+  "small_int_cache_range": "[-5, 256] (CPython PyLong cache)"
+ },
+ "note": "L170 and solver L269 are KILLED (round 2), not in this set; approved_by null",
+ "purpose": "reproducible equivalence proof for the 16 classified A3 survivors",
+ "results": {
+  "A3-DS-01": {
+   "class": "INTEGER_IDENTITY",
+   "environment_bound": true,
+   "equivalent": true,
+   "job_id": "0c71a135011d43379152c588d2d27bd5",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-02": {
+   "class": "GUARD_DOMINATED",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "c1a6795a487a4ed9bbfd979f1d019e6a",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-03": {
+   "class": "INTEGER_IDENTITY",
+   "environment_bound": true,
+   "equivalent": true,
+   "job_id": "56999d540b404161aa3d23456d93c128",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-04": {
+   "class": "INTEGER_IDENTITY",
+   "environment_bound": true,
+   "equivalent": true,
+   "job_id": "8494372324364e9193b27107fe51b6de",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-05": {
+   "class": "ENUM_IDENTITY",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "c3eed39bcac74b7093c8b049c169d6d9",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-06": {
+   "class": "GUARD_DOMINATED",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "2d00ccd594e24c20998311d04ac98455",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-07": {
+   "class": "IDEMPOTENT_SELF_COMPARISON",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "60d46bfe11b1409b98a21c880f1d911f",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-08": {
+   "class": "INTEGER_IDENTITY",
+   "environment_bound": true,
+   "equivalent": true,
+   "job_id": "28c95f4a29e34c15b02e23e599fbb45d",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL_ENV_BOUND",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-09": {
+   "class": "GUARD_DOMINATED",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "5ca04eb465574035b7b24c4ce0c28058",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-10": {
+   "class": "SINGLE_ELEMENT_INDEX",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "86638e8f13b64eccb43986ef3336ba93",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-11": {
+   "class": "BOOLEAN_IDENTITY",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "1c3c0ec765de4c47a744395d768f7ec2",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-12": {
+   "class": "IDEMPOTENT_SELF_COMPARISON",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "53f74f13668c43e2afd64b25d7610a69",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-DS-13": {
+   "class": "ENUM_IDENTITY",
+   "environment_bound": false,
+   "equivalent": true,
+   "job_id": "885a8a73b88245a5ac22bad6e8816234",
+   "method": "REACHABLE_DOMAIN_DIFFERENTIAL",
+   "module": "discretisation_stability",
+   "reachable_diffs": 0,
+   "trials": 4000
+  },
+  "A3-SV-01": {
+   "axis_diffs_over_registered_variants": 0,
+   "class": "ENUM_IDENTITY",
+   "equivalent": true,
+   "job_id": "a3f4b7c8fb994aa1a47c1400e7f9e761",
+   "method": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential",
+   "module": "scan_variants",
+   "non_enum_refusal_consistent": true
+  },
+  "A3-SV-02": {
+   "axis_diffs_over_registered_variants": 0,
+   "class": "ENUM_IDENTITY",
+   "equivalent": true,
+   "job_id": "ea1057a69bee4a5f966dbc2cdf2d0326",
+   "method": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential",
+   "module": "scan_variants",
+   "non_enum_refusal_consistent": true
+  },
+  "A3-SV-03": {
+   "axis_diffs_over_registered_variants": 0,
+   "class": "ENUM_IDENTITY",
+   "equivalent": true,
+   "job_id": "31d6c40fd6964158b5fcbd8e08fc562f",
+   "method": "LANGUAGE_GUARANTEE_ENUM_SINGLETON + variant_axis differential",
+   "module": "scan_variants",
+   "non_enum_refusal_consistent": true
+  }
+ },
+ "survivor_count": 16,
+ "trials_per_ds_survivor": 4000
+}

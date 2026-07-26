@@ -1,0 +1,2 @@
+tests/unit/coherence/test_rootset_independent.py::test_dedup_reference_still_import_clean
+tests/unit/coherence/test_rootset_independent.py::test_production_and_reference_agree_no_root

@@ -1,0 +1,19 @@
+{
+ "fixture": "no_root",
+ "domain": [
+  0.35,
+  0.9
+ ],
+ "targets": [
+  0.98,
+  0.02
+ ],
+ "production_status": "NO_ROOT",
+ "reference_status": "NO_ROOT",
+ "status_agree": true,
+ "production_root_count": 0,
+ "reference_root_count": 0,
+ "root_locations_agree_within_dedup_tol": true,
+ "production_roots": [],
+ "reference_roots": []
+}

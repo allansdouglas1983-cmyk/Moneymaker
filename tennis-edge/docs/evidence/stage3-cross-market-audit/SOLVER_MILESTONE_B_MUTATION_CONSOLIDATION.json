@@ -1,0 +1,133 @@
+{
+ "approved_by": null,
+ "finding_5_7": "\u00a75 (ScanCell four-corner residuals) has NO independent seam in this solver; the node-seed rule (\u00a77 rank_seed_nodes) subsumes it and is preserved explicitly per \u00a77 escape clause. Micro-gate 5 (Jacobian2x2.determinant orientation) stands as the sixth money-critical gate in \u00a75's place.",
+ "hardening_rounds": 1,
+ "harness": "tools/run_hardened_mutation.sh (isolated_exec-wrapped test command; source restored + proven byte-identical to HEAD on exit; audited clean by tools/mutation_audit.py --require-clean).",
+ "micro_gates": [
+  {
+   "definitions": [
+    "build_scan_axis"
+   ],
+   "gate": 1,
+   "result": {
+    "killed": 57,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "build_scan_axis",
+   "section": "\u00a74",
+   "session": "solver_scan"
+  },
+  {
+   "definitions": [
+    "ResidualVector2",
+    "sum_of_squares",
+    "inf_norm",
+    "validate",
+    "serialize",
+    "digest"
+   ],
+   "gate": 2,
+   "result": {
+    "killed": 56,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "ResidualVector2 residual + 2-norm",
+   "section": "\u00a76",
+   "session": "solver_contracts"
+  },
+  {
+   "definitions": [
+    "rank_seed_nodes"
+   ],
+   "gate": 3,
+   "result": {
+    "killed": 36,
+    "nonnormal": 0,
+    "survived": 1
+   },
+   "seam": "rank_seed_nodes",
+   "section": "\u00a77 (\u00a75 folded)",
+   "session": "solver_scan"
+  },
+  {
+   "definitions": [
+    "perturbation_points",
+    "jacobian_from_differences"
+   ],
+   "gate": 4,
+   "result": {
+    "killed": 126,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "perturbation_points + jacobian_from_differences",
+   "section": "\u00a78a+\u00a78b",
+   "session": "solver_scan"
+  },
+  {
+   "definitions": [
+    "Jacobian2x2",
+    "determinant"
+   ],
+   "gate": 5,
+   "result": {
+    "killed": 33,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "Jacobian2x2.determinant",
+   "section": "\u00a78 det",
+   "session": "solver_contracts"
+  },
+  {
+   "definitions": [
+    "is_singular",
+    "condition_scale"
+   ],
+   "gate": 6,
+   "result": {
+    "killed": 7,
+    "nonnormal": 0,
+    "survived": 0
+   },
+   "seam": "is_singular + Jacobian2x2.condition_scale",
+   "section": "\u00a79",
+   "session": "solver_scan+solver_contracts"
+  }
+ ],
+ "milestone": "STAGE3-0006C-B",
+ "section": "\u00a713/\u00a714 six-micro-gate mutation consolidation",
+ "sessions": {
+  "solver_contracts": {
+   "config": "docs/evidence/stage3-cross-market-audit/scripts/cr_solver_contracts.toml",
+   "killed": 197,
+   "module": "sport_tennis/coherence/solver_contracts.py",
+   "nonnormal": 0,
+   "survived": 0,
+   "total_specs": 197,
+   "untested": 0
+  },
+  "solver_scan": {
+   "config": "docs/evidence/stage3-cross-market-audit/scripts/cr_solver_scan.toml",
+   "killed": 226,
+   "module": "sport_tennis/coherence/solver_scan.py",
+   "nonnormal": 0,
+   "survived": 1,
+   "total_specs": 227,
+   "untested": 0
+  }
+ },
+ "survivor_class_index": {
+  "STABLE_SORT_TERTIARY_KEY_ALGEBRAIC_EQUIVALENT": 1
+ },
+ "survivor_packet": "SOLVER_MILESTONE_B_SCAN_SURVIVORS.json",
+ "totals": {
+  "classified_survivors": 1,
+  "killed": 423,
+  "nonnormal": 0,
+  "total_specs": 424,
+  "untested": 0
+ }
+}

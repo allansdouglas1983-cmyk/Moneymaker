@@ -1,0 +1,33 @@
+{
+ "authorises": "nothing \u2014 no threshold, no gate, no gate input",
+ "descriptive_only": true,
+ "method": "per-variant _solve_one_on_axis timed once per assignment (both first-server assignments summed); config totals composed additively; compare cost negligible",
+ "note": "wall-clock, machine- and load-dependent; NOT a byte-identical artifact and not compared by any test",
+ "representative_fixtures": {
+  "degenerate_valley_MULTIPLE": {
+   "G0_G1_G2_s": 53.0565,
+   "G0_G1_s": 40.4173,
+   "G0_only_s": 12.724,
+   "cost_multiple_G0_G1_G2_vs_G0": 4.17,
+   "cost_multiple_G0_G1_vs_G0": 3.18,
+   "per_variant_s": {
+    "G0_BASELINE": 12.724,
+    "G1_REGISTERED_VALIDATION": 27.6933,
+    "G2_REGISTERED_VALIDATION": 12.6392
+   }
+  },
+  "unique_root_IDENTIFIED": {
+   "G0_G1_G2_s": 67.6341,
+   "G0_G1_s": 50.5674,
+   "G0_only_s": 17.2676,
+   "cost_multiple_G0_G1_G2_vs_G0": 3.92,
+   "cost_multiple_G0_G1_vs_G0": 2.93,
+   "per_variant_s": {
+    "G0_BASELINE": 17.2676,
+    "G1_REGISTERED_VALIDATION": 33.2998,
+    "G2_REGISTERED_VALIDATION": 17.0667
+   }
+  }
+ },
+ "summary": "The stability check adds the G1 (25-node, ~4x-grid) and G2 (13-node) solves per first-server assignment; observed end-to-end cost is roughly 3-5x the pre-amendment G0-only solve. The coherence engine is an offline synthetic research layer, so wall-clock is the only cost and this is acceptable per the A2 proposal cost note. Descriptive only."
+}

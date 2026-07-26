@@ -1,0 +1,130 @@
+{
+ "amendment": "STAGE3-0006C-D-A1 / CROSS_MARKET_COHERENCE_ROOT_DEDUP_AMENDMENT_V1",
+ "approved_by": null,
+ "classified_changes": [
+  {
+   "class": "EXPECTED_ROOT_ORDER_CHANGE",
+   "fixture": "identify line=22.5 domain=[0.35, 0.9]",
+   "new_roots": [
+    [
+     0.680000082,
+     0.580000077,
+     true,
+     7.4e-08,
+     1.926171978,
+     false
+    ]
+   ],
+   "new_status": "IDENTIFIED",
+   "old_roots": [
+    [
+     0.680000082,
+     0.580000077,
+     true,
+     7.4e-08,
+     1.926171978,
+     false
+    ]
+   ],
+   "old_status": "IDENTIFIED"
+  },
+  {
+   "class": "EXPECTED_ROOT_REPRESENTATIVE_CHANGE",
+   "fixture": "identify line=22.5 domain=[0.35, 0.9]",
+   "new_roots": [
+    [
+     0.740757286,
+     0.560630681,
+     false,
+     1.364e-06,
+     0.336977834,
+     false
+    ]
+   ],
+   "new_status": "IDENTIFIED",
+   "old_roots": [
+    [
+     0.740021585,
+     0.560022338,
+     true,
+     2.9019e-05,
+     0.327870868,
+     false
+    ]
+   ],
+   "old_status": "IDENTIFIED"
+  },
+  {
+   "class": "EXPECTED_ROOT_REPRESENTATIVE_CHANGE",
+   "fixture": "identify line=22.5 domain=[0.35, 0.9]",
+   "new_roots": [
+    [
+     0.780146625,
+     0.50011761,
+     true,
+     2.4949e-05,
+     0.002154359,
+     false
+    ],
+    [
+     0.781808539,
+     0.501575356,
+     false,
+     5.3421e-05,
+     0.002335263,
+     false
+    ],
+    [
+     0.782844247,
+     0.502200513,
+     false,
+     8.7871e-05,
+     0.002354129,
+     false
+    ]
+   ],
+   "new_status": "NON_IDENTIFIABLE",
+   "old_roots": [
+    [
+     0.779204133,
+     0.499657074,
+     true,
+     8.6827e-05,
+     0.002156943,
+     false
+    ],
+    [
+     0.781808539,
+     0.501575356,
+     false,
+     5.3421e-05,
+     0.002335263,
+     false
+    ],
+    [
+     0.782844247,
+     0.502200513,
+     false,
+     8.7871e-05,
+     0.002354129,
+     false
+    ]
+   ],
+   "old_status": "NON_IDENTIFIABLE"
+  }
+ ],
+ "counts": {
+  "EXPECTED_ROOT_COUNT_CHANGE": 0,
+  "EXPECTED_ROOT_ORDER_CHANGE": 1,
+  "EXPECTED_ROOT_REPRESENTATIVE_CHANGE": 2,
+  "EXPECTED_STATUS_CHANGE_AMBIGUOUS_CHAIN": 0,
+  "UNCHANGED": 3,
+  "UNEXPECTED_CHANGE": 0
+ },
+ "derived_targets_identical": true,
+ "new_vintage": "SOLVER_GOLDEN_V2_CANONICAL_SET_DEFINED.json",
+ "new_vintage_sha256": "f322d56a7661ac003e9b9b322bf176b9fc7057f2f3749ca5b37a5da5c464b7b7",
+ "old_vintage": "SOLVER_GOLDEN_V1_SEQUENCE_DEFINED.json",
+ "old_vintage_sha256": "e31b7a51b42f573bb6a01128a1bf13e6ceaa8c11a4645c39bb92de9c9f5c9b35",
+ "unexpected_change_count": 0
+}

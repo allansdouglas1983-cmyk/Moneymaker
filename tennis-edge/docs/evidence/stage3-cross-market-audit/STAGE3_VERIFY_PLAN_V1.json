@@ -1,0 +1,162 @@
+{
+ "environment": "uv run (project venv)",
+ "gates_in_execution_order": [
+  {
+   "command": "uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified",
+   "id": "spec_coverage",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified --require-causal-declarations --require-properties-for money",
+   "id": "spec_coverage_causal_money",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_facts_freshness.py --registry docs/facts.yaml",
+   "id": "facts_freshness",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python -m tools.check_licensed_sources --registry docs/licensed-sources.yaml",
+   "id": "licensed_sources",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "behavior_neutral_logging_additions_permitted": "--junitxml=<path>  (per shard, no -x, no marker/collection change; node IDs supplied as positional args)",
+   "command": "uv run pytest tests/unit tests/integration tests/properties tests/stateful tests/failure_injection -q",
+   "id": "pytest",
+   "kind": "pytest",
+   "requires_sharding": true,
+   "tool": "pytest"
+  },
+  {
+   "command": "uv run ruff check --select ARG .",
+   "id": "ruff_ARG",
+   "kind": "non-pytest",
+   "tool": "ruff"
+  },
+  {
+   "command": "uv run pylint --disable=all --enable=W0613 l4b_fill l5_decision l5b_risk l6_broker l7_settle l8_evidence governance price_contracts sport_core sport_tennis",
+   "id": "pylint_W0613",
+   "kind": "non-pytest",
+   "tool": "pylint"
+  },
+  {
+   "command": "! grep -rinE '<ESCAPE_HATCHES>' <MONEY> --include='*.py'",
+   "id": "escape_hatch_money",
+   "kind": "non-pytest",
+   "tool": "grep"
+  },
+  {
+   "command": "! grep -rinE '<ESCAPE_HATCHES>' l0_raw l1_reduce l3_features --include='*.py'",
+   "id": "escape_hatch_evidence",
+   "kind": "non-pytest",
+   "tool": "grep"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.scraping --from l5_decision l5b_risk l6_broker",
+   "id": "quarantine_1_research_scraping",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from l5_decision l5b_risk l6_broker l7_settle l3_features l4_pricing",
+   "id": "quarantine_2_research_xmarket_exec",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from assistant_v0",
+   "id": "quarantine_3_l6_from_v0",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from assistant_v0",
+   "id": "quarantine_4_xmarket_from_v0",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from xmarket_contracts",
+   "id": "quarantine_5_l6_from_xcontracts",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from xmarket_contracts",
+   "id": "quarantine_6_xmarket_from_xcontracts",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l8_evidence.reconciled_bsp --from l3_features",
+   "id": "quarantine_7_bsp_from_l3",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l8_evidence.tennis_outcomes --from l3_features l4_pricing",
+   "id": "quarantine_8_outcomes_from_l3_l4",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l5_decision --from sport_tennis.coherence",
+   "id": "quarantine_9_l5_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l5b_risk --from sport_tennis.coherence",
+   "id": "quarantine_10_l5b_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l6_broker --from sport_tennis.coherence",
+   "id": "quarantine_11_l6_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid l7_settle --from sport_tennis.coherence",
+   "id": "quarantine_12_l7_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid assistant_v0 --from sport_tennis.coherence",
+   "id": "quarantine_13_v0_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid research.xmarket --from sport_tennis.coherence",
+   "id": "quarantine_14_xmarket_from_coherence",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run python tools/check_import_quarantine.py --forbid sport_tennis.coherence --from assistant_v0 l4_pricing",
+   "id": "quarantine_15_coherence_from_v0_l4",
+   "kind": "non-pytest",
+   "tool": "python"
+  },
+  {
+   "command": "uv run mypy --strict .",
+   "id": "mypy_strict",
+   "kind": "non-pytest",
+   "tool": "mypy"
+  }
+ ],
+ "makefile_sha256": "sha256:a30eb6c6135436a5d5981b770c73bbbe4b5a4a9b2751069dcb1457f6c0aeabae",
+ "note": "Extracted from the committed Makefile verify target (sha256 above). The pytest gate is the only sharded one; all others run via their exact Makefile command. tests/replay_regression is NOT in the make verify pytest paths (make verify lists unit/integration/properties/stateful/failure_injection explicitly), so it is excluded from the frozen collection \u2014 matching make verify exactly.",
+ "source_of_truth": "Makefile",
+ "target": "verify",
+ "working_directory": "."
+}

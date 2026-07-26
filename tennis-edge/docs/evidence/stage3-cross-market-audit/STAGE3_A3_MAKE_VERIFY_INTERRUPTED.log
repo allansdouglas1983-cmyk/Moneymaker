@@ -1,0 +1,17 @@
+START_UTC=2026-07-24T18:33:24Z
+uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified
+[spec-coverage] OK: 47 enforced ID(s) covered and consistent
+uv run python tools/check_spec_coverage.py --manifest docs/spec-manifest.yaml --enforce-states active,verified --require-causal-declarations --require-properties-for money
+[spec-coverage] OK: 47 enforced ID(s) covered and consistent
+uv run python tools/check_facts_freshness.py --registry docs/facts.yaml
+[facts-freshness] OK: 8 fact(s) fresh as of 2026-07-24
+uv run python -m tools.check_licensed_sources --registry docs/licensed-sources.yaml
+[licensed-sources] OK: 7 source(s) in registry, 0 operational and fully licensed
+uv run pytest tests/unit tests/integration tests/properties tests/stateful tests/failure_injection -q
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+..............make: *** [Makefile:19: verify] Error 143
+END_UTC=2026-07-24T18:43:10Z
+ELAPSED_S=586
+MAKE_VERIFY_EXIT=124
