@@ -149,6 +149,23 @@ transactable prices (TE-0006): the tier costs **3.67% (ATP) / 4.66% (WTA)** roun
 the off against 1.12% on the main-tour exchange, pyramid Elo is worse than the price at
 every horizon on both tours, and flat staking loses 1.8–8.3%.
 
+### Do Betfair's own markets agree with each other? — tested 2026-07-26
+
+The one idea left that needed **no forecasting skill at all**: Match Odds and Set Betting on
+the same match are related by identity, since P(A wins) is exactly P(A 2-0) + P(A 2-1). If
+they disagree, one is wrong, and an incoherence either locks or it does not.
+
+**They agree, to within the cost of trading them.** Across 2,159 paired markets, not one
+positive position in 6,305 fillable candidates; the best anywhere in June *loses* 1.2%
+(TE-0009). The markets do disagree — 5.2 points at the median six hours out, converging to
+1.0 point by ten minutes — but always by less than the round trip costs.
+
+Worth reading for the bugs as much as the result. The first run reported a +639% guaranteed
+return and the second +384%; both were mine. Prices without sizes, then pairing the two
+markets by runner position instead of by name. The sequence 639% → 384% → 0 is the record
+that matters: each intermediate number was internally consistent, produced by clean code, and
+completely wrong.
+
 ### The price does not sharpen — tested 2026-07-26
 
 Across eight horizons on the June tick corpus the spread collapses from **44.9 ticks to
@@ -201,7 +218,10 @@ ever appeared.
 | `residual_features.py` | The one residual feature builder, shared by every experiment and by the predictor. Ten minutes cold, two seconds warm. |
 | `residual_model.py` | The fitted model as a deployable artefact: coefficients, training window, digest. Full Newton with a line search — the diagonal version diverged. |
 | `upcoming.py` | Prices fixtures that have not been played. Commission-aware break-even; `recommendation` pinned to `NOT_EVALUATED`. |
-| `cli.py` | `fit` / `show` / `price`. |
+| `xmarket.py` | Cross-market arithmetic: the Match Odds / Set Betting identity, size-aware dutch positions, and name alignment between markets that spell players differently. |
+| `live_state.py` | Per-player scalars frozen at a date, so an upcoming fixture prices in milliseconds instead of a ten-minute corpus walk. |
+| `policy_v2.py` | The residual-model policy vintage, with the model's digest folded into its own. |
+| `cli.py` | `fit` / `state` / `show` / `price`. |
 
 Odds columns are usable for evaluation and execution but remain **banned as model
 features** — `features.py::assert_no_price_features` enforces that.
