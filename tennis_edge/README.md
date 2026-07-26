@@ -1,9 +1,41 @@
 # `tennis_edge`
 
-Measurement of whether a tennis model can beat the closing price, and a weekly job that
-keeps extending that measurement without anyone present.
+Measurement of whether a tennis model can beat the closing price, a model that does, and a
+weekly job that keeps extending the measurement without anyone present.
 
-## What was measured
+## The short version, as of 2026-07-26
+
+**A model that beats the closing price exists.** It gains **+0.000862 nats** over the
+de-vigged close, day-clustered 95% CI [+0.000471, +0.001228], on 63,576 out-of-sample
+matches, and a placebo that detaches the features from their matches returns −0.000114 — so
+the procedure cannot manufacture the number
+(`docs/research/findings/TE-0007-the-model-that-beats-the-price.md`).
+
+Two things got it there, and both are recorded below because the sequence matters more than
+the result:
+
+1. **The market's errors do not all point the same way.** Ranking and rating gaps are
+   *over*-weighted by the close; the serve model is *under*-weighted. Six earlier
+   architectures bundled these into one composite probability, where a fade and a follow of
+   similar size cancel — which is a mechanical explanation for the α ≈ 0 below, not a
+   metaphor for it.
+2. **Ratings that can see below the main tour.** Every earlier rating was fed only the
+   priced main-tour corpus, so a qualifier with fifty Challenger matches looked like a
+   debutant. The three largest coefficients in the fitted model are pyramid ratings and the
+   serve model, and on the 10,209 matches with *no* pyramid record the model adds exactly
+   **+0.000000** — the gain lives entirely where the new information exists.
+
+**What it is worth, and where it is not yet known.** Against bookmakers it converts: +0.98%
+at Pinnacle and +3.05% at best-of-market, against controls of −2.08% and +0.42% for the
+identical rule driven by the market's own probability. At Betfair — the only venue that
+cannot limit a winning account — the two available measurements disagree in sign and both
+span zero. **The exchange is untested at usable power, not shown to fail.** Settling it
+needs roughly 49,000 markets of tick data.
+
+Nothing here authorises a stake. `upcoming.py` pins `recommendation` to `NOT_EVALUATED` and
+a test asserts no input can move it.
+
+## What was measured before that, and why it read as nothing
 
 Four architectures, each evaluated walk-forward against the same pinned market benchmark
 (log loss **0.57539** on power-de-vigged Pinnacle closing prices, locked as a regression
@@ -16,8 +48,10 @@ test in `tests/integration/tennis_edge/test_market_benchmark.py`).
 | Cross-book consensus deviation, closing prices | CLV **−1.59 %**, deflated Sharpe 0.048 |
 | Residual gradient boosting on a market logit offset | **+0.00018 nats**, DM t = 0.94 |
 
-All four are flat. That is the same answer the published literature reports for closing
-tennis prices, and it is the honest conclusion from the data reachable here.
+All four are flat, and two later ones (full-pyramid Elo, MLE market combination) were too.
+That was read at the time as "there is no edge in these inputs". The single-feature residual
+diagnostic showed it was really "every architecture so far combined these inputs in a way
+that cancelled them" — see the short version above and TE-0005.
 
 Every one of those uses **bookmaker closing prices**: 4.4% overround, and a displayed line
 rather than a transactable one. **Exchange prices are the one genuinely untested case** —
@@ -61,6 +95,13 @@ genuine, overwhelming (t≈60), economically trivial improvement.
 That is what `predictor.py` implements: **the price, recalibrated**, with the model view
 reported as a labelled diagnostic and `model_weight` on every prediction.
 
+**Superseded as the best available model, and worth keeping for why.** The α ≈ 0 result is
+correct about the thing it measured — a *single composite* model probability weighed against
+the market. TE-0005 and TE-0007 show that constraint was the problem: unbundled into
+separate corrections with free signs, the same class of information gains 3.5× the best
+single feature. `residual_model.py` is the model that does; `predictor.py` remains the
+honest answer to the narrower question it was built for.
+
 ### Exchange vs bookmaker prices — tested 2026-07-25
 
 Every measurement above uses **bookmaker closing prices**. The one venue that matters for
@@ -80,7 +121,7 @@ which is the whole of its advantage. Median size at best back £250 on the linka
 So the exchange should be the assumed venue for any future economic test, but no model that
 fails against bookmaker closing prices becomes viable just by moving there.
 
-### The Challenger/ITF tier thesis — tested 2026-07-25
+### The Challenger/ITF tier thesis — tested 2026-07-25, closed 2026-07-26
 
 Published operator figures put the achievable yield near **9% in Challenger/ITF against
 2.4% on main tour**, which would mean we had been measuring the wrong tier all along. That
@@ -99,6 +140,22 @@ are 100% OddsPortal aggregate and Challenger 94.2%, so only 152 Challenger match
 **zero** ITF matches carry two or more actual books. The ITF +1.24% is measured against an
 aggregator average no one quotes, is ~1.3 standard errors from zero, and is gross of
 commission. Where real prices exist, the method loses.
+
+**Closed by measurement the next day, not left as "untestable".** The June ADVANCED corpus
+turned out to be *mostly lower-tier tennis* — the existing link joined it against a
+main-tour corpus and discarded 70% as unmatched. Linking on pyramid identities and grading
+from Betfair's own settlement gives 2,227 scored markets, and the answer holds at real
+transactable prices (TE-0006): the tier costs **3.67% (ATP) / 4.66% (WTA)** round-trip at
+the off against 1.12% on the main-tour exchange, pyramid Elo is worse than the price at
+every horizon on both tours, and flat staking loses 1.8–8.3%.
+
+### The price does not sharpen — tested 2026-07-26
+
+Across eight horizons on the June tick corpus the spread collapses from **44.9 ticks to
+3.5** between T−24h and the off, and the log loss does not move (0.59372 → 0.59337). All the
+sharpening is liquidity; none is information. That closes the "bet early" thesis directly —
+there is nothing arriving to anticipate — and with it signed drift, drift-trading and the
+favourite–longshot bias, all of which came back within noise.
 
 ## What the weekly job is — and is not
 
@@ -137,11 +194,34 @@ ever appeared.
 | `betfair.py` | Betfair Historical BASIC reader. Pre-off only; BSP quarantined behind `grading_view()`. |
 | `exchange.py` | Exchange probability and EV — no overround, commission on the net result. |
 | `exchange_link.py` | Joins Betfair markets to corpus matches with typed exclusions, and benchmarks exchange against bookmaker on the same matches. |
+| `pyramid.py` | Elo over the whole professional circuit — Grand Slam to Futures — keyed to priced-corpus names. The only rating here that knows a player's Challenger record. |
+| `pyramid_link.py` | Links exchange markets to pyramid identities and grades them from **Betfair's own settlement**, which is what made the lower tiers testable at all. |
+| `snapshots.py` | Per-horizon market states cached out of the tick corpus, so a price experiment loads in a second instead of replaying 45 hours per market. |
+| `feature_cache.py` | The feature matrix keyed to the inputs that produced it. A mismatch is a miss; a truncated file raises. |
+| `residual_features.py` | The one residual feature builder, shared by every experiment and by the predictor. Ten minutes cold, two seconds warm. |
+| `residual_model.py` | The fitted model as a deployable artefact: coefficients, training window, digest. Full Newton with a line search — the diagonal version diverged. |
+| `upcoming.py` | Prices fixtures that have not been played. Commission-aware break-even; `recommendation` pinned to `NOT_EVALUATED`. |
+| `cli.py` | `fit` / `show` / `price`. |
 
 Odds columns are usable for evaluation and execution but remain **banned as model
 features** — `features.py::assert_no_price_features` enforces that.
 
 ## Running it
+
+```
+python -m tennis_edge.cli fit              # build features (cached), fit, freeze to artifacts/
+python -m tennis_edge.cli show             # print the frozen model and its digest
+python -m tennis_edge.cli price fixtures.json     # price upcoming matches
+```
+
+Freezing is the point of `fit`. A prediction recorded today is only evidence if the
+coefficients that produced it can be named months later, and a model refitted on every run
+cannot be held to anything it said. Re-fitting produces a *new* digest rather than editing
+the old artefact, so predictions already recorded still name the model that made them.
+
+`price` never prints a recommendation. The model's exchange performance is undecided at the
+power available, and turning an undecided statistical result into a financial instruction is
+the specific failure this programme exists to avoid.
 
 ```
 python -m tennis_edge.weekly --dry-run     # evaluate and report, write nothing
