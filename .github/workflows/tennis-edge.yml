@@ -1,0 +1,120 @@
+# Tennis Edge: keep the deployed site's data current without anything of mine running.
+#
+# Two jobs, deliberately separate.
+#
+# `sync` pushes whatever model and rating state are committed in the repository. It is fast,
+# needs no downloads, and is what loads all 3,075 players the first time. It runs on any push
+# that touches the artefacts and can be fired by hand.
+#
+# `refresh` rebuilds the walk-forward rating state from the providers before pushing. It is
+# the slow one and runs weekly, because the ratings only move when results land.
+#
+# Both need two repository secrets, and only a human can add them:
+#   SUPABASE_URL                 https://sujrylzzxcqxxfygptns.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY    Supabase dashboard -> Project Settings -> API -> service_role
+#
+# The service-role key never appears in the site's source, in a page, or in a log; it lives
+# in GitHub Secrets and is handed to one script that talks to PostgREST and exits.
+name: tennis-edge
+
+on:
+  push:
+    branches: [claude/project-files-followup-dif8al]
+    paths:
+      - 'artifacts/live-state.json'
+      - 'artifacts/residual-model.json'
+      - 'tennis-edge/tools/push_state.py'
+      - '.github/workflows/tennis-edge.yml'
+  schedule:
+    # Monday 06:00 UTC. Tennis-Data publishes a week's results and closing prices together,
+    # so there is nothing new to absorb before the week has finished.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: tennis-edge
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    # The port guard runs on every trigger. If the TypeScript serving the site has drifted
+    # from the Python that was measured, nothing downstream should push anything anywhere.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: 500 golden vectors, Python vs TypeScript, 1e-12
+        run: deno test --allow-read supabase/functions/tips/
+
+  sync:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Push model and rating state
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python tennis-edge/tools/push_state.py artifacts
+
+  refresh:
+    needs: verify
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: pip install --quiet openpyxl xlrd
+
+      - name: Rebuild walk-forward state
+        env:
+          TENNIS_EDGE_DATA: ${{ runner.temp }}/tennis-data
+        working-directory: tennis-edge
+        run: |
+          set -euo pipefail
+          mkdir -p "$TENNIS_EDGE_DATA"
+          python -c "
+          import datetime as dt
+          from tennis_edge.live_state import build_state, save_state
+          # as_of is today: the state absorbs every result strictly before the matches it
+          # will be asked to price, and refuses to price backwards.
+          snapshot = build_state(dt.date.today())
+          save_state('../artifacts/live-state.json', snapshot)
+          print('players', len(snapshot.players), 'as of', snapshot.as_of)
+          "
+
+      - name: Regenerate golden vectors and re-check the port
+        working-directory: tennis-edge
+        run: python tools/emit_golden_vectors.py
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: The port must still agree after a state rebuild
+        run: deno test --allow-read supabase/functions/tips/
+
+      - name: Push refreshed state
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python tennis-edge/tools/push_state.py artifacts
+
+      - name: Commit the refreshed artefacts
+        run: |
+          set -euo pipefail
+          git config user.name  "tennis-edge refresh"
+          git config user.email "noreply@github.com"
+          git add artifacts/live-state.json supabase/functions/tips/golden.json
+          # A week with no new results is an ordinary week, not a failure.
+          git diff --cached --quiet && echo "nothing changed" && exit 0
+          git commit -m "refresh: walk-forward state as of $(date -u +%F)"
+          git push

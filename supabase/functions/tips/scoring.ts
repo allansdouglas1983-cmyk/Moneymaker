@@ -248,12 +248,14 @@ export interface PlayerState {
 
 function surfaceRating(state: PlayerState, surface: string): number {
   const value = state.surface_elo[surface || "Hard"];
-  return value === undefined ? state.elo : value;
+  // Postgres returns JSON null where Python had an absent key; both mean "no rating on
+  // this surface", and both must fall back to the overall one rather than to NaN.
+  return value === undefined || value === null ? state.elo : value;
 }
 
 function pyramidSurfaceRating(state: PlayerState, surface: string): number {
   const value = state.pyramid_surface_elo[surface || "Hard"];
-  return value === undefined ? state.pyramid_elo : value;
+  return value === undefined || value === null ? state.pyramid_elo : value;
 }
 
 function daysSince(stamp: string | null, when: string): number | null {
@@ -420,7 +422,9 @@ export function priceFixture(
   model: Model,
   commission = COMMISSION,
 ): Prediction {
-  const [marketA, marketB] = devigPower([oddsA, oddsB]);
+  const devigged = devigPower([oddsA, oddsB]);
+  const marketA = devigged[0];
+  const marketB = devigged[1];
   const marketLogit = logit(marketA);
   const probabilityA = modelProbability(model, marketLogit, features);
   const probabilityB = 1.0 - probabilityA;
