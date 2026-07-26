@@ -32,7 +32,7 @@ penalty chosen by looking at the answer would be the same thing wearing a hat.
 import collections
 import datetime as dt
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Sequence, cast
 
 from tennis_edge.backtest import market_probability
@@ -304,30 +304,102 @@ def report_forecast(scored: list[tuple[Row, float]]) -> None:
           f"95% CI [{lo:+.6f}, {hi:+.6f}]  -> {verdict}")
 
 
+def _settle_at(scored: list[tuple[Row, float]], book: str,
+               use_model: bool) -> list[BetResult]:
+    results: list[BetResult] = []
+    for row, p in scored:
+        probability = p if use_model else _sigmoid(row.market_logit)
+        # (probability of this side, its price, whether it won). Carried together so the
+        # side a bet is on can never drift apart from the outcome it settles by.
+        for side, odds, won in (
+            (probability, row.odds_a.get(book), bool(row.won)),
+            (1.0 - probability, row.odds_b.get(book), not row.won),
+        ):
+            if odds is None or odds <= 1.0 or side * odds <= 1.0:
+                continue
+            results.append(BetResult(cluster=row.date, odds=odds, stake=1.0,
+                                     won=won, commission=BOOKMAKER_COMMISSION))
+    return results
+
+
 def report_money(scored: list[tuple[Row, float]]) -> None:
     """Flat stakes, no buffer: bet whenever the model clears the quoted break-even.
 
     A required-edge threshold is the classic place to launder an overfit — every threshold
     is a parameter, and the best one is always found after the fact. There is none here.
+
+    **The control is the point of this function, not an ornament on it.** ``max`` is the
+    best quote across roughly twenty books, so a rule that bets whenever a probability
+    clears the break-even *at the best quote* is partly a price-selection strategy no matter
+    what supplies the probability — it fires wherever some book is out of line with the one
+    used for pricing. The control runs the identical rule driven by the **market's own**
+    de-vigged probability, with no model correction at all. Whatever it earns is
+    attributable to shopping between books; only the difference between the two rows can be
+    credited to the model, and if the control earns as much then none of it can.
+
+    This is also why Pinnacle is reported. It is a single sharp book rather than an
+    envelope, so its row cannot be manufactured by cross-book selection, and it is the
+    conservative number.
     """
     print("\nMONEY, settled at the actual quoted price (flat 1u, no required-edge buffer)")
+    print("  Each book: the model's rule, then the identical rule driven by the market's")
+    print("  own probability. The control's return is price selection, not skill.")
     for book in SETTLE_BOOKS:
-        results: list[BetResult] = []
-        for row, p in scored:
-            # (probability of this side, its price, whether it won). Carried together so
-            # the side a bet is on can never drift apart from the outcome it settles by.
-            for probability, odds, won in (
-                (p, row.odds_a.get(book), bool(row.won)),
-                (1.0 - p, row.odds_b.get(book), not row.won),
-            ):
-                if odds is None or odds <= 1.0 or probability * odds <= 1.0:
-                    continue
-                results.append(BetResult(cluster=row.date, odds=odds, stake=1.0,
-                                         won=won, commission=BOOKMAKER_COMMISSION))
-        if len(results) < 100:
-            print(f"  {book:<10} {len(results)} bets — too few to score")
+        model = _settle_at(scored, book, use_model=True)
+        control = _settle_at(scored, book, use_model=False)
+        if len(model) < 100:
+            print(f"\n  {book:<10} {len(model)} bets — too few to score")
             continue
-        print("  " + summarise_bets(results, bootstrap=BOOTSTRAP_DRAWS).report(book))
+        print()
+        print("  " + summarise_bets(model, bootstrap=BOOTSTRAP_DRAWS).report(book))
+        if len(control) < 100:
+            print(f"  {'control':<28}{len(control)} bets — the market's own rule fires "
+                  f"too rarely to compare")
+            continue
+        print("  " + summarise_bets(control, bootstrap=BOOTSTRAP_DRAWS)
+              .report(f"{book} CONTROL"))
+
+
+def placebo(rows: list[Row], names: list[str]) -> None:
+    """Re-run the entire procedure with the features detached from their matches.
+
+    The control in :func:`report_money` asks whether the *money* could come from shopping
+    between books. This asks the prior question: whether the **procedure** can manufacture a
+    forecast gain out of nothing.
+
+    Each row keeps its market price, its odds and its result, and is given another row's
+    feature vector from the same season. Every genuine link between a feature and the match
+    it describes is destroyed; everything else — sample size, feature correlations, the
+    penalty, the walk-forward, the day-clustered interval — is identical. A procedure that
+    reports a gain here is reporting one it can also report from noise, and the real number
+    means nothing.
+
+    Shuffling *features* rather than *outcomes* is deliberate. TE-0001 recorded that
+    shuffling outcomes is invalid: it breaks the price-outcome coupling, and with asymmetric
+    payoffs that inflates returns mechanically. That test was run once, proved nothing, and
+    is not repeated here.
+
+    The permutation is a fixed rotation within each season rather than a random draw — it
+    needs no seed, it is exactly reproducible, and it cannot accidentally leave a row
+    holding its own features.
+    """
+    print("\nPLACEBO: the same procedure, features detached from their matches")
+    by_year: dict[int, list[Row]] = collections.defaultdict(list)
+    for row in rows:
+        by_year[row.date.year].append(row)
+    scrambled: list[Row] = []
+    for _year, block in sorted(by_year.items()):
+        if len(block) < 2:
+            continue
+        for index, row in enumerate(block):
+            donor = block[(index + 1) % len(block)]
+            scrambled.append(replace(row, features=donor.features))
+    scrambled.sort(key=lambda r: r.date)
+    scored = walk_forward(scrambled, names)
+    if not scored:
+        print("  no out-of-sample years")
+        return
+    report_forecast(scored)
 
 
 def main() -> None:
@@ -357,6 +429,7 @@ def main() -> None:
 
     report_forecast(scored)
     report_money(scored)
+    placebo(rows, names)
 
 
 if __name__ == "__main__":
