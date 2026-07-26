@@ -196,15 +196,19 @@ def walk_forward(rows: list[Row], names: list[str]) -> list[tuple[Row, float]]:
     by_year: dict[int, list[Row]] = collections.defaultdict(list)
     for row in rows:
         by_year[row.date.year].append(row)
-    years = [y for y in sorted(by_year) if y >= FIRST_SCORED_YEAR]
+    ordered = sorted(by_year)
+    years = [y for y in ordered if y >= FIRST_SCORED_YEAR]
     out: list[tuple[Row, float]] = []
+    # The training set only ever grows, so it is extended year by year rather than rebuilt.
+    train: list[Row] = [r for y in ordered if y < years[0] for r in by_year[y]]
     for year in years:
-        train = [r for y in sorted(by_year) if y < year for r in by_year[y]]
-        if len(train) < 5000:
-            continue
-        beta = fit(train, names)
-        for row in by_year[year]:
-            out.append((row, predict(row, beta)))
+        if len(train) >= 5000:
+            beta = fit(train, names)
+            for row in by_year[year]:
+                out.append((row, predict(row, beta)))
+            print(f"  {year}: trained on {len(train):,}, scored {len(by_year[year]):,}",
+                  flush=True)
+        train.extend(by_year[year])
     return out
 
 
@@ -269,11 +273,16 @@ def main() -> None:
     print(f"priceable matches: {len(rows):,}")
     print("feature coverage: " + ", ".join(f"{n} {coverage[n]:,}" for n in names))
 
+    print("\nwalk-forward:")
     scored = walk_forward(rows, names)
     if not scored:
         print("no out-of-sample years")
         return
-    final = fit([r for r in rows if r.date.year < max(r.date.year for r in rows)], names)
+    # `max` hoisted out of the comprehension deliberately: leaving it inside re-scans every
+    # row for every row, which on 96,162 rows is nine billion comparisons and looks exactly
+    # like a hung process.
+    last_year = max(r.date.year for r in rows)
+    final = fit([r for r in rows if r.date.year < last_year], names)
     print("\nCOEFFICIENTS on the final fit (sign is the market's error, not the feature's)")
     for name, value in sorted(final.items(), key=lambda kv: -abs(kv[1])):
         direction = "market under-weights" if value > 0 else "market over-weights"
