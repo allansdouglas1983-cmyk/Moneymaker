@@ -35,7 +35,11 @@ from decimal import Decimal
 from typing import Sequence
 
 __all__ = [
+    "Leg",
+    "FillableDutch",
+    "MINIMUM_LEG_SIZE",
     "SetBettingView",
+    "fillable_dutch",
     "parse_set_runner",
     "coherence_gap",
     "dutch_return",
@@ -114,3 +118,61 @@ def dutch_return(
     net = [Decimal(1) + (o - Decimal(1)) * (Decimal(1) - commission) for o in legs]
     total_implied = sum(Decimal(1) / o for o in net)
     return float(Decimal(1) / total_implied - Decimal(1))
+
+
+#: Smallest size on a leg that counts as a real price. Below this the quote exists but the
+#: position does not: Set Betting books routinely show a nominal best back with a couple of
+#: pounds behind it, and taking that number at face value is how the first version of this
+#: scan reported a six-hundred-percent locked return.
+MINIMUM_LEG_SIZE = 10.0
+
+
+@dataclass(frozen=True)
+class Leg:
+    """One leg of a cross-market position: a price and the size actually available at it."""
+
+    price: Decimal
+    size: float
+
+
+@dataclass(frozen=True)
+class FillableDutch:
+    """A position that could actually be built, and how large it could be."""
+
+    unit_return: float
+    max_total_stake: float
+    limiting_leg: int
+
+
+def fillable_dutch(
+    legs: Sequence[Leg], *, commission: Decimal, minimum_size: float = MINIMUM_LEG_SIZE
+) -> FillableDutch | None:
+    """The position if every leg is genuinely takeable, else ``None``.
+
+    Size limits *how much*, never *whether it is profitable* — the unit return is the same
+    number :func:`dutch_return` gives for the same prices. What size decides is whether the
+    position exists at all, and that is the question the price-only version cannot answer.
+
+    Stakes are proportional to inverse net odds so every outcome pays the same. The position
+    is therefore capped by whichever leg runs out of money first at that ratio, which is the
+    leg reported.
+    """
+    if not legs:
+        raise ValueError("need at least one leg")
+    if any(leg.price <= 1 for leg in legs):
+        raise ValueError(f"decimal odds must be above 1, got "
+                         f"{[str(leg.price) for leg in legs]}")
+    if any(leg.size < minimum_size for leg in legs):
+        return None
+    net = [Decimal(1) + (leg.price - Decimal(1)) * (Decimal(1) - commission)
+           for leg in legs]
+    weights = [float(Decimal(1) / o) for o in net]
+    total_implied = sum(weights)
+    # Scale the whole position until the first leg exhausts its available size.
+    caps = [leg.size / w for leg, w in zip(legs, weights)]
+    limiting = min(range(len(caps)), key=lambda i: caps[i])
+    return FillableDutch(
+        unit_return=float(Decimal(1) / Decimal(str(total_implied)) - Decimal(1)),
+        max_total_stake=caps[limiting] * total_implied,
+        limiting_leg=limiting,
+    )

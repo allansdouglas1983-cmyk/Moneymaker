@@ -19,9 +19,11 @@ from decimal import Decimal
 import pytest
 
 from tennis_edge.xmarket import (
+    Leg,
     SetBettingView,
     coherence_gap,
     dutch_return,
+    fillable_dutch,
     parse_set_runner,
 )
 
@@ -111,3 +113,60 @@ class TestSetBettingView:
     def test_a_view_that_does_not_sum_to_one_is_refused(self) -> None:
         with pytest.raises(ValueError, match="sum to 1"):
             SetBettingView(probability_a=0.6, probability_b=0.6)
+
+
+class TestSizeAwareness:
+    """The correction that killed the first version of this scan.
+
+    A best-back price is only real up to the size available behind it. Set Betting is thin,
+    and a leg showing 1000.0 with two pounds behind it is not a price anyone can take — but
+    it contributes 0.001 to the implied total, which is enough on its own to manufacture a
+    six-hundred-percent "locked return". The first scan reported exactly that, and it was
+    entirely an artefact of ignoring size.
+    """
+
+    def test_a_fillable_position_reports_its_limiting_stake(self) -> None:
+        legs = (Leg(price=Decimal("2.0"), size=100.0),
+                Leg(price=Decimal("4.0"), size=100.0),
+                Leg(price=Decimal("4.0"), size=100.0))
+        result = fillable_dutch(legs, commission=Decimal("0"))
+        assert result is not None
+        assert result.max_total_stake > 0.0
+
+    def test_a_leg_with_no_size_makes_the_position_unfillable(self) -> None:
+        legs = (Leg(price=Decimal("2.5"), size=100.0),
+                Leg(price=Decimal("5.0"), size=0.0),
+                Leg(price=Decimal("5.0"), size=100.0))
+        assert fillable_dutch(legs, commission=Decimal("0")) is None
+
+    def test_a_leg_below_the_minimum_size_makes_it_unfillable(self) -> None:
+        legs = (Leg(price=Decimal("2.5"), size=100.0),
+                Leg(price=Decimal("5.0"), size=1.0),
+                Leg(price=Decimal("5.0"), size=100.0))
+        assert fillable_dutch(legs, commission=Decimal("0"),
+                              minimum_size=10.0) is None
+
+    def test_the_stake_is_limited_by_the_thinnest_leg(self) -> None:
+        """Doubling the thinnest leg's size must not more than double the position."""
+        thin = fillable_dutch((Leg(price=Decimal("2.0"), size=1000.0),
+                               Leg(price=Decimal("4.0"), size=20.0),
+                               Leg(price=Decimal("4.0"), size=1000.0)),
+                              commission=Decimal("0"))
+        thick = fillable_dutch((Leg(price=Decimal("2.0"), size=1000.0),
+                                Leg(price=Decimal("4.0"), size=40.0),
+                                Leg(price=Decimal("4.0"), size=1000.0)),
+                               commission=Decimal("0"))
+        assert thin is not None and thick is not None
+        assert thick.max_total_stake == pytest.approx(2 * thin.max_total_stake)
+
+    def test_the_return_matches_the_price_only_calculation(self) -> None:
+        """Size limits how much, never whether it is profitable."""
+        legs = (Leg(price=Decimal("2.5"), size=500.0),
+                Leg(price=Decimal("5.0"), size=500.0),
+                Leg(price=Decimal("5.0"), size=500.0))
+        result = fillable_dutch(legs, commission=Decimal("0.02"))
+        assert result is not None
+        assert result.unit_return == pytest.approx(dutch_return(
+            match_odds_back_a=Decimal("2.5"),
+            set_back_prices_b=(Decimal("5.0"), Decimal("5.0")),
+            commission=Decimal("0.02")))

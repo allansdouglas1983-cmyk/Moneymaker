@@ -30,7 +30,14 @@ from decimal import Decimal
 from pathlib import Path
 
 from tennis_edge.betfair import MarketHistory, read_markets
-from tennis_edge.xmarket import SetBettingView, coherence_gap, dutch_return, parse_set_runner
+from tennis_edge.xmarket import (
+    MINIMUM_LEG_SIZE,
+    Leg,
+    SetBettingView,
+    coherence_gap,
+    fillable_dutch,
+    parse_set_runner,
+)
 
 ROOT = ("/tmp/claude-0/-home-user-Moneymaker/"
         "b09554bc-9729-5d86-bb7c-43d4f555802d/scratchpad/pilot-data/extracted")
@@ -51,18 +58,19 @@ def day_directories(root: str) -> list[Path]:
                                        MONTHS.get(p.parent.name, 0), int(p.name)))
 
 
-def _best_backs(market: MarketHistory, horizon: int) -> dict[int, Decimal] | None:
-    """Best back price for every runner, or None if any is missing.
+def _best_backs(market: MarketHistory, horizon: int) -> dict[int, Leg] | None:
+    """Best back price AND the size behind it, for every runner, or None if any is missing.
 
-    All or nothing: a dutch needs every leg, and a partial book would invent a lock out of an
-    incomplete market.
+    Size is carried from here on. The first version of this scan returned prices alone and
+    reported a six-hundred-percent locked return, which was entirely an artefact of thin Set
+    Betting legs showing a nominal quote with a couple of pounds behind it.
     """
-    out: dict[int, Decimal] = {}
+    out: dict[int, Leg] = {}
     for runner in market.runners:
         level = market.best_back_at(runner.selection_id, seconds_before_off=horizon)
         if level is None:
             return None
-        out[runner.selection_id] = level.price
+        out[runner.selection_id] = Leg(price=level.price, size=float(level.size))
     return out
 
 
@@ -83,6 +91,8 @@ def _split_sides(market: MarketHistory) -> tuple[list[int], list[int]] | None:
 def main() -> None:
     gaps: dict[int, list[float]] = collections.defaultdict(list)
     returns: dict[int, list[float]] = collections.defaultdict(list)
+    stakes: dict[int, list[float]] = collections.defaultdict(list)
+    unfillable: collections.Counter[int] = collections.Counter()
     paired = 0
     singles_events = 0
     no_partner = 0
@@ -118,22 +128,26 @@ def main() -> None:
                     continue
                 # De-vig each market to a distribution before comparing them; comparing a
                 # de-vigged number with a raw one reports the margin as a disagreement.
-                mo_total = sum(1 / float(p) for p in mo.values())
-                mo_a = (1 / float(mo[active[0].selection_id])) / mo_total
-                sb_total = sum(1 / float(p) for p in sb.values())
+                mo_total = sum(1 / float(leg.price) for leg in mo.values())
+                mo_a = (1 / float(mo[active[0].selection_id].price)) / mo_total
+                sb_total = sum(1 / float(leg.price) for leg in sb.values())
                 side_a, side_b = sides
-                sb_a = sum(1 / float(sb[s]) for s in side_a) / sb_total
+                sb_a = sum(1 / float(sb[s].price) for s in side_a) / sb_total
                 view = SetBettingView(probability_a=sb_a, probability_b=1.0 - sb_a)
                 gaps[horizon].append(coherence_gap(match_odds_a=mo_a, set_betting=view))
 
                 # Both orientations: A on Match Odds against B's scores, and the mirror.
                 for mo_side, sb_side in ((active[0].selection_id, side_b),
                                          (active[1].selection_id, side_a)):
-                    returns[horizon].append(dutch_return(
-                        match_odds_back_a=mo[mo_side],
-                        set_back_prices_b=tuple(sb[s] for s in sb_side),
-                        commission=COMMISSION,
-                    ))
+                    position = fillable_dutch(
+                        (mo[mo_side], *(sb[s] for s in sb_side)),
+                        commission=COMMISSION, minimum_size=MINIMUM_LEG_SIZE,
+                    )
+                    if position is None:
+                        unfillable[horizon] += 1
+                        continue
+                    returns[horizon].append(position.unit_return)
+                    stakes[horizon].append(position.max_total_stake)
         print(f"  {day.parent.parent.name}-{day.parent.name}-{day.name}: "
               f"{paired:,} paired so far", flush=True)
         sys.stdout.flush()
@@ -154,16 +168,22 @@ def main() -> None:
         print(f"{horizon:>9}{len(block):>8,}{statistics.median(absolute):>14.4f}"
               f"{p90:>12.4f}{big:>11.1%}")
 
-    print(f"\nDUTCH RETURN at best-back prices, {float(COMMISSION):.0%} commission")
-    print(f"{'horizon':>9}{'legs':>8}{'best':>10}{'p99':>10}{'positive':>11}")
+    print(f"\nDUTCH RETURN at best-back prices with size >= {MINIMUM_LEG_SIZE:.0f}, "
+          f"{float(COMMISSION):.0%} commission")
+    print(f"{'horizon':>9}{'fillable':>10}{'unfillable':>12}{'best':>10}{'p99':>10}"
+          f"{'positive':>18}{'median stake':>14}")
     for horizon in HORIZONS:
         block = sorted(returns[horizon])
         if not block:
+            print(f"{horizon:>9}{0:>10}{unfillable[horizon]:>12}   (none fillable)")
             continue
         p99 = block[int(0.99 * (len(block) - 1))]
-        positive = sum(1 for r in block if r > 0)
-        print(f"{horizon:>9}{len(block):>8,}{block[-1]:>+10.4f}{p99:>+10.4f}"
-              f"{positive:>7,} ({positive / len(block):.2%})")
+        positive = [r for r in block if r > 0]
+        median_stake = statistics.median(stakes[horizon])
+        print(f"{horizon:>9}{len(block):>10,}{unfillable[horizon]:>12,}"
+              f"{block[-1]:>+10.4f}{p99:>+10.4f}"
+              f"{len(positive):>10,} ({len(positive) / len(block):>5.2%})"
+              f"{median_stake:>14.0f}")
 
     print("\nA gap is the two markets disagreeing. A positive dutch return is the only")
     print("number that can be transacted, and it is reported separately for that reason.")
