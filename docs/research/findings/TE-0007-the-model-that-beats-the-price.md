@@ -148,3 +148,82 @@ one run. `tennis_edge/pyramid.py` supplies the pyramid features.
 
 Data: Tennis-Data (pinned vintage) for prices and results; Jeff Sackmann's archive
 (CC BY-NC-SA 4.0, non-commercial) for the pyramid. Both stay outside the repository.
+
+---
+
+# Addendum — two corrections and the strata, same day
+
+Two further runs landed after the above was written. One of them changes a conclusion.
+
+## Correction: the exchange question is undecided, not negative
+
+Finding 3 above says "nothing here supports an exchange edge, and the sign is wrong". That
+was written on a single exchange measurement. There is now a second, independent one, and it
+has the opposite sign.
+
+`exchange_horizons.py` scores the same model against the **June 2026 tick corpus** — real
+two-sided books, 388 markets paired to a model view, the model trained only on data before
+2026-06-01, and both sides of every comparison read at the same horizon:
+
+| horizon | market log loss | model gain | 95% CI (day-clustered) |
+|---|---:|---:|---|
+| T−24h | 0.59243 | −0.000714 | [−0.007381, +0.004951] |
+| T−12h | 0.60330 | +0.000575 | [−0.003827, +0.005036] |
+| T−6h | 0.59741 | +0.000405 | [−0.003850, +0.004514] |
+| T−1h | 0.60092 | **+0.000932** | [−0.003536, +0.005378] |
+| T−30m | 0.60113 | **+0.000970** | [−0.003472, +0.005377] |
+| T−10m | 0.60121 | **+0.000966** | [−0.003541, +0.005381] |
+| T−2m | 0.60151 | +0.000882 | [−0.003628, +0.005307] |
+
+Positive at seven of eight horizons, and from T−1h onwards clustered at **+0.00093 — the
+same magnitude as the +0.000862 measured against the bookmaker close.** Every interval
+includes zero, because 388 markets buys an interval roughly ten times wider than 63,576 do.
+
+So the two exchange measurements are: −1.81% ROI on 2,722 Tennis-Data closing quotes (CI
+[−6.12%, +2.21%]), and +0.0009 nats at seven of eight horizons on 388 tick markets (all CIs
+spanning zero). **Neither decides anything.** The correct statement is that the exchange is
+untested at usable power, not that the edge fails there. Finding 3's wording overstated one
+noisy measurement and is corrected here rather than edited away.
+
+What it would take is now calculable rather than hand-waved. Matching the bookmaker
+interval's half-width (0.00038) at the exchange needs about **49,000 markets** — roughly two
+years of Betfair ADVANCED tick data at the ~2,200 usable markets per month this corpus
+yields. That is the purchase referred to under "what would change the answer", now with a
+number attached.
+
+## The pre-declared strata, and the check that matters most
+
+`attention_strata.py` partitions the out-of-sample set four ways, all fixed and committed
+before the run. 13 cells scored, 8 exclude zero against 0.7 expected by chance.
+
+| partition | stratum | n | gain | 95% CI |
+|---|---|---:|---:|---|
+| workload | **mismatch (>1 match in 14d)** | 14,496 | **+0.001819** | [+0.000847, +0.002866] |
+| pyramid background | **mismatched (tour vs circuit)** | 20,415 | **+0.001399** | [+0.000707, +0.002109] |
+| one-sidedness | clear favourite (0.60–0.80) | 33,276 | +0.000982 | [+0.000469, +0.001523] |
+| pyramid background | similar backgrounds | 32,952 | +0.000796 | [+0.000264, +0.001342] |
+| workload | similar workload | 38,871 | +0.000731 | [+0.000251, +0.001206] |
+| — | **no pyramid record** | 10,209 | **+0.000000** | [−0.000835, +0.000841] |
+
+Three things, in order of how much they matter.
+
+**First, the strongest evidence in this whole line of work: where the pyramid features are
+absent, the model adds exactly zero.** The 10,209 matches with no pyramid record score
++0.000000, interval symmetric about zero. The gain is not spread thinly across everything —
+it lives entirely in the matches where the new information exists. A spurious effect would
+have no reason to respect that boundary; a real one has no choice but to.
+
+**Second, both pre-declared hypotheses fire in the predicted direction and by a wide
+margin.** Fatigue mismatch scores 2.5× the matched cell; a tour-player-versus-circuit-player
+mismatch scores 1.8× the matched cell. Those were written down before the numbers, in a file
+committed before the run, precisely so this sentence could be written honestly.
+
+**Third, the season control is not doing the job it was designed for, and that is itself
+informative.** Two of its four cells clear zero. Season was included as a null partition
+whose hits would reveal the false-positive rate — but a null partition only measures noise
+when the underlying effect is absent, and here it is not. Splitting a real, temporally
+uniform effect by season gives real cells. What the control actually establishes is that the
+edge is **not concentrated in one period**, which is a different reassurance from the one
+intended and a more useful one.
+
+None of this changes the economics in Finding 3, which remain the binding constraint.
