@@ -35,19 +35,17 @@ gain seen here should be treated as provisional until a long exchange history ex
 import datetime as dt
 import math
 
-from tennis_edge.corpus import default_vintage_root, load_corpus
 from tennis_edge.exchange import COMMISSION
 from tennis_edge.experiments.residual_edge import (
     BOOTSTRAP_DRAWS,
-    Row,
     _day_of,
     _mean_gain,
     _sigmoid,
-    build,
     fit,
 )
+from tennis_edge.feature_cache import FeatureRow as Row
 from tennis_edge.metrics import BetResult, clustered_bootstrap, summarise_bets
-from tennis_edge.refresh import latest_vintage
+from tennis_edge.residual_features import build_residual_features
 from tennis_edge.snapshots import HORIZONS, MarketSnapshot, load_snapshots
 
 CACHE = ("/tmp/claude-0/-home-user-Moneymaker/"
@@ -84,10 +82,7 @@ def _anchor(midpoint_a: float, row: Row, beta: dict[str, float], aligned: bool) 
 
 
 def main() -> None:
-    vintage = latest_vintage(default_vintage_root())
-    assert vintage is not None
-    matches, _stats = load_corpus(vintage.root)
-    rows = build(matches)
+    rows = build_residual_features()
     names = sorted({n for r in rows for n in r.features})
 
     train = [r for r in rows if r.date < EXCHANGE_FROM]

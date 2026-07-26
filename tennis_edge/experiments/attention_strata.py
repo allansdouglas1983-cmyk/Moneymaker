@@ -34,18 +34,16 @@ import datetime as dt
 import math
 from typing import Callable
 
-from tennis_edge.corpus import default_vintage_root, load_corpus
 from tennis_edge.experiments.residual_edge import (
     BOOTSTRAP_DRAWS,
-    Row,
     _day_of,
     _mean_gain,
     _sigmoid,
-    build,
     walk_forward,
 )
+from tennis_edge.feature_cache import FeatureRow as Row
 from tennis_edge.metrics import clustered_bootstrap
-from tennis_edge.refresh import latest_vintage
+from tennis_edge.residual_features import build_residual_features
 
 #: Smallest cell worth scoring. Below this the interval is so wide the cell says nothing,
 #: and printing a number invites reading one into it.
@@ -109,10 +107,7 @@ PARTITIONS: dict[str, Callable[[Row], str]] = {
 
 
 def main() -> None:
-    vintage = latest_vintage(default_vintage_root())
-    assert vintage is not None
-    matches, _stats = load_corpus(vintage.root)
-    rows = build(matches)
+    rows = build_residual_features()
     names = sorted({n for r in rows for n in r.features})
     scored = walk_forward(rows, names)
     print(f"out-of-sample matches: {len(scored):,}\n")
