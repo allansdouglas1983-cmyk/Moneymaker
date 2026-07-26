@@ -188,3 +188,29 @@ evidence for or against market efficiency. Settling it needs quotes with verifie
 and synchronised timestamps — which is the same blocker as everything else here.
 
 Reproduction: `tennis_edge/experiments/consensus_multibook.py`.
+
+---
+
+# Addendum 2 — task #72 is now closed by measurement, not by blockage (2026-07-26)
+
+The verdict above — "closed as untestable on free data" — was correct on the evidence then
+available and is now superseded. **TE-0006 tests the thesis at real transactable exchange
+prices and refutes it.**
+
+What changed is not new data but a corrected reading of data already held. The June 2026
+Betfair ADVANCED corpus is *mostly lower-tier tennis*; the only link built for it joined
+into the main-tour Tennis-Data corpus, so the lower-tier majority was reported as having no
+corpus match and then forgotten. Linking on pyramid identities instead, and grading from
+Betfair's own settlement, yields 2,227 scored markets rather than 425.
+
+The headline: the lower-tier exchange costs **3.67% (ATP) and 4.66% (WTA) round-trip at
+T−10m**, against 1.12% on the main-tour exchange, and 14–23% six hours out. Finding 2 above
+— that the tier is expensive rather than cheap — holds on the exchange and not only at
+bookmakers. Pyramid Elo is worse than the price at every horizon on both tours, and flat
+staking loses 1.8% to 8.3%.
+
+The `b1 = +0.16` in Finding 3 is therefore explained rather than vindicated: it was measured
+against a stale aggregate, as stated at the time, and against a live two-sided book the same
+class of model does not beat the price.
+
+Detail: `docs/research/findings/TE-0006-lower-tier-exchange-and-microstructure.md`.
