@@ -54,6 +54,7 @@ from tennis_edge.sackmann import available_files, load_matches
 from tennis_edge.durability import DurabilityEstimator, durability_features
 from tennis_edge.serve_detail import DetailEstimator, serve_detail_features
 from tennis_edge.serve_stats import ServeEstimator
+from tennis_edge.venues import benchmark_keys, uk_settlement_keys
 
 __all__ = [
     "PRICING_BOOK",
@@ -69,10 +70,13 @@ PRICING_BOOK = "b365"
 DEVIG = DevigMethod.POWER
 ARCHIVE_FROM = dt.date(2003, 1, 1)
 
-#: Books whose quotes ride along on each row so a money test can settle at them later.
-#: Betfair is the venue that matters — the only one charging commission rather than burying
-#: its margin in the quote, and the only one that cannot limit a winning account.
-SETTLE_BOOKS = ("pinnacle", "b365", "max", "betfair")
+#: Quotes carried on each row so a money test can settle at them later. Order matters to
+#: every report that iterates it: the venues a UK resident can actually bet into come first
+#: (Betfair Exchange, Bet365, Ladbrokes, Unibet), then the columns that are not places this
+#: account can reach — Pinnacle, closed to the UK since 2016, and the panel maximum and
+#: average, which are statistics over the table rather than counterparties. See
+#: :mod:`tennis_edge.venues`; a report that headlines a benchmark as a return is a defect.
+SETTLE_BOOKS = uk_settlement_keys() + benchmark_keys()
 
 #: Every feature this builder can emit. Declared rather than discovered so the leakage guard
 #: has something to check and so a downstream fit can refuse an unexpected column.
@@ -210,11 +214,21 @@ def build_residual_features(
     the key cannot see: an edit to this file that nobody remembered to record in
     ``FEATURE_SET_VERSION``.
     """
-    vintage = latest_vintage(default_vintage_root())
+    root = default_vintage_root()
+    vintage = latest_vintage(root)
     if vintage is None:
         raise RuntimeError("no corpus vintage on disk — run the refresh first")
     path = Path(cache_path) if cache_path is not None else default_cache_path()
     key = _cache_key(vintage)
+    # Which root supplied the data is decided by an environment variable and was, until this
+    # was printed, invisible. Two roots existed on one machine with different vintages AND
+    # different Sackmann archives; a run against the wrong one produced a plausible table
+    # from a corpus the deployed model had never seen. The cache key catches a stale cache,
+    # but nothing caught the wrong root, because both were internally consistent. So the
+    # provenance is stated on every build.
+    if not quiet:
+        print(f"corpus: {root} :: {vintage.vintage_id} "
+              f"(manifest {vintage.manifest_digest[:19]}…)", flush=True)
 
     if not refresh:
         cached = load_cache(path, key=key)

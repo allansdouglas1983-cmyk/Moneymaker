@@ -26,6 +26,8 @@ from typing import Any, Iterator, Sequence
 import openpyxl
 import xlrd
 
+from tennis_edge.venues import VENUES
+
 __all__ = [
     "Completion",
     "OddsQuotes",
@@ -36,6 +38,10 @@ __all__ = [
 ]
 
 _DATE_FORMATS = ("%d/%m/%Y", "%d/%m/%y", "%Y-%m-%d")
+
+#: The price columns carried onto every match, in registry order. Adding a venue is a
+#: registry edit plus a field on :class:`OddsQuotes`; the loader needs no change.
+_PARSED_VENUES = tuple(v for v in VENUES if v.parsed)
 
 _COMPLETION_PREFIXES = (
     ("completed", "COMPLETED"),
@@ -75,12 +81,21 @@ class OddsQuotes:
 
     ``None`` means the provider had no price, which is common in early years and for
     Betfair Exchange columns before ~2025. A missing price is never imputed.
+
+    Which columns land here is decided by :mod:`tennis_edge.venues`, not by this dataclass:
+    a field exists for every venue marked ``parsed``. The registry also records whether the
+    venue can be reached from the UK at all, and a money report is required to consult it —
+    a price is not a return if there is no account to place it from.
     """
 
     b365_a: float | None = None
     b365_b: float | None = None
     pinnacle_a: float | None = None
     pinnacle_b: float | None = None
+    ladbrokes_a: float | None = None
+    ladbrokes_b: float | None = None
+    unibet_a: float | None = None
+    unibet_b: float | None = None
     max_a: float | None = None
     max_b: float | None = None
     avg_a: float | None = None
@@ -354,12 +369,11 @@ def load_corpus(
             sets_a, sets_b = side(_int(cells.get("Wsets")), _int(cells.get("Lsets")))
             games_a, games_b = side(_games(cells, "W"), _games(cells, "L"))
             odds_pairs = {}
-            for attr, column in (("b365", "B365"), ("pinnacle", "PS"), ("max", "Max"),
-                                 ("avg", "Avg"), ("betfair", "BFE")):
-                first, second = side(_price(cells.get(f"{column}W")),
-                                     _price(cells.get(f"{column}L")))
-                odds_pairs[f"{attr}_a"] = first
-                odds_pairs[f"{attr}_b"] = second
+            for venue in _PARSED_VENUES:
+                first, second = side(_price(cells.get(f"{venue.column}W")),
+                                     _price(cells.get(f"{venue.column}L")))
+                odds_pairs[f"{venue.key}_a"] = first
+                odds_pairs[f"{venue.key}_b"] = second
 
             match = Match(
                 match_date=match_date, tour=tour,

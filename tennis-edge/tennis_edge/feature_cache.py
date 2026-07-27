@@ -48,7 +48,11 @@ __all__ = [
 #: change when the code that reads them does.
 #: v2 adds the decomposed serve/return layer (serve_detail).
 #: v3 adds durability: head-to-head, retirement risk, workload and surface switch.
-FEATURE_SET_VERSION = "residual-v3"
+#: v4 changes no feature at all — the fitted model carries over unchanged — but carries the
+#:    Ladbrokes and Unibet quotes so that settlement can be restricted to venues a UK
+#:    resident can actually reach. The cached odds are part of the row, so a stale v3 cache
+#:    would silently answer with the old, unreachable venue list.
+FEATURE_SET_VERSION = "residual-v4"
 
 _KIND = "tennis-edge-feature-cache-v1"
 

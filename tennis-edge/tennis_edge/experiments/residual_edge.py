@@ -21,11 +21,15 @@ deployable, and a model whose definition lives inside an experiment cannot be.
 Three things it reports, in the order that decides whether any of it counts:
 
 1. **Forecast quality** — log-score gain over the market, day-clustered.
-2. **Money, with a control.** Each book reports the model's rule and then the identical rule
-   driven by the market's own probability. ``max`` is the best quote across roughly twenty
-   books, so betting whenever a probability clears the break-even *at the best quote* is
-   partly a price-selection strategy no matter what supplies the probability. The control's
-   return is that selection; only the difference can be credited to the model.
+2. **Money, with a control, at venues that exist.** Settlement is split: first the places a
+   UK resident can actually bet into — Betfair Exchange, Bet365, Ladbrokes, Unibet — and
+   then, clearly separated, the columns that are not places. Pinnacle has not accepted UK
+   customers since 2014 and the panel maximum is arithmetic over twenty books rather than a
+   counter anyone stands at; both are kept as diagnostics and neither is a return. Each
+   venue reports the model's rule and then the identical rule driven by the market's own
+   probability, because betting whenever a probability clears the break-even at the best
+   available quote is partly price selection no matter what supplies the probability. The
+   control's return is that selection; only the difference can be credited to the model.
 3. **A placebo** on the whole procedure, which asks whether it can manufacture a gain from
    nothing at all.
 
@@ -42,15 +46,19 @@ from typing import Sequence, cast
 
 from tennis_edge.feature_cache import FeatureRow as Row
 from tennis_edge.metrics import BetResult, clustered_bootstrap, summarise_bets
-from tennis_edge.residual_features import SETTLE_BOOKS, build_residual_features
+from tennis_edge.residual_features import build_residual_features
 from tennis_edge.residual_model import L2, fit_coefficients
+from tennis_edge.venues import (VENUES, Kind, Venue, benchmark_keys, by_key,
+                                uk_settlement_keys)
 
 FIRST_SCORED_YEAR = 2012
 BOOTSTRAP_DRAWS = 2000
 
-#: Betfair charges commission on net market winnings; a bookmaker's margin is already inside
-#: its quoted price, so settling those at 0% is correct and not a favour to the strategy.
-COMMISSIONS = {"pinnacle": 0.0, "b365": 0.0, "max": 0.0, "betfair": 0.02}
+#: Commission charged on net winnings. A traditional bookmaker charges none because its
+#: margin is already inside the quote; the exchange charges 2% because its quote has no
+#: margin in it. Derived from the venue registry rather than listed by hand so that adding a
+#: venue cannot leave it silently free to bet at.
+COMMISSIONS = {v.key: (0.02 if v.kind is Kind.EXCHANGE else 0.0) for v in VENUES}
 
 
 def _sigmoid(z: float) -> float:
@@ -113,42 +121,67 @@ def _settle_at(scored: list[tuple[Row, float]], book: str,
     return results
 
 
+def _report_one(scored: list[tuple[Row, float]], venue: Venue) -> None:
+    model = _settle_at(scored, venue.key, use_model=True)
+    control = _settle_at(scored, venue.key, use_model=False)
+    if len(model) < 100:
+        print(f"\n  {venue.name:<18} {len(model)} bets — too few to score")
+        return
+    print()
+    print("  " + summarise_bets(model, bootstrap=BOOTSTRAP_DRAWS).report(venue.name))
+    if len(control) < 100:
+        print(f"  {'control':<28}{len(control)} bets — the market's own rule fires "
+              f"too rarely to compare")
+        return
+    print("  " + summarise_bets(control, bootstrap=BOOTSTRAP_DRAWS)
+          .report(f"{venue.name} CONTROL"))
+
+
 def report_money(scored: list[tuple[Row, float]]) -> None:
     """Flat stakes, no buffer: bet whenever the model clears the quoted break-even.
 
     A required-edge threshold is the classic place to launder an overfit — every threshold
     is a parameter, and the best one is always found after the fact. There is none here.
 
-    **The control is the point of this function, not an ornament on it.** ``max`` is the
-    best quote across roughly twenty books, so a rule that bets whenever a probability
-    clears the break-even *at the best quote* is partly a price-selection strategy no matter
-    what supplies the probability — it fires wherever some book is out of line with the one
-    used for pricing. The control runs the identical rule driven by the **market's own**
-    de-vigged probability, with no model correction at all. Whatever it earns is
-    attributable to shopping between books; only the difference between the two rows can be
-    credited to the model, and if the control earns as much then none of it can.
+    **A return is only money if there is an account to place it from.** The venues are split
+    in two and never mixed. The first block is the places a UK resident can bet into today:
+    Betfair Exchange, Bet365, Ladbrokes, Unibet. The second block is not — Pinnacle stopped
+    taking UK customers in 2014, and the panel maximum and average are arithmetic over the
+    table rather than counters anyone stands at. Numbers in the second block are diagnostics
+    about how sharp the forecast is. They are not returns and must never be headlined as
+    though a person could have collected them.
 
-    This is also why Pinnacle is reported. It is a single sharp book rather than an
-    envelope, so its row cannot be manufactured by cross-book selection, and it is the
-    conservative number.
+    **The control is the point of this function, not an ornament on it.** A rule that bets
+    whenever a probability clears the break-even at the *best* quote is partly a
+    price-selection strategy no matter what supplies the probability — it fires wherever
+    some book is out of line with the one used for pricing. The control runs the identical
+    rule driven by the **market's own** de-vigged probability, with no model correction at
+    all. Whatever it earns is attributable to shopping between books; only the difference
+    between the two rows can be credited to the model, and if the control earns as much then
+    none of it can.
+
+    Within the UK block the ordering still matters. Bet365 and Ladbrokes will restrict an
+    account that keeps winning, so a return there is real for as long as the account is
+    allowed to exist. Betfair Exchange will not, which is why it is the venue every
+    conclusion is finally judged at — and why its two seasons of coverage are the binding
+    constraint on this whole project rather than an inconvenience.
     """
     print("\nMONEY, settled at the actual quoted price (flat 1u, no required-edge buffer)")
-    print("  Each book: the model's rule, then the identical rule driven by the market's")
+    print("  Each venue: the model's rule, then the identical rule driven by the market's")
     print("  own probability. The control's return is price selection, not skill.")
-    for book in SETTLE_BOOKS:
-        model = _settle_at(scored, book, use_model=True)
-        control = _settle_at(scored, book, use_model=False)
-        if len(model) < 100:
-            print(f"\n  {book:<10} {len(model)} bets — too few to score")
-            continue
-        print()
-        print("  " + summarise_bets(model, bootstrap=BOOTSTRAP_DRAWS).report(book))
-        if len(control) < 100:
-            print(f"  {'control':<28}{len(control)} bets — the market's own rule fires "
-                  f"too rarely to compare")
-            continue
-        print("  " + summarise_bets(control, bootstrap=BOOTSTRAP_DRAWS)
-              .report(f"{book} CONTROL"))
+
+    print("\n--- BETTABLE FROM THE UK ---------------------------------------------------")
+    for key in uk_settlement_keys():
+        venue = by_key(key)
+        flag = "restricts winners" if venue.restricts_winners else "does not limit winners"
+        print(f"\n  [{venue.name}] {venue.kind.value.lower()}, UK-licensed, {flag}")
+        _report_one(scored, venue)
+
+    print("\n--- NOT BETTABLE FROM HERE: diagnostics, not returns ------------------------")
+    for key in benchmark_keys():
+        venue = by_key(key)
+        print(f"\n  [{venue.name}] {venue.access.value} — {venue.note.split('.')[0]}.")
+        _report_one(scored, venue)
 
 
 def placebo(rows: list[Row], names: list[str]) -> None:

@@ -41,8 +41,15 @@ __all__ = [
 
 POLICY_VERSION = "frozen-policy-v1"
 
-#: Books tried in order for the reference price. Pinnacle first — it is the sharpest and the
-#: benchmark everything else is measured against.
+#: Books tried in order for the **reference price** — the market's opinion, used as model
+#: input. This is not a settlement venue and reachability does not apply to it: an
+#: information price is worth using because it is sharp, not because an account can be
+#: opened at it. Pinnacle is first for exactly that reason, and it is the last place in this
+#: codebase where that ordering is correct. Where money is settled the venue must be one a
+#: UK resident can reach — see :mod:`tennis_edge.venues`.
+#:
+#: Frozen: every constant here is inside :func:`policy_digest`, so this tuple cannot be
+#: reordered without minting a new policy vintage.
 PREFERRED_BOOKS: tuple[str, ...] = ("pinnacle", "b365", "avg")
 
 DEVIG_METHOD = DevigMethod.POWER

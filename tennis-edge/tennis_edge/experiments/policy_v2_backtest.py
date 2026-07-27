@@ -29,7 +29,8 @@ from tennis_edge.experiments.residual_edge import (
 from tennis_edge.feature_cache import FeatureRow as Row
 from tennis_edge.metrics import BetResult, summarise_bets
 from tennis_edge.policy_v2 import MIN_EDGE, WATCH_EDGE
-from tennis_edge.residual_features import SETTLE_BOOKS, build_residual_features
+from tennis_edge.residual_features import build_residual_features
+from tennis_edge.venues import benchmark_keys, by_key, uk_settlement_keys
 
 #: Reported alongside the frozen threshold so the whole curve is visible. These are NOT
 #: candidates to choose from — MIN_EDGE is already frozen in the policy digest.
@@ -69,8 +70,13 @@ def main() -> None:
     print(f"\nfrozen policy threshold MIN_EDGE = {MIN_EDGE:.3f}  "
           f"(declared before this was run, and inside the policy digest)")
 
-    for book in SETTLE_BOOKS:
-        print(f"\n{book.upper()}  (commission {COMMISSIONS[book]:.0%})")
+    # UK-reachable venues first, then the columns that are not places anyone can bet at.
+    # The threshold curve at an unreachable venue is a statement about sharpness only.
+    for book in uk_settlement_keys() + benchmark_keys():
+        venue = by_key(book)
+        reach = ("BETTABLE FROM THE UK" if book in uk_settlement_keys()
+                 else f"NOT BETTABLE — {venue.access.value}, diagnostic only")
+        print(f"\n{venue.name.upper()}  (commission {COMMISSIONS[book]:.0%})  [{reach}]")
         print(f"  {'threshold':>10}{'bets':>9}{'ROI':>10}{'95% CI':>22}"
               f"{'control ROI':>14}")
         for threshold in THRESHOLDS:
