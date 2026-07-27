@@ -264,16 +264,25 @@ class TestTruncatedArchive:
     """
 
     def _truncated(self, tmp_path: Path) -> Path:
+        """A tar cut *inside* the final member's data, as a half-finished transfer leaves it.
+
+        The cut point is computed from the member's own offset rather than by trimming a
+        fixed number of bytes off the end: tar pads generously, so a fixed trim removes
+        padding and leaves every member intact — an archive that is not truncated at all,
+        which is no test of anything.
+        """
         archive = _archive(tmp_path, {
             "BASIC/2015/Jul/12/99/1.100.bz2": _match_odds("1.100"),
             "BASIC/2015/Jul/12/99/1.101.bz2": _match_odds("1.101"),
             "BASIC/2015/Jul/12/99/1.102.bz2": _match_odds("1.102"),
         })
-        # Cut inside the last member's data, on a block boundary, exactly as a half-finished
-        # transfer does. The end-of-archive zero blocks go with it.
+        with tarfile.open(archive) as tar:
+            last = tar.getmembers()[-1]
+            # Land in the middle of the last member's payload, on a block boundary.
+            cut_at = ((last.offset_data + last.size // 2) // 512) * 512
         raw = archive.read_bytes()
         cut = tmp_path / "truncated.tar"
-        cut.write_bytes(raw[:len(raw) - 2048])
+        cut.write_bytes(raw[:cut_at])
         return cut
 
     def test_markets_before_the_damage_are_kept(self, tmp_path: Path) -> None:

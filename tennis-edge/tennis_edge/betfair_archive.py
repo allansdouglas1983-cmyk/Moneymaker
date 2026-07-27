@@ -33,7 +33,7 @@ import tarfile
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
+from typing import Callable, Iterable, Iterator, Sequence
 
 from tennis_edge.betfair import (
     LtpObservation,
@@ -67,6 +67,11 @@ class ExtractStats:
     no_definition: int = 0
     unreadable: int = 0
     truncated: bool = False
+    #: The SOURCE archive ended mid-member. Distinct from ``truncated``, which means this
+    #: run stopped early on purpose because a probe limit was reached. One is damage in the
+    #: data, the other is a choice by the caller, and conflating them would let a partial
+    #: archive be quoted as a deliberate sample.
+    source_truncated: bool = False
     #: Market types seen and skipped, so "what else is in here" is answerable without a
     #: second full pass over four gigabytes.
     skipped_types: dict[str, int] = field(default_factory=dict)
@@ -85,12 +90,16 @@ class ExtractStats:
             f"wrong_type={self.wrong_market_type:,}  no_definition={self.no_definition:,}  "
             f"unreadable={self.unreadable:,}  "
             f"balanced={'yes' if self.accounted == self.members_read else 'NO'}"
+            + ("  SOURCE ARCHIVE TRUNCATED" if self.source_truncated else "")
             + (f"\n  skipped types: {top}" if top else "")
         )
 
 
 def iter_market_members(
-    archive: Path | str, *, include_unreadable: bool = False
+    archive: Path | str,
+    *,
+    include_unreadable: bool = False,
+    on_truncated: Callable[[], None] | None = None,
 ) -> Iterator[tuple[str, bytes]]:
     """Yield ``(member_name, decompressed_bytes)`` for each market file, in archive order.
 
@@ -102,20 +111,72 @@ def iter_market_members(
     must cost one file and not the rest of the archive. ``include_unreadable=True`` yields
     it with empty bytes instead, which is what :func:`extract_markets` asks for — it has to
     *count* the damage, and a member that was silently skipped cannot be counted.
+
+    **A tar that ends mid-member stops the iteration; it does not raise.** The archive this
+    was built for is cut at 94%, and raising would discard four hundred thousand markets
+    that were read perfectly well in order to report the last six per cent. ``on_truncated``
+    is called once if that happens, so the caller can record that its data is partial —
+    stopping quietly and stopping *silently* are different things, and only the first is
+    acceptable.
+
+    Incompleteness has **two** shapes and only one of them announces itself. A cut inside a
+    member raises ``ReadError``. A cut that removes just the end-of-archive marker raises
+    nothing at all: every member reads, the iterator ends, and the result looks complete.
+    So the trailing zero blocks are checked explicitly on normal completion. That check is
+    what identified the real archive, and a reader that only caught the loud failure would
+    have called a terminator-less tar whole.
     """
     with tarfile.open(archive, "r|") as tar:
-        for member in tar:
+        while True:
+            try:
+                member = tar.next()
+            except tarfile.ReadError:
+                if on_truncated is not None:
+                    on_truncated()
+                return
+            if member is None:
+                if on_truncated is not None and not _has_end_marker(archive):
+                    on_truncated()
+                return
             if not member.isfile() or not member.name.endswith(".bz2"):
                 continue
             handle = tar.extractfile(member)
             if handle is None:  # pragma: no cover - isfile() established this
                 continue
-            raw = handle.read()
+            try:
+                raw = handle.read()
+            except tarfile.ReadError:
+                if on_truncated is not None:
+                    on_truncated()
+                return
             try:
                 yield member.name, bz2.decompress(raw)
             except (OSError, ValueError, EOFError):
                 if include_unreadable:
                     yield member.name, b""
+
+
+#: A tar ends with two 512-byte zero blocks. Writers pad beyond that, so it is the presence
+#: of the marker that is checked, not the exact length of the padding.
+_END_MARKER = b"\x00" * 1024
+
+
+def _has_end_marker(archive: Path | str) -> bool:
+    """Whether the file ends with tar's end-of-archive marker.
+
+    A missing marker is the quiet form of truncation: every member still reads, and nothing
+    in the iteration protocol says anything is wrong.
+    """
+    path = Path(archive)
+    try:
+        with path.open("rb") as handle:
+            handle.seek(0, 2)
+            if handle.tell() < len(_END_MARKER):
+                return False
+            handle.seek(-len(_END_MARKER), 2)
+            return handle.read() == _END_MARKER
+    except OSError:  # pragma: no cover - the open above already succeeded upstream
+        return False
 
 
 def _messages(raw: bytes) -> Iterator[dict[str, object]]:
@@ -179,6 +240,9 @@ def extract_markets(
             "source_digest": source_digest,
             "market_types": list(wanted),
             "limit": limit,
+            # The source archive ended mid-member. Recorded here so the file declares its
+            # own incompleteness to a reader who does not know its history.
+            "source_truncated": False,
             # Rewritten at the end once the answer is known; placed first so a reader hits
             # it before any data row.
             "truncated": False,
@@ -186,7 +250,11 @@ def extract_markets(
         header_line = json.dumps(header)
         handle.write(header_line + "\n")
 
-        for name, raw in iter_market_members(archive, include_unreadable=True):
+        def _note_truncation() -> None:
+            stats.source_truncated = True
+
+        for name, raw in iter_market_members(archive, include_unreadable=True,
+                                             on_truncated=_note_truncation):
             stats.members_read += 1
             if not raw:
                 stats.unreadable += 1
@@ -223,8 +291,10 @@ def extract_markets(
             if stats.truncated:
                 break
 
-    if stats.truncated:
-        _rewrite_header(out, header_line, {**header, "truncated": True})
+    if stats.truncated or stats.source_truncated:
+        _rewrite_header(out, header_line, {**header,
+                                           "truncated": stats.truncated,
+                                           "source_truncated": stats.source_truncated})
     return stats
 
 
