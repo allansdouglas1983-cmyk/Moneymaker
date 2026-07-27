@@ -189,6 +189,10 @@ class DurabilityEstimator:
             return None
         return (pair[0], pair[1]) if key_a == first else (pair[1], pair[0])
 
+    def pairs(self) -> list[tuple[tuple[str, PlayerKey, PlayerKey], tuple[int, int]]]:
+        """Every accumulated head-to-head record, for freezing into a state snapshot."""
+        return [(key, (record[0], record[1])) for key, record in self._h2h.items()]
+
     def retirement_baseline(self, tour: str) -> float:
         played = self._tour_matches.get(tour, 0)
         if played <= 0:

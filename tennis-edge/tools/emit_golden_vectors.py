@@ -71,6 +71,21 @@ def _player(rng: random.Random, *, thin: bool, no_serve: bool,
         pyramid_last_played=(dt.date(2026, 7, 1) - dt.timedelta(days=rng.randint(0, 500))
                              ).isoformat(),
         pyramid_recent_14d=rng.randint(0, 6),
+        # The decomposed serve/return layer, already shrunk. Dropped entirely for a share of
+        # players so the "layer absent for this pair" branch is exercised.
+        serve_detail={} if no_serve else {
+            "first_serve_rate": rng.uniform(0.55, 0.72),
+            "first_win_rate": rng.uniform(0.62, 0.82),
+            "second_win_rate": rng.uniform(0.40, 0.62),
+            "ace_rate": rng.uniform(0.01, 0.18),
+            "double_fault_rate": rng.uniform(0.01, 0.09),
+            "break_save_rate": rng.uniform(0.45, 0.75),
+            "return_rate": rng.uniform(0.28, 0.48),
+        },
+        retirement_rate=rng.uniform(0.0, 0.12),
+        workload_minutes_14d=float(rng.choice([0, 0, 95, 180, 320, 540])),
+        workload_long_28d=rng.randint(0, 3),
+        last_surface=rng.choice(("Hard", "Clay", "Grass", "")),
     )
 
 
@@ -86,6 +101,11 @@ def _payload(state: PlayerState) -> dict[str, Any]:
         "pyramid_tour_share": state.pyramid_tour_share,
         "pyramid_last_played": state.pyramid_last_played,
         "pyramid_recent_14d": state.pyramid_recent_14d,
+        "serve_detail": dict(state.serve_detail),
+        "retirement_rate": state.retirement_rate,
+        "workload_minutes_14d": state.workload_minutes_14d,
+        "workload_long_28d": state.workload_long_28d,
+        "last_surface": state.last_surface,
     }
 
 
@@ -100,7 +120,7 @@ def _price(rng: random.Random) -> Decimal:
 def build(seed: int = 20260726) -> list[dict[str, Any]]:
     rng = random.Random(seed)
     model = load_model(Path(__file__).resolve().parents[2] / "artifacts"
-                       / "residual-model.json")
+                       / "residual-model-v3.json")
     vectors: list[dict[str, Any]] = []
 
     for index in range(CASES):
@@ -119,11 +139,20 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
         baseline = rng.uniform(0.58, 0.66)
         match_date = dt.date(2026, 7, 26) + dt.timedelta(days=index % 9)
 
+        # Two thirds of cases carry a pairwise record, so both the present and absent
+        # head-to-head branches are replayed by the port test.
+        meetings: dict[tuple[str, str, str], tuple[int, int]] = {}
+        if index % 3 != 1:
+            meetings[(tour, "A", "B")] = (rng.randint(0, 6), rng.randint(0, 6))
+            if sum(meetings[(tour, "A", "B")]) == 0:
+                meetings[(tour, "A", "B")] = (1, 1)
         snapshot = StateSnapshot(
             as_of=dt.date(2026, 7, 26),
             corpus_vintage="golden",
             players={(tour, "A"): a, (tour, "B"): b},
             tour_serve_baseline={tour: baseline},
+            tour_retirement_baseline={tour: rng.uniform(0.02, 0.05)},
+            head_to_head=meetings,
         )
         odds_a, odds_b = _price(rng), _price(rng)
         implied_a, implied_b = 1.0 / float(odds_a), 1.0 / float(odds_b)
@@ -159,6 +188,7 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
                 "odds_a": str(odds_a), "odds_b": str(odds_b),
                 "rank_a": rank_a, "rank_b": rank_b,
                 "stale_days": stale,
+                "meetings": list(meetings.get((tour, "A", "B"), ())) or None,
                 "a": _payload(a), "b": _payload(b),
             },
             "expected": {

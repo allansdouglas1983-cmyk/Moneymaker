@@ -36,6 +36,10 @@ export const WATCH_EDGE = 0.01;
 
 /** Below these the state cannot support a feature and absence is reported, never a zero. */
 const MIN_MAIN_TOUR_MATCHES = 5;
+/** Mirrors durability.MIN_H2H_MEETINGS / H2H_PRIOR. Below the minimum the pairwise record
+ *  is noise wearing a ratio, and the feature is reported absent rather than as even. */
+const MIN_H2H_MEETINGS = 2;
+const H2H_PRIOR = 3.0;
 const MIN_SERVE_COVERAGE = 300.0;
 const MIN_PYRAMID_MATCHES = 5;
 
@@ -244,6 +248,13 @@ export interface PlayerState {
   pyramid_tour_share: number;
   pyramid_last_played: string | null;
   pyramid_recent_14d: number;
+  /** The decomposed serve/return layer, already shrunk toward the tour baseline at the
+   *  snapshot date. Empty when the player has too little coverage to shrink honestly. */
+  serve_detail?: Record<string, number> | null;
+  retirement_rate?: number | null;
+  workload_minutes_14d?: number | null;
+  workload_long_28d?: number | null;
+  last_surface?: string | null;
 }
 
 function surfaceRating(state: PlayerState, surface: string): number {
@@ -265,9 +276,19 @@ function daysSince(stamp: string | null, when: string): number | null {
   return Math.round((a - b) / 86400000);
 }
 
+/** 1 when this player's last match was on a different surface, else 0. The surface Elo
+ *  knows a player's history on grass; it does not know they have just arrived from clay. */
+function switched(state: PlayerState, surface: string): number {
+  const last = state.last_surface ?? "";
+  if (!last || !surface) return 0;
+  return last !== surface ? 1 : 0;
+}
+
 export interface FeatureInputs {
   a: PlayerState | null;
   b: PlayerState | null;
+  /** Wins by A then by B. Null when the pair has not met often enough to say anything. */
+  meetings?: [number, number] | null;
   surface: string;
   bestOf: number;
   marketProbability: number;
@@ -314,6 +335,31 @@ export function liveFeatures(input: FeatureInputs): Record<string, number> {
     );
     const point = matchProbability(pA, 1.0 - pB, bestOf);
     features.point_model_residual = logit(point) - marketLogit;
+  }
+
+  // The decomposed serve/return layer. Both players need the rates or the whole layer is
+  // absent — a gap computed against a default is a claim about a player nobody measured.
+  const detailA = a.serve_detail ?? {};
+  const detailB = b.serve_detail ?? {};
+  const shared = Object.keys(detailA).filter((k) => k in detailB).sort();
+  if (Object.keys(detailA).length > 0 && Object.keys(detailB).length > 0) {
+    for (const component of shared) {
+      features[component + "_gap"] = detailA[component] - detailB[component];
+    }
+  }
+
+  // Durability. Unlike the layers above these are always available: "no matches in the last
+  // fortnight" is an observation about a player, not a missing one.
+  features.retirement_risk_gap = (a.retirement_rate ?? 0) - (b.retirement_rate ?? 0);
+  features.workload_minutes_gap =
+    ((a.workload_minutes_14d ?? 0) - (b.workload_minutes_14d ?? 0)) / 60.0;
+  features.workload_long_gap = (a.workload_long_28d ?? 0) - (b.workload_long_28d ?? 0);
+  features.surface_switch_gap = switched(a, surface) - switched(b, surface);
+
+  const meetings = input.meetings ?? null;
+  if (meetings !== null && meetings[0] + meetings[1] >= MIN_H2H_MEETINGS) {
+    const rate = (meetings[0] + 0.5 * H2H_PRIOR) / (meetings[0] + meetings[1] + H2H_PRIOR);
+    features.h2h_gap = Math.log(rate / (1.0 - rate));
   }
 
   if (a.pyramid_matches >= MIN_PYRAMID_MATCHES && b.pyramid_matches >= MIN_PYRAMID_MATCHES) {

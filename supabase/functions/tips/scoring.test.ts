@@ -39,6 +39,7 @@ interface Vector {
     rank_a: number | null;
     rank_b: number | null;
     stale_days: number;
+    meetings: [number, number] | null;
     a: PlayerState;
     b: PlayerState;
   };
@@ -65,7 +66,8 @@ const vectors: Vector[] = JSON.parse(
 );
 
 const model: Model = JSON.parse(
-  await Deno.readTextFile(new URL("../../../artifacts/residual-model.json", import.meta.url)),
+  await Deno.readTextFile(
+    new URL("../../../artifacts/residual-model-v3.json", import.meta.url)),
 );
 
 function close(actual: number, expected: number, what: string, index: number) {
@@ -103,13 +105,25 @@ Deno.test("the vector file is the one that was generated, and covers the branche
     ),
     true,
   );
+  // Both head-to-head branches, and both serve-detail branches, must be replayed.
+  assertEquals(vectors.some((v) => v.expected.features.h2h_gap !== undefined), true);
+  assertEquals(
+    vectors.some((v) =>
+      Object.keys(v.expected.features).length > 0 &&
+      v.expected.features.h2h_gap === undefined
+    ),
+    true,
+  );
+  assertEquals(
+    vectors.some((v) => v.expected.features.first_serve_rate_gap !== undefined), true);
 });
 
 Deno.test("the model artefact is the one the vectors were generated against", () => {
   assertEquals(
     model.digest,
-    "sha256:78b95237a216b4763d26ef9717474af4ca270844dd033d2363d5c1f2a3f6c258",
+    "sha256:458574037e863122d9f7cf4751796e4b261c4d8651123bf1736e5524c4cc8bf6",
   );
+  assertEquals(model.feature_names.length, 22);
 });
 
 Deno.test("every feature matches the Python, including which features exist", () => {
@@ -127,6 +141,7 @@ Deno.test("every feature matches the Python, including which features exist", ()
       serveBaseline: input.serve_baseline,
       rankA: input.rank_a,
       rankB: input.rank_b,
+      meetings: input.meetings,
     });
     // Presence is a claim about what is known. A port that invents a zero where the Python
     // reported absence would price a debutant at the centre of every distribution.

@@ -48,6 +48,12 @@ MIN_MAIN_TOUR_MATCHES = 5
 MIN_SERVE_COVERAGE = 300.0
 MIN_PYRAMID_MATCHES = 5
 WORKLOAD_DAYS = 14
+#: Mirrors durability.MIN_H2H_MEETINGS. Below this the pairwise record is noise wearing a
+#: ratio, and the feature is reported absent rather than as an even split.
+MIN_H2H_MEETINGS = 2
+#: Mirrors durability.H2H_PRIOR: pseudo-meetings of "even" mixed into the rate.
+H2H_PRIOR = 3.0
+LONG_WORKLOAD_DAYS = 28
 
 
 @dataclass(frozen=True)
@@ -72,6 +78,18 @@ class PlayerState:
     pyramid_tour_share: float
     pyramid_last_played: str | None
     pyramid_recent_14d: int
+    #: The decomposed serve/return layer, already shrunk toward the tour baseline at the
+    #: snapshot date. Stored post-shrinkage for the same reason as ``serve_rate``: the
+    #: shrinkage depends on how much the player had played *by then*, and re-deriving it
+    #: later would quietly use the wrong denominator.
+    serve_detail: Mapping[str, float] = field(default_factory=dict)
+    #: Durability. ``retirement_rate`` is shrunk toward the tour rate; the workload figures
+    #: are raw counts over their windows, because "no matches in a fortnight" is an
+    #: observation and not a missing value.
+    retirement_rate: float = 0.0
+    workload_minutes_14d: float = 0.0
+    workload_long_28d: int = 0
+    last_surface: str = ""
 
     def surface_rating(self, surface: str) -> float:
         """Surface rating, falling back to the overall one for an unplayed surface.
@@ -93,6 +111,8 @@ class StateSnapshot:
     corpus_vintage: str
     players: Mapping[tuple[str, str], PlayerState]
     tour_serve_baseline: Mapping[str, float]
+    #: Tour-wide retirement rate, the target every player rate is shrunk toward.
+    tour_retirement_baseline: Mapping[str, float] = field(default_factory=dict)
     #: Head-to-head counts, keyed by (tour, first-sorted name, second-sorted name).
     head_to_head: Mapping[tuple[str, str, str], tuple[int, int]] = field(
         default_factory=dict)
@@ -102,6 +122,18 @@ class StateSnapshot:
 
     def get(self, tour: str, player: str) -> PlayerState | None:
         return self.players.get((tour, player))
+
+    def meetings(self, tour: str, player_a: str, player_b: str) -> tuple[int, int] | None:
+        """Wins by A then by B, or ``None`` when the pair has not met enough times.
+
+        Stored once under the sorted pair, so the caller gets the same record whichever way
+        round the fixture is written.
+        """
+        first, second = sorted((player_a, player_b))
+        record = self.head_to_head.get((tour, first, second))
+        if record is None or sum(record) < MIN_H2H_MEETINGS:
+            return None
+        return record if player_a == first else (record[1], record[0])
 
 
 def _logit(p: float) -> float:
@@ -176,6 +208,26 @@ def live_features(
         point = match_probability(p_a, 1.0 - p_b, best_of=best_of)
         features["point_model_residual"] = _logit(point) - market_logit
 
+    # The decomposed serve/return layer. Both players need the rates or the whole layer is
+    # absent — a gap computed against a default is a claim about a player nobody measured.
+    if a.serve_detail and b.serve_detail:
+        for component in sorted(set(a.serve_detail) & set(b.serve_detail)):
+            features[f"{component}_gap"] = a.serve_detail[component] - b.serve_detail[component]
+
+    # Durability. Unlike the layers above these are always available: "no matches in the
+    # last fortnight" is an observation about a player, not a missing one.
+    features.update({
+        "retirement_risk_gap": a.retirement_rate - b.retirement_rate,
+        "workload_minutes_gap": (a.workload_minutes_14d - b.workload_minutes_14d) / 60.0,
+        "workload_long_gap": float(a.workload_long_28d - b.workload_long_28d),
+        "surface_switch_gap": float(_switched(a, surface) - _switched(b, surface)),
+    })
+    meetings = snapshot.meetings(tour, player_a, player_b)
+    if meetings is not None:
+        wins_a, wins_b = meetings
+        rate = (wins_a + 0.5 * H2H_PRIOR) / (wins_a + wins_b + H2H_PRIOR)
+        features["h2h_gap"] = math.log(rate / (1.0 - rate))
+
     if (a.pyramid_matches >= MIN_PYRAMID_MATCHES
             and b.pyramid_matches >= MIN_PYRAMID_MATCHES):
         rest_a = _days_since(a.pyramid_last_played, when)
@@ -192,6 +244,17 @@ def live_features(
     return features
 
 
+def _switched(state: PlayerState, surface: str) -> int:
+    """1 when this player's last match was on a different surface, else 0.
+
+    A player arriving from clay onto grass has had no competitive match on the surface. The
+    surface Elo knows their history there; it does not know they have just changed.
+    """
+    if not state.last_surface or not surface:
+        return 0
+    return int(state.last_surface != surface)
+
+
 def save_state(path: Path | str, snapshot: StateSnapshot) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -200,6 +263,7 @@ def save_state(path: Path | str, snapshot: StateSnapshot) -> None:
         "as_of": snapshot.as_of.isoformat(),
         "corpus_vintage": snapshot.corpus_vintage,
         "tour_serve_baseline": dict(snapshot.tour_serve_baseline),
+        "tour_retirement_baseline": dict(snapshot.tour_retirement_baseline),
         "players": [
             {"tour": tour, "name": name, **_player_payload(state)}
             for (tour, name), state in sorted(snapshot.players.items())
@@ -227,6 +291,11 @@ def _player_payload(state: PlayerState) -> dict[str, object]:
         "pyramid_tour_share": state.pyramid_tour_share,
         "pyramid_last_played": state.pyramid_last_played,
         "pyramid_recent_14d": state.pyramid_recent_14d,
+        "serve_detail": dict(state.serve_detail),
+        "retirement_rate": state.retirement_rate,
+        "workload_minutes_14d": state.workload_minutes_14d,
+        "workload_long_28d": state.workload_long_28d,
+        "last_surface": state.last_surface,
     }
 
 
@@ -250,6 +319,7 @@ def load_state(path: Path | str) -> StateSnapshot:
         corpus_vintage=raw["corpus_vintage"],
         players=players,
         tour_serve_baseline=raw["tour_serve_baseline"],
+        tour_retirement_baseline=raw.get("tour_retirement_baseline", {}),
         head_to_head=head_to_head,
     )
 
@@ -271,6 +341,8 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
     from tennis_edge.ratings import RatingEngine
     from tennis_edge.refresh import latest_vintage
     from tennis_edge.sackmann import load_matches
+    from tennis_edge.durability import DurabilityEstimator
+    from tennis_edge.serve_detail import DetailEstimator
     from tennis_edge.serve_stats import ServeEstimator, td_player_key
 
     vintage = latest_vintage(default_vintage_root())
@@ -282,8 +354,15 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
     engine = RatingEngine()
     pyramid = PyramidRatings()
     estimator = ServeEstimator()
-    estimator.queue(load_matches(families=("main", "qual_chall"),
-                                 since=dt.date(2003, 1, 1), require_serve_stats=True))
+    detail = DetailEstimator()
+    durability = DurabilityEstimator()
+    serve_rows = list(load_matches(families=("main", "qual_chall"),
+                                   since=dt.date(2003, 1, 1), require_serve_stats=True))
+    estimator.queue(serve_rows)
+    detail.queue(serve_rows)
+    # Durability sees every match, retirements included: a retirement is the event the
+    # layer exists to count, and the serve-stat filter above would drop all of them.
+    durability.queue(load_matches(families=("main", "qual_chall"), since=dt.date(2003, 1, 1)))
     pyramid.queue(load_matches(families=("main", "qual_chall", "futures"),
                                since=dt.date(2003, 1, 1)))
 
@@ -292,15 +371,21 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
         if day >= cutoff:
             break
         estimator.advance_to(day)
+        detail.advance_to(day)
+        durability.advance_to(day)
         pyramid.advance_to(day)
         engine.observe(batch)
         for match in batch:
             seen.add((match.tour, match.player_a))
             seen.add((match.tour, match.player_b))
     estimator.advance_to(cutoff)
+    detail.advance_to(cutoff)
+    durability.advance_to(cutoff)
     pyramid.advance_to(cutoff)
 
     baselines = {tour: estimator.tour_serve_average(tour) for tour in ("ATP", "WTA")}
+    retirement_baselines = {tour: durability.retirement_baseline(tour)
+                            for tour in ("ATP", "WTA")}
     players: dict[tuple[str, str], PlayerState] = {}
     for tour, name in sorted(seen):
         key = td_player_key(name)
@@ -327,6 +412,54 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
             pyramid_last_played=None if pyramid_rest is None
             else (cutoff - dt.timedelta(days=pyramid_rest)).isoformat(),
             pyramid_recent_14d=pyramid.matches_in_last(tour, name, cutoff, WORKLOAD_DAYS),
+            serve_detail=_detail_rates(detail, tour, name),
+            retirement_rate=durability.record(tour, name).retirement_rate(
+                baseline=retirement_baselines.get(tour, 0.03)),
+            workload_minutes_14d=float(
+                durability.record(tour, name).minutes_within(cutoff, WORKLOAD_DAYS)),
+            workload_long_28d=durability.record(tour, name).long_matches_within(
+                cutoff, LONG_WORKLOAD_DAYS),
+            last_surface=durability.record(tour, name).last_surface,
         )
+    # Head-to-head is stored once under the sorted pair, so a fixture written either way
+    # round resolves to the same record. Pairs below the minimum are left out entirely
+    # rather than stored as an even split nobody observed.
+    meetings: dict[tuple[str, str, str], tuple[int, int]] = {}
+    by_key = {(tour, td_player_key(name)): name for tour, name in players}
+    for (tour, key_a, key_b), record in durability.pairs():
+        name_a = by_key.get((tour, key_a))
+        name_b = by_key.get((tour, key_b))
+        if name_a is None or name_b is None or sum(record) < MIN_H2H_MEETINGS:
+            continue
+        first, second = sorted((name_a, name_b))
+        wins = (record[0], record[1]) if name_a == first else (record[1], record[0])
+        meetings[(tour, first, second)] = wins
+
     return StateSnapshot(as_of=cutoff, corpus_vintage=vintage.vintage_id,
-                         players=players, tour_serve_baseline=baselines)
+                         players=players, tour_serve_baseline=baselines,
+                         tour_retirement_baseline=retirement_baselines,
+                         head_to_head=meetings)
+
+
+def _detail_rates(detail: object, tour: str, name: str) -> dict[str, float]:
+    """The seven decomposed serve/return rates, already shrunk toward the tour baseline.
+
+    Empty when the player has too little coverage to shrink honestly — the same threshold
+    the training-time builder uses, so a match the fit would have left without the layer is
+    also left without it here.
+    """
+    from tennis_edge.serve_detail import MIN_POINTS
+
+    profile = detail.profile(tour, name)  # type: ignore[attr-defined]
+    if profile.serve_points < MIN_POINTS:
+        return {}
+    base = detail.baselines(tour)  # type: ignore[attr-defined]
+    return {
+        "first_serve_rate": profile.first_serve_rate(baseline=base.first_serve),
+        "first_win_rate": profile.first_win_rate(baseline=base.first_win),
+        "second_win_rate": profile.second_win_rate(baseline=base.second_win),
+        "ace_rate": profile.ace_rate(baseline=base.ace),
+        "double_fault_rate": profile.double_fault_rate(baseline=base.double_fault),
+        "break_save_rate": profile.break_point_save_rate(baseline=base.break_save),
+        "return_rate": profile.return_rate(baseline=base.return_won),
+    }
