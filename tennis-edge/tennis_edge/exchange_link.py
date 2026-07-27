@@ -110,23 +110,61 @@ class LinkResult:
         return len(self.linked) + len(self.excluded)
 
 
+def _off_date(market: MarketHistory) -> dt.date:
+    return dt.datetime.fromtimestamp(
+        market.market_time_ms / 1000, tz=dt.timezone.utc
+    ).date()
+
+
 def _resolve_names(
     markets: Sequence[MarketHistory], matches: Sequence[Match]
-) -> dict[str, str]:
-    """Betfair full name -> Tennis-Data name, via the governed identity bridge."""
-    by_tour: dict[str, set[str]] = defaultdict(set)
+) -> dict[tuple[dt.date, str], str]:
+    """``(off date, Betfair full name)`` -> Tennis-Data name, via the governed bridge.
+
+    **Scoped per day, and that is the whole point.** One bridge over the whole archive puts
+    2,982 corpus names against 14,788 Betfair names and manufactures homonyms that do not
+    exist among the players who actually met: Tennis-Data abbreviates to surname plus
+    initial, so "Marin Cilic" and "Mate Cilic" are both "Cilic M.", one corpus identity maps
+    to two Betfair names, and the bridge refuses HOMONYM_MULTIPLE_BETFAIR — killing both.
+    They never play on the same day. Measured on the archive, that single effect took
+    resolution from 93% to 12% and the join from usable to 200 links out of 405,487.
+
+    Nothing is loosened to fix it. Same module, same normalisation, same refusals; the
+    bridge is simply asked about one day's card, where the question has an answer. A
+    genuine same-day ambiguity still refuses, because it is still ambiguous.
+
+    Corpus names are drawn from a window of ±:data:`DATE_TOLERANCE_DAYS` around the market's
+    date, matching the window the link itself allows — a match that crossed midnight UTC
+    must be resolvable, or the tolerance downstream is decoration.
+    """
+    matches_by_date: dict[dt.date, list[Match]] = defaultdict(list)
     for match in matches:
-        by_tour[match.tour].add(match.player_a)
-        by_tour[match.tour].add(match.player_b)
-    betfair_names = {r.name for m in markets for r in m.runners if r.name}
-    if not betfair_names or not by_tour:
-        return {}
-    bridge = build_bridge(
-        td_names_by_tour={t: sorted(n) for t, n in by_tour.items()},
-        betfair_full_names=sorted(betfair_names),
-        source_vintage="tennis-edge-exchange-link",
-    )
-    return {m.betfair_alias.display_name: m.source.raw_name for m in bridge.mappings}
+        matches_by_date[match.match_date].append(match)
+
+    names_by_date: dict[dt.date, set[str]] = defaultdict(set)
+    for market in markets:
+        for runner in market.runners:
+            if runner.name:
+                names_by_date[_off_date(market)].add(runner.name)
+
+    resolved: dict[tuple[dt.date, str], str] = {}
+    window = range(-DATE_TOLERANCE_DAYS, DATE_TOLERANCE_DAYS + 1)
+    for day, betfair_names in names_by_date.items():
+        by_tour: dict[str, set[str]] = defaultdict(set)
+        for offset in window:
+            for match in matches_by_date.get(day + dt.timedelta(days=offset), ()):
+                by_tour[match.tour].add(match.player_a)
+                by_tour[match.tour].add(match.player_b)
+        if not by_tour:
+            continue
+        bridge = build_bridge(
+            td_names_by_tour={t: sorted(n) for t, n in by_tour.items()},
+            betfair_full_names=sorted(betfair_names),
+            source_vintage="tennis-edge-exchange-link",
+        )
+        for mapping in bridge.mappings:
+            resolved[(day, mapping.betfair_alias.display_name)] = mapping.source.raw_name
+    return resolved
 
 
 def link_markets(
@@ -140,8 +178,13 @@ def link_markets(
     """Join markets to matches. Every market ends up linked or explicitly excluded."""
     resolved = _resolve_names(markets, matches)
     by_pair: dict[frozenset[str], list[Match]] = defaultdict(list)
+    by_date: dict[dt.date, list[Match]] = defaultdict(list)
     for match in matches:
         by_pair[frozenset((match.player_a, match.player_b))].append(match)
+        by_date[match.match_date].append(match)
+
+    def matches_on(day: dt.date) -> list[Match]:
+        return by_date.get(day, [])
 
     linked: list[LinkedMarket] = []
     excluded: list[ExcludedMarket] = []
@@ -149,7 +192,24 @@ def link_markets(
 
     for market in markets:
         active = [r for r in market.runners if r.status.upper() == "ACTIVE"]
-        names = [resolved.get(r.name) for r in active]
+        market_day = _off_date(market)
+
+        # Asked BEFORE the names, because per-day scoping otherwise collapses two different
+        # facts into one. A market on a date the corpus does not cover has no resolvable
+        # names by construction, and reporting that as UNRESOLVED_NAME would say "we do not
+        # know these players" when the truth is "there is no play in the corpus that day" —
+        # the difference between a name problem and a coverage problem, and only one of them
+        # is worth chasing.
+        if not any(matches_on(market_day + dt.timedelta(days=offset))
+                   for offset in range(-DATE_TOLERANCE_DAYS, DATE_TOLERANCE_DAYS + 1)):
+            excluded.append(ExcludedMarket(
+                market.market_id, market.event_name, LinkOutcome.NO_MATCH_ON_DATE,
+                f"no corpus match within {DATE_TOLERANCE_DAYS}d of "
+                f"{market_day.isoformat()}",
+            ))
+            continue
+
+        names = [resolved.get((market_day, r.name)) for r in active]
         if len(names) != 2 or any(n is None for n in names):
             excluded.append(ExcludedMarket(
                 market.market_id, market.event_name, LinkOutcome.UNRESOLVED_NAME,
@@ -157,9 +217,7 @@ def link_markets(
             ))
             continue
 
-        off_date = dt.datetime.fromtimestamp(
-            market.market_time_ms / 1000, tz=dt.timezone.utc
-        ).date()
+        off_date = market_day
         candidates = [
             m for m in by_pair.get(frozenset(n for n in names if n), ())
             if abs((m.match_date - off_date).days) <= DATE_TOLERANCE_DAYS
