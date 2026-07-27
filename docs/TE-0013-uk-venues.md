@@ -157,6 +157,35 @@ future table cannot be led by Pinnacle without deleting a test.
 over untouched — but the Ladbrokes and Unibet quotes are now part of each cached row, and a
 stale v3 cache would have answered with the old venue list.
 
+## What the Betfair historical archive will and will not settle
+
+The exchange sample is the binding constraint, and the free Betfair Historical BASIC product
+covers April 2015 onward — roughly ten times the coverage the Tennis-Data `BFE` column gives.
+It is being acquired. Two things should be clear before its numbers appear, because the
+product's limits decide which question it can answer.
+
+**BASIC is a last-trade trace, not a quoted book.** It carries `EX_LTP` and the market
+definition at one-minute intervals, with no ladder and no traded volume. A last-traded price
+is a price *somebody else* transacted at — possibly for two pounds, possibly minutes earlier.
+Settling at it is the same error as treating a displayed bookmaker price as an execution, and
+`tennis_edge/betfair.py` refuses to blur the two: it reads BASIC as a trace and states that
+it cannot answer depth-aware execution questions. Those need ADVANCED (best three prices) or
+PRO (full ladder), both paid.
+
+So the archive substantially settles **whether the model beats the exchange's own price** —
+a different and better question than every number above, all of which are anchored to a
+bookmaker's closing line. It improves but does not close **whether the bet could have been
+placed at that price, at size**. Numbers derived from it will be labelled on that boundary.
+
+**The settlement horizon stays at 600 seconds before the scheduled off, and the reason is
+recorded rather than tuned.** The one experiment that could compare horizons
+(`experiments/exchange_horizons.py`, against a June ADVANCED corpus that did not survive its
+container) found the spread tightening 44.9 → 3.5 ticks approaching the off while log loss
+stayed flat: no information arrives late, but execution gets much cheaper late. That argues
+for pricing close to the off. With BASIC's last-traded prices the execution half of that is
+unobservable, so the horizon is held at the existing default and not fitted — a horizon
+chosen against observed returns is a parameter, and the best one is always found afterwards.
+
 ## What this does not change
 
 The forecast result stands: **+0.001064 nats** over the closing price, 95% CI
