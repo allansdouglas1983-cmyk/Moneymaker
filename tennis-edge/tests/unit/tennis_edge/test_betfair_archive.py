@@ -252,6 +252,71 @@ class TestExtractMarkets:
         assert header["truncated"] is True
 
 
+class TestTruncatedArchive:
+    """The archive that actually arrived stops mid-member at 94%.
+
+    A 4 GB tar cut at a block boundary has no end-of-archive marker, and the reader hits
+    "unexpected end of data" partway through. Three things must happen and none of them is
+    "raise": the markets already read are kept, the stream stops cleanly at the damage, and
+    the extract says on its face that its source was incomplete. Discarding 450,000 good
+    markets because the last 6% is missing would be throwing away the evidence; keeping them
+    without a label would be quoting an eleven-year result from nine years of data.
+    """
+
+    def _truncated(self, tmp_path: Path) -> Path:
+        archive = _archive(tmp_path, {
+            "BASIC/2015/Jul/12/99/1.100.bz2": _match_odds("1.100"),
+            "BASIC/2015/Jul/12/99/1.101.bz2": _match_odds("1.101"),
+            "BASIC/2015/Jul/12/99/1.102.bz2": _match_odds("1.102"),
+        })
+        # Cut inside the last member's data, on a block boundary, exactly as a half-finished
+        # transfer does. The end-of-archive zero blocks go with it.
+        raw = archive.read_bytes()
+        cut = tmp_path / "truncated.tar"
+        cut.write_bytes(raw[:len(raw) - 2048])
+        return cut
+
+    def test_markets_before_the_damage_are_kept(self, tmp_path: Path) -> None:
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(self._truncated(tmp_path), out)
+        assert stats.markets_written >= 1
+        assert len(list(read_extract(out))) == stats.markets_written
+
+    def test_the_stream_stops_cleanly_instead_of_raising(self, tmp_path: Path) -> None:
+        names = [n for n, _raw in iter_market_members(self._truncated(tmp_path))]
+        assert names  # got something before the damage
+        assert len(names) < 3
+
+    def test_the_damage_is_recorded_on_the_stats(self, tmp_path: Path) -> None:
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(self._truncated(tmp_path), out)
+        assert stats.source_truncated is True
+
+    def test_the_damage_is_recorded_in_the_extract_header(self, tmp_path: Path) -> None:
+        """Anyone reading this extract later must be able to see it is partial without
+        knowing the story."""
+        out = tmp_path / "extract.jsonl"
+        extract_markets(self._truncated(tmp_path), out)
+        header = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+        assert header["source_truncated"] is True
+
+    def test_an_intact_archive_is_not_marked_truncated(self, tmp_path: Path) -> None:
+        """The flag has to mean something, so it must be off for a whole archive."""
+        archive = _archive(tmp_path, {"BASIC/2015/Jul/12/99/1.100.bz2":
+                                      _match_odds("1.100")})
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(archive, out)
+        assert stats.source_truncated is False
+        header = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+        assert header["source_truncated"] is False
+
+    def test_the_funnel_still_balances_on_a_truncated_archive(self,
+                                                              tmp_path: Path) -> None:
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(self._truncated(tmp_path), out)
+        assert stats.accounted == stats.members_read
+
+
 class TestExtractStats:
     def test_accounted_sums_every_named_reason(self) -> None:
         stats = ExtractStats(members_read=10, markets_written=4, wrong_market_type=3,
