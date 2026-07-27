@@ -45,8 +45,10 @@ def _market(prints: list[tuple[int, int, str]]) -> MarketHistory:
     return MarketHistory(
         market_id="1.234", event_id="9", event_name="A v B", market_type="MATCH_ODDS",
         country_code="GB", market_time_ms=OFF_MS,
-        runners=(Runner(selection_id=SELECTION, name="A"),
-                 Runner(selection_id=OTHER, name="B")),
+        runners=(Runner(selection_id=SELECTION, name="A", status="ACTIVE",
+                        sort_priority=1),
+                 Runner(selection_id=OTHER, name="B", status="ACTIVE",
+                        sort_priority=2)),
         observations=tuple(
             LtpObservation(publish_time_ms=_at(s), selection_id=sid, price=Decimal(p))
             for s, sid, p in prints
