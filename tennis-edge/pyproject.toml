@@ -6,6 +6,11 @@ requires-python = ">=3.11"
 dependencies = [
     "openpyxl>=3.1",
     "xlrd>=2.0",
+    # sport_tennis/identity_bridge.py reads the governed name-mapping spec. This was a
+    # genuine runtime dependency that nothing declared, so CI - which installed a
+    # hand-written list rather than this file - aborted collection on it and reported the
+    # whole suite red without running a single test.
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]

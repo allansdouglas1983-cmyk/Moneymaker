@@ -46,13 +46,25 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The coherence suite alone is ~50 minutes of exact-arithmetic solving. 45 was under it.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install --quiet pytest openpyxl xlrd
+      # Install the PROJECT, not a hand-written list of package names. The list drifted
+      # from what the code imports - it never carried PyYAML - and pytest aborts collection
+      # on the first ImportError, so the job died in two seconds having run nothing while
+      # reporting the whole suite red. A hand-maintained dependency list beside a
+      # pyproject.toml is two sources of truth, and this one was silently wrong for weeks.
+      - run: pip install --quiet -e ".[dev]"
+        working-directory: tennis-edge
+      # Collect before running. A collection error and a test failure are different
+      # problems with different fixes, and the -q summary makes them look alike.
+      - name: Every test module imports
+        working-directory: tennis-edge
+        run: python -m pytest tests --collect-only -q
       - name: The whole suite, including coherence
         working-directory: tennis-edge
         run: python -m pytest tests -q
