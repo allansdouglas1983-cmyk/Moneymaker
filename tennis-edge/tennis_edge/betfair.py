@@ -39,7 +39,7 @@ import tarfile
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
-from typing import Iterator, Mapping, Sequence
+from typing import Iterable, Iterator, Mapping, Sequence
 
 from price_contracts.ladder import index_of, is_on_ladder
 
@@ -54,6 +54,7 @@ __all__ = [
     "GradingView",
     "MarketHistory",
     "read_markets",
+    "read_market_messages",
     "iter_messages",
 ]
 
@@ -404,11 +405,31 @@ def read_markets(
     In-play observations are dropped as they are read, so they are never present to be
     filtered later. Settlement data is routed to a :class:`GradingView` and kept off the
     history itself.
+
+    Holds every market it finds in memory. That is right for a file or a day; the eleven-year
+    archive is 1.1 million markets and does not fit, which is what
+    :func:`read_market_messages` exists for.
+    """
+    return read_market_messages(iter_messages(path), market_types=market_types)
+
+
+def read_market_messages(
+    messages: Iterable[Mapping[str, object]],
+    *,
+    market_types: Sequence[str] = (MARKET_TYPE,),
+) -> tuple[MarketHistory, ...]:
+    """:func:`read_markets` over an already-open message stream.
+
+    Identical accumulation, identical guarantees — this is the same function body, with the
+    source of messages lifted out so a caller streaming a large archive can hand it one
+    market's messages at a time and never hold the whole archive. Extracted rather than
+    reimplemented on purpose: a second copy of the in-play drop or the BSP quarantine is a
+    second place for them to be wrong.
     """
     wanted = set(market_types)
     accumulators: dict[str, _Accumulator] = {}
 
-    for message in iter_messages(path):
+    for message in messages:
         publish_time = message.get("pt")
         changes = message.get("mc")
         if not isinstance(changes, list):
