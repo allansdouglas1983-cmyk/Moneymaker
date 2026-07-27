@@ -157,34 +157,53 @@ future table cannot be led by Pinnacle without deleting a test.
 over untouched — but the Ladbrokes and Unibet quotes are now part of each cached row, and a
 stale v3 cache would have answered with the old venue list.
 
-## What the Betfair historical archive will and will not settle
+## The Betfair BASIC archive is the exchange dataset. There is no other.
 
-The exchange sample is the binding constraint, and the free Betfair Historical BASIC product
-covers April 2015 onward — roughly ten times the coverage the Tennis-Data `BFE` column gives.
-It is being acquired. Two things should be clear before its numbers appear, because the
-product's limits decide which question it can answer.
+The exchange sample is the binding constraint on every money conclusion here, and the free
+Betfair Historical BASIC product covers April 2015 onward — roughly ten times the coverage
+the Tennis-Data `BFE` column gives. **It is the dataset. No further data purchase is in
+scope, and no conclusion in this project may be written so as to require one.** A previously
+purchased ADVANCED corpus was lost with the container it lived on; that is a real loss and it
+does not create an entitlement to replace it.
 
 **BASIC is a last-trade trace, not a quoted book.** It carries `EX_LTP` and the market
 definition at one-minute intervals, with no ladder and no traded volume. A last-traded price
 is a price *somebody else* transacted at — possibly for two pounds, possibly minutes earlier.
-Settling at it is the same error as treating a displayed bookmaker price as an execution, and
-`tennis_edge/betfair.py` refuses to blur the two: it reads BASIC as a trace and states that
-it cannot answer depth-aware execution questions. Those need ADVANCED (best three prices) or
-PRO (full ladder), both paid.
+Treating it as a price you could have taken is the same error as treating a displayed
+bookmaker price as an execution, and `tennis_edge/betfair.py` refuses to blur the two.
 
 So the archive substantially settles **whether the model beats the exchange's own price** —
 a different and better question than every number above, all of which are anchored to a
-bookmaker's closing line. It improves but does not close **whether the bet could have been
-placed at that price, at size**. Numbers derived from it will be labelled on that boundary.
+bookmaker's closing line. It cannot, on its own, prove a stake of a given size would have
+been matched.
+
+**What BASIC can be made to say about execution, without paying for depth.** A last-trade
+trace is weak evidence about availability, but it is not *no* evidence, and the honest use of
+it is a falsification test rather than an assumption:
+
+- **Traded-through.** If the price the rule claims to have taken subsequently trades at that
+  price or better before the off, then somebody was matched there and the claim survives. If
+  the market never trades at or through it again, the fill is unsupported and the bet is
+  excluded with a reason rather than credited.
+- **Trade frequency as a liquidity stratum.** A price that appears in many one-minute
+  observations sat in the market; one that appears once may have been a single small trade.
+  Returns reported by stratum make the fragile subset visible instead of averaging it away.
+- **The excluded set is reported, never dropped.** Universe in equals filled plus excluded,
+  with the exclusion reason attached — the same discipline `exchange_link.py` already applies
+  to the name join.
+
+None of that recovers depth. It converts an unstated assumption into a stated, falsifiable
+one, which is the most BASIC can honestly support and is worth considerably more than an
+unqualified return.
 
 **The settlement horizon stays at 600 seconds before the scheduled off, and the reason is
 recorded rather than tuned.** The one experiment that could compare horizons
-(`experiments/exchange_horizons.py`, against a June ADVANCED corpus that did not survive its
-container) found the spread tightening 44.9 → 3.5 ticks approaching the off while log loss
-stayed flat: no information arrives late, but execution gets much cheaper late. That argues
-for pricing close to the off. With BASIC's last-traded prices the execution half of that is
-unobservable, so the horizon is held at the existing default and not fitted — a horizon
-chosen against observed returns is a parameter, and the best one is always found afterwards.
+(`experiments/exchange_horizons.py`, against the ADVANCED corpus that did not survive) found
+the spread tightening 44.9 → 3.5 ticks approaching the off while log loss stayed flat: no
+information arrives late, but execution gets much cheaper late. That argues for pricing close
+to the off. With BASIC the execution half of that is unobservable, so the horizon is held at
+the existing default and not fitted — a horizon chosen against observed returns is a
+parameter, and the best one is always found afterwards.
 
 ## What this does not change
 
