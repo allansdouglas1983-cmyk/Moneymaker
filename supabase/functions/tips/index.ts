@@ -75,6 +75,14 @@ interface StateRow extends PlayerState {
   as_of: string;
 }
 
+interface MeetingRow {
+  tour: string;
+  player_a: string;
+  player_b: string;
+  wins_a: number;
+  wins_b: number;
+}
+
 interface FixtureRow {
   match_key: string;
   match_date: string;
@@ -99,6 +107,7 @@ const SERVE_BASELINE: Record<string, number> = { ATP: 0.6467, WTA: 0.5786 };
 function assess(
   fixture: FixtureRow,
   states: Map<string, StateRow>,
+  meetings: Map<string, [number, number]>,
   model: Model,
   stateAsOf: string,
   staleDays: number,
@@ -109,12 +118,21 @@ function assess(
   const impliedB = 1.0 / oddsB;
   const a = states.get(fixture.tour + "|" + fixture.player_a) ?? null;
   const b = states.get(fixture.tour + "|" + fixture.player_b) ?? null;
+  // Head-to-head is stored once under the sorted pair, so a fixture written either way
+  // round resolves to the same record; the orientation is restored here.
+  const sorted = [fixture.player_a, fixture.player_b].slice().sort();
+  const record = meetings.get(fixture.tour + "|" + sorted[0] + "|" + sorted[1]) ?? null;
+  const pair: [number, number] | null = record === null
+    ? null
+    : (fixture.player_a === sorted[0] ? record : [record[1], record[0]]);
+
   // A match dated before the state date cannot be priced from it: the state has already
   // absorbed the result. Reported as no features rather than a confident prediction.
   const features = fixture.match_date >= stateAsOf
     ? liveFeatures({
       a,
       b,
+      meetings: pair,
       surface: fixture.surface,
       bestOf: fixture.best_of,
       marketProbability: impliedA / (impliedA + impliedB),
@@ -164,8 +182,14 @@ async function context() {
   const results = await Promise.all([
     select<Model & { is_current: boolean }>("model?is_current=eq.true&limit=1"),
     select<StateRow>("player_state?select=*"),
+    select<MeetingRow>("head_to_head?select=*"),
   ]);
   const model = results[0][0] ?? null;
+  const meetings = new Map<string, [number, number]>();
+  for (const row of results[2]) {
+    meetings.set(row.tour + "|" + row.player_a + "|" + row.player_b,
+                 [row.wins_a, row.wins_b]);
+  }
   const states = new Map<string, StateRow>();
   let asOf = "";
   for (const row of results[1]) {
@@ -176,7 +200,7 @@ async function context() {
   const staleDays = asOf
     ? Math.round((Date.parse(today + "T00:00:00Z") - Date.parse(asOf + "T00:00:00Z")) / 86400000)
     : 0;
-  return { model, states, asOf, staleDays, today };
+  return { model, states, meetings, asOf, staleDays, today };
 }
 
 async function board(): Promise<Response> {
@@ -186,7 +210,7 @@ async function board(): Promise<Response> {
     "fixtures?match_date=gte." + ctx.today + "&order=match_date.asc",
   );
   const rows = fixtures
-    .map((f) => assess(f, ctx.states, ctx.model!, ctx.asOf, ctx.staleDays))
+    .map((f) => assess(f, ctx.states, ctx.meetings, ctx.model!, ctx.asOf, ctx.staleDays))
     .sort((x, y) => {
       const rank = (r: typeof x) =>
         r.status === "BET_CANDIDATE_DISABLED" ? 0 : r.status === "LEAN" ? 1 : 2;
@@ -253,7 +277,7 @@ async function price(request: Request): Promise<Response> {
   // field here that could rewrite it afterwards.
   const ctx = await context();
   if (!ctx.model) return json({ error: "no current model row" }, 503);
-  const row = assess(fixture, ctx.states, ctx.model, ctx.asOf, ctx.staleDays);
+  const row = assess(fixture, ctx.states, ctx.meetings, ctx.model, ctx.asOf, ctx.staleDays);
   const p = row.prediction;
   await db("predictions", {
     method: "POST",
@@ -307,6 +331,8 @@ async function health(): Promise<Response> {
     model_trained_through: ctx.model?.trained_through ?? null,
     state_as_of: ctx.asOf || null,
     state_players: ctx.states.size,
+    head_to_head_pairs: ctx.meetings.size,
+    model_features: ctx.model?.feature_names?.length ?? 0,
     state_stale_days: ctx.staleDays,
     recommendation: "NOT_EVALUATED",
     bet_candidate_reachable: false,

@@ -25,8 +25,8 @@ and `recommendation` is pinned to `NOT_EVALUATED` by a database constraint.
 ## What the model is
 
 A correction to the market price, not a replacement for it. The de-vigged market logit is an
-unpenalised offset; ten features add signed corrections to it. With zero coefficients it
-reproduces the market exactly, which is the correct degenerate case — absent evidence, the
+unpenalised offset; twenty-two features add signed corrections to it. With zero coefficients
+it reproduces the market exactly, which is the correct degenerate case — absent evidence, the
 price stands.
 
 | layer | features |
@@ -35,27 +35,45 @@ price stands.
 | Ranking | `rank_gap` |
 | Barnett–Clarke point model | `point_model_residual` |
 | Pyramid Elo (Grand Slam → Futures) | `pyramid_elo_gap`, `pyramid_surface_gap`, `pyramid_rest_gap`, `pyramid_workload_gap`, `pyramid_tier_gap` |
+| Decomposed serve/return | `first_serve_rate_gap`, `first_win_rate_gap`, `second_win_rate_gap`, `ace_rate_gap`, `double_fault_rate_gap`, `break_save_rate_gap`, `return_rate_gap` |
+| Durability | `h2h_gap`, `retirement_risk_gap`, `workload_minutes_gap`, `workload_long_gap`, `surface_switch_gap` |
 
 Fitted by full Newton with the complete Hessian and a backtracking line search, ridge
-L2 = 25.0 fixed a priori and never tuned. 96,162 matches, 2002-06-10 to 2026-07-12.
+L2 = 25.0 fixed a priori and never tuned. 96,052 matches, 2002-06-10 to 2026-07-19.
 
 ## What it is measured at
 
-**+0.000862 nats** over the closing price, 95% CI [+0.000471, +0.001228], 63,576
-out-of-sample matches. Placebo (feature permutation) −0.000114. No decay: 2012–2018
-+0.000828, 2019–2026 +0.000895.
+**+0.001064 nats** over the closing price, 95% CI [+0.000639, +0.001476], 63,676
+out-of-sample matches. Placebo (feature permutation) **−0.000172** [−0.000278, −0.000061].
 
-At the frozen `MIN_EDGE = 0.02`:
+Each layer measured paired — same rows, same walk-forward, one feature set difference:
 
-| venue | return | interval | bets |
+| feature set | gain over the closing price |
+|---|---|
+| 10 features | +0.000862 [+0.000471, +0.001228] |
+| + serve detail (17) | +0.000914 [+0.000516, +0.001276] |
+| + durability (22) | **+0.001064** [+0.000639, +0.001476] |
+
+Money, flat 1 unit at the actual quoted price, no required-edge buffer. The control is the
+identical rule driven by the market's own probability, so its return is price selection and
+not skill:
+
+| venue | model | control | bets |
 |---|---|---|---|
-| Betfair Exchange | +6.94% | **spans zero** | small |
-| Pinnacle | +3.55% | [+1.45%, +5.68%] | 12,355 |
-| Max | +5.71% | — | — |
+| Pinnacle | +1.48% [+0.23%, +2.69%] | −2.08% | 38,078 |
+| Max | +3.41% [+2.40%, +4.43%] | +0.41% | 60,817 |
+| **Betfair Exchange** | **+0.48%** [−3.76%, +4.62%] | **+1.80%** | **2,854** |
 
 **Betfair is the only venue that counts**, because it is the one that cannot limit a winning
-account, and there the result is undecided rather than proven. Pinnacle has not accepted UK
-customers since 2016, so that column is a measuring stick and not a business plan.
+account, and Pinnacle has not accepted UK customers since 2016. There the model returned
++0.48% against a control of +1.80%, on 2,854 bets, with an interval four points wide either
+side of zero. The layers improved the forecast and **did not move that interval off zero**.
+On the venue that matters the result is undecided and the point estimate is not
+distinguishable from betting the market's own opinion.
+
+Cross-market coherence is **blocked, not flat**: the solver needs the Betfair historical tick
+corpus, `historicdata.betfair.com` returns HTTP 403 from a non-UK address, and the local copy
+went with the container it lived in. Not measured, not claimed.
 
 Strongest internal evidence the model is doing something real: on 10,209 matches where no
 pyramid record exists, it adds exactly +0.000000.
