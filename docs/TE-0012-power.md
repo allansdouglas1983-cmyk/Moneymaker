@@ -1,5 +1,12 @@
 # TE-0012 — The Betfair verdict was a sample-size problem, not a result
 
+> **Control superseded by [TE-0013](TE-0013-uk-venues.md).** The n\* finding below stands and
+> is the durable result. The *control* does not: it settles at Pinnacle, which has not taken
+> a UK customer since November 2014, so it could not answer a question about money. TE-0013
+> reruns it at Bet365 — the only UK column covering both the Betfair window and the whole
+> corpus — and reaches the same verdict on a reachable venue: it is the period, not the
+> venue. Left unedited as the record of what was reported at the time.
+
 I reported the model's Betfair return as "undecided, and the point estimate is not
 distinguishable from the control". Undecided was right. Treating it as evidence about the
 exchange was not, and this is the correction.

@@ -1,5 +1,12 @@
 # TE-0011 — Two layers measured, one blocked, and Betfair still undecided
 
+> **Superseded in part by [TE-0013](TE-0013-uk-venues.md).** The money table below is led by
+> Pinnacle and by the panel maximum. Neither can be bet from the UK — Pinnacle closed to UK
+> customers in November 2014 and the panel maximum is arithmetic over twenty books, not a
+> venue. The layer measurements and the forecast result are unaffected; the settlement table
+> is redone at Bet365, Ladbrokes and Betfair in TE-0013. Left unedited as the record of what
+> was reported at the time.
+
 Three layers were added to the residual model and measured against the frozen benchmark.
 Each was compared paired: same rows, same walk-forward, same ridge penalty, same
 day-clustered interval, one feature set difference. The only thing that varies is the layer.

@@ -157,10 +157,15 @@ button.go:disabled{opacity:.55;cursor:default}
       BET_CANDIDATE_DISABLED.</p>
       <p>Break-even is <code>1/(1+(O&minus;1)(1&minus;c))</code> at 2% commission, not
       <code>1/O</code>. Commission is charged on net winnings, so it raises the bar twice.</p>
-      <p>The model beats the closing price by +0.000862 nats over 63,576 out-of-sample matches
-      (95% CI +0.000471 to +0.001228). Its measured return on Betfair &mdash; the only venue
-      that cannot limit a winning account &mdash; is +6.94% with an interval that spans zero.
-      Undecided, not proven.</p>
+      <p>The model beats the closing price by +0.001064 nats over 63,676 out-of-sample matches
+      (95% CI +0.000639 to +0.001476). That is a forecasting result, not a money result.</p>
+      <p><strong>Settled only at venues a UK resident can actually bet into.</strong> No UK
+      venue clears zero. Betfair Exchange &mdash; the one that cannot limit a winning account
+      &mdash; returns +0.48% on 2,854 bets, interval [&minus;3.76%, +4.62%], against a control
+      of +1.80% for betting the market's own opinion at the same prices. Bet365 returns +2.26%
+      [&minus;0.15%, +4.59%]; Ladbrokes +0.07% [&minus;1.89%, +1.98%]. Resolving a 2% edge at
+      this rule's variance needs about 31,000 exchange bets; there are 2,854. Undecided, not
+      proven.</p>
     </div>
   </section>
 </div>

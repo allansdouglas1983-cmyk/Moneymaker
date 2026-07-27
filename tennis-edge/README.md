@@ -54,22 +54,40 @@ Each layer measured paired — same rows, same walk-forward, one feature set dif
 | + serve detail (17) | +0.000914 [+0.000516, +0.001276] |
 | + durability (22) | **+0.001064** [+0.000639, +0.001476] |
 
-Money, flat 1 unit at the actual quoted price, no required-edge buffer. The control is the
-identical rule driven by the market's own probability, so its return is price selection and
-not skill:
+Money, flat 1 unit at the actual quoted price, no required-edge buffer. **Settled only where
+a UK resident can actually place the bet.** Tennis-Data publishes fourteen price columns and
+most of them are not options: Pinnacle has not taken a UK customer since November 2014, and
+`Max` and `Avg` are the best and mean of about twenty books — arithmetic over the table, not
+counters anyone stands at. Those are kept as sharpness diagnostics, in a separate block,
+never as returns. Registry in `tennis_edge/venues.py`; full result in
+[`docs/TE-0013-uk-venues.md`](../docs/TE-0013-uk-venues.md).
 
-| venue | model | control | bets |
-|---|---|---|---|
-| Pinnacle | +1.48% [+0.23%, +2.69%] | −2.08% | 38,078 |
-| Max | +3.41% [+2.40%, +4.43%] | +0.41% | 60,817 |
-| **Betfair Exchange** | **+0.48%** [−3.76%, +4.62%] | **+1.80%** | **2,854** |
+The control is the identical rule driven by the market's own de-vigged probability, so its
+return is price selection and not skill:
 
-**Betfair is the only venue that counts**, because it is the one that cannot limit a winning
-account, and Pinnacle has not accepted UK customers since 2016. There the model returned
-+0.48% against a control of +1.80%, on 2,854 bets, with an interval four points wide either
-side of zero. The layers improved the forecast and **did not move that interval off zero**.
-On the venue that matters the result is undecided and the point estimate is not
-distinguishable from betting the market's own opinion.
+| UK venue | limits winners? | model | control | bets |
+|---|---|---|---|---|
+| **Betfair Exchange** | no | **+0.48%** [−3.76%, +4.62%] | **+1.80%** | **2,854** |
+| Bet365 | yes | +2.26% [−0.15%, +4.59%] | none possible | 9,549 |
+| Ladbrokes | yes | +0.07% [−1.89%, +1.98%] | −0.45% | 8,757 |
+| Unibet | yes | column ends 2009 — 0 bets | — | 0 |
+
+**No UK venue clears zero.** Bet365 comes closest and misses on a lower bound of −0.15%.
+Ladbrokes, a decade of a second UK bookmaker, is flat. Betfair — the only venue that cannot
+limit a winning account, and so the only one where a proven edge could be used repeatedly —
+returns +0.48% against a control of +1.80%: the market's own opinion, bet at the same prices,
+did better. Both intervals span zero, so nothing is established either way, but the ordering
+is the wrong way round and it is the second measurement running that says so.
+
+The two numbers that do clear zero are both unreachable. Pinnacle returns +1.48%
+[+0.23%, +2.69%] against a control of −2.08% on 38,078 bets — the strongest evidence in the
+project that the forecast is genuinely sharp, and not money, because the account cannot be
+opened. The panel maximum returns +3.41%, the best figure anywhere here, and its own control
+earns +0.41% doing nothing but shopping between books.
+
+Resolving a 2% return at this rule's variance needs about **31,000 exchange bets**. There are
+2,854. The money question is undecided at every reachable venue, and more layers do not fix a
+sample size.
 
 Cross-market coherence is **blocked, not flat**: the solver needs the Betfair historical tick
 corpus, `historicdata.betfair.com` returns HTTP 403 from a non-UK address, and the local copy
@@ -87,6 +105,7 @@ log loss unchanged); the Challenger/ITF tier costs 3.67% ATP / 4.66% WTA round-t
 
 ```
 tennis-edge/                     Python: data, ratings, model, measurement harness
+  tennis_edge/venues.py          which price columns are places a UK resident can bet at
   sport_tennis/coherence/        the cross-market solver (built, not yet wired in)
   tools/emit_golden_vectors.py   emits the 500 cases the TypeScript is held to
 supabase/functions/tips/         the JSON API (Deno), and the ported scoring maths
