@@ -70,6 +70,11 @@ class Bet:
     support: FillSupport
     stratum: LiquidityStratum
     odds: float
+    #: Joined back to the raw trace by the execution-cost band; the readings above never
+    #: look at them.
+    market_id: str = ""
+    side: str = ""
+    won: bool = False
 
 
 def _mean(items: Sequence[object]) -> float:
@@ -97,10 +102,11 @@ def settle(scored: list[tuple[Row, float]], prices: dict[tuple[dt.date, str, str
         if price is None:
             continue
         probability = model_p if use_model else _sigmoid(row.market_logit)
-        for probability_side, odds, won, support, prints in (
-            (probability, price.odds_a, price.won_a, price.support_a, price.prints_a),
+        for probability_side, odds, won, support, prints, side in (
+            (probability, price.odds_a, price.won_a, price.support_a, price.prints_a,
+             "a"),
             (1.0 - probability, price.odds_b, not price.won_a, price.support_b,
-             price.prints_b),
+             price.prints_b, "b"),
         ):
             if odds <= 1:
                 continue
@@ -114,6 +120,9 @@ def settle(scored: list[tuple[Row, float]], prices: dict[tuple[dt.date, str, str
                 support=support,
                 stratum=stratify(prints),
                 odds=float(odds),
+                market_id=price.market_id,
+                side=side,
+                won=won,
             ))
     return bets
 
