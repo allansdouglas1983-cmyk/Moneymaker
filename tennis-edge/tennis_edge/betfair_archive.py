@@ -62,6 +62,11 @@ class ExtractStats:
     """The exclusion funnel. Every member read lands under exactly one named reason."""
 
     members_read: int = 0
+    #: Members that produced at least one written market. The BALANCE side of the funnel:
+    #: Betfair ships event-level files carrying several markets, so counting markets against
+    #: members overshoots (by 45,962 on the real archive) and the first full run correctly
+    #: reported itself unbalanced. Rows are counted by markets_written; members by this.
+    members_written: int = 0
     markets_written: int = 0
     wrong_market_type: int = 0
     no_definition: int = 0
@@ -79,14 +84,15 @@ class ExtractStats:
     @property
     def accounted(self) -> int:
         """Members explained. Must equal :attr:`members_read`; a gap means a lost row."""
-        return (self.markets_written + self.wrong_market_type + self.no_definition
+        return (self.members_written + self.wrong_market_type + self.no_definition
                 + self.unreadable)
 
     def report(self) -> str:
         top = ", ".join(f"{t}={n:,}" for t, n in
                         sorted(self.skipped_types.items(), key=lambda kv: -kv[1])[:8])
         return (
-            f"members={self.members_read:,}  written={self.markets_written:,}  "
+            f"members={self.members_read:,}  markets={self.markets_written:,}  "
+            f"members_written={self.members_written:,}  "
             f"wrong_type={self.wrong_market_type:,}  no_definition={self.no_definition:,}  "
             f"unreadable={self.unreadable:,}  "
             f"balanced={'yes' if self.accounted == self.members_read else 'NO'}"
@@ -279,6 +285,12 @@ def extract_markets(
             if not histories:
                 stats.no_definition += 1
                 continue
+            stats.members_written += 1
+            # An event-level member can also carry types nobody asked for; survey them so
+            # "what else is in here" stays answerable, but the member is already accounted.
+            for market_type in sorted(present - set(wanted)):
+                stats.skipped_types[market_type] = (
+                    stats.skipped_types.get(market_type, 0) + 1)
             for market in histories:
                 handle.write(json.dumps(_row(market)) + "\n")
                 stats.markets_written += 1

@@ -328,11 +328,52 @@ class TestTruncatedArchive:
 
 class TestExtractStats:
     def test_accounted_sums_every_named_reason(self) -> None:
-        stats = ExtractStats(members_read=10, markets_written=4, wrong_market_type=3,
-                             no_definition=2, unreadable=1)
+        stats = ExtractStats(members_read=10, members_written=4, markets_written=4,
+                             wrong_market_type=3, no_definition=2, unreadable=1)
         assert stats.accounted == 10
 
     def test_a_reason_left_out_of_the_sum_shows_up_as_an_imbalance(self) -> None:
-        stats = ExtractStats(members_read=10, markets_written=4, wrong_market_type=3,
-                             no_definition=2, unreadable=0)
+        stats = ExtractStats(members_read=10, members_written=4, markets_written=4,
+                             wrong_market_type=3, no_definition=2, unreadable=0)
         assert stats.accounted != stats.members_read
+
+
+class TestFunnelUnits:
+    """The first full-archive run reported balanced=NO, and the guard was right.
+
+    Betfair ships two kinds of file: one market per file (1.119173670.bz2) and event-level
+    files (27467478.bz2) that carry several markets at once. The funnel counted MEMBERS on
+    one side and MARKETS on the other, so an event file holding three Match Odds markets
+    added one to members_read and three to the balance — an overshoot of 45,962 across the
+    archive. The row count was never wrong; the accounting was.
+
+    A member is accounted for once, whatever it contains. markets_written stays as the row
+    count, because "how many markets did I get" is the number every consumer wants.
+    """
+
+    def test_an_event_file_with_several_markets_balances_as_one_member(
+            self, tmp_path: Path) -> None:
+        event_file = (_match_odds("1.100") + _match_odds("1.101")
+                      + _match_odds("1.102"))
+        archive = _archive(tmp_path, {"BASIC/2015/Jul/12/99/27467478.bz2": event_file})
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(archive, out)
+        assert stats.members_read == 1
+        assert stats.markets_written == 3
+        assert stats.members_written == 1
+        assert stats.accounted == stats.members_read
+
+    def test_a_mixed_event_file_still_counts_the_member_once(self,
+                                                             tmp_path: Path) -> None:
+        """One wanted market and one unwanted in the same member: the member is written
+        (it produced rows); the skipped type is still tallied for the survey."""
+        event_file = _match_odds("1.100") + [
+            _message("1.200", market_type="SET_BETTING",
+                     publish_time=OFF_MS - 600_000, ltp=[(1, "2.0")])]
+        archive = _archive(tmp_path, {"BASIC/2015/Jul/12/99/27467478.bz2": event_file})
+        out = tmp_path / "extract.jsonl"
+        stats = extract_markets(archive, out)
+        assert stats.members_read == 1
+        assert stats.markets_written == 1
+        assert stats.accounted == stats.members_read
+        assert stats.skipped_types.get("SET_BETTING") == 1
