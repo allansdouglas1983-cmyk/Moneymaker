@@ -103,17 +103,11 @@ button.go:disabled{opacity:.55;cursor:default}
     <div class="sub">Private single-user service</div>
     <div id="authMsg"></div>
     <div class="card">
-      <div id="stepEmail">
-        <div class="row"><input id="email" type="email" placeholder="your email"
-          autocomplete="email" inputmode="email"></div>
-        <button class="go" id="sendCode">Email me a sign-in code</button>
-      </div>
-      <div id="stepCode" class="hidden">
-        <div class="meta" style="margin:0 0 8px">A six-digit code has been emailed.</div>
-        <div class="row"><input id="code" placeholder="123456" inputmode="numeric"
-          autocomplete="one-time-code" maxlength="8"></div>
-        <button class="go" id="verify">Sign in</button>
-      </div>
+      <div class="row"><input id="email" type="email" placeholder="your email"
+        autocomplete="email" inputmode="email"></div>
+      <div class="row"><input id="password" type="password" placeholder="password"
+        autocomplete="current-password"></div>
+      <button class="go" id="verify">Sign in</button>
     </div>
   </section>
 
@@ -204,35 +198,22 @@ async function auth(path, body) {
   return data;
 }
 
-$("sendCode").onclick = async () => {
-  const email = $("email").value.trim();
-  if (!email) return note("authMsg", "Enter your email address.");
-  $("sendCode").disabled = true;
-  try {
-    await auth("otp", { email, create_user: true });
-    pendingEmail = email;
-    localStorage.setItem("te.email", email);
-    $("stepEmail").classList.add("hidden");
-    $("stepCode").classList.remove("hidden");
-    note("authMsg", "Code sent to " + email, "ok");
-    $("code").focus();
-  } catch (e) {
-    note("authMsg", String(e.message));
-  } finally {
-    $("sendCode").disabled = false;
-  }
-};
-
 $("verify").onclick = async () => {
-  const code = $("code").value.trim();
+  // Password sign-in via GoTrue's token grant. Email flows are deliberately not used:
+  // the founder's other app shares this project's auth, and its templates and settings
+  // must never be touched from here. The password was set server-side; no email is sent.
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) return note("authMsg", "Enter email and password.");
   $("verify").disabled = true;
   try {
-    const data = await auth("verify", { type: "email", email: pendingEmail, token: code });
+    localStorage.setItem("te.email", email);
+    const data = await auth("token?grant_type=password", { email, password });
     token = data.access_token;
     localStorage.setItem(KEY, token);
     await start();
   } catch (e) {
-    note("authMsg", "That code was not accepted. " + e.message);
+    note("authMsg", "Sign-in failed. " + e.message);
   } finally {
     $("verify").disabled = false;
   }
