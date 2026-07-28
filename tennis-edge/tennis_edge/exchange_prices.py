@@ -60,6 +60,16 @@ PRICES_KIND_V2 = "tennis-edge-exchange-prices-v2"
 #: sub-minute staleness is unobservable in this data.
 STALENESS_BANDS = ("<60s", "60-600s", ">600s")
 
+#: The frozen staleness-refusal rule (TE-0017 S5 step 2), fixed from the log-loss strata
+#: ONLY, before any money-by-band was read: refuse the band whose model-over-anchor gain
+#: failed to clear zero even descriptively (>600s: +0.000349 [-0.000729, +0.001317]).
+#: The pre-registered trend primary was NULL at the adjusted bar, so this threshold is
+#: **an assumption, not a measurement** — a null of that width does not locate a
+#: boundary, and no money result may promote it to one. Live scope: the delayed-key
+#: observation path and timestamped manual entries; an unknown band is out of this
+#: rule's scope, not silently admitted.
+STALENESS_REFUSAL_BANDS = (">600s",)
+
 
 @dataclass(frozen=True)
 class ExchangePrice:
