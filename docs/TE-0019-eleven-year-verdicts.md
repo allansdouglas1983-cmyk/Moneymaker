@@ -31,7 +31,10 @@ Strata: thin +2.77%, moderate +4.00%; evidence split over fired bets 65.9% / 20.
 
 Still owed on this result before it is quoted anywhere customer-shaped: the Roll-family
 execution-cost band (tooling built, application pending) and the AU-events commission
-caveat, both per the microstructure standard.
+caveat, both per the microstructure standard. *(Settled: the band is TE-0020, and the
+supported-only reading does not clear zero at the central cost assumption. TE-0020's
+standing money statement supersedes this section's headline whenever the two are read
+together.)*
 
 ## Verdict 2 — the deployment gate FAILS; the site keeps the b365-anchored model
 
