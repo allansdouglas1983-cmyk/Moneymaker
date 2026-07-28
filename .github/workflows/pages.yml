@@ -1,0 +1,47 @@
+# Publish docs/index.html to GitHub Pages — and ENABLE Pages if it never was.
+#
+# The site page 404'd for as long as this repo existed because Pages is a repository
+# setting, nothing in this session could reach the settings page, and the page waited on a
+# human click that never came. configure-pages with `enablement: true` removes the wait: it
+# creates the Pages site itself through the API using the token this workflow already has.
+#
+# Only index.html is published. docs/ also holds the specification, findings and evidence
+# records; the repo is public so they are not secret, but the page's URL should serve the
+# page, not a directory of internal documents.
+name: pages
+
+on:
+  push:
+    branches: [claude/project-files-followup-dif8al]
+    paths:
+      - 'docs/index.html'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage only the page
+        run: mkdir -p _site && cp docs/index.html _site/index.html
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
