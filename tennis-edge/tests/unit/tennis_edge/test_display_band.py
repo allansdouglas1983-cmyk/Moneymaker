@@ -65,3 +65,12 @@ class TestEdgeBand:
             edge_band(Decimal("2.0"), -0.01)
         with pytest.raises(ValueError):
             edge_band(Decimal("1.0"), 0.02)
+
+    def test_a_spread_that_swallows_the_price_caps_at_the_whole_edge(self) -> None:
+        """At odds 1.02 the pooled fallback spread pushes the effective price below
+        evens: no probability can clear the cost, so the break-even rises to certainty
+        and the band is everything above the quoted break-even. Never an error — a
+        heavy favourite at a thin price is exactly the case the band must speak on."""
+        odds = Decimal("1.02")
+        band = edge_band(odds, 0.078)
+        assert band == pytest.approx(1.0 - float(break_even_probability(odds)))
