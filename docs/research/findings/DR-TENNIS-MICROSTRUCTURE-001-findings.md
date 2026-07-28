@@ -121,14 +121,16 @@ computed from each market's own print series, and report money results as a band
 than a point. Until built, TE-0014's numbers stand with their existing caveats plus an
 explicit note that the band is pending.
 
-**Commission correction — action for the founder:** flat 2% is correct **only** for a
-UK account on the My Betfair Rewards *Basic* package, and **not** for Australian-based
-events (Australian Open!), where the old Market Base Rate system still applies. Two
-consequences: (1) our settlement applied 2% to Australian Open matches — a known,
-labelled approximation until the correct AU rate for the founder's account is known;
-(2) **the founder should check which Rewards package their account is on** — the correct
-commission for the site's break-even maths depends on it. Premium Charge ended 2025-01;
-the Expert Fee (>£25k gross profit/52wk) is not relevant at this project's scale.
+**Commission — resolved by founder statement (2026-07-28):** the founder confirms no
+Rewards package or account arrangement exists. There is therefore no account-specific rate
+to verify, and 2% remains what it has always been here: a **labelled modelling
+assumption** (Betfair's published Basic-package example rate for UK customers), not a fact
+about any account. The AU-events caveat stands as a labelled approximation in historical
+settlement (Australian-based events use the old Market Base Rate system). ADR 0015's hard
+gate on ALL Betfair account activity — account creation included — is unaffected by any of
+this; commission becomes verifiable only if that gate is ever lawfully lifted, which is a
+founder matter outside this platform's scope. Premium Charge ended 2025-01; the Expert Fee
+(>£25k gross profit/52wk) is not relevant at this project's scale.
 
 **Impact on claims:** TE-0014's hypothetical framing survives review unchanged; the
 sensitivity band and the AU-commission caveat are added as required improvements rather
