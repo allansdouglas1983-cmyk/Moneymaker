@@ -1,15 +1,18 @@
-# Republish docs/index.html to the gh-pages branch whenever it changes.
+# Publish docs/index.html to GitHub Pages whenever it changes.
 #
-# The first attempt used the official Pages actions with `enablement: true`, and it failed
-# twice — including on manual dispatch — with "Resource not accessible by integration":
-# creating the Pages *site object* needs repo-admin permission an Actions token cannot
-# hold, and the founder reports the Settings > Pages source control is not visible to
-# them either. The route that needs no settings at all is the oldest one: a public repo
-# with a gh-pages branch gets Pages auto-enabled from that branch. The branch was created
-# and pushed once from the session; this workflow keeps it current.
+# History of this file, because every method here was forced by a measured failure:
+# 1. The official Pages actions with `enablement: true` failed - creating the Pages *site
+#    object* needs repo-admin permission an Actions token cannot hold.
+# 2. A gh-pages branch was pushed instead; the auto-enabled legacy build fired exactly ONCE,
+#    on branch creation (2026-07-28 11:43), and never again for any subsequent push -
+#    GITHUB_TOKEN force-pushes, git-data API pushes and contents-API commits all failed to
+#    trigger a rebuild, verified against the pages-build-deployment run list.
+# 3. The site object now EXISTS (step 2 created it), which is what step 1 was missing. So
+#    this returns to the official flow: build the artifact and deploy it directly. No
+#    legacy build hooks involved, so there is nothing to fail to trigger.
 #
-# gh-pages carries ONLY the published page and .nojekyll. Source of truth stays
-# docs/index.html on the development branch; delete gh-pages to un-publish.
+# The gh-pages branch is no longer the deployment mechanism once this runs; it remains
+# only as history until deleted.
 name: pages
 
 on:
@@ -21,7 +24,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
@@ -30,19 +35,22 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Publish index.html to gh-pages
+      - name: Configure Pages (site already exists; no enablement)
+        uses: actions/configure-pages@v5
+      - name: Build the artifact
         run: |
           mkdir -p _site
           cp docs/index.html _site/index.html
           touch _site/.nojekyll
-          cd _site
-          git init -q -b gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -q -m "deploy: docs/index.html ($GITHUB_SHA)"
-          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          date -u +"%Y-%m-%dT%H:%M:%SZ $GITHUB_SHA" > _site/.build-stamp
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
