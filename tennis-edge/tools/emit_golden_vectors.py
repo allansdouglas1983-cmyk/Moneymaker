@@ -32,6 +32,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from tennis_edge.display_band import band_spread, edge_band  # noqa: E402
 from tennis_edge.live_state import PlayerState, StateSnapshot, live_features  # noqa: E402
 from tennis_edge.policy_v2 import MIN_EDGE, WATCH_EDGE  # noqa: E402
 from tennis_edge.residual_model import load_model  # noqa: E402
@@ -188,6 +189,10 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
         else:
             status = TipStatus.NO_BET
         stale = index % 23
+        # The S6 display band: cycle every stratum including the unknown fallback, so the
+        # port is held to the whole frozen table, not just the manual-entry path.
+        staleness_band = (None, "<60s", "60-600s", ">600s")[index % 4]
+        spread = band_spread(staleness_band)
 
         vectors.append({
             "case": index,
@@ -198,6 +203,7 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
                 "odds_a": str(odds_a), "odds_b": str(odds_b),
                 "rank_a": rank_a, "rank_b": rank_b,
                 "stale_days": stale,
+                "staleness_band": staleness_band,
                 "meetings": list(meetings.get((tour, "A", "B"), ())) or None,
                 "a": _payload(a), "b": _payload(b),
             },
@@ -216,6 +222,8 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
                 "edge_a": prediction.edge_a,
                 "edge_b": prediction.edge_b,
                 "status": status,
+                "band_a": edge_band(odds_a, spread),
+                "band_b": edge_band(odds_b, spread),
                 "reasons": list(_reasons(features, prediction, stale)),
             },
         })

@@ -14,6 +14,8 @@
 // request and then against an allowlist of one address. The browser holds a user token; the
 // service-role key stays on this side and is what actually touches the tables.
 import {
+  bandSpread,
+  edgeBand,
   liveFeatures,
   type Model,
   type PlayerState,
@@ -142,6 +144,11 @@ function assess(
     : {};
   const prediction = priceFixture(oddsA, oddsB, features, model);
   const bestEdge = Math.max(prediction.edgeA, prediction.edgeB);
+  // Manual entries carry a price but not its age, so the stratum is unknown and the
+  // band takes the pooled conservative fallback — never a claimed stratum (TE-0017 S6).
+  const spread = bandSpread(null);
+  const bandA = edgeBand(oddsA, spread);
+  const bandB = edgeBand(oddsB, spread);
   return {
     fixture,
     prediction,
@@ -149,6 +156,7 @@ function assess(
     reasons: reasonsFor(features, prediction, staleDays),
     bestSide: prediction.edgeA >= prediction.edgeB ? "A" : "B",
     bestEdge,
+    bestBand: prediction.edgeA >= prediction.edgeB ? bandA : bandB,
   };
 }
 
@@ -161,6 +169,7 @@ function wire(row: ReturnType<typeof assess>) {
     reasons: row.reasons,
     best_side: row.bestSide,
     best_edge: row.bestEdge,
+    best_band: row.bestBand,
     prediction: {
       market_probability_a: p.marketProbabilityA,
       market_probability_b: p.marketProbabilityB,

@@ -15,6 +15,8 @@
  */
 import { assertEquals } from "jsr:@std/assert@1";
 import {
+  bandSpread,
+  edgeBand,
   liveFeatures,
   type Model,
   type PlayerState,
@@ -39,6 +41,7 @@ interface Vector {
     rank_a: number | null;
     rank_b: number | null;
     stale_days: number;
+    staleness_band: string | null;
     meetings: [number, number] | null;
     a: PlayerState;
     b: PlayerState;
@@ -57,6 +60,8 @@ interface Vector {
     edge_a: number;
     edge_b: number;
     status: string;
+    band_a: number;
+    band_b: number;
     reasons: string[];
   };
 }
@@ -229,6 +234,22 @@ Deno.test("every price, probability, edge, status and reason matches the Python"
       expected.reasons,
       `case ${vector.case}: reason codes`,
     );
+  }
+});
+
+Deno.test("the execution-cost band matches the Python across every stratum", () => {
+  // Every fourth case cycles a different stratum including the unknown fallback, so the
+  // frozen table, the half-spread conversion and the swallowed-price cap are all replayed.
+  for (const vector of vectors) {
+    const { input, expected } = vector;
+    const spread = bandSpread(input.staleness_band);
+    close(edgeBand(Number(input.odds_a), spread), expected.band_a, "band A", vector.case);
+    close(edgeBand(Number(input.odds_b), spread), expected.band_b, "band B", vector.case);
+  }
+  // The frozen table property the display depends on: unknown always costs more than
+  // known, so the page can never reward not looking.
+  for (const band of ["<60s", "60-600s", ">600s"]) {
+    assertEquals(bandSpread(null) > bandSpread(band), true);
   }
 });
 

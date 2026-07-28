@@ -60,6 +60,11 @@ def edge_band(odds: Decimal, spread: float) -> float:
         raise ValueError(f"odds={odds} are not bettable; the band needs a real price")
     if spread == 0.0:
         return 0.0
-    effective = Decimal(str(float(odds) * math.exp(-spread / 2.0)))
-    return (float(break_even_probability(effective))
+    effective = float(odds) * math.exp(-spread / 2.0)
+    if effective <= 1.0:
+        # The cost swallows the whole price: no probability clears it, break-even rises
+        # to certainty, and the band is everything above the quoted break-even. A heavy
+        # favourite at a thin price is exactly the case the band must speak on.
+        return 1.0 - float(break_even_probability(odds))
+    return (float(break_even_probability(Decimal(str(effective))))
             - float(break_even_probability(odds)))

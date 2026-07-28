@@ -505,6 +505,46 @@ export function priceFixture(
   };
 }
 
+// ---------------------------------------------------------------------------------------
+// The execution-cost band (TE-0017 S6)
+// ---------------------------------------------------------------------------------------
+
+/** The frozen Roll table: relative spread by S5 staleness band (p75) plus the pooled p90
+ *  fallback. Provenance: roll_spreads_v2 x exchange_prices_600s_v4, 2026-07-28. FROZEN —
+ *  mirrors tennis_edge/display_band.py exactly; the golden vectors hold the two together. */
+export const ROLL_BAND_TABLE: Record<string, number> = {
+  "<60s": 0.042520,
+  "60-600s": 0.047880,
+  ">600s": 0.054797,
+  "pooled_p90": 0.077874,
+};
+
+/** The frozen spread for a prediction's stratum; the conservative pooled fallback when the
+ *  stratum is not knowable (manual entry: the Betfair UI shows a price, not its age). */
+export function bandSpread(stalenessBand: string | null): number {
+  if (stalenessBand === null) return ROLL_BAND_TABLE["pooled_p90"];
+  if (!["<60s", "60-600s", ">600s"].includes(stalenessBand)) {
+    throw new Error(`unknown staleness band ${stalenessBand}`);
+  }
+  return ROLL_BAND_TABLE[stalenessBand];
+}
+
+/** Probability points the edge loses to execution, at half the Roll spread — how far the
+ *  commission-aware break-even rises at effective odds O*exp(-spread/2). The site renders
+ *  every edge as [edge - band, edge]; a point edge on its own is not shown. */
+export function edgeBand(odds: number, spread: number): number {
+  if (spread < 0.0) throw new Error(`spread=${spread} is negative; a spread is a width`);
+  if (!(odds > 1.0)) throw new Error(`odds=${odds} are not bettable`);
+  if (spread === 0.0) return 0.0;
+  const effective = odds * Math.exp(-spread / 2.0);
+  if (effective <= 1.0) {
+    // The cost swallows the whole price: break-even rises to certainty and the band is
+    // everything above the quoted break-even. Mirrors display_band.py exactly.
+    return 1.0 - breakEvenProbability(odds);
+  }
+  return breakEvenProbability(effective) - breakEvenProbability(odds);
+}
+
 /** Decimal.quantize uses banker's rounding; matching it keeps fair odds identical. */
 export function roundHalfEven(value: number, places: number): number {
   const factor = Math.pow(10, places);

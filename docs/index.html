@@ -151,6 +151,12 @@ button.go:disabled{opacity:.55;cursor:default}
       BET_CANDIDATE_DISABLED.</p>
       <p>Break-even is <code>1/(1+(O&minus;1)(1&minus;c))</code> at 2% commission, not
       <code>1/O</code>. Commission is charged on net winnings, so it raises the bar twice.</p>
+      <p><strong>Every edge is shown as a range, not a point.</strong> The low end deducts
+      the execution-cost band: half the frozen Roll spread for the market's liquidity
+      stratum, and &mdash; because a manually entered price carries no age &mdash; the
+      pooled conservative spread (p90, 7.8% of the price), never a claimed stratum. A
+      quoted point edge without that band would be pretending fills are free; TE-0020
+      showed they are not.</p>
       <p>The model beats the closing price by +0.001064 nats over 63,676 out-of-sample matches
       (95% CI +0.000639 to +0.001476). That is a forecasting result, not a money result.</p>
       <p><strong>Settled at real Betfair exchange prices, 2015&ndash;2026</strong> (47,818
@@ -277,7 +283,11 @@ function matchCard(row, index) {
       ${cell("Model", pct(p.probability_a) + " / " + pct(p.probability_b))}
       ${cell("Quoted", f.odds_a + " / " + f.odds_b)}
       ${cell("Fair", p.fair_odds_a.toFixed(2) + " / " + p.fair_odds_b.toFixed(2))}
-      ${cell("Best edge", signed(row.best_edge), row.best_edge >= 0.01 ? "pos" : "neg")}
+      ${cell("Edge (after cost)",
+             row.best_band != null
+               ? signed(row.best_edge - row.best_band) + " to " + signed(row.best_edge)
+               : signed(row.best_edge),
+             row.best_edge - (row.best_band ?? 0) >= 0.01 ? "pos" : "neg")}
       ${cell("On", escapeHtml(side) + " @ " + odds)}
     </div>
     <div class="why">${escapeHtml(row.reasons.join(" · "))}</div>
