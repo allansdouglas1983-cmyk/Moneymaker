@@ -41,13 +41,24 @@ from tennis_edge.fill_evidence import FillSupport, traded_through
 
 __all__ = [
     "PRICES_KIND",
+    "PRICES_KIND_V2",
     "ExchangePrice",
     "build_prices",
     "write_prices",
     "read_prices",
+    "staleness_band",
+    "row_band",
 ]
 
 PRICES_KIND = "tennis-edge-exchange-prices-v1"
+#: The S5 kind: v1 plus per-side LTP ages. A new kind, never an in-place edit — tables
+#: already measured against stay exactly the bytes they were measured as.
+PRICES_KIND_V2 = "tennis-edge-exchange-prices-v2"
+
+#: Pre-registered staleness bands (TE-0017 S5), with the ~60-second BASIC cadence
+#: quantisation declared: "<60s" means printed within the last cadence interval;
+#: sub-minute staleness is unobservable in this data.
+STALENESS_BANDS = ("<60s", "60-600s", ">600s")
 
 
 @dataclass(frozen=True)
@@ -70,6 +81,10 @@ class ExchangePrice:
     prints_a: int
     prints_b: int
     market_id: str
+    #: Seconds since each side's last pre-cutoff print (TE-0017 S5). ``None`` on rows
+    #: from v1 tables, which never recorded ages — absent, never zero.
+    ltp_age_a: int | None = None
+    ltp_age_b: int | None = None
 
     def __post_init__(self) -> None:
         for name in ("odds_a", "odds_b"):
@@ -121,6 +136,10 @@ def build_prices(
             prints_a=evidence_a.subsequent_prints,
             prints_b=evidence_b.subsequent_prints,
             market_id=market.market_id,
+            ltp_age_a=market.ltp_age_at(selection_a,
+                                        seconds_before_off=horizon_seconds),
+            ltp_age_b=market.ltp_age_at(selection_b,
+                                        seconds_before_off=horizon_seconds),
         ))
     return tuple(prices)
 
@@ -142,7 +161,7 @@ def write_prices(
     written = 0
     with target.open("w", encoding="utf-8") as handle:
         handle.write(json.dumps({
-            "kind": PRICES_KIND,
+            "kind": PRICES_KIND_V2,
             "horizon_seconds": horizon_seconds,
             "corpus_vintage": corpus_vintage,
             "source_digest": source_digest,
@@ -162,6 +181,8 @@ def write_prices(
                 "prints_a": price.prints_a,
                 "prints_b": price.prints_b,
                 "market_id": price.market_id,
+                "ltp_age_a": price.ltp_age_a,
+                "ltp_age_b": price.ltp_age_b,
             }) + "\n")
             written += 1
     return written
@@ -181,15 +202,19 @@ def read_prices(path: Path | str) -> Iterator[ExchangePrice]:
             header = json.loads(first)
         except ValueError as error:
             raise ValueError(f"{target} has no exchange-price header") from error
-        if not isinstance(header, dict) or header.get("kind") != PRICES_KIND:
+        if (not isinstance(header, dict)
+                or header.get("kind") not in (PRICES_KIND, PRICES_KIND_V2)):
             raise ValueError(
-                f"{target} is not a {PRICES_KIND} table; refusing to guess at its shape"
+                f"{target} is not a {PRICES_KIND}/{PRICES_KIND_V2} table; refusing to "
+                f"guess at its shape"
             )
         for line in handle:
             line = line.strip()
             if not line:
                 continue
             row = json.loads(line)
+            age_a = row.get("ltp_age_a")
+            age_b = row.get("ltp_age_b")
             yield ExchangePrice(
                 date=dt.date.fromisoformat(row["date"]),
                 tour=row["tour"],
@@ -203,4 +228,33 @@ def read_prices(path: Path | str) -> Iterator[ExchangePrice]:
                 prints_a=int(row["prints_a"]),
                 prints_b=int(row["prints_b"]),
                 market_id=row["market_id"],
+                ltp_age_a=None if age_a is None else int(age_a),
+                ltp_age_b=None if age_b is None else int(age_b),
             )
+
+
+def staleness_band(age_seconds: int) -> str:
+    """The pre-registered band for one side's LTP age (TE-0017 S5).
+
+    ``<60s`` means "printed within the last BASIC cadence interval" — the feed reports at
+    roughly one-minute intervals, so sub-minute staleness is unobservable in this data
+    and the freshest band is quantisation-wide by construction.
+    """
+    if age_seconds < 60:
+        return STALENESS_BANDS[0]
+    if age_seconds <= 600:
+        return STALENESS_BANDS[1]
+    return STALENESS_BANDS[2]
+
+
+def row_band(price: ExchangePrice) -> str | None:
+    """The row's band, from the OLDER of its two sides.
+
+    A two-sided quote is only as fresh as its stalest leg: the normalised probability
+    mixes both prints, and the older one bounds how current the opinion can be. ``None``
+    on v1-table rows, which never recorded ages — those rows are counted out of banded
+    readings explicitly, never guessed into a band.
+    """
+    if price.ltp_age_a is None or price.ltp_age_b is None:
+        return None
+    return staleness_band(max(price.ltp_age_a, price.ltp_age_b))

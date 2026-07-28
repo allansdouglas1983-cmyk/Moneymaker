@@ -159,7 +159,10 @@ class TestRoundTrip:
                      horizon_seconds=600, corpus_vintage="vintage-2026-07-26",
                      source_digest="sha256:abc")
         header = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
-        assert header["kind"] == PRICES_KIND
+        # TEST CORRECTION (TE-0017 S5): this previously asserted the v1 kind. The S5
+        # registration introduces the v2 kind as what the writer now produces — ages
+        # travel with the price — while v1 files remain readable (TestLtpAges pins both).
+        assert header["kind"] == PRICES_KIND_V2
         assert header["horizon_seconds"] == 600
         assert header["corpus_vintage"] == "vintage-2026-07-26"
         assert header["source_digest"] == "sha256:abc"
