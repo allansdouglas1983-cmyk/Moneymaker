@@ -1,13 +1,15 @@
-# Publish docs/index.html to GitHub Pages — and ENABLE Pages if it never was.
+# Republish docs/index.html to the gh-pages branch whenever it changes.
 #
-# The site page 404'd for as long as this repo existed because Pages is a repository
-# setting, nothing in this session could reach the settings page, and the page waited on a
-# human click that never came. configure-pages with `enablement: true` removes the wait: it
-# creates the Pages site itself through the API using the token this workflow already has.
+# The first attempt used the official Pages actions with `enablement: true`, and it failed
+# twice — including on manual dispatch — with "Resource not accessible by integration":
+# creating the Pages *site object* needs repo-admin permission an Actions token cannot
+# hold, and the founder reports the Settings > Pages source control is not visible to
+# them either. The route that needs no settings at all is the oldest one: a public repo
+# with a gh-pages branch gets Pages auto-enabled from that branch. The branch was created
+# and pushed once from the session; this workflow keeps it current.
 #
-# Only index.html is published. docs/ also holds the specification, findings and evidence
-# records; the repo is public so they are not secret, but the page's URL should serve the
-# page, not a directory of internal documents.
+# gh-pages carries ONLY the published page and .nojekyll. Source of truth stays
+# docs/index.html on the development branch; delete gh-pages to un-publish.
 name: pages
 
 on:
@@ -19,9 +21,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -30,18 +30,19 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Stage only the page
-        run: mkdir -p _site && cp docs/index.html _site/index.html
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish index.html to gh-pages
+        run: |
+          mkdir -p _site
+          cp docs/index.html _site/index.html
+          touch _site/.nojekyll
+          cd _site
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "deploy: docs/index.html ($GITHUB_SHA)"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
