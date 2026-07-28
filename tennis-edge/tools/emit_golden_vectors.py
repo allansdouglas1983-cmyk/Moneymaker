@@ -11,7 +11,8 @@ inputs, and ``scoring.test.ts`` replays every one. Disagreement beyond 1e-12 fai
 **The cases are chosen to hit the branches, not to look representative.** Feature sets that
 are complete, missing serve coverage, missing pyramid coverage, and empty; prices from heavy
 odds-on to long odds-against; both match formats; both surfaces with and without a specific
-rating; and the rank feature present and absent. A port can agree on the common path and be
+rating; and every rank source (caller-supplied, snapshot fallback, the imputed 500 for one
+side and for both). A port can agree on the common path and be
 wrong on the branch that matters — a debutant, a missing rating, an extreme price — and those
 are exactly the fixtures a person is most likely to be looking at.
 
@@ -32,10 +33,10 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tennis_edge.live_state import PlayerState, StateSnapshot, live_features  # noqa: E402
+from tennis_edge.policy_v2 import MIN_EDGE, WATCH_EDGE  # noqa: E402
 from tennis_edge.residual_model import load_model  # noqa: E402
 from tennis_edge.today import TipStatus, _reasons  # noqa: E402
 from tennis_edge.upcoming import Fixture, price_fixture  # noqa: E402
-from tennis_edge.policy_v2 import MIN_EDGE, WATCH_EDGE  # noqa: E402
 
 #: Enough to cover every branch several times over without making the vector file unwieldy.
 CASES = 500
@@ -45,7 +46,7 @@ TOURS = ("ATP", "WTA")
 
 
 def _player(rng: random.Random, *, thin: bool, no_serve: bool,
-            no_pyramid: bool) -> PlayerState:
+            no_pyramid: bool, rank: int | None = None) -> PlayerState:
     """One synthetic player, with the coverage switches the branches key off."""
     elo = rng.uniform(1300.0, 2200.0)
     surfaces = {s: elo + rng.uniform(-120.0, 120.0) for s in SURFACES}
@@ -86,6 +87,9 @@ def _player(rng: random.Random, *, thin: bool, no_serve: bool,
         workload_minutes_14d=float(rng.choice([0, 0, 95, 180, 320, 540])),
         workload_long_28d=rng.randint(0, 3),
         last_surface=rng.choice(("Hard", "Clay", "Grass", "")),
+        rank=rank,
+        rank_date=None if rank is None else (
+            dt.date(2026, 7, 1) - dt.timedelta(days=rng.randint(0, 90))).isoformat(),
     )
 
 
@@ -106,6 +110,8 @@ def _payload(state: PlayerState) -> dict[str, Any]:
         "workload_minutes_14d": state.workload_minutes_14d,
         "workload_long_28d": state.workload_long_28d,
         "last_surface": state.last_surface,
+        "rank": state.rank,
+        "rank_date": state.rank_date,
     }
 
 
@@ -134,8 +140,12 @@ def build(seed: int = 20260726) -> list[dict[str, Any]]:
         tour = TOURS[index % len(TOURS)]
         surface = SURFACES[index % len(SURFACES)]
         best_of = 5 if index % 4 == 0 else 3
-        a = _player(rng, thin=thin, no_serve=no_serve, no_pyramid=no_pyramid)
-        b = _player(rng, thin=False, no_serve=no_serve, no_pyramid=no_pyramid)
+        # Snapshot ranks cycle independently of the caller's, so every combination of the
+        # rank sources appears: caller wins, snapshot fallback, half-imputed, both imputed.
+        a = _player(rng, thin=thin, no_serve=no_serve, no_pyramid=no_pyramid,
+                    rank=rng.randint(1, 600) if index % 4 in (0, 2) else None)
+        b = _player(rng, thin=False, no_serve=no_serve, no_pyramid=no_pyramid,
+                    rank=rng.randint(1, 600) if index % 4 in (0, 1) else None)
         baseline = rng.uniform(0.58, 0.66)
         match_date = dt.date(2026, 7, 26) + dt.timedelta(days=index % 9)
 
@@ -227,10 +237,18 @@ def main() -> int:
     no_pyr = sum(1 for v in vectors
                  if v["expected"]["features"]
                  and "pyramid_elo_gap" not in v["expected"]["features"])
+    snapshot_rank = sum(1 for v in vectors
+                        if v["input"]["rank_a"] is None
+                        and v["input"]["a"]["rank"] is not None)
+    imputed_rank = sum(1 for v in vectors
+                       if v["input"]["rank_a"] is None
+                       and v["input"]["a"]["rank"] is None)
     print(f"{len(vectors)} vectors -> {target}")
     print(f"  statuses covered: {sorted(covered)}")
     print(f"  empty feature sets: {empty}   no serve layer: {no_serve}   "
           f"no pyramid layer: {no_pyr}")
+    print(f"  rank_gap from snapshot rank: {snapshot_rank}   "
+          f"imputed 500 on side A: {imputed_rank}")
     return 0
 
 

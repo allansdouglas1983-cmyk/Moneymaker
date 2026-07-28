@@ -255,6 +255,11 @@ export interface PlayerState {
   workload_minutes_14d?: number | null;
   workload_long_28d?: number | null;
   last_surface?: string | null;
+  /** Latest-known ranking from the player's most recent corpus match that carried one.
+   *  Null when no match ever did — served through the same `or 500` imputation training
+   *  used, never dropped (TE-0017 S3). */
+  rank?: number | null;
+  rank_date?: string | null;
 }
 
 function surfaceRating(state: PlayerState, surface: string): number {
@@ -318,9 +323,15 @@ export function liveFeatures(input: FeatureInputs): Record<string, number> {
     surface_elo_gap: (surfaceRating(a, surface) - surfaceRating(b, surface)) / 400.0,
     weighted_elo_gap: (a.weighted_elo - b.weighted_elo) / 400.0,
   };
-  if (input.rankA != null && input.rankB != null) {
-    features.rank_gap = Math.log1p(input.rankB) - Math.log1p(input.rankA);
-  }
+  // rank_gap is always served (TE-0017 S3): training built it on every row, so the
+  // coefficients were fitted jointly with it. Caller-supplied fixture-time ranks win, the
+  // snapshot's latest-known ranks are the fallback, and an unknown rank imputes 500 by the
+  // exact training expression — Python's `x or 500` treats 0 as unknown, hence `r ? r : 500`
+  // rather than `r ?? 500`.
+  const effectiveRankA = input.rankA ?? a.rank ?? null;
+  const effectiveRankB = input.rankB ?? b.rank ?? null;
+  features.rank_gap = Math.log1p(effectiveRankB ? effectiveRankB : 500) -
+    Math.log1p(effectiveRankA ? effectiveRankA : 500);
 
   if (Math.min(a.serve_points, b.serve_points) >= MIN_SERVE_COVERAGE) {
     // f_ij = f_t + (f_i - f_av) - (g_j - g_av), as in serve_stats.estimate.

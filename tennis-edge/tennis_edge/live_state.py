@@ -25,9 +25,9 @@ from __future__ import annotations
 import datetime as dt
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping
 
 from tennis_edge.point_model import match_probability
 from tennis_edge.ratings import elo_expected
@@ -90,6 +90,13 @@ class PlayerState:
     workload_minutes_14d: float = 0.0
     workload_long_28d: int = 0
     last_surface: str = ""
+    #: Latest-known ranking, from the player's most recent corpus match that carried one.
+    #: Knowledge-time safe: published with a strictly earlier match than anything priced
+    #: from this snapshot. ``None`` when no match ever carried a rank — served through the
+    #: same ``or 500`` imputation training used, never dropped (TE-0017 S3).
+    rank: int | None = None
+    #: The date of the match that supplied ``rank``, for staleness diagnostics.
+    rank_date: str | None = None
 
     def surface_rating(self, surface: str) -> float:
         """Surface rating, falling back to the overall one for an unplayed surface.
@@ -167,10 +174,11 @@ def live_features(
     zeros would sit at the exact centre of every distribution, which is both false and
     systematically so.
 
-    Rankings are supplied by the caller rather than snapshotted, because a ranking belongs to
-    the fixture and not to the rating state — it moves weekly, it is published freely, and
-    the value that matters is the one current at the match. Omitting them drops ``rank_gap``,
-    which the model handles as an absent feature rather than a zero one.
+    ``rank_gap`` is always served (TE-0017 S3): training built it on every row via the
+    ``or 500`` imputation, so the coefficients were fitted jointly with it, and serving the
+    rank-absent branch scores a feature set nobody measured. A caller-supplied rank is
+    fixture-time and wins; the snapshot's latest-known rank is the fallback; a player with
+    no known rank imputes 500 exactly as training did.
     """
     when = match_date or snapshot.as_of
     if when < snapshot.as_of:
@@ -194,8 +202,12 @@ def live_features(
                             - b.surface_rating(surface)) / 400.0,
         "weighted_elo_gap": (a.weighted_elo - b.weighted_elo) / 400.0,
     }
-    if rank_a is not None and rank_b is not None:
-        features["rank_gap"] = math.log1p(rank_b) - math.log1p(rank_a)
+    effective_rank_a = rank_a if rank_a is not None else a.rank
+    effective_rank_b = rank_b if rank_b is not None else b.rank
+    # `or 500` and not `if None`: the training expression treats 0 the same way, and this
+    # must be that expression to the character (residual_features builds it identically).
+    features["rank_gap"] = (math.log1p(effective_rank_b or 500)
+                            - math.log1p(effective_rank_a or 500))
 
     baseline = snapshot.tour_serve_baseline.get(tour, 0.62)
     if min(a.serve_points, b.serve_points) >= MIN_SERVE_COVERAGE:
@@ -296,6 +308,8 @@ def _player_payload(state: PlayerState) -> dict[str, object]:
         "workload_minutes_14d": state.workload_minutes_14d,
         "workload_long_28d": state.workload_long_28d,
         "last_surface": state.last_surface,
+        "rank": state.rank,
+        "rank_date": state.rank_date,
     }
 
 
@@ -337,11 +351,11 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
     forecast and a memory.
     """
     from tennis_edge.corpus import default_vintage_root, group_by_day, load_corpus
+    from tennis_edge.durability import DurabilityEstimator
     from tennis_edge.pyramid import PyramidRatings
     from tennis_edge.ratings import RatingEngine
     from tennis_edge.refresh import latest_vintage
     from tennis_edge.sackmann import load_matches
-    from tennis_edge.durability import DurabilityEstimator
     from tennis_edge.serve_detail import DetailEstimator
     from tennis_edge.serve_stats import ServeEstimator, td_player_key
 
@@ -367,6 +381,10 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
                                since=dt.date(2003, 1, 1)))
 
     seen: set[tuple[str, str]] = set()
+    # Latest-known rank per player, from the most recent match row that carried one. The
+    # walk stops strictly before the cutoff, so every rank here was published with an
+    # earlier match than anything this snapshot will price (TE-0017 S3).
+    latest_rank: dict[tuple[str, str], tuple[int, str]] = {}
     for day, batch in group_by_day(matches):
         if day >= cutoff:
             break
@@ -378,6 +396,12 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
         for match in batch:
             seen.add((match.tour, match.player_a))
             seen.add((match.tour, match.player_b))
+            if match.rank_a is not None:
+                latest_rank[(match.tour, match.player_a)] = (match.rank_a,
+                                                             day.isoformat())
+            if match.rank_b is not None:
+                latest_rank[(match.tour, match.player_b)] = (match.rank_b,
+                                                             day.isoformat())
     estimator.advance_to(cutoff)
     detail.advance_to(cutoff)
     durability.advance_to(cutoff)
@@ -394,6 +418,7 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
         serve, returned, points, serve_matches = estimator.shrunk_for(tour, key, cutoff)
         rest = engine.days_since_last(tour, name, cutoff)
         pyramid_rest = pyramid.days_since_last(tour, name, cutoff)
+        known_rank = latest_rank.get((tour, name))
         players[(tour, name)] = PlayerState(
             elo=engine.elo(tour, name),
             weighted_elo=engine.weighted_elo(tour, name),
@@ -420,6 +445,8 @@ def build_state(as_of: dt.date | None = None) -> StateSnapshot:
             workload_long_28d=durability.record(tour, name).long_matches_within(
                 cutoff, LONG_WORKLOAD_DAYS),
             last_surface=durability.record(tour, name).last_surface,
+            rank=None if known_rank is None else known_rank[0],
+            rank_date=None if known_rank is None else known_rank[1],
         )
     # Head-to-head is stored once under the sorted pair, so a fixture written either way
     # round resolves to the same record. Pairs below the minimum are left out entirely

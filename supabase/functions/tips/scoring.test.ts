@@ -105,6 +105,35 @@ Deno.test("the vector file is the one that was generated, and covers the branche
     ),
     true,
   );
+  // rank_gap is always served (TE-0017 S3), and every source must be replayed: the
+  // caller's fixture-time rank, the snapshot's latest-known rank, and the imputed 500 —
+  // for one side and for both. A port right on supplied ranks and wrong on the fallback
+  // would misprice exactly the players whose ranks the fixtures never carry.
+  assertEquals(
+    vectors.every((v) =>
+      Object.keys(v.expected.features).length === 0 ||
+      v.expected.features.rank_gap !== undefined
+    ),
+    true,
+  );
+  assertEquals(
+    vectors.some((v) => v.input.rank_a === null && v.input.a.rank != null),
+    true,
+  );
+  assertEquals(
+    vectors.some((v) =>
+      v.input.rank_a === null && (v.input.a.rank ?? null) === null &&
+      v.input.rank_b === null && (v.input.b.rank ?? null) != null
+    ),
+    true,
+  );
+  assertEquals(
+    vectors.some((v) =>
+      v.input.rank_a === null && (v.input.a.rank ?? null) === null &&
+      v.input.rank_b === null && (v.input.b.rank ?? null) === null
+    ),
+    true,
+  );
   // Both head-to-head branches, and both serve-detail branches, must be replayed.
   assertEquals(vectors.some((v) => v.expected.features.h2h_gap !== undefined), true);
   assertEquals(
