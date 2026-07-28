@@ -33,7 +33,7 @@ from tennis_edge.network import (
     NetworkEstimator,
     network_features,
 )
-from tennis_edge.sackmann import SackmannMatch
+from tennis_edge.sackmann import Level, SackmannMatch, ServeLine
 
 DAY = dt.date(2019, 6, 3)
 LAGGED = DAY + dt.timedelta(days=20)  # comfortably past the 8-day tournament lag
@@ -41,11 +41,18 @@ LAGGED = DAY + dt.timedelta(days=20)  # comfortably past the 8-day tournament la
 
 def _match(winner: str, loser: str, *, when: dt.date = DAY,
            tour: str = "ATP", num: int = 1) -> SackmannMatch:
+    blank = ServeLine(aces=None, double_faults=None, serve_points=None,
+                      first_in=None, first_won=None, second_won=None,
+                      serve_games=None, break_points_saved=None,
+                      break_points_faced=None)
     return SackmannMatch(
-        tour=tour, tourney_id=f"t-{when.isoformat()}-{num}", tourney_date=when,
-        match_num=num, surface="Hard", level="A", round_name="R32", best_of=3,
-        winner_name=winner, loser_name=loser, minutes=90,
-        winner_serve=None, loser_serve=None, retired=False,
+        tourney_id=f"t-{when.isoformat()}-{num}", tourney_name="Test Open",
+        tourney_date=when, level=Level.TOUR, surface="Hard", round_name="R32",
+        best_of=3, match_num=num, tour=tour,
+        winner_id=f"w{winner}", winner_name=winner,
+        loser_id=f"l{loser}", loser_name=loser,
+        winner_rank=None, loser_rank=None, minutes=90, score="6-4 6-4",
+        winner_serve=blank, loser_serve=blank, source_file="test",
     )
 
 
