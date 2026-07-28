@@ -30,9 +30,12 @@ from tennis_edge.betfair import LtpObservation, MarketHistory, Runner
 from tennis_edge.corpus import Completion, Match, OddsQuotes
 from tennis_edge.exchange_prices import (
     PRICES_KIND,
+    PRICES_KIND_V2,
     ExchangePrice,
     build_prices,
     read_prices,
+    row_band,
+    staleness_band,
     write_prices,
 )
 from tennis_edge.fill_evidence import FillSupport
@@ -189,3 +192,76 @@ class TestExchangePriceType:
                           won_a=True, support_a=FillSupport.SUPPORTED,
                           support_b=FillSupport.SUPPORTED,
                           prints_a=1, prints_b=1, market_id="1.1")
+
+
+class TestLtpAges:
+    """TE-0017 S5: the price's age travels with the price, in a NEW table kind — never an
+    in-place edit of tables already measured against."""
+
+    def test_ltp_ages_travel_with_the_price(self) -> None:
+        market = _market([
+            (1800, 1, "2.5"), (700, 2, "1.6"),
+            (650, 1, "2.6"),
+        ])
+        (price,) = build_prices([market], [_match()])
+        # Corpus player A ("Berankis R.") is selection 1: last pre-cutoff print T-650s.
+        assert price.ltp_age_a == 50
+        assert price.ltp_age_b == 100
+
+    def test_the_v2_kind_round_trips_the_ages(self, tmp_path: Path) -> None:
+        (price,) = build_prices(*_standard())
+        out = tmp_path / "prices.jsonl"
+        write_prices(out, [price], horizon_seconds=600, corpus_vintage="v",
+                     source_digest="sha256:x")
+        header = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+        assert header["kind"] == PRICES_KIND_V2
+        (back,) = read_prices(out)
+        assert back == price
+        assert back.ltp_age_a is not None and back.ltp_age_b is not None
+
+    def test_a_v1_table_reads_with_ages_absent_not_zero(self, tmp_path: Path) -> None:
+        """Zero would claim every legacy price printed at the horizon instant. Absent is
+        the truth: the v1 kind never recorded ages."""
+        legacy = tmp_path / "prices.jsonl"
+        legacy.write_text(
+            json.dumps({"kind": PRICES_KIND, "horizon_seconds": 600,
+                        "corpus_vintage": "v0", "source_digest": "sha256:old"}) + "\n"
+            + json.dumps({
+                "date": "2019-06-03", "tour": "ATP", "player_a": "Berankis R.",
+                "player_b": "Cilic M.", "odds_a": "2.6", "odds_b": "1.55",
+                "won_a": True, "support_a": "SUPPORTED", "support_b": "SUPPORTED",
+                "prints_a": 1, "prints_b": 1, "market_id": "1.1",
+            }) + "\n",
+            encoding="utf-8",
+        )
+        (price,) = read_prices(legacy)
+        assert price.ltp_age_a is None and price.ltp_age_b is None
+
+
+class TestStalenessBands:
+    """The pre-registered bands, with the ~60s BASIC cadence quantisation declared:
+    '<60s' means printed within the last cadence interval; sub-minute staleness is
+    unobservable in this data."""
+
+    def test_the_three_bands(self) -> None:
+        assert staleness_band(0) == "<60s"
+        assert staleness_band(59) == "<60s"
+        assert staleness_band(60) == "60-600s"
+        assert staleness_band(600) == "60-600s"
+        assert staleness_band(601) == ">600s"
+
+    def test_a_rows_band_is_its_older_side(self) -> None:
+        """A two-sided quote is only as fresh as its stalest leg."""
+        (price,) = build_prices([_market([
+            (630, 1, "2.5"), (1500, 2, "1.6"),
+        ])], [_match()])
+        assert row_band(price) == ">600s"
+
+    def test_a_legacy_row_without_ages_has_no_band(self) -> None:
+        price = ExchangePrice(
+            date=DAY, tour="ATP", player_a="Berankis R.", player_b="Cilic M.",
+            odds_a=Decimal("2.6"), odds_b=Decimal("1.55"), won_a=True,
+            support_a=FillSupport.SUPPORTED, support_b=FillSupport.SUPPORTED,
+            prints_a=1, prints_b=1, market_id="1.1",
+        )
+        assert row_band(price) is None
