@@ -153,13 +153,17 @@ button.go:disabled{opacity:.55;cursor:default}
       <code>1/O</code>. Commission is charged on net winnings, so it raises the bar twice.</p>
       <p>The model beats the closing price by +0.001064 nats over 63,676 out-of-sample matches
       (95% CI +0.000639 to +0.001476). That is a forecasting result, not a money result.</p>
-      <p><strong>Settled only at venues a UK resident can actually bet into.</strong> No UK
-      venue clears zero. Betfair Exchange &mdash; the one that cannot limit a winning account
-      &mdash; returns +0.48% on 2,854 bets, interval [&minus;3.76%, +4.62%], against a control
-      of +1.80% for betting the market's own opinion at the same prices. Bet365 returns +2.26%
-      [&minus;0.15%, +4.59%]; Ladbrokes +0.07% [&minus;1.89%, +1.98%]. Resolving a 2% edge at
-      this rule's variance needs about 31,000 exchange bets; there are 2,854. Undecided, not
-      proven.</p>
+      <p><strong>Settled at real Betfair exchange prices, 2015&ndash;2026</strong> (47,818
+      priced matches from the Betfair Historical archive). Flat-stake hypothetical return:
+      <strong>+2.63%</strong> [+0.94%, +4.29%] on 24,886 bets, counting only fills the trade
+      record supports, <em>before execution costs</em>. At the central Roll-spread cost the
+      same reading is +1.25% [&minus;0.41%, +2.86%] and no longer clears zero; at the
+      pessimistic full-spread bound it is &minus;0.09% [&minus;1.70%, +1.46%]. The control
+      &mdash; backing the market's own opinion at the same prices &mdash; loses &minus;1.33%.
+      Every row is a hypothetical trade-through return, not realised money; commission is
+      modelled flat at 2%, a labelled assumption that is not valid for Australian-based
+      events. Read whole: positive at every reading, resolved from zero only if fills cost
+      nothing (TE-0019 / TE-0020).</p>
     </div>
   </section>
 </div>
