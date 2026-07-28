@@ -11,7 +11,9 @@ is the thing that makes a benchmark honest.
 from __future__ import annotations
 
 import datetime as dt
+import json
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -25,24 +27,33 @@ from tennis_edge.betfair import (
 )
 from tennis_edge.corpus import Completion, Match, OddsQuotes
 from tennis_edge.exchange_link import (
+    LINK_BRIDGE_VERSION,
     LinkOutcome,
     exchange_benchmark,
     link_markets,
 )
+from tennis_edge.exchange_prices import (
+    PRICES_KIND,
+    ExchangePrice,
+    read_prices,
+    write_prices,
+)
+from tennis_edge.fill_evidence import FillSupport
 
 A, B = 111, 222
 
 
-def _off(day: int = 15, hour: int = 14) -> int:
-    return int(dt.datetime(2025, 6, day, hour, tzinfo=dt.timezone.utc).timestamp() * 1000)
+def _off(day: int = 15, hour: int = 14, year: int = 2025) -> int:
+    return int(dt.datetime(year, 6, day, hour, tzinfo=dt.UTC).timestamp() * 1000)
 
 
 def _history(
     *, names: tuple[str, str] = ("Carlos Alcaraz", "Jannik Sinner"),
     prices: tuple[str, str] | None = ("2.0", "2.0"), day: int = 15,
-    market_id: str = "1.1",
+    market_id: str = "1.1", year: int = 2025,
+    runners: tuple[Runner, ...] | None = None,
 ) -> MarketHistory:
-    off = _off(day)
+    off = _off(day, year=year)
     observations: tuple[LtpObservation, ...] = ()
     ladders: tuple[LadderObservation, ...] = ()
     if prices is not None:
@@ -66,15 +77,16 @@ def _history(
     return MarketHistory(
         market_id=market_id, event_id="9", event_name=" v ".join(names),
         market_type="MATCH_ODDS", country_code="GB", market_time_ms=off,
-        runners=(Runner(A, names[0], "ACTIVE", 1), Runner(B, names[1], "ACTIVE", 2)),
+        runners=runners if runners is not None
+        else (Runner(A, names[0], "ACTIVE", 1), Runner(B, names[1], "ACTIVE", 2)),
         observations=observations, ladders=ladders, went_in_play=False,
     )
 
 
 def _match(*, a: str = "Alcaraz C.", b: str = "Sinner J.", day: int = 15,
-           winner_is_a: bool = True) -> Match:
+           winner_is_a: bool = True, tour: str = "ATP") -> Match:
     return Match(
-        match_date=dt.date(2025, 6, day), tour="ATP", tournament="T", location="L",
+        match_date=dt.date(2025, 6, day), tour=tour, tournament="T", location="L",
         tier="Grand Slam", court="Outdoor", surface="Grass", round_name="F", best_of=5,
         player_a=a, player_b=b, winner_is_a=winner_is_a,
         rank_a=1, rank_b=2, points_a=9000, points_b=8000,
@@ -144,6 +156,176 @@ def test_every_market_is_accounted_for() -> None:
 def test_a_market_with_no_price_is_excluded_with_a_reason() -> None:
     result = link_markets((_history(prices=None),), (_match(),))
     assert result.excluded[0].outcome is LinkOutcome.NO_PRICE_AT_HORIZON
+
+
+# ------------------------------------------- relaxed second pass (TE-0018, bridge v2)
+
+
+def test_a_hyphenated_betfair_name_links_to_its_spaced_corpus_form() -> None:
+    """TE-0018 rule class 1: Betfair "Pablo Carreno-Busta" is Tennis-Data "Carreno Busta
+    P.". The strict bridge sees two different surnames; on hyphen-relaxed text its own
+    split-point rule matches."""
+    market = _history(names=("Pablo Carreno-Busta", "Jannik Sinner"))
+    result = link_markets((market,), (_match(a="Carreno Busta P."),))
+    assert len(result.linked) == 1
+    assert result.linked[0].match.player_a == "Carreno Busta P."
+    assert result.linked[0].selection_for_player_a == A
+
+
+def test_a_hyphenated_corpus_name_links_to_its_spaced_betfair_form() -> None:
+    """The relaxation applies to BOTH sides: the hyphen can just as well be Tennis-Data's
+    ("Carreno-Busta P." against Betfair "Pablo Carreno Busta")."""
+    market = _history(names=("Pablo Carreno Busta", "Jannik Sinner"))
+    result = link_markets((market,), (_match(a="Carreno-Busta P."),))
+    assert len(result.linked) == 1
+    assert result.linked[0].match.player_a == "Carreno-Busta P."
+
+
+def test_an_apostrophe_difference_still_links() -> None:
+    """Tennis-Data "O'Connell C." against Betfair "Christopher OConnell": apostrophes are
+    removed from both sides before the bridge's own rule is applied."""
+    market = _history(names=("Christopher OConnell", "Jannik Sinner"))
+    result = link_markets((market,), (_match(a="O'Connell C."),))
+    assert len(result.linked) == 1
+    assert result.linked[0].match.player_a == "O'Connell C."
+
+
+def test_a_truncated_double_surname_links_by_token_subset() -> None:
+    """TE-0018 rule class 2: Tennis-Data truncates double surnames ("Roberto Bautista
+    Agut" is "Bautista R."). Surname tokens a subset of the Betfair tokens after the
+    first, plus first-initial equality."""
+    market = _history(names=("Roberto Bautista Agut", "Jannik Sinner"))
+    result = link_markets((market,), (_match(a="Bautista R."),))
+    assert len(result.linked) == 1
+    assert result.linked[0].match.player_a == "Bautista R."
+
+
+def test_twin_initials_resolve_via_the_longest_prefix_of_the_first_name() -> None:
+    """The Pliskova twins share a surname and a first initial; Tennis-Data separates them
+    only by two-letter initials "Ka."/"Kr.". Within one ±1-day window each Betfair first
+    name matches exactly one candidate's initials as its longest prefix."""
+    matches = (_match(a="Pliskova Ka.", b="Sabalenka A.", day=15, tour="WTA"),
+               _match(a="Pliskova Kr.", b="Gauff C.", day=16, tour="WTA"))
+    markets = (
+        _history(names=("Karolina Pliskova", "Aryna Sabalenka"), day=15, market_id="1.1"),
+        _history(names=("Kristyna Pliskova", "Coco Gauff"), day=16, market_id="1.2"),
+    )
+    result = link_markets(markets, matches)
+    assert len(result.linked) == 2
+    by_market = {link.market.market_id: link.match.player_a for link in result.linked}
+    assert by_market["1.1"] == "Pliskova Ka."
+    assert by_market["1.2"] == "Pliskova Kr."
+
+
+def test_twins_the_prefix_rule_cannot_separate_are_refused() -> None:
+    """Betfair "K. Pliskova" prefixes NEITHER "Ka." nor "Kr.": no unique longest prefix,
+    so the pass resolves nothing — a guess here scores the wrong sister's match."""
+    matches = (_match(a="Pliskova Ka.", b="Sabalenka A.", day=15, tour="WTA"),
+               _match(a="Pliskova Kr.", b="Gauff C.", day=16, tour="WTA"))
+    market = _history(names=("K. Pliskova", "Aryna Sabalenka"), day=15)
+    result = link_markets((market,), matches)
+    assert result.linked == ()
+    assert result.excluded[0].outcome is LinkOutcome.UNRESOLVED_NAME
+
+
+def test_a_strict_bridge_resolution_is_never_overridden_by_the_relaxed_pass() -> None:
+    """"Roberto Bautista Agut" resolves strictly to "Bautista Agut R."; the relaxed
+    subset rule would also reach "Bautista R." on the same card. The strict resolution
+    stands and the relaxed pass never re-asks the question."""
+    matches = (_match(a="Bautista Agut R.", b="Sinner J."),
+               _match(a="Bautista R.", b="Zverev A."))
+    market = _history(names=("Roberto Bautista Agut", "Jannik Sinner"))
+    result = link_markets((market,), matches)
+    assert len(result.linked) == 1
+    assert result.linked[0].match.player_a == "Bautista Agut R."
+
+
+def test_a_relaxed_candidate_matching_two_corpus_names_resolves_nothing() -> None:
+    """"Mirjana Lucic-Baroni" reaches both "Lucic Baroni M." (rule 1) and "Lucic M."
+    (rule 2) on the same day card, and identical initials give the twins rule no unique
+    longest prefix. Exactly one corpus name or nothing — this is nothing."""
+    matches = (_match(a="Lucic M.", b="Williams S.", tour="WTA"),
+               _match(a="Lucic Baroni M.", b="Halep S.", tour="WTA"))
+    market = _history(names=("Mirjana Lucic-Baroni", "Serena Williams"))
+    result = link_markets((market,), matches)
+    assert result.linked == ()
+    assert result.excluded[0].outcome is LinkOutcome.UNRESOLVED_NAME
+
+
+# ------------------------------------------------------- typed market-shape exclusions
+
+
+def test_a_2099_off_date_is_provider_damage_not_a_coverage_gap() -> None:
+    """TE-0018 §Junk-2099: test markets and double-listed junk carry 2099 off-times.
+    Falling through as NO_MATCH_ON_DATE would conflate data damage with genuine corpus
+    coverage gaps."""
+    result = link_markets((_history(year=2099),), (_match(),))
+    assert result.linked == ()
+    assert result.excluded[0].outcome is LinkOutcome.IMPLAUSIBLE_OFF_DATE
+
+
+def test_a_market_with_one_active_runner_is_typed_not_unresolved() -> None:
+    """A walkover-shaped market is not a name failure. Saying UNRESOLVED_NAME would send
+    someone chasing normalisation rules for a market that has no join to make."""
+    runners = (Runner(A, "Carlos Alcaraz", "ACTIVE", 1),
+               Runner(B, "Jannik Sinner", "REMOVED", 2))
+    result = link_markets((_history(runners=runners),), (_match(),))
+    assert result.linked == ()
+    assert result.excluded[0].outcome is LinkOutcome.NOT_TWO_ACTIVE_RUNNERS
+
+
+def test_a_market_with_three_active_runners_is_typed_not_unresolved() -> None:
+    result = link_markets((_history(runners=(
+        Runner(A, "Carlos Alcaraz", "ACTIVE", 1),
+        Runner(B, "Jannik Sinner", "ACTIVE", 2),
+        Runner(333, "Third Wheel", "ACTIVE", 3),
+    )),), (_match(),))
+    assert result.linked == ()
+    assert result.excluded[0].outcome is LinkOutcome.NOT_TWO_ACTIVE_RUNNERS
+
+
+# ------------------------------------------------- bridge version in the price table
+
+
+def _price() -> ExchangePrice:
+    return ExchangePrice(
+        date=dt.date(2025, 6, 15), tour="ATP", player_a="Alcaraz C.",
+        player_b="Sinner J.", odds_a=Decimal("2.0"), odds_b=Decimal("2.02"), won_a=True,
+        support_a=FillSupport.SUPPORTED, support_b=FillSupport.UNSUPPORTED,
+        prints_a=3, prints_b=0, market_id="1.1",
+    )
+
+
+def test_the_price_table_records_which_bridge_joined_it(tmp_path: Path) -> None:
+    """Two tables joined by different bridge versions are different experiments; the
+    header must say which one this is, and the rows must survive the file exactly."""
+    out = tmp_path / "prices.jsonl"
+    write_prices(out, [_price()], horizon_seconds=600, corpus_vintage="v1",
+                 source_digest="sha256:abc", link_bridge_version=LINK_BRIDGE_VERSION)
+    header = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+    assert header["link_bridge_version"] == "exchange-link-bridge-v2"
+    assert list(read_prices(out)) == [_price()]
+
+
+def test_a_legacy_table_without_the_bridge_version_still_reads(tmp_path: Path) -> None:
+    """Tables written before the version key existed remain readable; refusing them
+    would orphan every measurement already built on one."""
+    price = _price()
+    legacy = tmp_path / "prices.jsonl"
+    legacy.write_text(
+        json.dumps({"kind": PRICES_KIND, "horizon_seconds": 600,
+                    "corpus_vintage": "v0", "source_digest": "sha256:old"}) + "\n"
+        + json.dumps({
+            "date": price.date.isoformat(), "tour": price.tour,
+            "player_a": price.player_a, "player_b": price.player_b,
+            "odds_a": str(price.odds_a), "odds_b": str(price.odds_b),
+            "won_a": price.won_a, "support_a": price.support_a.value,
+            "support_b": price.support_b.value, "prints_a": price.prints_a,
+            "prints_b": price.prints_b, "market_id": price.market_id,
+        }) + "\n",
+        encoding="utf-8",
+    )
+    assert list(read_prices(legacy)) == [price]
 
 
 # ------------------------------------------------------------------ benchmark
