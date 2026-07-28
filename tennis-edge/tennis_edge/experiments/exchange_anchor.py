@@ -137,7 +137,16 @@ def main() -> None:
     years = sorted(by_year)
     print("per-year coverage: " + ", ".join(f"{y}:{len(by_year[y]):,}" for y in years))
 
-    scored: list[tuple[Row, tuple[float, float, float, float]]] = []
+    # The deployment comparison needs the b365 model at its REAL training size: every
+    # corpus row before the scored year, not merely the covered ones. The anchor rows hold
+    # data constant to isolate the anchor; this row asks the question deployment actually
+    # faces — does the re-anchored fit on a quarter of the data beat the deployed fit on
+    # all of it?
+    full_by_year: dict[int, list[Row]] = collections.defaultdict(list)
+    for r in rows:
+        full_by_year[r.date.year].append(r)
+
+    scored: list[tuple[Row, tuple[float, float, float, float, float]]] = []
     train: list[tuple[Row, ExchangePrice]] = []
     for year in years:
         if len(train) >= MIN_TRAIN:
@@ -145,6 +154,11 @@ def main() -> None:
             exch_rows = [_swap_offset(r, exchange_logit(p)) for r, p in train]
             beta_b365 = fit(b365_rows, names)
             beta_exch = fit(exch_rows, names)
+            full_train = [r for y, block in full_by_year.items() if y < year
+                          for r in block]
+            beta_full = fit(full_train, names)
+            print(f"  {year}: full-corpus training rows for the deployment row: "
+                  f"{len(full_train):,}", flush=True)
             for row, price in by_year[year]:
                 off_exch = exchange_logit(price)
                 scored.append((row, (
@@ -152,6 +166,7 @@ def main() -> None:
                     _sigmoid(off_exch),                        # exchange alone
                     _predict(row, row.market_logit, beta_b365),
                     _predict(row, off_exch, beta_exch),
+                    _predict(row, row.market_logit, beta_full),  # deployed-size b365
                 )))
             print(f"  {year}: trained on {len(train):,}, scored {len(by_year[year]):,}",
                   flush=True)
@@ -179,6 +194,9 @@ def main() -> None:
 
     print("\nTHE DECISION ROW: exchange-anchored model over b365-anchored model")
     _paired("exchange+features over b365+features", gains(3, 2))
+
+    print("\nTHE DEPLOYMENT ROW: re-anchored (covered rows) vs deployed (full corpus)")
+    _paired("exchange+features(24k) over b365+features(90k)", gains(3, 4))
 
     print("\nREADING")
     print("  The exchange price is T-600s and the Bet365 price is a later closing price,")
