@@ -474,3 +474,49 @@ def test_traded_volume_before_any_trade_is_none(tmp_path: Path) -> None:
     ])
     (history,) = read_markets(path)
     assert history.traded_volume_at(A, seconds_before_off=1800) is None
+
+
+# ------------------------------------------------------------------ LTP age (TE-0017 S5)
+
+
+def test_ltp_age_is_the_time_since_the_last_pre_cutoff_print(tmp_path: Path) -> None:
+    """A price quoted at T-600s that last printed at T-30m is a 24-minute-old opinion.
+    The age is computed strictly from pre-cutoff prints — the same knowability boundary
+    as the price itself."""
+    path = _write_jsonl(tmp_path / "m.jsonl", _stream([30, 5], [2.0, 2.5]))
+    (history,) = read_markets(path)
+    assert history.ltp_age_at(A, seconds_before_off=600) == 1200   # printed T-30m
+    assert history.ltp_age_at(A, seconds_before_off=60) == 240     # printed T-5m
+
+
+def test_ltp_age_is_none_before_any_trade(tmp_path: Path) -> None:
+    """No print is no age. Zero would claim a perfectly fresh price that never existed."""
+    path = _write_jsonl(tmp_path / "m.jsonl", _stream([10], [2.0]))
+    (history,) = read_markets(path)
+    assert history.ltp_age_at(A, seconds_before_off=1800) is None
+
+
+def test_ltp_age_never_reads_a_post_cutoff_print(tmp_path: Path) -> None:
+    """A print after the horizon must not rejuvenate the price: at T-600s only the T-30m
+    print is knowable, whatever traded later."""
+    path = _write_jsonl(tmp_path / "m.jsonl", _stream([30, 5], [2.0, 2.5]))
+    (history,) = read_markets(path)
+    assert history.ltp_age_at(A, seconds_before_off=600) == 1200
+
+
+def test_ltp_age_refuses_in_play_horizons(tmp_path: Path) -> None:
+    path = _write_jsonl(tmp_path / "m.jsonl", _stream([30], [2.0]))
+    (history,) = read_markets(path)
+    with pytest.raises(InPlayRefusedError):
+        history.ltp_age_at(A, seconds_before_off=-1)
+
+
+def test_ltp_age_is_per_selection(tmp_path: Path) -> None:
+    """Each side ages alone: one side's fresh print says nothing about the other's."""
+    lines = [_msg(OFF_MS - 3_600_000, definition=_definition()),
+             _msg(OFF_MS - 30 * 60_000, ltps={A: 2.0}),
+             _msg(OFF_MS - 2 * 60_000, ltps={B: 2.1})]
+    path = _write_jsonl(tmp_path / "m.jsonl", lines)
+    (history,) = read_markets(path)
+    assert history.ltp_age_at(A, seconds_before_off=60) == 1740
+    assert history.ltp_age_at(B, seconds_before_off=60) == 60
