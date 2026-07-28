@@ -23,18 +23,19 @@ import datetime as dt
 import math
 import sys
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum, unique
 from pathlib import Path
-from typing import Sequence
 
-from sport_tennis.identity_bridge import build_bridge
+from sport_tennis.identity_bridge import _betfair_keys, _td_key, build_bridge, normalize_name
 from tennis_edge.betfair import MarketHistory, read_markets
 from tennis_edge.corpus import Match, default_vintage_root, load_corpus
 from tennis_edge.exchange import ExchangeQuote, PriceSource, exchange_probability
 from tennis_edge.metrics import log_loss
 
 __all__ = [
+    "LINK_BRIDGE_VERSION",
     "LinkOutcome",
     "LinkedMarket",
     "ExcludedMarket",
@@ -45,9 +46,19 @@ __all__ = [
     "main",
 ]
 
+#: Version of the market→corpus name join. v2 adds the TE-0018 second pass — the two
+#: frozen relaxed rule classes plus the longest-initial-prefix twins rule — over names the
+#: strict per-day bridge leaves unresolved. Tables built from this link carry the version,
+#: because two tables joined by different bridges are different experiments.
+LINK_BRIDGE_VERSION = "exchange-link-bridge-v2"
+
 #: A match late in one time zone lands on the next UTC date. One day either side is the
 #: smallest window that covers that without inviting ambiguity.
 DATE_TOLERANCE_DAYS = 1
+
+#: Off-dates at or beyond this year are provider damage, never fixtures (TE-0018
+#: §Junk-2099: Betfair test markets and double-listed junk carrying 2099 off-times).
+IMPLAUSIBLE_OFF_YEAR = 2090
 
 #: The horizon the exchange price is read at. Ten minutes before the scheduled off is far
 #: enough out to be actionable and close enough to be informative.
@@ -70,6 +81,8 @@ class LinkOutcome(Enum):
     NO_PRICE_AT_HORIZON = "NO_PRICE_AT_HORIZON"
     ALREADY_CLAIMED = "ALREADY_CLAIMED"
     NO_BOOKMAKER_PRICE = "NO_BOOKMAKER_PRICE"
+    IMPLAUSIBLE_OFF_DATE = "IMPLAUSIBLE_OFF_DATE"
+    NOT_TWO_ACTIVE_RUNNERS = "NOT_TWO_ACTIVE_RUNNERS"
 
 
 @dataclass(frozen=True)
@@ -112,8 +125,86 @@ class LinkResult:
 
 def _off_date(market: MarketHistory) -> dt.date:
     return dt.datetime.fromtimestamp(
-        market.market_time_ms / 1000, tz=dt.timezone.utc
+        market.market_time_ms / 1000, tz=dt.UTC
     ).date()
+
+
+def _relax(name: str) -> str:
+    """TE-0018 relaxed text: td-norm-v1, then apostrophes removed and hyphens spaced."""
+    return " ".join(normalize_name(name).replace("'", "").replace("-", " ").split())
+
+
+def _relaxed_candidates(betfair_name: str, td_card: Iterable[str]) -> set[str]:
+    """Corpus names reachable under the two frozen TE-0018 rule classes, relaxed text on
+    BOTH sides. The last-token-only fallback never fired alone in the measurement and is
+    deliberately not a rule here."""
+    relaxed_bf = _relax(betfair_name)
+    bf_tokens = relaxed_bf.split(" ")
+    if len(bf_tokens) < 2:
+        return set()
+    bf_keys = _betfair_keys(relaxed_bf)
+    trailing = set(bf_tokens[1:])
+    candidates: set[str] = set()
+    for td_name in td_card:
+        key = _td_key(_relax(td_name))
+        if key is None:
+            continue
+        surname, initials = key
+        # Rule class 1: the bridge's own split-point + initials-prefix comparison, on the
+        # relaxed text ("Carreno Busta P." ↔ "Pablo Carreno-Busta").
+        if any(surname == s and (initials.startswith(i) or i.startswith(initials))
+               for s, i in bf_keys):
+            candidates.add(td_name)
+            continue
+        # Rule class 2: Tennis-Data truncates double surnames. TD surname tokens a subset
+        # of the Betfair tokens after the first, with first-initial equality
+        # ("Bautista R." ↔ "Roberto Bautista Agut").
+        if set(surname.split(" ")) <= trailing and initials[0] == bf_tokens[0][0]:
+            candidates.add(td_name)
+    return candidates
+
+
+def _longest_initial_prefix(betfair_name: str, candidates: Iterable[str]) -> str | None:
+    """Twins disambiguation (TE-0018): prefer the unique candidate whose TD initials
+    string matches the LONGEST prefix of the Betfair first name ("Karolina" starts with
+    "ka", not "kr"). Anything short of exactly one survivor refuses."""
+    first = _relax(betfair_name).split(" ")[0]
+    best: list[str] = []
+    best_length = 0
+    for td_name in sorted(candidates):
+        key = _td_key(_relax(td_name))
+        if key is None or not first.startswith(key[1]):
+            continue
+        if len(key[1]) > best_length:
+            best, best_length = [td_name], len(key[1])
+        elif len(key[1]) == best_length:
+            best.append(td_name)
+    return best[0] if len(best) == 1 else None
+
+
+def _second_pass(
+    betfair_names: set[str], strict: dict[str, str], td_card: set[str]
+) -> dict[str, str]:
+    """The TE-0018 relaxed pass over one day's card (bridge v2), ONLY for names the
+    strict bridge left unresolved — a strict resolution is never re-asked, let alone
+    overridden. A name resolves only when the frozen rule classes identify EXACTLY ONE
+    corpus name (the twins rule may break a tie); and a corpus name claimed by two
+    Betfair names on one day is the bridge's HOMONYM_MULTIPLE_BETFAIR ambiguity, which
+    refuses here exactly as it does in the strict pass."""
+    proposed: dict[str, str] = {}
+    for name in sorted(betfair_names - strict.keys()):
+        candidates = _relaxed_candidates(name, td_card)
+        if len(candidates) == 1:
+            proposed[name] = next(iter(candidates))
+        elif len(candidates) > 1:
+            preferred = _longest_initial_prefix(name, candidates)
+            if preferred is not None:
+                proposed[name] = preferred
+    claimants: dict[str, int] = defaultdict(int)
+    for td_name in [*strict.values(), *proposed.values()]:
+        claimants[td_name] += 1
+    return {name: td_name for name, td_name in proposed.items()
+            if claimants[td_name] == 1}
 
 
 def _resolve_names(
@@ -136,6 +227,9 @@ def _resolve_names(
     Corpus names are drawn from a window of ±:data:`DATE_TOLERANCE_DAYS` around the market's
     date, matching the window the link itself allows — a match that crossed midnight UTC
     must be resolvable, or the tolerance downstream is decoration.
+
+    Bridge v2 (:data:`LINK_BRIDGE_VERSION`) adds the TE-0018 second pass over the names
+    the strict bridge leaves unresolved, on the same day card and the same window.
     """
     matches_by_date: dict[dt.date, list[Match]] = defaultdict(list)
     for match in matches:
@@ -162,8 +256,14 @@ def _resolve_names(
             betfair_full_names=sorted(betfair_names),
             source_vintage="tennis-edge-exchange-link",
         )
-        for mapping in bridge.mappings:
-            resolved[(day, mapping.betfair_alias.display_name)] = mapping.source.raw_name
+        strict = {m.betfair_alias.display_name: m.source.raw_name for m in bridge.mappings}
+        td_card: set[str] = set()
+        for names in by_tour.values():
+            td_card |= names
+        for name, td_name in strict.items():
+            resolved[(day, name)] = td_name
+        for name, td_name in _second_pass(betfair_names, strict, td_card).items():
+            resolved[(day, name)] = td_name
     return resolved
 
 
@@ -194,6 +294,17 @@ def link_markets(
         active = [r for r in market.runners if r.status.upper() == "ACTIVE"]
         market_day = _off_date(market)
 
+        # Asked FIRST: a 2099 off-time is provider damage (TE-0018 §Junk-2099 — Betfair
+        # test markets and double-listed junk), not a fixture the corpus failed to cover.
+        # Letting it fall through as NO_MATCH_ON_DATE pollutes the date funnel.
+        if market_day.year >= IMPLAUSIBLE_OFF_YEAR:
+            excluded.append(ExcludedMarket(
+                market.market_id, market.event_name, LinkOutcome.IMPLAUSIBLE_OFF_DATE,
+                f"off date {market_day.isoformat()} is at or beyond year "
+                f"{IMPLAUSIBLE_OFF_YEAR}",
+            ))
+            continue
+
         # Asked BEFORE the names, because per-day scoping otherwise collapses two different
         # facts into one. A market on a date the corpus does not cover has no resolvable
         # names by construction, and reporting that as UNRESOLVED_NAME would say "we do not
@@ -209,8 +320,19 @@ def link_markets(
             ))
             continue
 
+        # A match market has exactly two ACTIVE runners. Anything else — walkover shells,
+        # unsettled removals, non-match shapes — has no join to make, and calling it
+        # UNRESOLVED_NAME would send someone chasing name rules for a market whose names
+        # were never the problem.
+        if len(active) != 2:
+            excluded.append(ExcludedMarket(
+                market.market_id, market.event_name, LinkOutcome.NOT_TWO_ACTIVE_RUNNERS,
+                f"{len(active)} ACTIVE runners where a match market has exactly 2",
+            ))
+            continue
+
         names = [resolved.get((market_day, r.name)) for r in active]
-        if len(names) != 2 or any(n is None for n in names):
+        if any(n is None for n in names):
             excluded.append(ExcludedMarket(
                 market.market_id, market.event_name, LinkOutcome.UNRESOLVED_NAME,
                 f"could not resolve {[r.name for r in active]} to corpus names",

@@ -24,15 +24,19 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
 
 from tennis_edge.betfair import MarketHistory
 from tennis_edge.corpus import Match
 from tennis_edge.exchange import PriceSource
-from tennis_edge.exchange_link import DEFAULT_HORIZON_SECONDS, link_markets
+from tennis_edge.exchange_link import (
+    DEFAULT_HORIZON_SECONDS,
+    LINK_BRIDGE_VERSION,
+    link_markets,
+)
 from tennis_edge.fill_evidence import FillSupport, traded_through
 
 __all__ = [
@@ -128,6 +132,9 @@ def write_prices(
     horizon_seconds: int,
     corpus_vintage: str,
     source_digest: str,
+    # Any table written by this build was joined by the current linker, so the current
+    # version is the truthful default; a caller replaying an older join must say so.
+    link_bridge_version: str = LINK_BRIDGE_VERSION,
 ) -> int:
     """Write the table with a header naming what produced it. Returns rows written."""
     target = Path(path)
@@ -139,6 +146,7 @@ def write_prices(
             "horizon_seconds": horizon_seconds,
             "corpus_vintage": corpus_vintage,
             "source_digest": source_digest,
+            "link_bridge_version": link_bridge_version,
         }) + "\n")
         for price in prices:
             handle.write(json.dumps({
@@ -163,7 +171,8 @@ def read_prices(path: Path | str) -> Iterator[ExchangePrice]:
     """Read the table back. Refuses a file that does not declare what it is.
 
     Two tables built at different horizons are different experiments. A file that does not
-    say which one it is can be read as the other, and the mistake is invisible.
+    say which one it is can be read as the other, and the mistake is invisible. Tables
+    written before ``link_bridge_version`` existed carry no such key and still load.
     """
     target = Path(path)
     with target.open(encoding="utf-8") as handle:
