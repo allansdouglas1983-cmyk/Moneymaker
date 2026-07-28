@@ -35,6 +35,11 @@ from tennis_edge.network import (
 )
 from tennis_edge.sackmann import Level, SackmannMatch, ServeLine
 
+FULL = {"A": "Aaron Alpha", "B": "Bruno Beta", "C": "Carl Gamma", "D": "Dan Delta",
+        "E": "Ed Epsilon", "F": "Frank Zeta", "G": "Greg Eta"}
+TD = {"A": "Alpha A.", "B": "Beta B.", "C": "Gamma C.", "D": "Delta D.",
+      "E": "Epsilon E.", "F": "Zeta F.", "G": "Eta G."}
+
 DAY = dt.date(2019, 6, 3)
 LAGGED = DAY + dt.timedelta(days=20)  # comfortably past the 8-day tournament lag
 
@@ -49,8 +54,8 @@ def _match(winner: str, loser: str, *, when: dt.date = DAY,
         tourney_id=f"t-{when.isoformat()}-{num}", tourney_name="Test Open",
         tourney_date=when, level=Level.TOUR, surface="Hard", round_name="R32",
         best_of=3, match_num=num, tour=tour,
-        winner_id=f"w{winner}", winner_name=winner,
-        loser_id=f"l{loser}", loser_name=loser,
+        winner_id=f"w{winner}", winner_name=FULL[winner],
+        loser_id=f"l{loser}", loser_name=FULL[loser],
         winner_rank=None, loser_rank=None, minutes=90, score="6-4 6-4",
         winner_serve=blank, loser_serve=blank, source_file="test",
     )
@@ -69,7 +74,7 @@ class TestCommonOpponentGap:
             _match("A", "C", num=1), _match("A", "D", num=2),
             _match("C", "B", num=3), _match("D", "B", num=4),
         ])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert f["common_opponent_gap"] > 0
 
     def test_the_gap_flips_sign_when_the_players_swap(self) -> None:
@@ -79,15 +84,15 @@ class TestCommonOpponentGap:
             _match("A", "C", num=1), _match("A", "D", num=2),
             _match("C", "B", num=3), _match("D", "B", num=4),
         ])
-        ab = network_features(est, "ATP", "A", "B", when=LAGGED)
-        ba = network_features(est, "ATP", "B", "A", when=LAGGED)
+        ab = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
+        ba = network_features(est, "ATP", TD["B"], TD["A"], when=LAGGED)
         assert ab["common_opponent_gap"] == pytest.approx(-ba["common_opponent_gap"])
 
     def test_too_few_common_opponents_yields_no_feature_at_all(self) -> None:
         """Absent, not zero. Zero claims the pair is even; absence claims nothing, and the
         rest of this package makes the same distinction."""
         est = _fed([_match("A", "C", num=1), _match("C", "B", num=2)])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert "common_opponent_gap" not in f
         assert "intransitivity" not in f
 
@@ -98,7 +103,7 @@ class TestCommonOpponentGap:
             _match("A", "C", num=1), _match("A", "D", num=2), _match("A", "E", num=3),
             _match("C", "B", num=4), _match("D", "B", num=5),
         ])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert f["common_opponents"] == 2.0  # C and D, never E
 
 
@@ -110,7 +115,7 @@ class TestIntransitivity:
             _match("A", "C", num=1), _match("A", "D", num=2), _match("A", "E", num=3),
             _match("C", "B", num=4), _match("D", "B", num=5), _match("E", "B", num=6),
         ])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert f["intransitivity"] == pytest.approx(0.0, abs=1e-9)
 
     def test_contradicting_opponents_give_high_intransitivity(self) -> None:
@@ -119,7 +124,7 @@ class TestIntransitivity:
             _match("A", "C", num=1), _match("C", "B", num=2),   # C -> A stronger
             _match("B", "D", num=3), _match("D", "A", num=4),   # D -> B stronger
         ])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert f["intransitivity"] > 0.5
 
     def test_intransitivity_is_symmetric_under_a_swap(self) -> None:
@@ -129,8 +134,8 @@ class TestIntransitivity:
             _match("A", "C", num=1), _match("C", "B", num=2),
             _match("B", "D", num=3), _match("D", "A", num=4),
         ])
-        ab = network_features(est, "ATP", "A", "B", when=LAGGED)
-        ba = network_features(est, "ATP", "B", "A", when=LAGGED)
+        ab = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
+        ba = network_features(est, "ATP", TD["B"], TD["A"], when=LAGGED)
         assert ab["intransitivity"] == pytest.approx(ba["intransitivity"])
 
 
@@ -144,7 +149,7 @@ class TestKnowledgeTime:
             _match("C", "B", num=3), _match("D", "B", num=4),
         ])
         est.advance_to(DAY + dt.timedelta(days=2))  # inside the 8-day lag
-        assert network_features(est, "ATP", "A", "B", when=DAY) == {}
+        assert network_features(est, "ATP", TD["A"], TD["B"], when=DAY) == {}
 
     def test_advancing_backwards_is_refused(self) -> None:
         est = _fed([_match("A", "C")])
@@ -158,7 +163,7 @@ class TestKnowledgeTime:
             _match("A", "C", num=1, tour="ATP"), _match("A", "D", num=2, tour="ATP"),
             _match("C", "B", num=3, tour="WTA"), _match("D", "B", num=4, tour="WTA"),
         ])
-        assert network_features(est, "ATP", "A", "B", when=LAGGED) == {}
+        assert network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED) == {}
 
 
 class TestShapeAndScale:
@@ -168,7 +173,7 @@ class TestShapeAndScale:
             _match("A", "C", num=1), _match("A", "D", num=2), _match("A", "E", num=3),
             _match("C", "B", num=4), _match("D", "B", num=5), _match("E", "B", num=6),
         ])
-        f = network_features(est, "ATP", "A", "B", when=LAGGED)
+        f = network_features(est, "ATP", TD["A"], TD["B"], when=LAGGED)
         assert abs(f["common_opponent_gap"]) < 10.0
 
     def test_more_shared_evidence_does_not_shrink_the_gap(self) -> None:
@@ -184,9 +189,9 @@ class TestShapeAndScale:
             _match("C", "B", num=4), _match("D", "B", num=5), _match("E", "B", num=6),
             _match("F", "B", num=9), _match("G", "B", num=10),
         ])
-        assert (many_gap := network_features(many, "ATP", "A", "B",
+        assert (many_gap := network_features(many, "ATP", TD["A"], TD["B"],
                                              when=LAGGED)["common_opponent_gap"]) > 0
-        assert many_gap > network_features(few, "ATP", "A", "B",
+        assert many_gap > network_features(few, "ATP", TD["A"], TD["B"],
                                            when=LAGGED)["common_opponent_gap"]
 
     def test_the_minimum_is_a_declared_constant_not_a_magic_number(self) -> None:

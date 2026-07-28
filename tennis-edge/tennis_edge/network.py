@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 from tennis_edge.sackmann import SackmannMatch
+from tennis_edge.serve_stats import PlayerKey, sackmann_player_key, td_player_key
 
 __all__ = [
     "TOURNAMENT_LAG_DAYS",
@@ -74,7 +75,7 @@ COMMON_COUNT_PRIOR = 2.0
 class _Record:
     """One player's results against each opponent: opponent -> [wins, losses]."""
 
-    versus: dict[str, list[int]] = field(default_factory=lambda: defaultdict(
+    versus: dict[PlayerKey, list[int]] = field(default_factory=lambda: defaultdict(
         lambda: [0, 0]))
 
 
@@ -83,7 +84,7 @@ class NetworkEstimator:
 
     def __init__(self, *, lag_days: int = TOURNAMENT_LAG_DAYS) -> None:
         self._lag = dt.timedelta(days=lag_days)
-        self._players: dict[tuple[str, str], _Record] = defaultdict(_Record)
+        self._players: dict[tuple[str, PlayerKey], _Record] = defaultdict(_Record)
         self._pending: list[SackmannMatch] = []
         self._cursor = 0
         self._absorbed_through: dt.date | None = None
@@ -105,16 +106,21 @@ class NetworkEstimator:
             entry = self._pending[self._cursor]
             if entry.tourney_date > cutoff:
                 break
-            winner = self._players[(entry.tour, entry.winner_name)]
-            loser = self._players[(entry.tour, entry.loser_name)]
-            winner.versus[entry.loser_name][0] += 1
-            loser.versus[entry.winner_name][1] += 1
+            # Archive names are full ("Marin Cilic"); queries arrive in Tennis-Data form
+            # ("Cilic M."). Both map through the same key space the serve and durability
+            # layers use, so the graph and its callers can never drift apart on identity.
+            winner_key = sackmann_player_key(entry.winner_name)
+            loser_key = sackmann_player_key(entry.loser_name)
             self._cursor += 1
+            if winner_key is None or loser_key is None:
+                continue
+            self._players[(entry.tour, winner_key)].versus[loser_key][0] += 1
+            self._players[(entry.tour, loser_key)].versus[winner_key][1] += 1
             absorbed += 1
         self._absorbed_through = cutoff
         return absorbed
 
-    def record(self, tour: str, player: str) -> _Record:
+    def record(self, tour: str, player: PlayerKey) -> _Record:
         return self._players[(tour, player)]
 
 
@@ -134,9 +140,13 @@ def network_features(
     what actually bounds visibility, so passing a later date never reveals more than
     :meth:`NetworkEstimator.advance_to` has absorbed.
     """
-    a = estimator.record(tour, player_a)
-    b = estimator.record(tour, player_b)
-    shared = sorted((set(a.versus) & set(b.versus)) - {player_a, player_b})
+    key_a = td_player_key(player_a)
+    key_b = td_player_key(player_b)
+    if key_a is None or key_b is None:
+        return {}
+    a = estimator.record(tour, key_a)
+    b = estimator.record(tour, key_b)
+    shared = sorted((set(a.versus) & set(b.versus)) - {key_a, key_b})
     if len(shared) < MIN_COMMON_OPPONENTS:
         return {}
 
