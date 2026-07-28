@@ -24,6 +24,7 @@ from __future__ import annotations
 import collections
 import datetime as dt
 import math
+from pathlib import Path
 
 from tennis_edge.experiments.residual_edge import _sigmoid, walk_forward
 from tennis_edge.feature_cache import FeatureRow as Row
@@ -34,7 +35,9 @@ from tennis_edge.residual_model import load_model
 #: Two confirmatory contrasts share the family; each reads at 1 - 0.05/2.
 BONFERRONI_ALPHA = 0.025
 
-MODEL_PATH = "artifacts/residual-model-v3.json"
+#: Resolved from the module location, not the cwd — the harness must find the artifact
+#: whether it is run from the repo root or from tennis-edge/.
+MODEL_PATH = Path(__file__).resolve().parents[3] / "artifacts" / "residual-model-v3.json"
 
 
 def _log_loss(probability: float, won: int) -> float:
