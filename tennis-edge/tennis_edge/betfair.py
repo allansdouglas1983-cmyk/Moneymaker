@@ -206,6 +206,31 @@ class MarketHistory:
         price = self.ltp_at(selection_id, seconds_before_off=seconds_before_off)
         return None if price is None else index_of(price)
 
+    def ltp_age_at(self, selection_id: int, *, seconds_before_off: int) -> int | None:
+        """Seconds since this selection's last strictly pre-cutoff print (TE-0017 S5).
+
+        The age of the opinion :meth:`ltp_at` carries forward: a price quoted at the
+        horizon that last printed twenty minutes earlier is a twenty-minute-old opinion,
+        and a model "disagreeing" with it manufactures phantom edge. Computed from the
+        same pre-cutoff prints as the price itself — a later print never rejuvenates it —
+        and ``None`` before any trade, because zero would claim a freshness that never
+        existed. BASIC's ~60-second cadence quantises this: sub-minute staleness is
+        unobservable in this data.
+        """
+        if seconds_before_off < 0:
+            raise InPlayRefusedError(
+                f"seconds_before_off={seconds_before_off} is at or after the off; "
+                "this platform is pre-off only and does not serve in-play prices"
+            )
+        cutoff = self.market_time_ms - seconds_before_off * 1000
+        latest: int | None = None
+        for observation in self.observations:
+            if observation.publish_time_ms > cutoff:
+                break
+            if observation.selection_id == selection_id:
+                latest = observation.publish_time_ms
+        return None if latest is None else (cutoff - latest) // 1000
+
     def _ladder_at(
         self, selection_id: int, seconds_before_off: int
     ) -> LadderObservation | None:
