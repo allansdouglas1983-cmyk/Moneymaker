@@ -28,9 +28,9 @@
   - private automated betting under personal use (add to written questions)
   - free May-2015..Apr-2016 window (low-confidence snippet)
   - founder Betfair account exclusion/closure status (ADR 0015 — blocks the purchase itself)
-  decision_required: 'BLOCKED by ADR 0015: founder account exclusion/closure status must be resolved by
-    Betfair in writing before any purchase; prior tier recommendation (Option A, ADVANCED) preserved for
-    if/when the block lifts'
+  decision_required: 'BLOCKED by ADR 0015: founder account exclusion/closure status must be resolved
+    by Betfair in writing before any purchase; prior tier recommendation (Option A, ADVANCED) preserved
+    for if/when the block lifts'
 - id: DR-0002
   title: Cheapest lawful GB all-weather form data with genuine knowledge-time support
   classification: BLOCKING
@@ -114,9 +114,9 @@
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow (founder explicit /deep-research invocation)
   findings: docs/research/findings/DR-TENNIS-CHATGPT-002-findings.md
-  note: ChatGPT report supersedes the Sportradar blanket-prohibition lead (authorised odds/trading licences
-    exist); TDI and Stats Perform public terms are restrictive-without-contract; Tennis-Data.co.uk permissive-but-informal;
-    written provider answers still required before any purchase
+  note: ChatGPT report supersedes the Sportradar blanket-prohibition lead (authorised odds/trading
+    licences exist); TDI and Stats Perform public terms are restrictive-without-contract; Tennis-Data.co.uk
+    permissive-but-informal; written provider answers still required before any purchase
   related:
   - ADR-0016
 - id: DR-TENNIS-MODEL-002
@@ -126,8 +126,8 @@
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow
   findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
-  note: serve/Elo literature support confirmed (dated, directional only); remainder of the feature list
-    (rest days, workload, travel, altitude, surface transitions, etc.) unresearched
+  note: serve/Elo literature support confirmed (dated, directional only); remainder of the feature
+    list (rest days, workload, travel, altitude, surface transitions, etc.) unresearched
   related:
   - ADR-0016
 - id: DR-TENNIS-SETTLEMENT-001
@@ -137,8 +137,8 @@
   requested: '2026-07-16'
   routed_to: claude-code deep-research workflow
   findings: docs/research/findings/DR-TENNIS-BATCH-001-findings.md
-  note: zero matrix rows established; wrong Betfair product page reached (Sportsbook not Exchange); must
-    be re-run before any tennis settlement code is designed
+  note: zero matrix rows established; wrong Betfair product page reached (Sportsbook not Exchange);
+    must be re-run before any tennis settlement code is designed
   related:
   - ADR-0016
 - id: DR-TENNIS-BENCHMARK-001
@@ -173,8 +173,8 @@
   related:
   - ADR-0016
 - id: DR-TENNIS-RESULTS-001
-  title: Pre-June-2026 longitudinal ATP/WTA singles results licensing (11 evidence points,
-    personal profit-seeking training rights)
+  title: Pre-June-2026 longitudinal ATP/WTA singles results licensing (11 evidence points, personal
+    profit-seeking training rights)
   classification: BLOCKING
   status: REQUESTED
   requested: 2026-07-18
@@ -191,8 +191,8 @@
   - SPEC-103
   - STAGE2-tennis-preregistration
 - id: DR-TENNIS-RESULTS-001-ADDENDUM-A
-  title: Founder strategy refinement 2026-07-18 — zero-cost-first routing (Betfair BASIC
-    outcome pilot + Tennis-Data enrichment permission) before any paid provider
+  title: Founder strategy refinement 2026-07-18 — zero-cost-first routing (Betfair BASIC outcome pilot
+    + Tennis-Data enrichment permission) before any paid provider
   classification: STRATEGY-NOTE
   status: RECORDED
   requested: 2026-07-18
@@ -200,14 +200,14 @@
   notes:
   - Betfair BASIC May-2026 sufficiency pilot prepared (docs/procurement/betfair-basic-may-2026-pilot.md);
     price must display GBP 0 or STOP
-  - Tennis-Data permission email drafted (docs/procurement/provider-enquiry-tennis-data.md);
-    not approved until written answer in rights registry
+  - Tennis-Data permission email drafted (docs/procurement/provider-enquiry-tennis-data.md); not approved
+    until written answer in rights registry
   - paid fallbacks prepared, not purchased (docs/procurement/paid-fallback-results-providers.md)
   - Sackmann/Tennis Abstract + scraping-derived sources remain prohibited from the deployable path
   - Goalserve/enterprise feeds deferred on cost
 - id: DR-TENNIS-RESULTS-001-RESOLUTION
-  title: Resolved by founder decision + attestation — Tennis-Data.co.uk approved as primary
-    longitudinal source; Gate -1 PASS on attestation (evidence held privately by founder)
+  title: Resolved by founder decision + attestation — Tennis-Data.co.uk approved as primary longitudinal
+    source; Gate -1 PASS on attestation (evidence held privately by founder)
   classification: RESOLUTION
   status: ASSESSED
   requested: 2026-07-18
@@ -218,50 +218,63 @@
   - residual-risk record in the rights doc; PASS void-forward if terms found narrower
   - paid fallbacks stood down; BASIC pilot not required for results
 - id: DR-TENNIS-FORECAST-LIT-001
-  title: Pre-off tennis forecasting methods with demonstrated out-of-sample improvement over
-    a market price; feature families with incremental value over an Elo-plus-serve baseline;
-    negative results
+  title: Pre-off tennis forecasting methods with demonstrated out-of-sample improvement over a market
+    price; feature families with incremental value over an Elo-plus-serve baseline; negative results
   classification: ADVISORY
-  status: REQUESTED
+  status: ASSESSED
   requested: 2026-07-27
   request: docs/research/requests/DR-TENNIS-FORECAST-LIT-001.md
   blocking_scope: none — no work pauses
   notes:
-  - asked because the measured residual gain is +0.001058 nats [+0.000635, +0.001471] over
-    63,576 matches and the obvious feature families are plausibly exhausted
+  - asked because the measured residual gain is +0.001058 nats [+0.000635, +0.001471] over 63,576
+    matches and the obvious feature families are plausibly exhausted
   - answer must distinguish INCREMENTAL value over our 22 features from value in isolation
-  - methods requiring paid data must be flagged unavailable, not recommended (founder ruled
-    out further data purchase 2026-07-27)
+  - methods requiring paid data must be flagged unavailable, not recommended (founder ruled out further
+    data purchase 2026-07-27)
+  - 'our +0.001058 nats judged plausible/small, not suspicious; priorities: cross-book dispersion,
+    then intransitivity; GBM/deep combiner retired as a priority; buzz parked'
+  returned: '2026-07-28'
+  findings: docs/research/findings/DR-TENNIS-FORECAST-LIT-001-findings.md
 - id: DR-TENNIS-MICROSTRUCTURE-001
-  title: Last-traded price versus the crossable best-back price pre-off; whether the
-    traded-through survival test is a recognised method and how it is biased; current UK
-    Betfair tennis commission mechanics
+  title: Last-traded price versus the crossable best-back price pre-off; whether the traded-through
+    survival test is a recognised method and how it is biased; current UK Betfair tennis commission
+    mechanics
   classification: BLOCKING
-  status: REQUESTED
+  status: ASSESSED
   requested: 2026-07-27
   request: docs/research/requests/DR-TENNIS-MICROSTRUCTURE-001.md
-  blocking_scope: any MONEY claim derived from the BASIC archive; forecast-quality claims
-    continue unaffected
+  blocking_scope: any MONEY claim derived from the BASIC archive; forecast-quality claims continue
+    unaffected
   notes:
-  - BASIC carries no ladder and no traded volume; a return settled at LTP embeds an
-    invisible assumption that every claimed fill happened
-  - measured on 27,209 priced matches, both sides - SUPPORTED 64.4%, UNSUPPORTED 18.7%,
-    NO_EVIDENCE 16.9%; a naive settlement would credit 35% of fills the record does not support
-  - until answered, BASIC-derived returns are reported as hypothetical with the three-way
-    split shown, never as realised returns
+  - BASIC carries no ladder and no traded volume; a return settled at LTP embeds an invisible assumption
+    that every claimed fill happened
+  - measured on 27,209 priced matches, both sides - SUPPORTED 64.4%, UNSUPPORTED 18.7%, NO_EVIDENCE
+    16.9%; a naive settlement would credit 35% of fills the record does not support
+  - until answered, BASIC-derived returns are reported as hypothetical with the three-way split shown,
+    never as realised returns
+  - 'BLOCKING scope resolved into an operating standard: BASIC money claims are hypothetical-only
+    with three-way fill split, NO_EVIDENCE in denominator, trade-through language, and an execution-cost
+    sensitivity band (Roll-family spread proxy) to be added; flat 2% commission is conditional on
+    the Basic Rewards package and does NOT hold for Australian-based events'
+  returned: '2026-07-28'
+  findings: docs/research/findings/DR-TENNIS-MICROSTRUCTURE-001-findings.md
 - id: DR-TENNIS-COHERENCE-METHOD-001
-  title: Inverting the Betfair derivative complex to an implied Match Odds probability -
-    whether the method is known, its documented failure modes, and the cheapest falsifying
-    diagnostic
+  title: Inverting the Betfair derivative complex to an implied Match Odds probability - whether the
+    method is known, its documented failure modes, and the cheapest falsifying diagnostic
   classification: ADVISORY
-  status: REQUESTED
+  status: ASSESSED
   requested: 2026-07-27
   request: docs/research/requests/DR-TENNIS-COHERENCE-METHOD-001.md
   blocking_scope: none — implementation proceeds under the existing paired-benchmark discipline
   notes:
-  - companion to DR-TENNIS-XMARKET-INDEPENDENCE-001 (EXT-XMARKET-002), which asks whether
-    derivatives carry independent information; this asks whether the INVERSION METHOD is known
-  - if the independence question resolves negative this method is worthless, which is the
-    cheapest outcome to learn
-  - the archive supplies the complex at scale - SET_BETTING 146,112, SET_WINNER 300,113,
-    NUMBER_OF_SETS 33,209, SET_CORRECT_SCORE 33,221, HANDICAP 32,859, COMBINED_TOTAL 20,865
+  - companion to DR-TENNIS-XMARKET-INDEPENDENCE-001 (EXT-XMARKET-002), which asks whether derivatives
+    carry independent information; this asks whether the INVERSION METHOD is known
+  - if the independence question resolves negative this method is worthless, which is the cheapest
+    outcome to learn
+  - the archive supplies the complex at scale - SET_BETTING 146,112, SET_WINNER 300,113, NUMBER_OF_SETS
+    33,209, SET_CORRECT_SCORE 33,221, HANDICAP 32,859, COMBINED_TOTAL 20,865
+  - 'coherence layer demoted to a probe with a stop rule: lead-lag freshness test first (outcomes
+    conditioned on Match Odds vs derivative catch-up); top failure mode (stale LTP in thin derivatives)
+    present by construction'
+  returned: '2026-07-28'
+  findings: docs/research/findings/DR-TENNIS-COHERENCE-METHOD-001-findings.md
