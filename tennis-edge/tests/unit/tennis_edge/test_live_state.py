@@ -11,6 +11,7 @@ model was actually fitted on.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from pathlib import Path
 
 import pytest
@@ -78,11 +79,49 @@ class TestFeatures:
         assert forward["pyramid_elo_gap"] == pytest.approx(-reverse["pyramid_elo_gap"])
         assert forward["rank_gap"] == pytest.approx(-reverse["rank_gap"])
 
-    def test_rankings_are_optional_and_absent_when_not_given(self) -> None:
-        """A ranking belongs to the fixture, not the rating state; absence is not zero."""
-        assert "rank_gap" not in live_features(
-            snapshot(), "ATP", "Smith A.", "Jones B.", surface="Hard", best_of=3,
-            market_probability=0.55)
+    # TEST CORRECTION (TE-0017 S3). The test previously here asserted that omitting
+    # rankings drops rank_gap. That pinned a live train/serve mismatch: training builds
+    # rank_gap on EVERY row via `or 500` imputation (residual_features), so coefficients
+    # were fitted jointly with it — while the site, serving the rank-absent branch on every
+    # prediction, scored the same nominal model on a feature set nobody measured. The
+    # corrected specification: rank_gap is always served, from caller-supplied ranks first,
+    # the snapshot's latest-known ranks second, and the training-time 500 imputation last.
+
+    def test_rank_gap_falls_back_to_the_snapshots_latest_known_ranks(self) -> None:
+        ranked = snapshot(players={
+            ("ATP", "Smith A."): player(rank=10, rank_date="2026-07-14"),
+            ("ATP", "Jones B."): player(rank=60, rank_date="2026-07-14"),
+        })
+        features = live_features(ranked, "ATP", "Smith A.", "Jones B.",
+                                 surface="Hard", best_of=3, market_probability=0.55)
+        assert features["rank_gap"] == math.log1p(60) - math.log1p(10)
+
+    def test_a_caller_supplied_rank_overrides_the_snapshot(self) -> None:
+        """The fixture-time ranking is fresher than any match-derived one; it wins."""
+        ranked = snapshot(players={
+            ("ATP", "Smith A."): player(rank=10),
+            ("ATP", "Jones B."): player(rank=60),
+        })
+        features = live_features(ranked, "ATP", "Smith A.", "Jones B.",
+                                 surface="Hard", best_of=3, market_probability=0.55,
+                                 rank_a=3, rank_b=90)
+        assert features["rank_gap"] == math.log1p(90) - math.log1p(3)
+
+    def test_unknown_ranks_impute_500_exactly_as_training_does(self) -> None:
+        """`or 500` is the training-time expression; serving must reproduce it, not drop
+        the feature — a coefficient fitted jointly with rank_gap applied to inputs that
+        lack it is the train/serve mismatch class TE-0011 refused to deploy over."""
+        features = live_features(snapshot(), "ATP", "Smith A.", "Jones B.",
+                                 surface="Hard", best_of=3, market_probability=0.55)
+        assert features["rank_gap"] == 0.0  # log1p(500) - log1p(500)
+
+        half = snapshot(players={
+            ("ATP", "Smith A."): player(rank=10),
+            ("ATP", "Jones B."): player(),
+        })
+        features = live_features(half, "ATP", "Smith A.", "Jones B.",
+                                 surface="Hard", best_of=3, market_probability=0.55)
+        assert features["rank_gap"] == math.log1p(500) - math.log1p(10)
 
     def test_an_unknown_player_yields_no_features(self) -> None:
         """Absence is the honest answer; zeros would place a debutant at the centre."""
@@ -132,6 +171,31 @@ class TestPersistence:
         path.write_text('{"kind": "something-else"}', encoding="utf-8")
         with pytest.raises(ValueError, match="not a state snapshot"):
             load_state(path)
+
+    def test_ranks_round_trip(self, tmp_path: Path) -> None:
+        """The latest-known rank travels with the state or the site cannot serve it."""
+        path = tmp_path / "state.json"
+        original = snapshot(players={
+            ("ATP", "Smith A."): player(rank=10, rank_date="2026-07-14"),
+            ("ATP", "Jones B."): player(),
+        })
+        save_state(path, original)
+        loaded = load_state(path)
+        assert loaded.players[("ATP", "Smith A.")].rank == 10
+        assert loaded.players[("ATP", "Smith A.")].rank_date == "2026-07-14"
+        assert loaded.players[("ATP", "Jones B.")].rank is None
+
+    def test_a_state_file_from_before_ranks_existed_still_loads(self, tmp_path: Path
+                                                                ) -> None:
+        """Rank-less files are last week's reality, not an error; they impute like
+        training does."""
+        path = tmp_path / "state.json"
+        save_state(path, snapshot())
+        raw = path.read_text(encoding="utf-8").replace('"rank":null,', '').replace(
+            '"rank_date":null,', '')
+        path.write_text(raw, encoding="utf-8")
+        loaded = load_state(path)
+        assert loaded.players[("ATP", "Smith A.")].rank is None
 
 
 class TestStaleness:
