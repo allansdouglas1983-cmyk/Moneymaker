@@ -217,3 +217,51 @@
   - registry entry tennis-data-couk (permitted, verified_by founder, recheck_by 2027-07-18)
   - residual-risk record in the rights doc; PASS void-forward if terms found narrower
   - paid fallbacks stood down; BASIC pilot not required for results
+- id: DR-TENNIS-FORECAST-LIT-001
+  title: Pre-off tennis forecasting methods with demonstrated out-of-sample improvement over
+    a market price; feature families with incremental value over an Elo-plus-serve baseline;
+    negative results
+  classification: ADVISORY
+  status: REQUESTED
+  requested: 2026-07-27
+  request: docs/research/requests/DR-TENNIS-FORECAST-LIT-001.md
+  blocking_scope: none — no work pauses
+  notes:
+  - asked because the measured residual gain is +0.001058 nats [+0.000635, +0.001471] over
+    63,576 matches and the obvious feature families are plausibly exhausted
+  - answer must distinguish INCREMENTAL value over our 22 features from value in isolation
+  - methods requiring paid data must be flagged unavailable, not recommended (founder ruled
+    out further data purchase 2026-07-27)
+- id: DR-TENNIS-MICROSTRUCTURE-001
+  title: Last-traded price versus the crossable best-back price pre-off; whether the
+    traded-through survival test is a recognised method and how it is biased; current UK
+    Betfair tennis commission mechanics
+  classification: BLOCKING
+  status: REQUESTED
+  requested: 2026-07-27
+  request: docs/research/requests/DR-TENNIS-MICROSTRUCTURE-001.md
+  blocking_scope: any MONEY claim derived from the BASIC archive; forecast-quality claims
+    continue unaffected
+  notes:
+  - BASIC carries no ladder and no traded volume; a return settled at LTP embeds an
+    invisible assumption that every claimed fill happened
+  - measured on 27,209 priced matches, both sides - SUPPORTED 64.4%, UNSUPPORTED 18.7%,
+    NO_EVIDENCE 16.9%; a naive settlement would credit 35% of fills the record does not support
+  - until answered, BASIC-derived returns are reported as hypothetical with the three-way
+    split shown, never as realised returns
+- id: DR-TENNIS-COHERENCE-METHOD-001
+  title: Inverting the Betfair derivative complex to an implied Match Odds probability -
+    whether the method is known, its documented failure modes, and the cheapest falsifying
+    diagnostic
+  classification: ADVISORY
+  status: REQUESTED
+  requested: 2026-07-27
+  request: docs/research/requests/DR-TENNIS-COHERENCE-METHOD-001.md
+  blocking_scope: none — implementation proceeds under the existing paired-benchmark discipline
+  notes:
+  - companion to DR-TENNIS-XMARKET-INDEPENDENCE-001 (EXT-XMARKET-002), which asks whether
+    derivatives carry independent information; this asks whether the INVERSION METHOD is known
+  - if the independence question resolves negative this method is worthless, which is the
+    cheapest outcome to learn
+  - the archive supplies the complex at scale - SET_BETTING 146,112, SET_WINNER 300,113,
+    NUMBER_OF_SETS 33,209, SET_CORRECT_SCORE 33,221, HANDICAP 32,859, COMBINED_TOTAL 20,865
