@@ -132,3 +132,14 @@ class TestServedProbability:
         assert row["won_a"] is True
         assert row["state_as_of"] == "2026-07-20"
         assert row["model_digest"] == mod.digest
+
+
+class TestProviderDamage:
+    def test_a_completed_match_dated_in_the_impossible_future_is_refused(self) -> None:
+        """Tennis-Data ships typo'd years (the linker's Junk-2099 class). A 'completed'
+        match dated years ahead of the state is damage, not a fixture, and scoring it
+        would plant an ungradeable phantom in an append-only ledger."""
+        m = match(match_date=dt.date(2029, 7, 20))
+        rows, exclusions = weekly_forecasts(snapshot(), model(), [m], set())
+        assert rows == []
+        assert exclusions["IMPLAUSIBLE_FUTURE_DATE"] == 1
