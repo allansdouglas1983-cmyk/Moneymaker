@@ -482,15 +482,120 @@ async function boardRefresh(): Promise<Response> {
   });
 }
 
+interface PlacedBet {
+  stake: number;
+  status: string;
+  pnl: number | null;
+}
+
+/** Settled losses against the ADR 0020 budget. Losses decrement; wins do NOT restore
+ *  (SPEC-060 semantics) — the budget is a floor on damage, not a rolling balance. */
+function budgetState(budget: string | null, bets: PlacedBet[]) {
+  const lost = bets.filter((b) => b.status === "LOST")
+    .reduce((a, b) => a + b.stake, 0);
+  const total = budget === null ? null : Number(budget);
+  return {
+    budget: total,
+    settled_losses: Math.round(lost * 100) / 100,
+    remaining: total === null ? null : Math.max(0, Math.round((total - lost) * 100) / 100),
+    exhausted: total !== null && lost >= total,
+  };
+}
+
+/**
+ * Record a bet the founder has ALREADY placed by hand on their own account. This
+ * flow places nothing — it is the trial's append-only memory (ADR 0020), and it is
+ * the only writer that can refuse: no budget set, or budget exhausted, means no row.
+ */
+async function recordBet(request: Request): Promise<Response> {
+  const body = await request.json().catch(() => ({}));
+  const matchKeyValue = String(body.match_key ?? "").trim();
+  const side = String(body.side ?? "").trim().toUpperCase();
+  const stake = Number(body.stake);
+  const matchedOdds = Number(body.matched_odds);
+
+  if (!matchKeyValue) return json({ error: "match_key is required." }, 400);
+  if (side !== "A" && side !== "B") return json({ error: "side must be A or B." }, 400);
+  if (!Number.isFinite(stake) || !(stake > 0)) {
+    return json({ error: "stake must be a positive number." }, 400);
+  }
+  if (!Number.isFinite(matchedOdds) || !(matchedOdds > 1)) {
+    return json({ error: "matched_odds must be a decimal above 1." }, 400);
+  }
+
+  const budget = await getConfig("real_loss_budget");
+  if (budget === null) {
+    return json({ error: "No loss budget is set. Set one first — the trial protocol " +
+      "refuses to record bets without a pre-set budget (ADR 0020)." }, 409);
+  }
+  const bets = await select<PlacedBet>("placed_bets?select=stake,status,pnl");
+  const state = budgetState(budget, bets);
+  if (state.exhausted) {
+    return json({ error: "The loss budget is exhausted. Recording is refused; " +
+      "topping up is a deliberate act, not a default (ADR 0020).", ...state }, 409);
+  }
+
+  const fixtures = await select<FixtureRow>(
+    "fixtures?match_key=eq." + encodeURIComponent(matchKeyValue));
+  const fixture = fixtures[0];
+  if (!fixture) return json({ error: "Unknown match_key — price the match first." }, 404);
+
+  const stored = await db("placed_bets", {
+    method: "POST",
+    body: JSON.stringify([{
+      match_key: fixture.match_key,
+      match_date: fixture.match_date,
+      tour: fixture.tour,
+      player_a: fixture.player_a,
+      player_b: fixture.player_b,
+      side,
+      stake,
+      matched_odds: matchedOdds,
+      commission: 0.02,
+    }]),
+  });
+  if (!stored.ok) return json({ error: await stored.text() }, 500);
+  return json({ ok: true, ...budgetState(budget, bets) });
+}
+
+async function setBudget(request: Request): Promise<Response> {
+  const body = await request.json().catch(() => ({}));
+  const amount = Number(body.amount);
+  if (!Number.isFinite(amount) || !(amount > 0)) {
+    return json({ error: "amount must be a positive number." }, 400);
+  }
+  const existing = await getConfig("real_loss_budget");
+  // Lowering is always allowed; raising an existing budget is the deliberate top-up
+  // path and must be explicit (SPEC-060 spirit: no code path silently increases it).
+  if (existing !== null && amount > Number(existing) && body.confirm_top_up !== true) {
+    return json({ error: "Raising the budget is a top-up. Pass confirm_top_up: true " +
+      "to do it deliberately." }, 409);
+  }
+  await setConfig("real_loss_budget", String(amount));
+  return json({ ok: true, budget: amount });
+}
+
 async function ledger(): Promise<Response> {
-  const predictions = await select<Record<string, unknown>>(
-    "predictions?select=match_key,match_date,player_a,player_b,status,edge_a,edge_b" +
-      "&order=created_at.desc&limit=100",
-  );
-  const settled = await select<Record<string, unknown>>(
-    "ledger?select=*&order=match_date.desc&limit=200",
-  );
-  return json({ predictions, settled });
+  const [predictions, settled, placed, budget] = await Promise.all([
+    select<Record<string, unknown>>(
+      "predictions?select=match_key,match_date,player_a,player_b,status,edge_a,edge_b" +
+        "&order=created_at.desc&limit=100"),
+    select<Record<string, unknown>>(
+      "ledger?select=*&order=match_date.desc&limit=200"),
+    select<PlacedBet & Record<string, unknown>>(
+      "placed_bets?select=*&order=placed_at.desc&limit=200"),
+    getConfig("real_loss_budget"),
+  ]);
+  return json({
+    predictions,
+    settled,
+    placed_bets: placed,
+    real: {
+      ...budgetState(budget, placed),
+      realised_pnl: Math.round(placed.reduce(
+        (a, b) => a + (typeof b.pnl === "number" ? b.pnl : 0), 0) * 100) / 100,
+    },
+  });
 }
 
 /**
@@ -657,6 +762,8 @@ Deno.serve(async (request: Request) => {
     if (path === "/ledger") return await ledger();
     if (path === "/scorecard") return await scorecard();
     if (request.method === "POST" && path === "/price") return await price(request);
+    if (request.method === "POST" && path === "/bet") return await recordBet(request);
+    if (request.method === "POST" && path === "/budget") return await setBudget(request);
     return await board();
   } catch (error) {
     // Fail loudly rather than returning something that looks right and is not.

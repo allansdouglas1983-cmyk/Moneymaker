@@ -295,6 +295,26 @@ function matchCard(row, index) {
       ${cell("On", escapeHtml(side) + " @ " + odds)}
     </div>
     <div class="why">${escapeHtml(row.reasons.join(" · "))}</div>
+    <button class="more" onclick="
+        var b=document.getElementById('bet${index}');
+        b.classList.toggle('hidden');
+      ">Record a bet I placed ▾</button>
+    <div id="bet${index}" class="hidden" style="margin-top:8px">
+      <div class="row">
+        <select id="betSide${index}">
+          <option value="A" ${row.best_side === "A" ? "selected" : ""}>${escapeHtml(f.player_a)}</option>
+          <option value="B" ${row.best_side === "B" ? "selected" : ""}>${escapeHtml(f.player_b)}</option>
+        </select>
+        <input id="betStake${index}" placeholder="Stake £" inputmode="decimal">
+        <input id="betOdds${index}" placeholder="Matched odds" inputmode="decimal"
+               value="${escapeHtml(String(odds))}">
+        <button class="go" onclick="recordBet('${escapeHtml(f.match_key)}', ${index})"
+                style="width:auto;padding:10px 14px">Record</button>
+      </div>
+      <div class="meta">Records a bet you already placed by hand — this page places
+        nothing. Flat stakes, and it refuses once the loss budget is spent.</div>
+      <div id="betMsg${index}"></div>
+    </div>
     ${contribRows ? `<button class="more" onclick="
         var d=document.getElementById('d${index}');
         d.classList.toggle('hidden');
@@ -351,6 +371,48 @@ async function refresh() {
   renderBoard();
 }
 
+function realBetsCard(data) {
+  const real = data.real || {};
+  const rows = (data.placed_bets || []).map((b) =>
+    `<tr><td>${escapeHtml(b.match_date)}</td>
+     <td>${escapeHtml(b.side === "A" ? b.player_a : b.player_b)} @ ${b.matched_odds}</td>
+     <td>£${b.stake}</td>
+     <td>${escapeHtml(b.status.replace(/_/g, " "))}</td>
+     <td>${b.pnl == null ? "—" : (b.pnl >= 0 ? "+" : "") + "£" + b.pnl}</td></tr>`).join("");
+  return `<div class="card">
+    <div class="players">Real bets — recorded by hand, placed by hand (ADR 0020)</div>
+    <div class="meta" style="margin-top:6px">
+      ${real.budget == null
+        ? "No loss budget set. The recording flow refuses bets until one exists."
+        : `Loss budget £${real.budget} &middot; settled losses £${real.settled_losses}
+           &middot; remaining £${real.remaining}
+           &middot; realised P&amp;L ${real.realised_pnl >= 0 ? "+" : ""}£${real.realised_pnl}
+           ${real.exhausted ? ` &middot; <span class="warnc">EXHAUSTED — recording refused</span>` : ""}`}
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="budgetAmount" placeholder="Set loss budget £" inputmode="decimal">
+      <button class="go" style="width:auto;padding:10px 14px" onclick="setBudget()">Set</button>
+    </div>
+    <div id="budgetMsg"></div>
+    ${rows ? `<table><thead><tr><th>Date</th><th>Bet</th><th>Stake</th><th>Status</th>
+      <th>P&amp;L</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
+    <div class="why" style="margin-top:8px">Flat stakes, hard budget, every bet recorded
+      before results are known. CHECK STATEMENT means a retirement or walkover — settle it
+      from your Betfair statement, which is the truth; this table is the hypothesis.</div>
+  </div>`;
+}
+
+async function setBudget() {
+  const amount = $("budgetAmount").value;
+  try {
+    const r = await api("/budget", { method: "POST",
+      body: JSON.stringify({ amount: Number(amount), confirm_top_up: true }) });
+    $("budgetMsg").innerHTML = `<div class="ok">Budget set: £${r.budget}</div>`;
+  } catch (e) {
+    $("budgetMsg").innerHTML = `<div class="err">${escapeHtml(e.message)}</div>`;
+  }
+}
+
 async function showLedger() {
   const [data, card] = await Promise.all([api("/ledger"), api("/scorecard")]);
   const d = card.denominator;
@@ -395,7 +457,7 @@ async function showLedger() {
      <td>${escapeHtml(r.player_a)} v ${escapeHtml(r.player_b)}</td>
      <td>${escapeHtml(r.status.replace(/_/g, " "))}</td>
      <td>${signed(Math.max(r.edge_a, r.edge_b))}</td></tr>`).join("");
-  $("viewLedger").innerHTML = scorecardHtml + `<div class="card">
+  $("viewLedger").innerHTML = realBetsCard(data) + scorecardHtml + `<div class="card">
     <div class="players">Recorded predictions</div>
     <div class="meta">Written before the match and never rewritten. A later view of the same
       match is a new row. Results join after settlement, through a separate table.</div>
@@ -408,6 +470,22 @@ async function showLedger() {
 }
 
 // --- wiring -------------------------------------------------------------------------
+async function recordBet(matchKey, index) {
+  const body = {
+    match_key: matchKey,
+    side: $("betSide" + index).value,
+    stake: $("betStake" + index).value,
+    matched_odds: $("betOdds" + index).value,
+  };
+  const out = $("betMsg" + index);
+  try {
+    const r = await api("/bet", { method: "POST", body: JSON.stringify(body) });
+    out.innerHTML = `<div class="ok">Recorded. Budget remaining: £${r.remaining}</div>`;
+  } catch (e) {
+    out.innerHTML = `<div class="err">${escapeHtml(e.message)}</div>`;
+  }
+}
+
 $("fAll").onclick = () => { boardFilter = "all"; renderBoard(); };
 $("fLikely").onclick = () => { boardFilter = "likely"; renderBoard(); };
 $("tabBoard").onclick = () => {

@@ -47,9 +47,12 @@ is the system working. **Treat every surprisingly good backtest as a suspected b
 - No import path from `research/scraping/` into anything that can place a bet.
 - No MCP connection to Betfair, account state, order state, or secrets.
 - **No other person's account and no alternate account may ever be used to bypass a
-  self-exclusion or account closure.** Exclusion status is a hard gate on ALL Betfair
-  account activity (data purchase included). No account creation, recovery, credential
-  use, or workaround while ADR 0015's block stands. Non-negotiable, permanent.
+  self-exclusion or account closure.** Non-negotiable, permanent (ADR 0015 directive 6).
+  ADR 0015's blocking state is SUPERSEDED by ADR 0020 (2026-07-29): the founder's own
+  account was restored through Betfair's own process after the historical exclusion
+  expired. Real-stake activity is founder-manual only, flat-stake, behind a hard
+  pre-set loss budget (ADR 0020 protocol). Nothing in this repository ever places,
+  cancels, or amends an order.
 
 ## Analytics consumer (ADR 0013)
 
