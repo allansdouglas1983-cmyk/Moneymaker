@@ -4,7 +4,7 @@
 # which meant the whole system waited on one secret reaching one settings page. That is now
 # inverted. This workflow rebuilds the walk-forward rating state and commits it to the
 # repository, using the token GitHub already gives it. The database pulls the file itself on
-# a pg_cron schedule (tennis.pull_state, Mondays 07:00 UTC, an hour after this).
+# a pg_cron schedule (tennis.pull_state, Tuesdays 07:00 UTC, an hour after this).
 #
 # So there is no Supabase secret to add, and none to leak, because none exists.
 name: tennis-edge
@@ -18,9 +18,11 @@ on:
       - 'artifacts/**'
       - '.github/workflows/tennis-edge.yml'
   schedule:
-    # Monday 06:00 UTC. Tennis-Data publishes a week's results and closing prices together,
-    # so there is nothing new to absorb before the week has finished.
-    - cron: '0 6 * * 1'
+    # Tuesday 06:00 UTC. The provider's own Last-Modified stamps (S8 pre-check, TE-0029)
+    # show the season files publish Sunday/Monday EVENING - a Monday-morning run misses
+    # the Monday drop and serves it a week late. Tuesday captures both tours' updates at
+    # the measured publication floor; cadence stays weekly, as the provider does.
+    - cron: '0 6 * * 2'
   workflow_dispatch:
 
 concurrency:
