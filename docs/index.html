@@ -317,7 +317,7 @@ async function refresh() {
     (stale > 14 ? ` &middot; <span class="warnc">STALE</span>` : "");
   $("board").innerHTML = data.rows.length
     ? data.rows.map(matchCard).join("")
-    : `<div class="empty">Nothing priced yet. Enter a match and its Betfair back prices above.</div>`;
+    : `<div class="empty">Nothing priced yet. The board fills itself with Betfair Exchange prices three times a day. Enter a match above only to override with the price on your own screen.</div>`;
 }
 
 async function showLedger() {

@@ -23,6 +23,15 @@ import {
   reasonsFor,
   statusFor,
 } from "./scoring.ts";
+import {
+  bestOfFor,
+  type FeedBookmaker,
+  normalizeName,
+  pickPrices,
+  resolvePlayer,
+  surfaceFor,
+  tourOf,
+} from "./board.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -286,20 +295,46 @@ async function price(request: Request): Promise<Response> {
   // field here that could rewrite it afterwards.
   const ctx = await context();
   if (!ctx.model) return json({ error: "no current model row" }, 503);
-  const row = assess(fixture, ctx.states, ctx.meetings, ctx.model, ctx.asOf, ctx.staleDays);
+  const row = await mintPrediction(fixture, ctx);
+  return json({ ok: true, row: wire(row) });
+}
+
+/** Single-row config store; service-role only (RLS with no policies). */
+async function getConfig(key: string): Promise<string | null> {
+  const rows = await select<{ value: string }>(
+    "config?key=eq." + encodeURIComponent(key) + "&select=value");
+  return rows[0]?.value ?? null;
+}
+
+async function setConfig(key: string, value: string): Promise<void> {
+  await db("config?on_conflict=key", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify([{ key, value, updated_at: new Date().toISOString() }]),
+  });
+}
+
+/** Mint the append-only prediction row for a fixture — the identical path for manual
+ *  entries and the automated feed, so the ledger never contains two kinds of number. */
+async function mintPrediction(
+  fixture: FixtureRow,
+  ctx: Awaited<ReturnType<typeof context>>,
+): Promise<ReturnType<typeof assess>> {
+  const row = assess(fixture, ctx.states, ctx.meetings, ctx.model!, ctx.asOf,
+                     ctx.staleDays);
   const p = row.prediction;
   await db("predictions", {
     method: "POST",
     body: JSON.stringify([{
-      match_key: key,
-      match_date: date,
-      tour,
-      player_a: playerA,
-      player_b: playerB,
+      match_key: fixture.match_key,
+      match_date: fixture.match_date,
+      tour: fixture.tour,
+      player_a: fixture.player_a,
+      player_b: fixture.player_b,
       surface: fixture.surface,
-      best_of: bestOf,
-      odds_a: oddsA,
-      odds_b: oddsB,
+      best_of: fixture.best_of,
+      odds_a: fixture.odds_a,
+      odds_b: fixture.odds_b,
       market_probability_a: p.marketProbabilityA,
       probability_a: p.probabilityA,
       fair_odds_a: p.fairOddsA,
@@ -314,11 +349,137 @@ async function price(request: Request): Promise<Response> {
       reasons: row.reasons,
       status: row.status,
       recommendation: "NOT_EVALUATED",
-      model_digest: ctx.model.digest,
+      model_digest: ctx.model!.digest,
       state_as_of: ctx.asOf,
     }]),
   });
-  return json({ ok: true, row: wire(row) });
+  return row;
+}
+
+const ODDS_HOST = "https://api.the-odds-api.com";
+/** uk region carries the exchange (betfair_ex_uk) plus smarkets/matchbook, at one
+ *  credit per tournament per refresh — the 500/month free tier holds even in slam
+ *  weeks at three refreshes a day. */
+const ODDS_REGIONS = "uk";
+const REFRESH_MIN_HOURS = 6;
+
+interface FeedEvent {
+  commence_time: string;
+  home_team: string;
+  away_team: string;
+  bookmakers: FeedBookmaker[];
+}
+
+/**
+ * The board fills itself: active tennis tournaments -> exchange odds -> corpus-named
+ * fixtures -> the identical mint path manual entries use. Public but throttled: a
+ * caller cannot spend credits more than once per REFRESH_MIN_HOURS, and the response
+ * carries counts, never data. Unmapped names become display-only fixtures (the site
+ * already degrades them to INSUFFICIENT_DATA honestly); they never mint ledger rows.
+ */
+async function boardRefresh(): Promise<Response> {
+  const apiKey = await getConfig("odds_api_key");
+  if (!apiKey) return json({ error: "no odds_api_key configured" }, 503);
+
+  const last = await getConfig("odds_last_refresh");
+  const ageHours = last
+    ? (Date.now() - Date.parse(last)) / 3600000
+    : Number.POSITIVE_INFINITY;
+  if (ageHours < REFRESH_MIN_HOURS) {
+    return json({ skipped: true, last_refresh: last,
+                  next_after_hours: REFRESH_MIN_HOURS - ageHours });
+  }
+  // Stamp before spending: a failing upstream must not be retried into credit drain.
+  await setConfig("odds_last_refresh", new Date().toISOString());
+
+  const sportsResponse = await fetch(ODDS_HOST + "/v4/sports/?apiKey=" + apiKey);
+  if (!sportsResponse.ok) {
+    return json({ error: "sports list: " + sportsResponse.status }, 502);
+  }
+  const sports = (await sportsResponse.json() as Array<{ key: string; active: boolean }>)
+    .filter((s) => s.active && tourOf(s.key) !== null);
+
+  const ctx = await context();
+  if (!ctx.model) return json({ error: "no current model row" }, 503);
+  const indexByTour = new Map<string, Map<string, string>>();
+  for (const [key] of ctx.states) {
+    const [tour, player] = [key.slice(0, key.indexOf("|")),
+                            key.slice(key.indexOf("|") + 1)];
+    let index = indexByTour.get(tour);
+    if (!index) indexByTour.set(tour, index = new Map());
+    index.set(normalizeName(player), player);
+  }
+
+  let fixtures = 0, minted = 0, unmapped = 0, unpriced = 0;
+  let creditsRemaining: string | null = null;
+  const books: Record<string, number> = {};
+  const today = new Date().toISOString().slice(0, 10);
+
+  for (const sport of sports) {
+    const response = await fetch(
+      ODDS_HOST + "/v4/sports/" + sport.key + "/odds/?regions=" + ODDS_REGIONS +
+        "&markets=h2h&apiKey=" + apiKey);
+    if (!response.ok) continue;
+    creditsRemaining = response.headers.get("x-requests-remaining") ?? creditsRemaining;
+    const tour = tourOf(sport.key)!;
+    const index = indexByTour.get(tour) ?? new Map<string, string>();
+
+    for (const event of await response.json() as FeedEvent[]) {
+      const picked = pickPrices(event.bookmakers, event.home_team, event.away_team);
+      if (picked === null) {
+        unpriced += 1;
+        continue;
+      }
+      books[picked.book] = (books[picked.book] ?? 0) + 1;
+      const mappedHome = resolvePlayer(event.home_team, index);
+      const mappedAway = resolvePlayer(event.away_team, index);
+      const playerA = mappedHome ?? event.home_team;
+      const playerB = mappedAway ?? event.away_team;
+      const date = event.commence_time.slice(0, 10);
+      const fixture: FixtureRow = {
+        match_key: matchKey(date, tour, playerA, playerB),
+        match_date: date,
+        tour,
+        player_a: playerA,
+        player_b: playerB,
+        surface: surfaceFor(sport.key),
+        best_of: bestOfFor(sport.key),
+        odds_a: String(picked.home),
+        odds_b: String(picked.away),
+        source: "ODDS_API_" + picked.book.toUpperCase(),
+      };
+      const stored = await db("fixtures?on_conflict=match_key", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates" },
+        body: JSON.stringify([{ ...fixture, updated_at: new Date().toISOString() }]),
+      });
+      if (!stored.ok) continue;
+      fixtures += 1;
+
+      if (mappedHome === null || mappedAway === null) {
+        unmapped += 1;
+        continue;
+      }
+      // One auto-minted ledger row per match per UTC day: odds drift within a day
+      // updates the board but never spams the append-only record.
+      const existing = await select<{ created_at: string }>(
+        "predictions?match_key=eq." + encodeURIComponent(fixture.match_key) +
+          "&select=created_at&order=created_at.desc&limit=1");
+      if (existing[0]?.created_at?.slice(0, 10) === today) continue;
+      await mintPrediction(fixture, ctx);
+      minted += 1;
+    }
+  }
+  return json({
+    refreshed: true,
+    tournaments: sports.map((s) => s.key),
+    fixtures_upserted: fixtures,
+    predictions_minted: minted,
+    unmapped_names: unmapped,
+    unpriced_matches: unpriced,
+    books_used: books,
+    credits_remaining: creditsRemaining,
+  });
 }
 
 async function ledger(): Promise<Response> {
@@ -487,6 +648,9 @@ Deno.serve(async (request: Request) => {
     // Open on purpose: it carries no prediction and no personal data, and it is how both a
     // person and a monitor can tell whether the model and state actually loaded.
     if (path === "/health") return await health();
+    // Public but self-throttled: it can spend at most one refresh per six hours no
+    // matter who calls it, and answers with counts, never data. The cron poke uses it.
+    if (path === "/board-refresh") return await boardRefresh();
 
     if (!await owner(request)) return json({ error: "not authorised" }, 401);
 
