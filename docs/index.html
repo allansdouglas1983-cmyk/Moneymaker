@@ -140,6 +140,10 @@ button.go:disabled{opacity:.55;cursor:default}
         </div>
         <button class="go" type="submit">Price it</button>
       </form>
+      <nav>
+        <button id="fAll" aria-selected="true">All matches</button>
+        <button id="fLikely" aria-selected="false">Likely winners the market underrates</button>
+      </nav>
       <div id="board"></div>
     </div>
 
@@ -308,6 +312,34 @@ function matchCard(row, index) {
   </div>`;
 }
 
+// The founder's requested lens (2026-07-29): matches where the model's preferred side
+// PROBABLY WINS (its probability is above half) and the model backs it harder than the
+// market prices it. A display filter over the same rows — nothing is re-scored.
+let boardRows = [];
+let boardFilter = "all";
+
+function likelyWinner(row) {
+  const p = row.prediction;
+  const modelP = row.best_side === "A" ? p.probability_a : p.probability_b;
+  return modelP > 0.5 && row.best_edge > 0;
+}
+
+function renderBoard() {
+  const rows = boardFilter === "likely" ? boardRows.filter(likelyWinner) : boardRows;
+  for (const id of ["fAll", "fLikely"]) {
+    $(id).setAttribute("aria-selected",
+      (id === "fLikely") === (boardFilter === "likely") ? "true" : "false");
+  }
+  $("board").innerHTML = rows.length
+    ? rows.map(matchCard).join("")
+    : (boardFilter === "likely"
+      ? `<div class="empty">No match today where the model's pick is both the probable
+         winner and priced better than the market has it. That is a normal day — edge
+         lives on outsiders more often than favourites — and an empty view here is the
+         model being honest, not idle.</div>`
+      : `<div class="empty">Nothing priced yet. The board fills itself with Betfair Exchange prices three times a day. Enter a match above only to override with the price on your own screen.</div>`);
+}
+
 async function refresh() {
   const data = await api("/board");
   const stale = data.state_stale_days;
@@ -315,9 +347,8 @@ async function refresh() {
     trained through ${escapeHtml(data.model_trained_through)} &middot;
     ${data.state_players} players as of ${escapeHtml(data.state_as_of)} (${stale}d)` +
     (stale > 14 ? ` &middot; <span class="warnc">STALE</span>` : "");
-  $("board").innerHTML = data.rows.length
-    ? data.rows.map(matchCard).join("")
-    : `<div class="empty">Nothing priced yet. The board fills itself with Betfair Exchange prices three times a day. Enter a match above only to override with the price on your own screen.</div>`;
+  boardRows = data.rows;
+  renderBoard();
 }
 
 async function showLedger() {
@@ -377,6 +408,8 @@ async function showLedger() {
 }
 
 // --- wiring -------------------------------------------------------------------------
+$("fAll").onclick = () => { boardFilter = "all"; renderBoard(); };
+$("fLikely").onclick = () => { boardFilter = "likely"; renderBoard(); };
 $("tabBoard").onclick = () => {
   $("tabBoard").setAttribute("aria-selected", "true");
   $("tabLedger").setAttribute("aria-selected", "false");
