@@ -155,11 +155,20 @@ jobs:
           # A week with no new results is an ordinary week, not a failure.
           git diff --cached --quiet && echo "nothing changed" && exit 0
           git commit -m "refresh: walk-forward state as of $(date -u +%F)"
+          # The branch may have moved during the hour this job runs; rebase the artifact
+          # commit onto the tip rather than dying non-fast-forward at the finish line.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push
 
-      - name: Confirm the site is answering
+      - name: Confirm the site is answering AND serving the committed model
         run: |
           set -euo pipefail
-          curl -sS --fail \
-            https://sujrylzzxcqxxfygptns.supabase.co/functions/v1/tips/health | tee /dev/stderr \
-            | grep -q '"ok":true'
+          health=$(curl -sS --fail \
+            https://sujrylzzxcqxxfygptns.supabase.co/functions/v1/tips/health)
+          echo "$health"
+          echo "$health" | grep -q '"ok":true'
+          # The digest the site serves must be the digest this repo commits. A mismatch
+          # means predictions cite a model this history cannot reproduce — fail loudly.
+          artifact=$(python -c "import json; print(json.load(open('artifacts/residual-model-v3.json'))['digest'])")
+          echo "$health" | grep -qF "\"model_digest\":\"$artifact\"" \
+            || { echo "SERVED MODEL DIGEST != COMMITTED ARTIFACT ($artifact)"; exit 1; }

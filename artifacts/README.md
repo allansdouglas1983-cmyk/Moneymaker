@@ -1,5 +1,12 @@
 # Frozen artefacts
 
+**The SERVED model is `residual-model-v3.json`** (22 features; its digest is what the
+site's `/health` reports and what every prediction and forecast row cites). The plain
+`residual-model.json` beside it is the earlier 10-feature v1 — it stays because the frozen
+`weekly.py` policy v2 names it, and a frozen policy keeps its inputs — but nothing served
+reads it. The first refresh run's grading step loaded it by mistake and the feature-set
+guard refused loudly (2026-07-29); tools that grade or emit vectors must point at v3.
+
 `residual-model.json` is the fitted residual model — coefficients, training window,
 feature-set version and a digest.
 
