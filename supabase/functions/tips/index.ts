@@ -338,14 +338,41 @@ async function ledger(): Promise<Response> {
  * staleness thresholds, not the model. Single-user volume can gate nothing, and this
  * number is never comparable to the 63,676-match research intervals.
  */
+// Day-clustered percentile interval, deterministically seeded so two loads of the page
+// show the same numbers. Null below five distinct days — no interval rather than a
+// misleading one.
+function interval95(days: number[][], seedStart: number): [number, number] | null {
+  if (days.length < 5) return null;
+  let seed = seedStart;
+  const random = () => {
+    // Park-Miller: deterministic across loads; statistical polish is irrelevant here.
+    seed = (seed * 48271) % 2147483647;
+    return seed / 2147483647;
+  };
+  const draws: number[] = [];
+  for (let d = 0; d < 2000; d++) {
+    const sample: number[] = [];
+    for (let i = 0; i < days.length; i++) {
+      sample.push(...days[Math.floor(random() * days.length)]);
+    }
+    draws.push(sample.reduce((a, b) => a + b, 0) / sample.length);
+  }
+  draws.sort((a, b) => a - b);
+  return [draws[Math.floor(0.025 * draws.length)],
+          draws[Math.floor(0.975 * draws.length)]];
+}
+
 async function scorecard(): Promise<Response> {
-  const [predictions, ledger, resultDays] = await Promise.all([
+  const [predictions, ledger, resultDays, forecasts] = await Promise.all([
     select<{ match_key: string; match_date: string; tour: string; created_at: string }>(
       "predictions?select=match_key,match_date,tour,created_at"),
     select<{ match_key: string; match_date: string; a_won: boolean; completion: string;
              model_log_loss: number | null; market_log_loss: number | null }>(
       "ledger?select=match_key,match_date,a_won,completion,model_log_loss,market_log_loss"),
     select<{ match_date: string; tour: string }>("results?select=match_date,tour"),
+    select<{ match_date: string; p_model: number; p_market: number; won_a: boolean;
+             state_as_of: string }>(
+      "forecasts?select=match_date,p_model,p_market,won_a,state_as_of"),
   ]);
 
   // The declared vintage policy: one row per match, the last created on or before the
@@ -385,28 +412,37 @@ async function scorecard(): Promise<Response> {
   const days = [...byDay.values()];
   const all = days.flat();
   const mean = all.length ? all.reduce((a, b) => a + b, 0) / all.length : null;
-  let interval: [number, number] | null = null;
-  if (days.length >= 5) {
-    let seed = 20260728;
-    const random = () => {
-      // Park-Miller: deterministic across loads; statistical polish is irrelevant here.
-      seed = (seed * 48271) % 2147483647;
-      return seed / 2147483647;
-    };
-    const draws: number[] = [];
-    for (let d = 0; d < 2000; d++) {
-      const sample: number[] = [];
-      for (let i = 0; i < days.length; i++) {
-        sample.push(...days[Math.floor(random() * days.length)]);
-      }
-      draws.push(sample.reduce((a, b) => a + b, 0) / sample.length);
-    }
-    draws.sort((a, b) => a - b);
-    interval = [draws[Math.floor(0.025 * draws.length)],
-                draws[Math.floor(0.975 * draws.length)]];
+  const interval = interval95(days, 20260728);
+
+  // The automatic ledger: the served state graded weekly against Bet365 on every
+  // completed corpus match — no manual entry involved, so it accumulates regardless.
+  const logLoss = (p: number, won: boolean) =>
+    -Math.log(Math.min(Math.max(won ? p : 1 - p, 1e-6), 1 - 1e-6));
+  const autoByDay = new Map<string, number[]>();
+  for (const f of forecasts) {
+    const diff = logLoss(f.p_market, f.won_a) - logLoss(f.p_model, f.won_a);
+    const day = autoByDay.get(f.match_date) ?? [];
+    day.push(diff);
+    autoByDay.set(f.match_date, day);
   }
+  const autoDays = [...autoByDay.values()];
+  const autoAll = autoDays.flat();
+  const autoMean = autoAll.length
+    ? autoAll.reduce((a, b) => a + b, 0) / autoAll.length : null;
+  const autoInterval = interval95(autoDays, 20260729);
 
   return json({
+    automatic: {
+      graded: forecasts.length,
+      distinct_days: autoDays.length,
+      state_vintages: new Set(forecasts.map((f) => f.state_as_of)).size,
+      paired_log_loss_gain: autoMean,
+      interval_95: autoInterval,
+      note: "The committed weekly state graded against the Bet365 book on every " +
+        "completed corpus match — knowledge-time enforced by git history, no manual " +
+        "entry involved. Bet365 baseline, not Betfair: never comparable to the manual " +
+        "ledger's exchange prices, and it feeds nothing served.",
+    },
     denominator: {
       matches_predicted: byMatch.size,
       graded: graded.size,

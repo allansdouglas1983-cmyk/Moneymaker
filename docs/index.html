@@ -341,7 +341,24 @@ async function showLedger() {
       settle after the weekly results pull; the denominator above shows what is waiting.</div>`}
     <div class="why" style="margin-top:8px">${escapeHtml(card.interval_note || "")}
       ${escapeHtml(card.non_gating)}</div>
-  </div>`;
+  </div>` + (card.automatic ? `<div class="card">
+    <div class="players">Automatic scorecard — the weekly state vs the book, no typing involved</div>
+    <div class="meta" style="margin-top:6px">
+      ${card.automatic.graded} matches graded &middot; ${card.automatic.distinct_days} days
+      &middot; ${card.automatic.state_vintages} weekly state${card.automatic.state_vintages === 1 ? "" : "s"}
+    </div>
+    ${card.automatic.paired_log_loss_gain != null ? `<div class="grid" style="margin-top:10px">
+      ${cell("Log-loss gain", (card.automatic.paired_log_loss_gain >= 0 ? "+" : "")
+        + card.automatic.paired_log_loss_gain.toFixed(4) + " nats")}
+      ${cell("95% interval", card.automatic.interval_95
+        ? "[" + card.automatic.interval_95[0].toFixed(4) + ", "
+          + card.automatic.interval_95[1].toFixed(4) + "]"
+        : "n/a")}
+    </div>` : `<div class="empty" style="padding:14px">Accumulates from the first weekly
+      refresh after a state has been live for a week — every completed tour match counts,
+      whether or not anything was typed in.</div>`}
+    <div class="why" style="margin-top:8px">${escapeHtml(card.automatic.note || "")}</div>
+  </div>` : "");
   const rows = data.predictions.map((r) =>
     `<tr><td>${escapeHtml(r.match_date)}</td>
      <td>${escapeHtml(r.player_a)} v ${escapeHtml(r.player_b)}</td>
