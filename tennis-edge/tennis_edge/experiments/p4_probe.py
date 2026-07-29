@@ -18,9 +18,16 @@ The derivative complex is therefore SET_BETTING + SET_WINNER:
   q_i proportional to 1/LTP_i, normalised; T1 sums q over A's scorelines. Among multiple
   SET_BETTING markets the one with most pre-snapshot prints wins (tie: lowest market_id).
 - T2 = SET_WINNER-implied P(A wins set 1), same print/recency rules, two runners
-  normalised. An event with more than one candidate SET_WINNER market is refused as
-  ambiguous. DECLARED ASSUMPTION: a single pre-off-priced SET_WINNER market is the set-1
-  market (later-set markets have no meaningful pre-off book).
+  normalised. GOVERNED PLUMBING CORRECTION (first run, 2026-07-29, zero rows scored, no
+  outcome observed): the archive stores duplicate copies of market members, and events
+  list SET_WINNER in per-set pairs of which only the set-1 market trades pre-off. The
+  original "exactly one SET_WINNER market" rule therefore refused every event on
+  duplicate copies alone. Corrected rule: markets deduplicate by market_id (keeping the
+  copy with the most observations, as the S2 cache does); the candidate set is the
+  DISTINCT SET_WINNER markets passing the T-600 completeness/recency read; exactly one
+  candidate is required. DECLARED ASSUMPTION (unchanged): that sole pre-off-priced
+  SET_WINNER market is the set-1 market — its per-event siblings show zero pre-off
+  prints. More than one distinct candidate still refuses as ambiguous.
 - Format comes from the corpus (best_of; §2.1 — never from prices): 3 maps to
   BO3_AD_TB7_ALL_SETS, 5 to BO5_AD_TB10_FINAL_AT_6_6. DECLARED APPROXIMATION: WTA-slam
   deciders use a TB10 the BO3 mapping renders as TB7 — the difference lives only in the
@@ -258,8 +265,9 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
         }
     print(f"events with attributed sides and formats: {len(events):,}")
 
-    # Derivative complexes for those events.
-    complexes: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
+    # Derivative complexes for those events. The archive stores duplicate copies of
+    # market members: deduplicate by market_id, keeping the copy with most observations.
+    by_market: dict[str, dict[str, dict]] = defaultdict(dict)
     with DERIVATIVES.open(encoding="utf-8") as handle:
         handle.readline()
         for line in handle:
@@ -269,14 +277,23 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
             event = str(drow.get("event_id"))
             if event not in events:
                 continue
+            seen = by_market[event].get(drow["market_id"])
+            if seen is not None and seen["n_obs"] >= len(drow["ltp"]):
+                continue
             prints: dict[int, list[tuple[int, float]]] = defaultdict(list)
             for ts, sel, price in drow["ltp"]:
                 prints[sel].append((ts, float(price)))
-            complexes[event][drow["market_type"]].append({
+            by_market[event][drow["market_id"]] = {
                 "market_id": drow["market_id"],
+                "market_type": drow["market_type"],
+                "n_obs": len(drow["ltp"]),
                 "runners": {r["id"]: r["name"] for r in drow["runners"]},
                 "prints": prints,
-            })
+            }
+    complexes: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
+    for event, markets_of in by_market.items():
+        for mkt in markets_of.values():
+            complexes[event][mkt["market_type"]].append(mkt)
 
     rows = []
     for event, info in events.items():
@@ -287,10 +304,21 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
         if "SET_WINNER" not in cx:
             excl["NO_SET_WINNER"] += 1
             continue
-        if len(cx["SET_WINNER"]) != 1:
+        cutoff = info["off_ms"] - SNAPSHOT * 1000
+
+        # Candidate = distinct SET_WINNER market passing the T-600 completeness read.
+        sw_candidates = [
+            m for m in cx["SET_WINNER"]
+            if len(m["runners"]) == 2
+            and _implied({str(sel): m["prints"].get(sel, []) for sel in m["runners"]},
+                         cutoff) is not None
+        ]
+        if not sw_candidates:
+            excl["SET_WINNER_INCOMPLETE"] += 1
+            continue
+        if len(sw_candidates) != 1:
             excl["AMBIGUOUS_SET_WINNER"] += 1
             continue
-        cutoff = info["off_ms"] - SNAPSHOT * 1000
 
         # SET_BETTING selection: most pre-snapshot prints, tie -> lowest market_id.
         def _n_pre(mkt: dict) -> int:
@@ -324,12 +352,12 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
             continue
         t1 = sum(q[str(sel)] for sel in a_sels)
 
-        sw = cx["SET_WINNER"][0]
-        if bf_a not in sw["runners"].values() or len(sw["runners"]) != 2:
+        sw = sw_candidates[0]
+        if bf_a not in sw["runners"].values():
             excl["SET_WINNER_NAME_MISMATCH"] += 1
             continue
         p = _implied({str(sel): sw["prints"].get(sel, []) for sel in sw["runners"]}, cutoff)
-        if p is None:
+        if p is None:  # unreachable by construction of the candidate set
             excl["SET_WINNER_INCOMPLETE"] += 1
             continue
         t2 = sum(v for sel, v in ((s, p[str(s)]) for s in sw["runners"])
