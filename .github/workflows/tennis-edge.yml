@@ -83,13 +83,38 @@ jobs:
           python-version: '3.11'
       - run: pip install --quiet pytest openpyxl xlrd
 
-      - name: Rebuild walk-forward state
+      # A fresh runner has no corpus, and build_state refuses to guess: without this
+      # step the whole job dies at "no corpus vintage on disk". (Latent from the first
+      # version — the scheduled job had never actually run when this was found.)
+      - name: Fetch the corpus (Sackmann archive + Tennis-Data vintages)
         env:
           TENNIS_EDGE_DATA: ${{ runner.temp }}/tennis-data
         working-directory: tennis-edge
         run: |
           set -euo pipefail
           mkdir -p "$TENNIS_EDGE_DATA"
+          python -m tennis_edge.archive
+          python -c "
+          import datetime as dt
+          from tennis_edge.refresh import refresh
+          print(refresh(now_utc=dt.datetime.now(dt.timezone.utc)).report())
+          "
+
+      # BEFORE the rebuild, on purpose: the committed live-state.json is last week's
+      # state, whose pre-match existence git history proves. Scoring with this week's
+      # state would grade the model on results it had already absorbed.
+      - name: Grade last week's matches with the state that predicted them
+        env:
+          TENNIS_EDGE_DATA: ${{ runner.temp }}/tennis-data
+        working-directory: tennis-edge
+        run: python tools/export_forecasts.py
+
+      - name: Rebuild walk-forward state
+        env:
+          TENNIS_EDGE_DATA: ${{ runner.temp }}/tennis-data
+        working-directory: tennis-edge
+        run: |
+          set -euo pipefail
           python -c "
           import datetime as dt
           from tennis_edge.live_state import build_state, save_state
@@ -121,7 +146,8 @@ jobs:
           set -euo pipefail
           git config user.name  "tennis-edge refresh"
           git config user.email "noreply@github.com"
-          git add artifacts/live-state.json artifacts/results.json supabase/functions/tips/golden.json
+          git add artifacts/live-state.json artifacts/results.json \
+                  artifacts/forecasts.json supabase/functions/tips/golden.json
           # A week with no new results is an ordinary week, not a failure.
           git diff --cached --quiet && echo "nothing changed" && exit 0
           git commit -m "refresh: walk-forward state as of $(date -u +%F)"
