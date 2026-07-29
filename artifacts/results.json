@@ -1,6 +1,6 @@
 {
  "kind": "tennis-edge-results-v1",
- "corpus_vintage": "vintage-2026-07-26",
+ "corpus_vintage": "vintage-2026-07-29",
  "window_days": 120,
  "rows": [
   {
@@ -14194,6 +14194,902 @@
    "key_b": "sakkari m",
    "winner_key": "krejcikova b",
    "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "basilashvili n",
+   "key_b": "torres t",
+   "winner_key": "torres t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "buse i",
+   "key_b": "kopriva v",
+   "winner_key": "buse i",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "cina f",
+   "key_b": "diaz acosta f",
+   "winner_key": "diaz acosta f",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "droguet t",
+   "key_b": "ugo carabelli c",
+   "winner_key": "droguet t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "ferreira silva f",
+   "key_b": "van assche l",
+   "winner_key": "van assche l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "hanfmann y",
+   "key_b": "neumayer l",
+   "winner_key": "hanfmann y",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "martinez p",
+   "key_b": "rocha h",
+   "winner_key": "martinez p",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "muller a",
+   "key_b": "navone m",
+   "winner_key": "navone m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "ATP",
+   "key_a": "rodionov j",
+   "key_b": "schwaerzler jj",
+   "winner_key": "rodionov j",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "aksu a",
+   "key_b": "costoulas s",
+   "winner_key": "aksu a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "bondar a",
+   "key_b": "uchijima m",
+   "winner_key": "bondar a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "bouzas maneiro j",
+   "key_b": "bouzkova m",
+   "winner_key": "bouzkova m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "dodin o",
+   "key_b": "oktiabreva a",
+   "winner_key": "dodin o",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "havlickova l",
+   "key_b": "parks a",
+   "winner_key": "havlickova l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "kalinina a",
+   "key_b": "quevedo k",
+   "winner_key": "kalinina a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "lee cy",
+   "key_b": "podrez v",
+   "winner_key": "lee cy",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "podoroska n",
+   "key_b": "stusek j",
+   "winner_key": "stusek j",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "ruzic a",
+   "key_b": "salkova d",
+   "winner_key": "salkova d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-20",
+   "tour": "WTA",
+   "key_a": "seidel e",
+   "key_b": "snigur d",
+   "winner_key": "snigur d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "altmaier d",
+   "key_b": "collignon r",
+   "winner_key": "altmaier d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "baez s",
+   "key_b": "kecmanovic m",
+   "winner_key": "baez s",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "borges n",
+   "key_b": "luz o",
+   "winner_key": "borges n",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "bueno g",
+   "key_b": "pereira t",
+   "winner_key": "bueno g",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "burruchaga r",
+   "key_b": "wawrinka s",
+   "winner_key": "burruchaga r",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "carreno busta p",
+   "key_b": "gaubas v",
+   "winner_key": "carreno busta p",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "cerundolo jm",
+   "key_b": "trungelliti m",
+   "winner_key": "trungelliti m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "de jong j",
+   "key_b": "skatov t",
+   "winner_key": "skatov t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "djere l",
+   "key_b": "halys q",
+   "winner_key": "halys q",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "faria j",
+   "key_b": "van de zandschulp b",
+   "winner_key": "faria j",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "feldbausch k",
+   "key_b": "vallejo d",
+   "winner_key": "feldbausch k",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "jacquet k",
+   "key_b": "merida aguilar d",
+   "winner_key": "jacquet k",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "molcan a",
+   "key_b": "ofner s",
+   "winner_key": "molcan a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "ATP",
+   "key_a": "shevchenko a",
+   "key_b": "struff jl",
+   "winner_key": "struff jl",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "avanesyan e",
+   "key_b": "rus a",
+   "winner_key": "avanesyan e",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "barthel m",
+   "key_b": "putintseva y",
+   "winner_key": "putintseva y",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "bartunkova n",
+   "key_b": "yuan y",
+   "winner_key": "bartunkova n",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "bejlek s",
+   "key_b": "blinkova a",
+   "winner_key": "bejlek s",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "carle m",
+   "key_b": "niemeier j",
+   "winner_key": "carle m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "charaeva a",
+   "key_b": "sorribes tormo s",
+   "winner_key": "charaeva a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "erjavec v",
+   "key_b": "romero gormaz l",
+   "winner_key": "romero gormaz l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "fruhvirtova l",
+   "key_b": "krejcikova b",
+   "winner_key": "krejcikova b",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "gao x",
+   "key_b": "tagger l",
+   "winner_key": "tagger l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "hon p",
+   "key_b": "valentova t",
+   "winner_key": "valentova t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "hontama m",
+   "key_b": "parry d",
+   "winner_key": "hontama m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "joint m",
+   "key_b": "samson l",
+   "winner_key": "joint m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "kovackova j",
+   "key_b": "tararudee l",
+   "winner_key": "tararudee l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "kraus s",
+   "key_b": "semenistaja d",
+   "winner_key": "kraus s",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "noha akugue n",
+   "key_b": "steiner v",
+   "winner_key": "noha akugue n",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "oliynykova o",
+   "key_b": "schunk n",
+   "winner_key": "oliynykova o",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "pridankina e",
+   "key_b": "udvardy p",
+   "winner_key": "udvardy p",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-21",
+   "tour": "WTA",
+   "key_a": "sasnovich a",
+   "key_b": "timofeeva m",
+   "winner_key": "timofeeva m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "altmaier d",
+   "key_b": "molcan a",
+   "winner_key": "molcan a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "baez s",
+   "key_b": "rinderknech a",
+   "winner_key": "baez s",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "blockx a",
+   "key_b": "jacquet k",
+   "winner_key": "blockx a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "borges n",
+   "key_b": "burruchaga r",
+   "winner_key": "burruchaga r",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "bublik a",
+   "key_b": "diaz acosta f",
+   "winner_key": "bublik a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "buse i",
+   "key_b": "feldbausch k",
+   "winner_key": "buse i",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "droguet t",
+   "key_b": "gaston h",
+   "winner_key": "gaston h",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "etcheverry t",
+   "key_b": "rodionov j",
+   "winner_key": "etcheverry t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "halys q",
+   "key_b": "vacherot v",
+   "winner_key": "halys q",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "hanfmann y",
+   "key_b": "trungelliti m",
+   "winner_key": "hanfmann y",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "navone m",
+   "key_b": "struff jl",
+   "winner_key": "navone m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "ATP",
+   "key_a": "tabilo a",
+   "key_b": "torres t",
+   "winner_key": "torres t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "aksu a",
+   "key_b": "snigur d",
+   "winner_key": "snigur d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "badosa p",
+   "key_b": "kawa k",
+   "winner_key": "badosa p",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "bondar a",
+   "key_b": "noha akugue n",
+   "winner_key": "bondar a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "bouzkova m",
+   "key_b": "lee cy",
+   "winner_key": "bouzkova m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "brockmann tj",
+   "key_b": "jacquemot e",
+   "winner_key": "jacquemot e",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "carle m",
+   "key_b": "kalinina a",
+   "winner_key": "kalinina a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "charaeva a",
+   "key_b": "kraus s",
+   "winner_key": "charaeva a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "dodin o",
+   "key_b": "salkova d",
+   "winner_key": "salkova d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "joint m",
+   "key_b": "valentova t",
+   "winner_key": "valentova t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "korpatsch t",
+   "key_b": "stusek j",
+   "winner_key": "korpatsch t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-22",
+   "tour": "WTA",
+   "key_a": "sherif m",
+   "key_b": "waltert s",
+   "winner_key": "sherif m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "baez s",
+   "key_b": "hanfmann y",
+   "winner_key": "hanfmann y",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "bublik a",
+   "key_b": "molcan a",
+   "winner_key": "bublik a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "bueno g",
+   "key_b": "faria j",
+   "winner_key": "faria j",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "buse i",
+   "key_b": "etcheverry t",
+   "winner_key": "etcheverry t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "carreno busta p",
+   "key_b": "van assche l",
+   "winner_key": "van assche l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "darderi l",
+   "key_b": "martinez p",
+   "winner_key": "darderi l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "halys q",
+   "key_b": "navone m",
+   "winner_key": "halys q",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "ATP",
+   "key_a": "rublev a",
+   "key_b": "skatov t",
+   "winner_key": "rublev a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "avanesyan e",
+   "key_b": "putintseva y",
+   "winner_key": "avanesyan e",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "badosa p",
+   "key_b": "udvardy p",
+   "winner_key": "badosa p",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "bartunkova n",
+   "key_b": "tararudee l",
+   "winner_key": "tararudee l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "bejlek s",
+   "key_b": "timofeeva m",
+   "winner_key": "bejlek s",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "havlickova l",
+   "key_b": "krejcikova b",
+   "winner_key": "krejcikova b",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "hontama m",
+   "key_b": "tagger l",
+   "winner_key": "tagger l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "jacquemot e",
+   "key_b": "sherif m",
+   "winner_key": "sherif m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-23",
+   "tour": "WTA",
+   "key_a": "oliynykova o",
+   "key_b": "romero gormaz l",
+   "winner_key": "oliynykova o",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "blockx a",
+   "key_b": "burruchaga r",
+   "winner_key": "blockx a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "bublik a",
+   "key_b": "etcheverry t",
+   "winner_key": "bublik a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "darderi l",
+   "key_b": "faria j",
+   "winner_key": "darderi l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "gaston h",
+   "key_b": "torres t",
+   "winner_key": "gaston h",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "halys q",
+   "key_b": "hanfmann y",
+   "winner_key": "halys q",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "ATP",
+   "key_a": "rublev a",
+   "key_b": "van assche l",
+   "winner_key": "van assche l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "badosa p",
+   "key_b": "sherif m",
+   "winner_key": "sherif m",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "bejlek s",
+   "key_b": "tagger l",
+   "winner_key": "tagger l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "bondar a",
+   "key_b": "charaeva a",
+   "winner_key": "bondar a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "bouzkova m",
+   "key_b": "valentova t",
+   "winner_key": "valentova t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "kalinina a",
+   "key_b": "korpatsch t",
+   "winner_key": "korpatsch t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "krejcikova b",
+   "key_b": "salkova d",
+   "winner_key": "krejcikova b",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-24",
+   "tour": "WTA",
+   "key_a": "snigur d",
+   "key_b": "tararudee l",
+   "winner_key": "snigur d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "ATP",
+   "key_a": "blockx a",
+   "key_b": "darderi l",
+   "winner_key": "blockx a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "ATP",
+   "key_a": "bublik a",
+   "key_b": "halys q",
+   "winner_key": "halys q",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "ATP",
+   "key_a": "gaston h",
+   "key_b": "van assche l",
+   "winner_key": "van assche l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "WTA",
+   "key_a": "avanesyan e",
+   "key_b": "bondar a",
+   "winner_key": "bondar a",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "WTA",
+   "key_a": "krejcikova b",
+   "key_b": "tagger l",
+   "winner_key": "tagger l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-25",
+   "tour": "WTA",
+   "key_a": "snigur d",
+   "key_b": "valentova t",
+   "winner_key": "snigur d",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-26",
+   "tour": "ATP",
+   "key_a": "blockx a",
+   "key_b": "van assche l",
+   "winner_key": "van assche l",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-26",
+   "tour": "WTA",
+   "key_a": "bondar a",
+   "key_b": "korpatsch t",
+   "winner_key": "korpatsch t",
+   "completion": "COMPLETED"
+  },
+  {
+   "match_date": "2026-07-26",
+   "tour": "WTA",
+   "key_a": "snigur d",
+   "key_b": "tagger l",
+   "winner_key": "tagger l",
+   "completion": "COMPLETED"
   }
  ],
  "aliases": [
@@ -14208,6 +15104,10 @@
   {
    "alias": "adrian mannarino",
    "key": "mannarino a"
+  },
+  {
+   "alias": "aksu a.",
+   "key": "aksu a"
   },
   {
    "alias": "alcaraz c.",
@@ -14370,6 +15270,10 @@
    "key": "baptiste h"
   },
   {
+   "alias": "barthel m.",
+   "key": "barthel m"
+  },
+  {
    "alias": "bartunkova n.",
    "key": "bartunkova n"
   },
@@ -14518,6 +15422,10 @@
    "key": "nakashima b"
   },
   {
+   "alias": "brockmann t.j.",
+   "key": "brockmann tj"
+  },
+  {
    "alias": "bronzetti l.",
    "key": "bronzetti l"
   },
@@ -14540,6 +15448,10 @@
   {
    "alias": "budkov kjaer n.",
    "key": "budkov kjaer n"
+  },
+  {
+   "alias": "bueno g.",
+   "key": "bueno g"
   },
   {
    "alias": "bulgaru m.",
@@ -14794,6 +15706,10 @@
    "key": "dodig m"
   },
   {
+   "alias": "dodin o.",
+   "key": "dodin o"
+  },
+  {
    "alias": "dolehide c.",
    "key": "dolehide c"
   },
@@ -14918,6 +15834,10 @@
    "key": "fernandez la"
   },
   {
+   "alias": "ferreira silva f.",
+   "key": "ferreira silva f"
+  },
+  {
    "alias": "ferro f.",
    "key": "ferro f"
   },
@@ -14962,6 +15882,10 @@
    "key": "frech m"
   },
   {
+   "alias": "frederico ferreira silva",
+   "key": "ferreira silva f"
+  },
+  {
    "alias": "fritz t.",
    "key": "fritz t"
   },
@@ -14988,6 +15912,10 @@
   {
    "alias": "galfi d.",
    "key": "galfi d"
+  },
+  {
+   "alias": "gao x.",
+   "key": "gao x"
   },
   {
    "alias": "garin c.",
@@ -15058,6 +15986,10 @@
    "key": "gomez fa"
   },
   {
+   "alias": "gonzalo bueno",
+   "key": "bueno g"
+  },
+  {
    "alias": "gorgodze e.",
    "key": "gorgodze e"
   },
@@ -15114,6 +16046,10 @@
    "key": "wendelken h"
   },
   {
+   "alias": "havlickova l.",
+   "key": "havlickova l"
+  },
+  {
    "alias": "hennemann c.w.",
    "key": "hennemann cw"
   },
@@ -15136,6 +16072,10 @@
   {
    "alias": "hodzic m.",
    "key": "hodzic m"
+  },
+  {
+   "alias": "hon p.",
+   "key": "hon p"
   },
   {
    "alias": "hontama m.",
@@ -15406,6 +16346,10 @@
    "key": "kovacevic a"
   },
   {
+   "alias": "kovackova j.",
+   "key": "kovackova j"
+  },
+  {
    "alias": "kovinic d.",
    "key": "kovinic d"
   },
@@ -15474,6 +16418,10 @@
    "key": "tien l"
   },
   {
+   "alias": "lee c.y.",
+   "key": "lee cy"
+  },
+  {
    "alias": "lehecka j.",
    "key": "lehecka j"
   },
@@ -15528,6 +16476,10 @@
   {
    "alias": "lukas neumayer",
    "key": "neumayer l"
+  },
+  {
+   "alias": "luz o.",
+   "key": "luz o"
   },
   {
    "alias": "lys e.",
@@ -15842,6 +16794,10 @@
    "key": "mcdonald n"
   },
   {
+   "alias": "niemeier j.",
+   "key": "niemeier j"
+  },
+  {
    "alias": "nikoloz basilashvili",
    "key": "basilashvili n"
   },
@@ -15878,6 +16834,10 @@
    "key": "ofner s"
   },
   {
+   "alias": "oktiabreva a.",
+   "key": "oktiabreva a"
+  },
+  {
    "alias": "oliver tarvet",
    "key": "tarvet o"
   },
@@ -15892,6 +16852,10 @@
   {
    "alias": "opelka r.",
    "key": "opelka r"
+  },
+  {
+   "alias": "orlando luz",
+   "key": "luz o"
   },
   {
    "alias": "ortenzi j.",
@@ -15976,6 +16940,10 @@
   {
    "alias": "pellegrino a.",
    "key": "pellegrino a"
+  },
+  {
+   "alias": "pereira t.",
+   "key": "pereira t"
   },
   {
    "alias": "pigato l.",
@@ -16134,6 +17102,10 @@
    "key": "ruggeri j"
   },
   {
+   "alias": "rus a.",
+   "key": "rus a"
+  },
+  {
    "alias": "ruse e.g.",
    "key": "ruse eg"
   },
@@ -16208,6 +17180,10 @@
   {
    "alias": "schoenhaus m.",
    "key": "schoenhaus m"
+  },
+  {
+   "alias": "schunk n.",
+   "key": "schunk n"
   },
   {
    "alias": "schwaerzler j.j.",
@@ -16354,6 +17330,10 @@
    "key": "tsitsipas s"
   },
   {
+   "alias": "steiner v.",
+   "key": "steiner v"
+  },
+  {
    "alias": "stephens s.",
    "key": "stephens s"
   },
@@ -16376,6 +17356,10 @@
   {
    "alias": "struff j.l.",
    "key": "struff jl"
+  },
+  {
+   "alias": "stusek j.",
+   "key": "stusek j"
   },
   {
    "alias": "sumit nagal",
@@ -16474,6 +17458,14 @@
    "key": "tiafoe f"
   },
   {
+   "alias": "tiago pereira",
+   "key": "pereira t"
+  },
+  {
+   "alias": "tiago torres",
+   "key": "torres t"
+  },
+  {
    "alias": "tien l.",
    "key": "tien l"
   },
@@ -16536,6 +17528,10 @@
   {
    "alias": "torres murcia m.c.",
    "key": "torres murcia mc"
+  },
+  {
+   "alias": "torres t.",
+   "key": "torres t"
   },
   {
    "alias": "townsend t.",
