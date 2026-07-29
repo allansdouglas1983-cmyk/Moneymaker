@@ -30,6 +30,12 @@ FORECASTS_KIND = "tennis-edge-forecasts-v1"
 _GRADEABLE = frozenset({Completion.COMPLETED, Completion.RETIRED, Completion.AWARDED,
                         Completion.DISQUALIFIED})
 
+#: A completed match cannot postdate the state that predicts it by more than a normal
+#: publication cycle. Tennis-Data ships typo'd years (the price linker's Junk-2099
+#: class); the first live run scored one row dated 2029. Fourteen days is generous —
+#: the weekly cadence means real matches sit within seven.
+MAX_DAYS_AHEAD = 14
+
 Key = tuple[str, str, str, str]
 
 
@@ -62,6 +68,9 @@ def weekly_forecasts(
             continue
         if m.match_date < snapshot.as_of:
             exclusions["STATE_ALREADY_ABSORBED"] += 1
+            continue
+        if (m.match_date - snapshot.as_of).days > MAX_DAYS_AHEAD:
+            exclusions["IMPLAUSIBLE_FUTURE_DATE"] += 1
             continue
         if m.completion not in _GRADEABLE:
             exclusions["NOT_GRADEABLE"] += 1
