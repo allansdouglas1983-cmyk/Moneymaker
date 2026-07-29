@@ -33,19 +33,27 @@ The derivative complex is therefore SET_BETTING + SET_WINNER:
   deciders use a TB10 the BO3 mapping renders as TB7 — the difference lives only in the
   6-6-decider tail. The SET_BETTING runner scoreline set must agree with the corpus
   format (four scorelines for best-of-3, six for best-of-5) or the event refuses.
-- The latent step: (p_a, p_b) must exist. Residual surfaces MW(p_a,p_b) = P(A wins match)
-  and S1(p_a,p_b) = P(A wins set 1) come from the STAGE3 dual-generator-verified
-  primitives (match_distribution, set_distribution), precomputed once per format on a
-  fixed 121x121 grid over the tested domain (0.35, 0.90), both first-server assignments
-  (§2.4: no 50/50 prior; feasibility under EITHER assignment suffices — every root
-  reproduces T1, so p_coherence does not depend on the assignment). The event is
-  COHERENT iff the MW = T1 level curve — traced at the 121 grid abscissae by bisection
-  in the opponent coordinate on the bilinear interpolant (MW is monotone in each
-  argument) — carries a point where S1 - T2 changes sign or |S1 - T2| < TOL = 0.002;
-  otherwise the complex admits no serve model and the event refuses
-  (INCOHERENT_COMPLEX). p_coherence = T1 exactly (the fit is exact on the match-win
-  target at convergence); the solve contributes the screen.
-- gap = logit(T1) - logit(p_MO), p_MO from the priced v4 odds (T-600, LTP), normalised
+- The latent step: residual surfaces MW(p_a,p_b) = P(A wins match) and S1(p_a,p_b) =
+  P(A wins set 1) come from the STAGE3 dual-generator-verified primitives
+  (match_distribution, set_distribution), precomputed once per format on a fixed
+  121x121 grid over the tested domain (0.35, 0.90), both first-server assignments
+  (§2.4: no 50/50 prior; the better-fitting assignment is taken, its identity never
+  judged). THIRD GOVERNED CORRECTION (2026-07-29, still zero rows ever scored): the
+  first implementation demanded EXACT feasibility at TOL = 0.002 — a root-solve
+  constant never registered as a market-noise model — and refused 91% of complexes,
+  though LTP quotes carry vig distortion an order of magnitude above it. The
+  registration's word is FIT, and a fit tolerates noise: the latent step is now the
+  min-max residual projection — (p_a, p_b) minimising max(|MW - T1|, |S1 - T2|) over
+  the grid, refined by a local 21x21 bilinear sub-scan around the best cell,
+  deterministic row-major tie-break. p_coherence = MW at the fitted parameters (the
+  projection of the derivative complex onto the coherent manifold — T1 and T2 jointly,
+  no longer T1 echoed back). The fit always exists; the residual distribution is
+  reported as a diagnostic, and a startup self-check asserts that generator-produced
+  targets are recovered with residual < 1e-3.
+- Cross-market name attribution matches on (first initial, surname), case-folded —
+  Betfair mixes 'A Brogan' and 'Ugo Humbert' styles across markets of one event — and
+  requires BOTH sides to attribute uniquely, else the event refuses (typed).
+- gap = logit(p_coherence) - logit(p_MO), p_MO from the priced v4 odds (T-600, LTP), normalised
   across the two sides. Probabilities clipped to (1e-6, 1-1e-6) before logit.
 
 THE TWO PRE-REGISTERED QUESTIONS — the P4 screening round holds exactly these two, so
@@ -63,7 +71,7 @@ each is judged at a Bonferroni-adjusted 97.5% CI (alpha 0.05/2), day-clustered b
 (B) Does the gap predict short-horizon derivative convergence toward Match Odds? On (A)'s
     scored rows with a complete SET_BETTING re-read at T-120 (same completeness/recency
     rules): conv = logit(T1@T-120) - logit(T1@T-600), regressed on
-    x = logit(p_MO@T-600) - logit(T1@T-600) (= -gap). B SUCCEEDS iff the OLS slope's
+    x = logit(p_MO) - logit(p_coherence) at T-600 (= -gap). B SUCCEEDS iff the OLS slope's
     97.5% day-clustered CI clears zero from above (derivatives close toward the match
     market — the stale-quote signature).
 
@@ -102,7 +110,6 @@ LATER = 120
 RECENCY_SECONDS = 3600
 DOMAIN = (0.35, 0.90)
 GRID_N = 121
-TOL = 0.002
 CLIP = 1e-6
 ALPHA = 0.05 / 2  # two questions in the P4 screening round
 
@@ -161,43 +168,52 @@ def _interp(grid: list[list[float]], x: float, y: float) -> float:
             + grid[i0][j0 + 1] * (1 - fx) * fy + grid[i0 + 1][j0 + 1] * fx * fy)
 
 
-def coherent(surf: dict[str, list[list[float]]], t1: float, t2: float) -> bool:
-    """Feasibility along the MW level curve, both first-server assignments.
+def fit_projection(surf: dict[str, list[list[float]]], t1: float, t2: float,
+                   ) -> tuple[float, float]:
+    """(residual, p_coherence): min-max residual projection onto the coherent manifold.
 
-    A-first: does the curve {MW(pa,pb) = t1} carry a point with S1 = t2? MW is monotone
-    increasing in pa and decreasing in pb, so within each grid column (fixed pa index x)
-    the curve's pb is found by bisection on the bilinear interpolant. B-first: by the
-    mirror identities MW_Bfirst(pa,pb) = 1 - MW_Afirst(pb,pa) and likewise for S1,
-    feasibility under B-first equals A-first feasibility of the complemented targets
-    (1-t1, 1-t2). Coherent when S1 - t2 changes sign along the curve or comes within
-    TOL of zero.
+    A-first: minimise max(|MW - t1|, |S1 - t2|) over the grid, then refine with a 21x21
+    bilinear sub-scan around the best cell. B-first: by the mirror identities
+    MW_Bfirst(pa,pb) = 1 - MW_Afirst(pb,pa) and likewise for S1, the B-first fit equals
+    the A-first fit of the complemented targets with p_coherence complemented back. The
+    better-fitting assignment wins; ties keep A-first. Deterministic row-major
+    tie-breaks throughout.
     """
     mw, s1 = surf["mw"], surf["s1"]
-    for ta, tb in ((t1, t2), (1.0 - t1, 1.0 - t2)):
-        prev_sign = 0
+    best_resid, best_p = 2.0, 0.5
+    for flip, (ta, tb) in ((False, (t1, t2)), (True, (1.0 - t1, 1.0 - t2))):
+        ci, cj, cell = 0, 0, 2.0
         for i in range(GRID_N):
-            x = float(min(i, GRID_N - 1 - 1e-9))
-            lo_v = _interp(mw, x, GRID_N - 1 - 1e-9)   # highest pb -> lowest MW
-            hi_v = _interp(mw, x, 0.0)                 # lowest pb  -> highest MW
-            if not (lo_v <= ta <= hi_v):
-                prev_sign = 0
-                continue
-            lo, hi = 0.0, GRID_N - 1 - 1e-9            # y in grid units; MW decreasing in y
-            for _ in range(40):
-                mid = (lo + hi) / 2.0
-                if _interp(mw, x, mid) > ta:
-                    lo = mid
-                else:
-                    hi = mid
-            y = (lo + hi) / 2.0
-            resid = _interp(s1, x, y) - tb
-            if abs(resid) < TOL:
-                return True
-            sign = 1 if resid > 0 else -1
-            if prev_sign and sign != prev_sign:
-                return True
-            prev_sign = sign
-    return False
+            row_mw, row_s1 = mw[i], s1[i]
+            for j in range(GRID_N):
+                r = abs(row_mw[j] - ta)
+                if r >= cell:
+                    continue
+                m = max(r, abs(row_s1[j] - tb))
+                if m < cell:
+                    cell, ci, cj = m, i, j
+        fine, fx, fy = cell, float(ci), float(cj)
+        for di in range(-10, 11):
+            x = min(max(ci + di / 10.0, 0.0), GRID_N - 1 - 1e-9)
+            for dj in range(-10, 11):
+                y = min(max(cj + dj / 10.0, 0.0), GRID_N - 1 - 1e-9)
+                m = max(abs(_interp(mw, x, y) - ta), abs(_interp(s1, x, y) - tb))
+                if m < fine:
+                    fine, fx, fy = m, x, y
+        p = _interp(mw, fx, fy)
+        if flip:
+            p = 1.0 - p
+        if fine < best_resid:
+            best_resid, best_p = fine, p
+    return best_resid, best_p
+
+
+def _initial_surname(name: str) -> tuple[str, str] | None:
+    """('u', 'humbert') from either 'Ugo Humbert' or 'U Humbert'. None when shapeless."""
+    tokens = name.strip().split()
+    if len(tokens) < 2:
+        return None
+    return tokens[0][0].casefold(), " ".join(tokens[1:]).casefold()
 
 
 # ---------------------------------------------------------------- market reads
@@ -265,6 +281,7 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
             continue
         events[market.event_id] = {
             "market_id": market.market_id, "row": row, "bf_a": a_names[0],
+            "bf_b": b_names[0],
             "off_ms": market.market_time_ms, "best_of": corpus_match.best_of,
             "day": day.isoformat(),
         }
@@ -355,23 +372,33 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
         if q is None:
             excl["SET_BETTING_INCOMPLETE"] += 1
             continue
-        bf_a = info["bf_a"]
-        a_sels = [sel for sel, (nm, _s) in sb_named.items() if nm == bf_a]
-        if len(a_sels) != len(expected):
+        key_a = _initial_surname(info["bf_a"])
+        key_b = _initial_surname(info["bf_b"])
+        if key_a is None or key_b is None or key_a == key_b:
+            excl["MO_NAME_SHAPELESS"] += 1
+            continue
+        a_sels = [sel for sel, (nm, _s) in sb_named.items()
+                  if _initial_surname(nm) == key_a]
+        b_sels = [sel for sel, (nm, _s) in sb_named.items()
+                  if _initial_surname(nm) == key_b]
+        if len(a_sels) != len(expected) or len(b_sels) != len(expected):
             excl["SET_BETTING_NAME_MISMATCH"] += 1
             continue
         t1 = sum(q[str(sel)] for sel in a_sels)
 
         sw = sw_candidates[0]
-        if bf_a not in sw["runners"].values():
+        sw_a = [sel for sel, nm in sw["runners"].items()
+                if _initial_surname(nm) == key_a]
+        sw_b = [sel for sel, nm in sw["runners"].items()
+                if _initial_surname(nm) == key_b]
+        if len(sw_a) != 1 or len(sw_b) != 1:
             excl["SET_WINNER_NAME_MISMATCH"] += 1
             continue
         p = _implied({str(sel): sw["prints"].get(sel, []) for sel in sw["runners"]}, cutoff)
         if p is None:  # unreachable by construction of the candidate set
             excl["SET_WINNER_INCOMPLETE"] += 1
             continue
-        t2 = sum(v for sel, v in ((s, p[str(s)]) for s in sw["runners"])
-                 if sw["runners"][sel] == bf_a)
+        t2 = p[str(sw_a[0])]
 
         row = info["row"]
         inv_a = 1.0 / float(row.odds_a)
@@ -397,18 +424,28 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
         print(f"  excluded {reason:<28} {excl[reason]:>7,}")
 
     surfaces = load_surfaces()
+
+    # Startup self-check: generator-produced targets must be recovered by the fit.
+    chk = surfaces[MatchFormat.BO3_AD_TB7_ALL_SETS.value]
+    ci, cj = 40, 62
+    resid, p_chk = fit_projection(chk, chk["mw"][ci][cj], chk["s1"][ci][cj])
+    if resid > 1e-3 or abs(p_chk - chk["mw"][ci][cj]) > 1e-3:
+        raise SystemExit(f"fit self-check failed: residual {resid}, p {p_chk}")
+
     screened = []
-    incoherent = 0
     for r in rows:
-        if coherent(surfaces[r["fmt"]], r["t1"], r["t2"]):
-            screened.append(r)
-        else:
-            incoherent += 1
-    print(f"coherence screen: {len(screened):,} kept, {incoherent:,} INCOHERENT_COMPLEX "
-          f"(tol {TOL})")
-    for r in screened:
-        r["gap"] = _logit(r["t1"]) - _logit(r["p_mo"])
+        resid, p_coh = fit_projection(surfaces[r["fmt"]], r["t1"], r["t2"])
+        r["resid"] = resid
+        r["p_coh"] = p_coh
+        r["gap"] = _logit(p_coh) - _logit(r["p_mo"])
         r["mo_logit"] = _logit(r["p_mo"])
+        screened.append(r)
+    resids = sorted(r["resid"] for r in screened)
+    if resids:
+        def _pq(q: float) -> float:
+            return resids[min(int(q * len(resids)), len(resids) - 1)]
+        print(f"projection residuals: median {_pq(0.5):.4f}  p90 {_pq(0.9):.4f}  "
+              f"max {resids[-1]:.4f}  (diagnostic only)")
 
     # ---------------- question (A)
     years = sorted({r["year"] for r in screened})
@@ -444,7 +481,7 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
     brows = [r for r in scored if r["t1_late"] is not None]
     if brows:
         def _slope(xs) -> float:
-            xv = [_logit(r["p_mo"]) - _logit(r["t1"]) for r in xs]
+            xv = [-r["gap"] for r in xs]
             yv = [_logit(r["t1_late"]) - _logit(r["t1"]) for r in xs]
             mx = sum(xv) / len(xv)
             my = sum(yv) / len(yv)
