@@ -106,8 +106,13 @@ TOL = 0.002
 CLIP = 1e-6
 ALPHA = 0.05 / 2  # two questions in the P4 screening round
 
-BO3_SCORES = {"2-0", "2-1", "0-2", "1-2"}
-BO5_SCORES = {"3-0", "3-1", "3-2", "0-3", "1-3", "2-3"}
+# Betfair names SET_BETTING outcomes player-relative: "K Townsend 2-0" is Townsend
+# winning 2-0. A best-of-3 market is 2 players x {2-0, 2-1}; best-of-5 is 2 x
+# {3-0, 3-1, 3-2}. (Second plumbing correction, 2026-07-29: the first shape rule
+# expected loser-perspective scorelines that Betfair never lists; every event refused
+# structurally, zero rows scored, no outcome observed.)
+BO3_SCORES = {"2-0", "2-1"}
+BO5_SCORES = {"3-0", "3-1", "3-2"}
 FMT_BY_BEST_OF = {3: MatchFormat.BO3_AD_TB7_ALL_SETS,
                   5: MatchFormat.BO5_AD_TB10_FINAL_AT_6_6}
 
@@ -334,9 +339,14 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
                 ok = False
                 break
             parsed[sel] = (part[0], part[1])
-        scores = {s for _, s in parsed.values()} if ok else set()
         expected = BO3_SCORES if info["best_of"] == 3 else BO5_SCORES
-        if not ok or scores != expected:
+        by_player: dict[str, set[str]] = defaultdict(set)
+        if ok:
+            for nm, score in parsed.values():
+                by_player[nm].add(score)
+        if (not ok or len(by_player) != 2
+                or any(scores != expected for scores in by_player.values())
+                or len(sb["runners"]) != 2 * len(expected)):
             excl["SET_BETTING_SHAPE"] += 1
             continue
 
@@ -347,7 +357,7 @@ def main() -> None:  # noqa: PLR0915 — one registered procedure, linear on pur
             continue
         bf_a = info["bf_a"]
         a_sels = [sel for sel, (nm, _s) in sb_named.items() if nm == bf_a]
-        if len(a_sels) != len(expected) // 2:
+        if len(a_sels) != len(expected):
             excl["SET_BETTING_NAME_MISMATCH"] += 1
             continue
         t1 = sum(q[str(sel)] for sel in a_sels)
