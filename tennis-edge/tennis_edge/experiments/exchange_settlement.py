@@ -75,6 +75,8 @@ class Bet:
     market_id: str = ""
     side: str = ""
     won: bool = False
+    #: Predicted edge over break-even at firing time (S7 diagnostics only).
+    edge: float = 0.0
 
 
 def _mean(items: Sequence[object]) -> float:
@@ -110,8 +112,8 @@ def settle(scored: list[tuple[Row, float]], prices: dict[tuple[dt.date, str, str
         ):
             if odds <= 1:
                 continue
-            if probability_side <= float(break_even_probability(odds,
-                                                               commission=COMMISSION)):
+            break_even = float(break_even_probability(odds, commission=COMMISSION))
+            if probability_side <= break_even:
                 continue
             gross = float(odds) - 1.0
             bets.append(Bet(
@@ -123,6 +125,7 @@ def settle(scored: list[tuple[Row, float]], prices: dict[tuple[dt.date, str, str
                 market_id=price.market_id,
                 side=side,
                 won=won,
+                edge=probability_side - break_even,
             ))
     return bets
 
