@@ -29,6 +29,11 @@ from tennis_edge.residual_model import load_model  # noqa: E402
 
 ARTIFACTS = Path(__file__).resolve().parents[2] / "artifacts"
 LEDGER = ARTIFACTS / "forecasts.json"
+#: The SERVED model — the v3 artifact whose digest the site's /health reports. The plain
+#: residual-model.json beside it is the stale 10-feature v1; grading with it would score a
+#: model nobody serves, and the first real run proved the guard works: live_features emits
+#: the 22-feature set and ResidualModel.probability refuses the mismatch loudly.
+MODEL = ARTIFACTS / "residual-model-v3.json"
 
 
 def main() -> int:
@@ -37,7 +42,7 @@ def main() -> int:
         raise SystemExit("no corpus vintage on disk — run the refresh first")
     matches, _stats = load_corpus(vintage.root, completed_only=False)
     snapshot = load_state(ARTIFACTS / "live-state.json")
-    model = load_model(ARTIFACTS / "residual-model.json")
+    model = load_model(MODEL)
 
     existing_rows: list[dict[str, object]] = []
     if LEDGER.exists():
