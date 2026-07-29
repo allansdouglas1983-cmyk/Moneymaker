@@ -321,13 +321,33 @@ async function refresh() {
 }
 
 async function showLedger() {
-  const data = await api("/ledger");
+  const [data, card] = await Promise.all([api("/ledger"), api("/scorecard")]);
+  const d = card.denominator;
+  const gain = card.paired_log_loss_gain;
+  const scorecardHtml = `<div class="card">
+    <div class="players">Scorecard — the site grading its own predictions</div>
+    <div class="meta" style="margin-top:6px">
+      ${d.matches_predicted} matches predicted &middot; ${d.graded} graded &middot;
+      ${d.pending_result} awaiting results &middot; ${d.unmatched_name} unmatched names
+      ${d.post_match_rows_excluded ? ` &middot; ${d.post_match_rows_excluded} post-match rows excluded` : ""}
+    </div>
+    ${gain != null ? `<div class="grid" style="margin-top:10px">
+      ${cell("Model beat market", card.model_wins + " of " + d.graded)}
+      ${cell("Log-loss gain", (gain >= 0 ? "+" : "") + gain.toFixed(4) + " nats")}
+      ${cell("95% interval", card.interval_95
+        ? "[" + card.interval_95[0].toFixed(4) + ", " + card.interval_95[1].toFixed(4) + "]"
+        : "n/a")}
+    </div>` : `<div class="empty" style="padding:14px">Nothing graded yet. Predictions
+      settle after the weekly results pull; the denominator above shows what is waiting.</div>`}
+    <div class="why" style="margin-top:8px">${escapeHtml(card.interval_note || "")}
+      ${escapeHtml(card.non_gating)}</div>
+  </div>`;
   const rows = data.predictions.map((r) =>
     `<tr><td>${escapeHtml(r.match_date)}</td>
      <td>${escapeHtml(r.player_a)} v ${escapeHtml(r.player_b)}</td>
      <td>${escapeHtml(r.status.replace(/_/g, " "))}</td>
      <td>${signed(Math.max(r.edge_a, r.edge_b))}</td></tr>`).join("");
-  $("viewLedger").innerHTML = `<div class="card">
+  $("viewLedger").innerHTML = scorecardHtml + `<div class="card">
     <div class="players">Recorded predictions</div>
     <div class="meta">Written before the match and never rewritten. A later view of the same
       match is a new row. Results join after settlement, through a separate table.</div>

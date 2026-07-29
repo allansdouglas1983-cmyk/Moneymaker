@@ -332,6 +332,101 @@ async function ledger(): Promise<Response> {
   return json({ predictions, settled });
 }
 
+/**
+ * The site grades its own served predictions (TE-0017 S6). Monitoring with intervals,
+ * EXPLICITLY NON-GATING: nothing here feeds anything served — not MIN_EDGE, not the
+ * staleness thresholds, not the model. Single-user volume can gate nothing, and this
+ * number is never comparable to the 63,676-match research intervals.
+ */
+async function scorecard(): Promise<Response> {
+  const [predictions, ledger, resultDays] = await Promise.all([
+    select<{ match_key: string; match_date: string; tour: string; created_at: string }>(
+      "predictions?select=match_key,match_date,tour,created_at"),
+    select<{ match_key: string; match_date: string; a_won: boolean; completion: string;
+             model_log_loss: number | null; market_log_loss: number | null }>(
+      "ledger?select=match_key,match_date,a_won,completion,model_log_loss,market_log_loss"),
+    select<{ match_date: string; tour: string }>("results?select=match_date,tour"),
+  ]);
+
+  // The declared vintage policy: one row per match, the last created on or before the
+  // match date. Post-match rows are excluded from the denominator entirely.
+  const byMatch = new Map<string, { match_date: string; tour: string; created_at: string }>();
+  let postMatchOnly = 0;
+  const seenKeys = new Set<string>();
+  for (const p of predictions) seenKeys.add(p.match_key);
+  for (const p of predictions) {
+    if (p.created_at.slice(0, 10) > p.match_date) continue;
+    const current = byMatch.get(p.match_key);
+    if (!current || p.created_at > current.created_at) byMatch.set(p.match_key, p);
+  }
+  for (const key of seenKeys) if (!byMatch.has(key)) postMatchOnly += 1;
+
+  const graded = new Set(ledger.map((l) => l.match_key));
+  const covered = new Set(resultDays.map((r) => r.match_date + "|" + r.tour));
+  let pending = 0;
+  let unmatched = 0;
+  for (const [key, p] of byMatch) {
+    if (graded.has(key)) continue;
+    if (covered.has(p.match_date + "|" + p.tour)) unmatched += 1;
+    else pending += 1;
+  }
+
+  // Paired model-vs-market log-loss over graded rows, day-clustered. Deterministic
+  // seeded bootstrap so two loads of the page show the same interval.
+  const scored = ledger.filter((l) =>
+    l.model_log_loss != null && l.market_log_loss != null);
+  const byDay = new Map<string, number[]>();
+  for (const l of scored) {
+    const diff = (l.market_log_loss as number) - (l.model_log_loss as number);
+    const day = byDay.get(l.match_date) ?? [];
+    day.push(diff);
+    byDay.set(l.match_date, day);
+  }
+  const days = [...byDay.values()];
+  const all = days.flat();
+  const mean = all.length ? all.reduce((a, b) => a + b, 0) / all.length : null;
+  let interval: [number, number] | null = null;
+  if (days.length >= 5) {
+    let seed = 20260728;
+    const random = () => {
+      // Park-Miller: deterministic across loads; statistical polish is irrelevant here.
+      seed = (seed * 48271) % 2147483647;
+      return seed / 2147483647;
+    };
+    const draws: number[] = [];
+    for (let d = 0; d < 2000; d++) {
+      const sample: number[] = [];
+      for (let i = 0; i < days.length; i++) {
+        sample.push(...days[Math.floor(random() * days.length)]);
+      }
+      draws.push(sample.reduce((a, b) => a + b, 0) / sample.length);
+    }
+    draws.sort((a, b) => a - b);
+    interval = [draws[Math.floor(0.025 * draws.length)],
+                draws[Math.floor(0.975 * draws.length)]];
+  }
+
+  return json({
+    denominator: {
+      matches_predicted: byMatch.size,
+      graded: graded.size,
+      pending_result: pending,
+      unmatched_name: unmatched,
+      post_match_rows_excluded: postMatchOnly,
+    },
+    model_wins: scored.filter((l) =>
+      (l.model_log_loss as number) < (l.market_log_loss as number)).length,
+    paired_log_loss_gain: mean,
+    interval_95: interval,
+    interval_note: interval === null
+      ? "Fewer than five distinct match days graded; no interval is shown rather than a misleading one."
+      : "Day-clustered bootstrap. Monitoring only.",
+    non_gating: "This scorecard feeds nothing served and gates nothing. A single user's " +
+      "volume cannot resolve model quality, and this number is never comparable to the " +
+      "research intervals measured on 63,676 matches.",
+  });
+}
+
 async function health(): Promise<Response> {
   const ctx = await context();
   return json({
@@ -360,6 +455,7 @@ Deno.serve(async (request: Request) => {
     if (!await owner(request)) return json({ error: "not authorised" }, 401);
 
     if (path === "/ledger") return await ledger();
+    if (path === "/scorecard") return await scorecard();
     if (request.method === "POST" && path === "/price") return await price(request);
     return await board();
   } catch (error) {
