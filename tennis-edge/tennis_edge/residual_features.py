@@ -34,6 +34,10 @@ from __future__ import annotations
 import datetime as dt
 import math
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from tennis_edge.backtest import market_probability
 from tennis_edge.corpus import Match, default_vintage_root, group_by_day, load_corpus
@@ -63,6 +67,8 @@ __all__ = [
     "RESIDUAL_FEATURE_NAMES",
     "default_cache_path",
     "build_residual_features",
+    "build_lagged_features",
+    "LAG_MODES",
 ]
 
 #: The book whose de-vigged closing price is the offset every feature corrects.
@@ -202,6 +208,126 @@ def _build(matches: tuple[Match, ...]) -> list[FeatureRow]:
                 won=1 if match.winner_is_a else 0, odds_a=odds_a, odds_b=odds_b,
             ))
         engine.observe(batch)
+    return rows
+
+
+def _build_lagged(matches: tuple[Match, ...],
+                  cutoff_of: "Callable[[dt.date], dt.date]") -> list[FeatureRow]:
+    """The S8 lag walk: day ``d``'s rows see engine state only through ``cutoff_of(d)``.
+
+    Strictly additive — the baseline path is :func:`_build`, byte-identical and untouched.
+    Fixture-time facts stay fixture-time (the b365 offset is a live price; ``rank_gap``
+    comes from the match row itself); the LAG applies to engine state only, mirroring a
+    product that serves from a snapshot. Results are observed strictly before the cutoff
+    and time-decay advances to the cutoff, exactly the baseline's boundary shifted back.
+    """
+    engine = RatingEngine()
+    pyramid = PyramidRatings()
+    estimator = ServeEstimator()
+    detail = DetailEstimator()
+    durability = DurabilityEstimator()
+    serve_rows = list(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM,
+                                   require_serve_stats=True))
+    estimator.queue(serve_rows)
+    detail.queue(serve_rows)
+    durability.queue(load_matches(families=("main", "qual_chall"), since=ARCHIVE_FROM))
+    pyramid.queue(load_matches(families=("main", "qual_chall", "futures"),
+                               since=ARCHIVE_FROM))
+    rows: list[FeatureRow] = []
+    pending: list[tuple[dt.date, list[Match]]] = []
+    for day, batch in group_by_day(matches):
+        cutoff = cutoff_of(day)
+        estimator.advance_to(cutoff)
+        detail.advance_to(cutoff)
+        durability.advance_to(cutoff)
+        pyramid.advance_to(cutoff)
+        while pending and pending[0][0] < cutoff:
+            engine.observe(pending.pop(0)[1])
+        for match in sorted(batch, key=lambda m: (m.tour, m.player_a, m.player_b)):
+            market = market_probability(match, book=PRICING_BOOK, method=DEVIG)
+            if market is None:
+                continue
+            tour, a, b = match.tour, match.player_a, match.player_b
+            if (engine.matches_played(tour, a) < MIN_MAIN_TOUR_MATCHES
+                    or engine.matches_played(tour, b) < MIN_MAIN_TOUR_MATCHES):
+                continue
+            elo = elo_expected(engine.blended(tour, a, match.surface),
+                               engine.blended(tour, b, match.surface))
+            features = {
+                "elo_residual": _logit(elo) - _logit(market),
+                "surface_elo_gap": (engine.surface_elo(tour, a, match.surface)
+                                    - engine.surface_elo(tour, b, match.surface)) / 400.0,
+                "weighted_elo_gap": (engine.weighted_elo(tour, a)
+                                     - engine.weighted_elo(tour, b)) / 400.0,
+                "rank_gap": (math.log1p(match.rank_b or 500)
+                             - math.log1p(match.rank_a or 500)),
+            }
+            estimate = estimator.estimate(tour, a, b, cutoff)
+            if estimate is not None and estimate.coverage >= MIN_SERVE_COVERAGE:
+                point = estimate.match_probability(best_of=match.best_of)
+                features["point_model_residual"] = _logit(point) - _logit(market)
+            features.update(pyramid_features(pyramid, tour, a, b, cutoff, match.surface))
+            features.update(serve_detail_features(detail, tour, a, b))
+            features.update(durability_features(durability, tour, a, b,
+                                                surface=match.surface, when=cutoff))
+            odds_a: dict[str, float] = {}
+            odds_b: dict[str, float] = {}
+            for book in SETTLE_BOOKS:
+                pair = match.odds.pair(book)
+                if pair is not None:
+                    odds_a[book], odds_b[book] = float(pair[0]), float(pair[1])
+            rows.append(FeatureRow(
+                date=match.match_date, tour=tour, player_a=a, player_b=b,
+                market_logit=_logit(market), features=features,
+                won=1 if match.winner_is_a else 0, odds_a=odds_a, odds_b=odds_b,
+            ))
+        pending.append((day, list(batch)))
+    return rows
+
+
+#: The S8 lag vocabulary. "monday" is the product's actual schedule: state as of the most
+#: recent Monday on or before the match date.
+LAG_MODES = ("lag1", "lag3", "lag5", "lag7", "monday")
+
+
+def _cutoff_for(mode: str) -> "Callable[[dt.date], dt.date]":
+    if mode == "monday":
+        return lambda day: day - dt.timedelta(days=day.weekday())
+    if mode.startswith("lag"):
+        lag = int(mode[3:])
+        return lambda day: day - dt.timedelta(days=lag)
+    raise ValueError(f"unknown lag mode {mode!r}; expected one of {LAG_MODES}")
+
+
+def build_lagged_features(mode: str, *, quiet: bool = False) -> list[FeatureRow]:
+    """S8's lagged variant, cached under its own key — the two-roots discipline: the lag
+    is part of the cache identity, never an in-place overwrite of the baseline cache."""
+    root = default_vintage_root()
+    vintage = latest_vintage(root)
+    if vintage is None:
+        raise RuntimeError("no corpus vintage on disk — run the refresh first")
+    if mode not in LAG_MODES:
+        raise ValueError(f"unknown lag mode {mode!r}; expected one of {LAG_MODES}")
+    path = default_vintage_root() / f"residual-feature-cache-{mode}.jsonl"
+    base = _cache_key(vintage)
+    key = CacheKey(
+        feature_set_version=f"{base.feature_set_version}+{mode}",
+        corpus_vintage=base.corpus_vintage,
+        corpus_manifest_digest=base.corpus_manifest_digest,
+        archive_digest=base.archive_digest,
+    )
+    cached = load_cache(path, key=key)
+    if cached is not None:
+        if not quiet:
+            print(f"features[{mode}]: {len(cached):,} rows from cache", flush=True)
+        return cached
+    if not quiet:
+        print(f"features[{mode}]: cache miss — building (~10 min)", flush=True)
+    matches, _stats = load_corpus(vintage.root)
+    rows = _build_lagged(matches, _cutoff_for(mode))
+    write_cache(path, rows, key=key)
+    if not quiet:
+        print(f"features[{mode}]: {len(rows):,} rows built and cached", flush=True)
     return rows
 
 
