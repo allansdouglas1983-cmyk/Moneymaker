@@ -14195,5 +14195,2587 @@
    "winner_key": "krejcikova b",
    "completion": "COMPLETED"
   }
+ ],
+ "aliases": [
+  {
+   "alias": "abedallah shelbayh",
+   "key": "shelbayh a"
+  },
+  {
+   "alias": "adam walton",
+   "key": "walton a"
+  },
+  {
+   "alias": "adrian mannarino",
+   "key": "mannarino a"
+  },
+  {
+   "alias": "alcaraz c.",
+   "key": "alcaraz c"
+  },
+  {
+   "alias": "alejandro davidovich fokina",
+   "key": "davidovich fokina a"
+  },
+  {
+   "alias": "alejandro tabilo",
+   "key": "tabilo a"
+  },
+  {
+   "alias": "aleksandar kovacevic",
+   "key": "kovacevic a"
+  },
+  {
+   "alias": "aleksandar vukic",
+   "key": "vukic a"
+  },
+  {
+   "alias": "alex bolt",
+   "key": "bolt a"
+  },
+  {
+   "alias": "alex de minaur",
+   "key": "de minaur a"
+  },
+  {
+   "alias": "alex michelsen",
+   "key": "michelsen a"
+  },
+  {
+   "alias": "alex molcan",
+   "key": "molcan a"
+  },
+  {
+   "alias": "alexander blockx",
+   "key": "blockx a"
+  },
+  {
+   "alias": "alexander bublik",
+   "key": "bublik a"
+  },
+  {
+   "alias": "alexander shevchenko",
+   "key": "shevchenko a"
+  },
+  {
+   "alias": "alexander zverev",
+   "key": "zverev a"
+  },
+  {
+   "alias": "alexandre muller",
+   "key": "muller a"
+  },
+  {
+   "alias": "alexandrova e.",
+   "key": "alexandrova e"
+  },
+  {
+   "alias": "alexei popyrin",
+   "key": "popyrin a"
+  },
+  {
+   "alias": "alexis galarneau",
+   "key": "galarneau a"
+  },
+  {
+   "alias": "altmaier d.",
+   "key": "altmaier d"
+  },
+  {
+   "alias": "amariei i.d.",
+   "key": "amariei id"
+  },
+  {
+   "alias": "andrea pellegrino",
+   "key": "pellegrino a"
+  },
+  {
+   "alias": "andreescu b.",
+   "key": "andreescu b"
+  },
+  {
+   "alias": "andreeva m.",
+   "key": "andreeva m"
+  },
+  {
+   "alias": "andrey rublev",
+   "key": "rublev a"
+  },
+  {
+   "alias": "anisimova a.",
+   "key": "anisimova a"
+  },
+  {
+   "alias": "antoine ghibaudo",
+   "key": "ghibaudo a"
+  },
+  {
+   "alias": "arango e.",
+   "key": "arango e"
+  },
+  {
+   "alias": "argyrokastriti m.",
+   "key": "argyrokastriti m"
+  },
+  {
+   "alias": "arnaldi m.",
+   "key": "arnaldi m"
+  },
+  {
+   "alias": "arthur fery",
+   "key": "fery a"
+  },
+  {
+   "alias": "arthur fils",
+   "key": "fils a"
+  },
+  {
+   "alias": "arthur gea",
+   "key": "gea a"
+  },
+  {
+   "alias": "arthur rinderknech",
+   "key": "rinderknech a"
+  },
+  {
+   "alias": "atmane t.",
+   "key": "atmane t"
+  },
+  {
+   "alias": "auger-aliassime f.",
+   "key": "auger-aliassime f"
+  },
+  {
+   "alias": "avanesyan e.",
+   "key": "avanesyan e"
+  },
+  {
+   "alias": "baadi t.",
+   "key": "baadi t"
+  },
+  {
+   "alias": "badosa p.",
+   "key": "badosa p"
+  },
+  {
+   "alias": "baez s.",
+   "key": "baez s"
+  },
+  {
+   "alias": "bandecchi s.",
+   "key": "bandecchi s"
+  },
+  {
+   "alias": "baptiste h.",
+   "key": "baptiste h"
+  },
+  {
+   "alias": "bartunkova n.",
+   "key": "bartunkova n"
+  },
+  {
+   "alias": "basavareddy n.",
+   "key": "basavareddy n"
+  },
+  {
+   "alias": "basilashvili n.",
+   "key": "basilashvili n"
+  },
+  {
+   "alias": "basiletti n.",
+   "key": "basiletti n"
+  },
+  {
+   "alias": "basing m.",
+   "key": "basing m"
+  },
+  {
+   "alias": "bassols m.",
+   "key": "bassols m"
+  },
+  {
+   "alias": "bautista agut r.",
+   "key": "bautista agut r"
+  },
+  {
+   "alias": "begu i.",
+   "key": "begu i"
+  },
+  {
+   "alias": "bejlek s.",
+   "key": "bejlek s"
+  },
+  {
+   "alias": "bellucci m.",
+   "key": "bellucci m"
+  },
+  {
+   "alias": "ben shelton",
+   "key": "shelton b"
+  },
+  {
+   "alias": "bencic b.",
+   "key": "bencic b"
+  },
+  {
+   "alias": "benjamin bonzi",
+   "key": "bonzi b"
+  },
+  {
+   "alias": "bennani k.",
+   "key": "bennani k"
+  },
+  {
+   "alias": "bennani r.",
+   "key": "bennani r"
+  },
+  {
+   "alias": "bergs z.",
+   "key": "bergs z"
+  },
+  {
+   "alias": "berrettini m.",
+   "key": "berrettini m"
+  },
+  {
+   "alias": "billy harris",
+   "key": "harris b"
+  },
+  {
+   "alias": "birrell k.",
+   "key": "birrell k"
+  },
+  {
+   "alias": "blinkova a.",
+   "key": "blinkova a"
+  },
+  {
+   "alias": "blockx a.",
+   "key": "blockx a"
+  },
+  {
+   "alias": "boisson l.",
+   "key": "boisson l"
+  },
+  {
+   "alias": "boitan g.a.",
+   "key": "boitan ga"
+  },
+  {
+   "alias": "bolkvadze m.",
+   "key": "bolkvadze m"
+  },
+  {
+   "alias": "bolt a.",
+   "key": "bolt a"
+  },
+  {
+   "alias": "bondar a.",
+   "key": "bondar a"
+  },
+  {
+   "alias": "bonzi b.",
+   "key": "bonzi b"
+  },
+  {
+   "alias": "boogaard t.",
+   "key": "boogaard t"
+  },
+  {
+   "alias": "borges n.",
+   "key": "borges n"
+  },
+  {
+   "alias": "botic van de zandschulp",
+   "key": "van de zandschulp b"
+  },
+  {
+   "alias": "boulter k.",
+   "key": "boulter k"
+  },
+  {
+   "alias": "bouzas maneiro j.",
+   "key": "bouzas maneiro j"
+  },
+  {
+   "alias": "bouzkova m.",
+   "key": "bouzkova m"
+  },
+  {
+   "alias": "boyer t.",
+   "key": "boyer t"
+  },
+  {
+   "alias": "brancaccio n.",
+   "key": "brancaccio n"
+  },
+  {
+   "alias": "brancaccio r.",
+   "key": "brancaccio r"
+  },
+  {
+   "alias": "brandon nakashima",
+   "key": "nakashima b"
+  },
+  {
+   "alias": "bronzetti l.",
+   "key": "bronzetti l"
+  },
+  {
+   "alias": "brooksby j.",
+   "key": "brooksby j"
+  },
+  {
+   "alias": "bryce nakashima",
+   "key": "nakashima b"
+  },
+  {
+   "alias": "bublik a.",
+   "key": "bublik a"
+  },
+  {
+   "alias": "bucsa c.",
+   "key": "bucsa c"
+  },
+  {
+   "alias": "budkov kjaer n.",
+   "key": "budkov kjaer n"
+  },
+  {
+   "alias": "bulgaru m.",
+   "key": "bulgaru m"
+  },
+  {
+   "alias": "burel c.",
+   "key": "burel c"
+  },
+  {
+   "alias": "burillo escorihuela i.",
+   "key": "burillo escorihuela i"
+  },
+  {
+   "alias": "burruchaga r.",
+   "key": "burruchaga r"
+  },
+  {
+   "alias": "buse i.",
+   "key": "buse i"
+  },
+  {
+   "alias": "butvilas e.",
+   "key": "butvilas e"
+  },
+  {
+   "alias": "cadenasso g.",
+   "key": "cadenasso g"
+  },
+  {
+   "alias": "cameron norrie",
+   "key": "norrie c"
+  },
+  {
+   "alias": "camilo ugo carabelli",
+   "key": "ugo carabelli c"
+  },
+  {
+   "alias": "carle m.",
+   "key": "carle m"
+  },
+  {
+   "alias": "carlos alcaraz",
+   "key": "alcaraz c"
+  },
+  {
+   "alias": "carreno busta p.",
+   "key": "carreno busta p"
+  },
+  {
+   "alias": "casper ruud",
+   "key": "ruud c"
+  },
+  {
+   "alias": "cassone m.",
+   "key": "cassone m"
+  },
+  {
+   "alias": "cecchinato m.",
+   "key": "cecchinato m"
+  },
+  {
+   "alias": "cengiz b.",
+   "key": "cengiz b"
+  },
+  {
+   "alias": "cerundolo f.",
+   "key": "cerundolo f"
+  },
+  {
+   "alias": "cerundolo j.m.",
+   "key": "cerundolo jm"
+  },
+  {
+   "alias": "charaeva a.",
+   "key": "charaeva a"
+  },
+  {
+   "alias": "choinski j.",
+   "key": "choinski j"
+  },
+  {
+   "alias": "chwalinska m.",
+   "key": "chwalinska m"
+  },
+  {
+   "alias": "cilic m.",
+   "key": "cilic m"
+  },
+  {
+   "alias": "cina f.",
+   "key": "cina f"
+  },
+  {
+   "alias": "cirstea s.",
+   "key": "cirstea s"
+  },
+  {
+   "alias": "clement tabur",
+   "key": "tabur c"
+  },
+  {
+   "alias": "cobolli f.",
+   "key": "cobolli f"
+  },
+  {
+   "alias": "cocciaretto e.",
+   "key": "cocciaretto e"
+  },
+  {
+   "alias": "coleman wong",
+   "key": "wong c"
+  },
+  {
+   "alias": "collignon r.",
+   "key": "collignon r"
+  },
+  {
+   "alias": "colton smith",
+   "key": "smith c"
+  },
+  {
+   "alias": "comesana f.",
+   "key": "comesana f"
+  },
+  {
+   "alias": "corentin moutet",
+   "key": "moutet c"
+  },
+  {
+   "alias": "costoulas s.",
+   "key": "costoulas s"
+  },
+  {
+   "alias": "cristian garin",
+   "key": "garin c"
+  },
+  {
+   "alias": "cristian j.",
+   "key": "cristian j"
+  },
+  {
+   "alias": "dahlin m.",
+   "key": "dahlin m"
+  },
+  {
+   "alias": "dalibor svrcina",
+   "key": "svrcina d"
+  },
+  {
+   "alias": "damas m.",
+   "key": "damas m"
+  },
+  {
+   "alias": "damir dzumhur",
+   "key": "dzumhur d"
+  },
+  {
+   "alias": "damm m.",
+   "key": "damm m"
+  },
+  {
+   "alias": "dane sweeny",
+   "key": "sweeny d"
+  },
+  {
+   "alias": "daniel altmaier",
+   "key": "altmaier d"
+  },
+  {
+   "alias": "daniel merida aguilar",
+   "key": "merida aguilar d"
+  },
+  {
+   "alias": "daniel t.",
+   "key": "daniel t"
+  },
+  {
+   "alias": "daniel vallejo",
+   "key": "vallejo d"
+  },
+  {
+   "alias": "daniil medvedev",
+   "key": "medvedev d"
+  },
+  {
+   "alias": "darderi l.",
+   "key": "darderi l"
+  },
+  {
+   "alias": "dart h.",
+   "key": "dart h"
+  },
+  {
+   "alias": "davidovich fokina a.",
+   "key": "davidovich fokina a"
+  },
+  {
+   "alias": "day k.",
+   "key": "day k"
+  },
+  {
+   "alias": "de jong j.",
+   "key": "de jong j"
+  },
+  {
+   "alias": "de minaur a.",
+   "key": "de minaur a"
+  },
+  {
+   "alias": "dedura d.",
+   "key": "dedura d"
+  },
+  {
+   "alias": "dellien h.",
+   "key": "dellien h"
+  },
+  {
+   "alias": "denis shapovalov",
+   "key": "shapovalov d"
+  },
+  {
+   "alias": "diallo g.",
+   "key": "diallo g"
+  },
+  {
+   "alias": "diaz acosta f.",
+   "key": "diaz acosta f"
+  },
+  {
+   "alias": "dietrich d.",
+   "key": "dietrich d"
+  },
+  {
+   "alias": "dimitrov g.",
+   "key": "dimitrov g"
+  },
+  {
+   "alias": "dino prizmic",
+   "key": "prizmic d"
+  },
+  {
+   "alias": "djere l.",
+   "key": "djere l"
+  },
+  {
+   "alias": "djokovic n.",
+   "key": "djokovic n"
+  },
+  {
+   "alias": "dodig m.",
+   "key": "dodig m"
+  },
+  {
+   "alias": "dolehide c.",
+   "key": "dolehide c"
+  },
+  {
+   "alias": "dominic stricker",
+   "key": "stricker d"
+  },
+  {
+   "alias": "draper j.",
+   "key": "draper j"
+  },
+  {
+   "alias": "draxl l.",
+   "key": "draxl l"
+  },
+  {
+   "alias": "droguet t.",
+   "key": "droguet t"
+  },
+  {
+   "alias": "duckworth j.",
+   "key": "duckworth j"
+  },
+  {
+   "alias": "dudeney a.",
+   "key": "dudeney a"
+  },
+  {
+   "alias": "dusan lajovic",
+   "key": "lajovic d"
+  },
+  {
+   "alias": "dylan dietrich",
+   "key": "dietrich d"
+  },
+  {
+   "alias": "dzumhur d.",
+   "key": "dzumhur d"
+  },
+  {
+   "alias": "eala a.",
+   "key": "eala a"
+  },
+  {
+   "alias": "edas butvilas",
+   "key": "butvilas e"
+  },
+  {
+   "alias": "efremova k.",
+   "key": "efremova k"
+  },
+  {
+   "alias": "el jardi d.",
+   "key": "el jardi d"
+  },
+  {
+   "alias": "elias ymer",
+   "key": "ymer e"
+  },
+  {
+   "alias": "eliot spizzirri",
+   "key": "spizzirri e"
+  },
+  {
+   "alias": "elmer moller",
+   "key": "moller e"
+  },
+  {
+   "alias": "emilio nava",
+   "key": "nava e"
+  },
+  {
+   "alias": "engel j.",
+   "key": "engel j"
+  },
+  {
+   "alias": "erjavec v.",
+   "key": "erjavec v"
+  },
+  {
+   "alias": "etcheverry t.",
+   "key": "etcheverry t"
+  },
+  {
+   "alias": "ethan quinn",
+   "key": "quinn e"
+  },
+  {
+   "alias": "fabian marozsan",
+   "key": "marozsan f"
+  },
+  {
+   "alias": "facundo diaz acosta",
+   "key": "diaz acosta f"
+  },
+  {
+   "alias": "faria j.",
+   "key": "faria j"
+  },
+  {
+   "alias": "faurel t.",
+   "key": "faurel t"
+  },
+  {
+   "alias": "fearnley j.",
+   "key": "fearnley j"
+  },
+  {
+   "alias": "federico cina",
+   "key": "cina f"
+  },
+  {
+   "alias": "feldbausch k.",
+   "key": "feldbausch k"
+  },
+  {
+   "alias": "felix gill",
+   "key": "gill f"
+  },
+  {
+   "alias": "fernandez l.a.",
+   "key": "fernandez la"
+  },
+  {
+   "alias": "ferro f.",
+   "key": "ferro f"
+  },
+  {
+   "alias": "fery a.",
+   "key": "fery a"
+  },
+  {
+   "alias": "fils a.",
+   "key": "fils a"
+  },
+  {
+   "alias": "fita boluda a.",
+   "key": "fita boluda a"
+  },
+  {
+   "alias": "flavio cobolli",
+   "key": "cobolli f"
+  },
+  {
+   "alias": "fonseca j.",
+   "key": "fonseca j"
+  },
+  {
+   "alias": "frances tiafoe",
+   "key": "tiafoe f"
+  },
+  {
+   "alias": "francesco maestrelli",
+   "key": "maestrelli f"
+  },
+  {
+   "alias": "francisco cerundolo",
+   "key": "cerundolo f"
+  },
+  {
+   "alias": "francisco comesana",
+   "key": "comesana f"
+  },
+  {
+   "alias": "frech m.",
+   "key": "frech m"
+  },
+  {
+   "alias": "fritz t.",
+   "key": "fritz t"
+  },
+  {
+   "alias": "fruhvirtova l.",
+   "key": "fruhvirtova l"
+  },
+  {
+   "alias": "fucsovics m.",
+   "key": "fucsovics m"
+  },
+  {
+   "alias": "gabriel diallo",
+   "key": "diallo g"
+  },
+  {
+   "alias": "gael monfils",
+   "key": "monfils g"
+  },
+  {
+   "alias": "galarneau a.",
+   "key": "galarneau a"
+  },
+  {
+   "alias": "galfi d.",
+   "key": "galfi d"
+  },
+  {
+   "alias": "garin c.",
+   "key": "garin c"
+  },
+  {
+   "alias": "gasanova a.",
+   "key": "gasanova a"
+  },
+  {
+   "alias": "gaston h.",
+   "key": "gaston h"
+  },
+  {
+   "alias": "gaubas v.",
+   "key": "gaubas v"
+  },
+  {
+   "alias": "gauff c.",
+   "key": "gauff c"
+  },
+  {
+   "alias": "gauthier onclin",
+   "key": "onclin g"
+  },
+  {
+   "alias": "gea a.",
+   "key": "gea a"
+  },
+  {
+   "alias": "gentzsch t.",
+   "key": "gentzsch t"
+  },
+  {
+   "alias": "ghibaudo a.",
+   "key": "ghibaudo a"
+  },
+  {
+   "alias": "gianluca cadenasso",
+   "key": "cadenasso g"
+  },
+  {
+   "alias": "gibson t.",
+   "key": "gibson t"
+  },
+  {
+   "alias": "giles hussey",
+   "key": "hussey g"
+  },
+  {
+   "alias": "gill f.",
+   "key": "gill f"
+  },
+  {
+   "alias": "giron m.",
+   "key": "giron m"
+  },
+  {
+   "alias": "gjorcheska l.",
+   "key": "gjorcheska l"
+  },
+  {
+   "alias": "golubic v.",
+   "key": "golubic v"
+  },
+  {
+   "alias": "gomez f.a.",
+   "key": "gomez fa"
+  },
+  {
+   "alias": "gorgodze e.",
+   "key": "gorgodze e"
+  },
+  {
+   "alias": "grabher j.",
+   "key": "grabher j"
+  },
+  {
+   "alias": "grammatikopoulou v.",
+   "key": "grammatikopoulou v"
+  },
+  {
+   "alias": "grant t.c.",
+   "key": "grant tc"
+  },
+  {
+   "alias": "griekspoor t.",
+   "key": "griekspoor t"
+  },
+  {
+   "alias": "grigor dimitrov",
+   "key": "dimitrov g"
+  },
+  {
+   "alias": "guo h.",
+   "key": "guo h"
+  },
+  {
+   "alias": "haddad maia b.",
+   "key": "haddad maia b"
+  },
+  {
+   "alias": "halys q.",
+   "key": "halys q"
+  },
+  {
+   "alias": "hamad medjedovic",
+   "key": "medjedovic h"
+  },
+  {
+   "alias": "hamish stewart",
+   "key": "stewart h"
+  },
+  {
+   "alias": "hanfmann y.",
+   "key": "hanfmann y"
+  },
+  {
+   "alias": "harris b.",
+   "key": "harris b"
+  },
+  {
+   "alias": "harry wendelken",
+   "key": "wendelken h"
+  },
+  {
+   "alias": "hennemann c.w.",
+   "key": "hennemann cw"
+  },
+  {
+   "alias": "henrique rocha",
+   "key": "rocha h"
+  },
+  {
+   "alias": "herbert p.",
+   "key": "herbert p"
+  },
+  {
+   "alias": "hibino n.",
+   "key": "hibino n"
+  },
+  {
+   "alias": "hijikata r.",
+   "key": "hijikata r"
+  },
+  {
+   "alias": "hodzic m.",
+   "key": "hodzic m"
+  },
+  {
+   "alias": "hontama m.",
+   "key": "hontama m"
+  },
+  {
+   "alias": "hubert hurkacz",
+   "key": "hurkacz h"
+  },
+  {
+   "alias": "huesler m.",
+   "key": "huesler m"
+  },
+  {
+   "alias": "hugo dellien",
+   "key": "dellien h"
+  },
+  {
+   "alias": "hugo gaston",
+   "key": "gaston h"
+  },
+  {
+   "alias": "humbert u.",
+   "key": "humbert u"
+  },
+  {
+   "alias": "hurkacz h.",
+   "key": "hurkacz h"
+  },
+  {
+   "alias": "hussey g.",
+   "key": "hussey g"
+  },
+  {
+   "alias": "ibragimova a.",
+   "key": "ibragimova a"
+  },
+  {
+   "alias": "ignacio buse",
+   "key": "buse i"
+  },
+  {
+   "alias": "inglis m.",
+   "key": "inglis m"
+  },
+  {
+   "alias": "ito a.",
+   "key": "ito a"
+  },
+  {
+   "alias": "jack draper",
+   "key": "draper j"
+  },
+  {
+   "alias": "jack pinnington jones",
+   "key": "pinnington jones j"
+  },
+  {
+   "alias": "jacob fearnley",
+   "key": "fearnley j"
+  },
+  {
+   "alias": "jacquemot e.",
+   "key": "jacquemot e"
+  },
+  {
+   "alias": "jacquet k.",
+   "key": "jacquet k"
+  },
+  {
+   "alias": "jaime faria",
+   "key": "faria j"
+  },
+  {
+   "alias": "jakub mensik",
+   "key": "mensik j"
+  },
+  {
+   "alias": "james duckworth",
+   "key": "duckworth j"
+  },
+  {
+   "alias": "james mccabe",
+   "key": "mccabe j"
+  },
+  {
+   "alias": "jan choinski",
+   "key": "choinski j"
+  },
+  {
+   "alias": "jannik sinner",
+   "key": "sinner j"
+  },
+  {
+   "alias": "jaume munar",
+   "key": "munar j"
+  },
+  {
+   "alias": "jeanjean l.",
+   "key": "jeanjean l"
+  },
+  {
+   "alias": "jenson brooksby",
+   "key": "brooksby j"
+  },
+  {
+   "alias": "jerome kym",
+   "key": "kym j"
+  },
+  {
+   "alias": "jesper de jong",
+   "key": "de jong j"
+  },
+  {
+   "alias": "jianu f.c.",
+   "key": "jianu fc"
+  },
+  {
+   "alias": "jimenez kasintseva v.",
+   "key": "jimenez kasintseva v"
+  },
+  {
+   "alias": "jiri lehecka",
+   "key": "lehecka j"
+  },
+  {
+   "alias": "joao fonseca",
+   "key": "fonseca j"
+  },
+  {
+   "alias": "jodar r.",
+   "key": "jodar r"
+  },
+  {
+   "alias": "joint m.",
+   "key": "joint m"
+  },
+  {
+   "alias": "jones e.",
+   "key": "jones e"
+  },
+  {
+   "alias": "jones f.",
+   "key": "jones f"
+  },
+  {
+   "alias": "jovic i.",
+   "key": "jovic i"
+  },
+  {
+   "alias": "jurij rodionov",
+   "key": "rodionov j"
+  },
+  {
+   "alias": "justin engel",
+   "key": "engel j"
+  },
+  {
+   "alias": "kabbaj y.",
+   "key": "kabbaj y"
+  },
+  {
+   "alias": "kalieva e.",
+   "key": "kalieva e"
+  },
+  {
+   "alias": "kalinina a.",
+   "key": "kalinina a"
+  },
+  {
+   "alias": "kalinskaya a.",
+   "key": "kalinskaya a"
+  },
+  {
+   "alias": "kamil majchrzak",
+   "key": "majchrzak k"
+  },
+  {
+   "alias": "karatancheva l.",
+   "key": "karatancheva l"
+  },
+  {
+   "alias": "karen khachanov",
+   "key": "khachanov k"
+  },
+  {
+   "alias": "karim bennani",
+   "key": "bennani k"
+  },
+  {
+   "alias": "kasatkina d.",
+   "key": "kasatkina d"
+  },
+  {
+   "alias": "kawa k.",
+   "key": "kawa k"
+  },
+  {
+   "alias": "kecmanovic m.",
+   "key": "kecmanovic m"
+  },
+  {
+   "alias": "kenin s.",
+   "key": "kenin s"
+  },
+  {
+   "alias": "kessler m.",
+   "key": "kessler m"
+  },
+  {
+   "alias": "keys m.",
+   "key": "keys m"
+  },
+  {
+   "alias": "khachanov k.",
+   "key": "khachanov k"
+  },
+  {
+   "alias": "kilian feldbausch",
+   "key": "feldbausch k"
+  },
+  {
+   "alias": "klugman h.",
+   "key": "klugman h"
+  },
+  {
+   "alias": "knutson g.",
+   "key": "knutson g"
+  },
+  {
+   "alias": "kokkinakis t.",
+   "key": "kokkinakis t"
+  },
+  {
+   "alias": "kolar z.",
+   "key": "kolar z"
+  },
+  {
+   "alias": "kopriva v.",
+   "key": "kopriva v"
+  },
+  {
+   "alias": "korneeva a.",
+   "key": "korneeva a"
+  },
+  {
+   "alias": "korpatsch t.",
+   "key": "korpatsch t"
+  },
+  {
+   "alias": "kostovic t.",
+   "key": "kostovic t"
+  },
+  {
+   "alias": "kostyuk m.",
+   "key": "kostyuk m"
+  },
+  {
+   "alias": "kotliar y.",
+   "key": "kotliar y"
+  },
+  {
+   "alias": "kouame m.",
+   "key": "kouame m"
+  },
+  {
+   "alias": "kovacevic a.",
+   "key": "kovacevic a"
+  },
+  {
+   "alias": "kovinic d.",
+   "key": "kovinic d"
+  },
+  {
+   "alias": "kraus s.",
+   "key": "kraus s"
+  },
+  {
+   "alias": "krejcikova b.",
+   "key": "krejcikova b"
+  },
+  {
+   "alias": "krueger a.",
+   "key": "krueger a"
+  },
+  {
+   "alias": "krumich m.",
+   "key": "krumich m"
+  },
+  {
+   "alias": "kudermetova p.",
+   "key": "kudermetova p"
+  },
+  {
+   "alias": "kwon s.",
+   "key": "kwon s"
+  },
+  {
+   "alias": "kym j.",
+   "key": "kym j"
+  },
+  {
+   "alias": "kypson p.",
+   "key": "kypson p"
+  },
+  {
+   "alias": "kyrgios n.",
+   "key": "kyrgios n"
+  },
+  {
+   "alias": "kyrian jacquet",
+   "key": "jacquet k"
+  },
+  {
+   "alias": "lajovic d.",
+   "key": "lajovic d"
+  },
+  {
+   "alias": "lamens s.",
+   "key": "lamens s"
+  },
+  {
+   "alias": "landaluce m.",
+   "key": "landaluce m"
+  },
+  {
+   "alias": "laslo djere",
+   "key": "djere l"
+  },
+  {
+   "alias": "lautaro midon",
+   "key": "midon l"
+  },
+  {
+   "alias": "learner tien",
+   "key": "tien l"
+  },
+  {
+   "alias": "lehecka j.",
+   "key": "lehecka j"
+  },
+  {
+   "alias": "lepchenko v.",
+   "key": "lepchenko v"
+  },
+  {
+   "alias": "li a.",
+   "key": "li a"
+  },
+  {
+   "alias": "liam draxl",
+   "key": "draxl l"
+  },
+  {
+   "alias": "linette m.",
+   "key": "linette m"
+  },
+  {
+   "alias": "liu c.",
+   "key": "liu c"
+  },
+  {
+   "alias": "llamas ruiz p.",
+   "key": "llamas ruiz p"
+  },
+  {
+   "alias": "lorenzo musetti",
+   "key": "musetti l"
+  },
+  {
+   "alias": "lorenzo sonego",
+   "key": "sonego l"
+  },
+  {
+   "alias": "luca nardi",
+   "key": "nardi l"
+  },
+  {
+   "alias": "luca van assche",
+   "key": "van assche l"
+  },
+  {
+   "alias": "luciano darderi",
+   "key": "darderi l"
+  },
+  {
+   "alias": "luka pavlovic",
+   "key": "pavlovic l"
+  },
+  {
+   "alias": "lukas neumayer",
+   "key": "neumayer l"
+  },
+  {
+   "alias": "lys e.",
+   "key": "lys e"
+  },
+  {
+   "alias": "machac t.",
+   "key": "machac t"
+  },
+  {
+   "alias": "mackenzie mcdonald",
+   "key": "mcdonald m"
+  },
+  {
+   "alias": "maestrelli f.",
+   "key": "maestrelli f"
+  },
+  {
+   "alias": "majchrzak k.",
+   "key": "majchrzak k"
+  },
+  {
+   "alias": "mannarino a.",
+   "key": "mannarino a"
+  },
+  {
+   "alias": "marc polmans",
+   "key": "polmans m"
+  },
+  {
+   "alias": "marcinko p.",
+   "key": "marcinko p"
+  },
+  {
+   "alias": "marco cecchinato",
+   "key": "cecchinato m"
+  },
+  {
+   "alias": "marco trungelliti",
+   "key": "trungelliti m"
+  },
+  {
+   "alias": "marcos giron",
+   "key": "giron m"
+  },
+  {
+   "alias": "maria t.",
+   "key": "maria t"
+  },
+  {
+   "alias": "mariano navone",
+   "key": "navone m"
+  },
+  {
+   "alias": "marin cilic",
+   "key": "cilic m"
+  },
+  {
+   "alias": "maristany g.",
+   "key": "maristany g"
+  },
+  {
+   "alias": "marko topo",
+   "key": "topo m"
+  },
+  {
+   "alias": "marozsan f.",
+   "key": "marozsan f"
+  },
+  {
+   "alias": "martin damm",
+   "key": "damm m"
+  },
+  {
+   "alias": "martin krumich",
+   "key": "krumich m"
+  },
+  {
+   "alias": "martin landaluce",
+   "key": "landaluce m"
+  },
+  {
+   "alias": "martincova t.",
+   "key": "martincova t"
+  },
+  {
+   "alias": "martinez cirez c.",
+   "key": "martinez cirez c"
+  },
+  {
+   "alias": "martinez p.",
+   "key": "martinez p"
+  },
+  {
+   "alias": "marton fucsovics",
+   "key": "fucsovics m"
+  },
+  {
+   "alias": "masarova r.",
+   "key": "masarova r"
+  },
+  {
+   "alias": "matej dodig",
+   "key": "dodig m"
+  },
+  {
+   "alias": "matoula m.",
+   "key": "matoula m"
+  },
+  {
+   "alias": "matteo arnaldi",
+   "key": "arnaldi m"
+  },
+  {
+   "alias": "matteo berrettini",
+   "key": "berrettini m"
+  },
+  {
+   "alias": "mattia bellucci",
+   "key": "bellucci m"
+  },
+  {
+   "alias": "max basing",
+   "key": "basing m"
+  },
+  {
+   "alias": "max schoenhaus",
+   "key": "schoenhaus m"
+  },
+  {
+   "alias": "mboko v.",
+   "key": "mboko v"
+  },
+  {
+   "alias": "mccabe j.",
+   "key": "mccabe j"
+  },
+  {
+   "alias": "mcdonald m.",
+   "key": "mcdonald m"
+  },
+  {
+   "alias": "mcdonald n.",
+   "key": "mcdonald n"
+  },
+  {
+   "alias": "mcnally c.",
+   "key": "mcnally c"
+  },
+  {
+   "alias": "medjedovic h.",
+   "key": "medjedovic h"
+  },
+  {
+   "alias": "medvedev d.",
+   "key": "medvedev d"
+  },
+  {
+   "alias": "mees rottgering",
+   "key": "rottgering m"
+  },
+  {
+   "alias": "mejia n.",
+   "key": "mejia n"
+  },
+  {
+   "alias": "mensik j.",
+   "key": "mensik j"
+  },
+  {
+   "alias": "merida aguilar d.",
+   "key": "merida aguilar d"
+  },
+  {
+   "alias": "mertens e.",
+   "key": "mertens e"
+  },
+  {
+   "alias": "michael zheng",
+   "key": "zheng m"
+  },
+  {
+   "alias": "michelsen a.",
+   "key": "michelsen a"
+  },
+  {
+   "alias": "micic e.",
+   "key": "micic e"
+  },
+  {
+   "alias": "midon l.",
+   "key": "midon l"
+  },
+  {
+   "alias": "miguel damas",
+   "key": "damas m"
+  },
+  {
+   "alias": "minnen g.",
+   "key": "minnen g"
+  },
+  {
+   "alias": "miomir kecmanovic",
+   "key": "kecmanovic m"
+  },
+  {
+   "alias": "mochizuki s.",
+   "key": "mochizuki s"
+  },
+  {
+   "alias": "moise kouame",
+   "key": "kouame m"
+  },
+  {
+   "alias": "molcan a.",
+   "key": "molcan a"
+  },
+  {
+   "alias": "moller e.",
+   "key": "moller e"
+  },
+  {
+   "alias": "monfils g.",
+   "key": "monfils g"
+  },
+  {
+   "alias": "monnet c.",
+   "key": "monnet c"
+  },
+  {
+   "alias": "montgomery r.",
+   "key": "montgomery r"
+  },
+  {
+   "alias": "morvayova v.",
+   "key": "morvayova v"
+  },
+  {
+   "alias": "moutet c.",
+   "key": "moutet c"
+  },
+  {
+   "alias": "mpetshi g.",
+   "key": "mpetshi g"
+  },
+  {
+   "alias": "muchova k.",
+   "key": "muchova k"
+  },
+  {
+   "alias": "muller a.",
+   "key": "muller a"
+  },
+  {
+   "alias": "munar j.",
+   "key": "munar j"
+  },
+  {
+   "alias": "murphy cassone",
+   "key": "cassone m"
+  },
+  {
+   "alias": "musetti l.",
+   "key": "musetti l"
+  },
+  {
+   "alias": "nagal s.",
+   "key": "nagal s"
+  },
+  {
+   "alias": "nahimana s.",
+   "key": "nahimana s"
+  },
+  {
+   "alias": "nakashima b.",
+   "key": "nakashima b"
+  },
+  {
+   "alias": "nardi l.",
+   "key": "nardi l"
+  },
+  {
+   "alias": "nava e.",
+   "key": "nava e"
+  },
+  {
+   "alias": "navarro e.",
+   "key": "navarro e"
+  },
+  {
+   "alias": "navone m.",
+   "key": "navone m"
+  },
+  {
+   "alias": "neumayer l.",
+   "key": "neumayer l"
+  },
+  {
+   "alias": "nick kyrgios",
+   "key": "kyrgios n"
+  },
+  {
+   "alias": "nicolai budkov kjaer",
+   "key": "budkov kjaer n"
+  },
+  {
+   "alias": "nicolas mejia",
+   "key": "mejia n"
+  },
+  {
+   "alias": "niels mcdonald",
+   "key": "mcdonald n"
+  },
+  {
+   "alias": "nikoloz basilashvili",
+   "key": "basilashvili n"
+  },
+  {
+   "alias": "nishesh basavareddy",
+   "key": "basavareddy n"
+  },
+  {
+   "alias": "noha akugue n.",
+   "key": "noha akugue n"
+  },
+  {
+   "alias": "norrie c.",
+   "key": "norrie c"
+  },
+  {
+   "alias": "noskova l.",
+   "key": "noskova l"
+  },
+  {
+   "alias": "novak djokovic",
+   "key": "djokovic n"
+  },
+  {
+   "alias": "nuno borges",
+   "key": "borges n"
+  },
+  {
+   "alias": "o connell c.",
+   "key": "o connell c"
+  },
+  {
+   "alias": "ofner s.",
+   "key": "ofner s"
+  },
+  {
+   "alias": "oliver tarvet",
+   "key": "tarvet o"
+  },
+  {
+   "alias": "oliynykova o.",
+   "key": "oliynykova o"
+  },
+  {
+   "alias": "onclin g.",
+   "key": "onclin g"
+  },
+  {
+   "alias": "opelka r.",
+   "key": "opelka r"
+  },
+  {
+   "alias": "ortenzi j.",
+   "key": "ortenzi j"
+  },
+  {
+   "alias": "osaka n.",
+   "key": "osaka n"
+  },
+  {
+   "alias": "osorio m.",
+   "key": "osorio m"
+  },
+  {
+   "alias": "ostapenko j.",
+   "key": "ostapenko j"
+  },
+  {
+   "alias": "otto virtanen",
+   "key": "virtanen o"
+  },
+  {
+   "alias": "oz i.",
+   "key": "oz i"
+  },
+  {
+   "alias": "pablo carreno busta",
+   "key": "carreno busta p"
+  },
+  {
+   "alias": "pablo llamas ruiz",
+   "key": "llamas ruiz p"
+  },
+  {
+   "alias": "paolini j.",
+   "key": "paolini j"
+  },
+  {
+   "alias": "papamichail d.",
+   "key": "papamichail d"
+  },
+  {
+   "alias": "paquet c.",
+   "key": "paquet c"
+  },
+  {
+   "alias": "pareja j.",
+   "key": "pareja j"
+  },
+  {
+   "alias": "parks a.",
+   "key": "parks a"
+  },
+  {
+   "alias": "parry d.",
+   "key": "parry d"
+  },
+  {
+   "alias": "patrick kypson",
+   "key": "kypson p"
+  },
+  {
+   "alias": "paul t.",
+   "key": "paul t"
+  },
+  {
+   "alias": "pavlovic l.",
+   "key": "pavlovic l"
+  },
+  {
+   "alias": "pavlyuchenkova a.",
+   "key": "pavlyuchenkova a"
+  },
+  {
+   "alias": "pedro martinez",
+   "key": "martinez p"
+  },
+  {
+   "alias": "pegula j.",
+   "key": "pegula j"
+  },
+  {
+   "alias": "pellegrino a.",
+   "key": "pellegrino a"
+  },
+  {
+   "alias": "pigato l.",
+   "key": "pigato l"
+  },
+  {
+   "alias": "pinnington jones j.",
+   "key": "pinnington jones j"
+  },
+  {
+   "alias": "pliskova ka.",
+   "key": "pliskova ka"
+  },
+  {
+   "alias": "podoroska n.",
+   "key": "podoroska n"
+  },
+  {
+   "alias": "podrez v.",
+   "key": "podrez v"
+  },
+  {
+   "alias": "pohankova m.",
+   "key": "pohankova m"
+  },
+  {
+   "alias": "polmans m.",
+   "key": "polmans m"
+  },
+  {
+   "alias": "ponchet j.",
+   "key": "ponchet j"
+  },
+  {
+   "alias": "popyrin a.",
+   "key": "popyrin a"
+  },
+  {
+   "alias": "potapova a.",
+   "key": "potapova a"
+  },
+  {
+   "alias": "prado angelo j.c.",
+   "key": "prado angelo jc"
+  },
+  {
+   "alias": "preston stearns",
+   "key": "stearns p"
+  },
+  {
+   "alias": "preston t.",
+   "key": "preston t"
+  },
+  {
+   "alias": "pridankina e.",
+   "key": "pridankina e"
+  },
+  {
+   "alias": "prizmic d.",
+   "key": "prizmic d"
+  },
+  {
+   "alias": "putintseva y.",
+   "key": "putintseva y"
+  },
+  {
+   "alias": "quentin halys",
+   "key": "halys q"
+  },
+  {
+   "alias": "quevedo k.",
+   "key": "quevedo k"
+  },
+  {
+   "alias": "quinn e.",
+   "key": "quinn e"
+  },
+  {
+   "alias": "raducanu e.",
+   "key": "raducanu e"
+  },
+  {
+   "alias": "rafael jodar",
+   "key": "jodar r"
+  },
+  {
+   "alias": "rakhimova k.",
+   "key": "rakhimova k"
+  },
+  {
+   "alias": "rakotomanga rajaonah t.",
+   "key": "rakotomanga rajaonah t"
+  },
+  {
+   "alias": "raphael collignon",
+   "key": "collignon r"
+  },
+  {
+   "alias": "raul brancaccio",
+   "key": "brancaccio r"
+  },
+  {
+   "alias": "reda bennani",
+   "key": "bennani r"
+  },
+  {
+   "alias": "reilly opelka",
+   "key": "opelka r"
+  },
+  {
+   "alias": "riera j.",
+   "key": "riera j"
+  },
+  {
+   "alias": "rinderknech a.",
+   "key": "rinderknech a"
+  },
+  {
+   "alias": "rinky hijikata",
+   "key": "hijikata r"
+  },
+  {
+   "alias": "roberto bautista agut",
+   "key": "bautista agut r"
+  },
+  {
+   "alias": "rocha h.",
+   "key": "rocha h"
+  },
+  {
+   "alias": "rodionov j.",
+   "key": "rodionov j"
+  },
+  {
+   "alias": "roman safiullin",
+   "key": "safiullin r"
+  },
+  {
+   "alias": "romero gormaz l.",
+   "key": "romero gormaz l"
+  },
+  {
+   "alias": "rottgering m.",
+   "key": "rottgering m"
+  },
+  {
+   "alias": "royer v.",
+   "key": "royer v"
+  },
+  {
+   "alias": "rublev a.",
+   "key": "rublev a"
+  },
+  {
+   "alias": "ruggeri j.",
+   "key": "ruggeri j"
+  },
+  {
+   "alias": "ruse e.g.",
+   "key": "ruse eg"
+  },
+  {
+   "alias": "ruud c.",
+   "key": "ruud c"
+  },
+  {
+   "alias": "ruzic a.",
+   "key": "ruzic a"
+  },
+  {
+   "alias": "rybakina e.",
+   "key": "rybakina e"
+  },
+  {
+   "alias": "sabalenka a.",
+   "key": "sabalenka a"
+  },
+  {
+   "alias": "sachko v.",
+   "key": "sachko v"
+  },
+  {
+   "alias": "safiullin r.",
+   "key": "safiullin r"
+  },
+  {
+   "alias": "sakatsume h.",
+   "key": "sakatsume h"
+  },
+  {
+   "alias": "sakellaridi s.",
+   "key": "sakellaridi s"
+  },
+  {
+   "alias": "sakellaridis s.",
+   "key": "sakellaridis s"
+  },
+  {
+   "alias": "sakkari m.",
+   "key": "sakkari m"
+  },
+  {
+   "alias": "salkova d.",
+   "key": "salkova d"
+  },
+  {
+   "alias": "samson l.",
+   "key": "samson l"
+  },
+  {
+   "alias": "samsonova l.",
+   "key": "samsonova l"
+  },
+  {
+   "alias": "samuel t.",
+   "key": "samuel t"
+  },
+  {
+   "alias": "sanchez a.s.",
+   "key": "sanchez as"
+  },
+  {
+   "alias": "sasnovich a.",
+   "key": "sasnovich a"
+  },
+  {
+   "alias": "sawangkaew m.",
+   "key": "sawangkaew m"
+  },
+  {
+   "alias": "schoenhaus m.",
+   "key": "schoenhaus m"
+  },
+  {
+   "alias": "schwaerzler j.j.",
+   "key": "schwaerzler jj"
+  },
+  {
+   "alias": "sebastian baez",
+   "key": "baez s"
+  },
+  {
+   "alias": "sebastian ofner",
+   "key": "ofner s"
+  },
+  {
+   "alias": "seidel e.",
+   "key": "seidel e"
+  },
+  {
+   "alias": "selekhmeteva o.",
+   "key": "selekhmeteva o"
+  },
+  {
+   "alias": "semenistaja d.",
+   "key": "semenistaja d"
+  },
+  {
+   "alias": "sesko z.",
+   "key": "sesko z"
+  },
+  {
+   "alias": "shapovalov d.",
+   "key": "shapovalov d"
+  },
+  {
+   "alias": "shelbayh a.",
+   "key": "shelbayh a"
+  },
+  {
+   "alias": "shelton b.",
+   "key": "shelton b"
+  },
+  {
+   "alias": "sherif m.",
+   "key": "sherif m"
+  },
+  {
+   "alias": "shevchenko a.",
+   "key": "shevchenko a"
+  },
+  {
+   "alias": "shimabukuro s.",
+   "key": "shimabukuro s"
+  },
+  {
+   "alias": "shintaro mochizuki",
+   "key": "mochizuki s"
+  },
+  {
+   "alias": "shnaider d.",
+   "key": "shnaider d"
+  },
+  {
+   "alias": "sho shimabukuro",
+   "key": "shimabukuro s"
+  },
+  {
+   "alias": "shymanovich i.",
+   "key": "shymanovich i"
+  },
+  {
+   "alias": "siegemund l.",
+   "key": "siegemund l"
+  },
+  {
+   "alias": "sierra s.",
+   "key": "sierra s"
+  },
+  {
+   "alias": "siniakova k.",
+   "key": "siniakova k"
+  },
+  {
+   "alias": "sinner j.",
+   "key": "sinner j"
+  },
+  {
+   "alias": "skatov t.",
+   "key": "skatov t"
+  },
+  {
+   "alias": "smith c.",
+   "key": "smith c"
+  },
+  {
+   "alias": "snigur d.",
+   "key": "snigur d"
+  },
+  {
+   "alias": "sonego l.",
+   "key": "sonego l"
+  },
+  {
+   "alias": "sonmez z.",
+   "key": "sonmez z"
+  },
+  {
+   "alias": "sorribes tormo s.",
+   "key": "sorribes tormo s"
+  },
+  {
+   "alias": "spizzirri e.",
+   "key": "spizzirri e"
+  },
+  {
+   "alias": "sramkova r.",
+   "key": "sramkova r"
+  },
+  {
+   "alias": "stan wawrinka",
+   "key": "wawrinka s"
+  },
+  {
+   "alias": "starodubtseva y.",
+   "key": "starodubtseva y"
+  },
+  {
+   "alias": "stearns p.",
+   "key": "stearns p"
+  },
+  {
+   "alias": "stefanini l.",
+   "key": "stefanini l"
+  },
+  {
+   "alias": "stefano travaglia",
+   "key": "travaglia s"
+  },
+  {
+   "alias": "stefanos sakellaridis",
+   "key": "sakellaridis s"
+  },
+  {
+   "alias": "stefanos tsitsipas",
+   "key": "tsitsipas s"
+  },
+  {
+   "alias": "stephens s.",
+   "key": "stephens s"
+  },
+  {
+   "alias": "stewart h.",
+   "key": "stewart h"
+  },
+  {
+   "alias": "stoiana m.",
+   "key": "stoiana m"
+  },
+  {
+   "alias": "stojsavljevic m.",
+   "key": "stojsavljevic m"
+  },
+  {
+   "alias": "stricker d.",
+   "key": "stricker d"
+  },
+  {
+   "alias": "struff j.l.",
+   "key": "struff jl"
+  },
+  {
+   "alias": "sumit nagal",
+   "key": "nagal s"
+  },
+  {
+   "alias": "svajda z.",
+   "key": "svajda z"
+  },
+  {
+   "alias": "svitolina e.",
+   "key": "svitolina e"
+  },
+  {
+   "alias": "svrcina d.",
+   "key": "svrcina d"
+  },
+  {
+   "alias": "swan k.",
+   "key": "swan k"
+  },
+  {
+   "alias": "sweeny d.",
+   "key": "sweeny d"
+  },
+  {
+   "alias": "swiatek i.",
+   "key": "swiatek i"
+  },
+  {
+   "alias": "tabilo a.",
+   "key": "tabilo a"
+  },
+  {
+   "alias": "tabur c.",
+   "key": "tabur c"
+  },
+  {
+   "alias": "tagger l.",
+   "key": "tagger l"
+  },
+  {
+   "alias": "taha baadi",
+   "key": "baadi t"
+  },
+  {
+   "alias": "tallon griekspoor",
+   "key": "griekspoor t"
+  },
+  {
+   "alias": "tan h.",
+   "key": "tan h"
+  },
+  {
+   "alias": "tararudee l.",
+   "key": "tararudee l"
+  },
+  {
+   "alias": "taro daniel",
+   "key": "daniel t"
+  },
+  {
+   "alias": "tarvet o.",
+   "key": "tarvet o"
+  },
+  {
+   "alias": "tauson c.",
+   "key": "tauson c"
+  },
+  {
+   "alias": "taylor fritz",
+   "key": "fritz t"
+  },
+  {
+   "alias": "teichmann j.",
+   "key": "teichmann j"
+  },
+  {
+   "alias": "terence atmane",
+   "key": "atmane t"
+  },
+  {
+   "alias": "thanasi kokkinakis",
+   "key": "kokkinakis t"
+  },
+  {
+   "alias": "thijs boogaard",
+   "key": "boogaard t"
+  },
+  {
+   "alias": "thomas faurel",
+   "key": "faurel t"
+  },
+  {
+   "alias": "tiafoe f.",
+   "key": "tiafoe f"
+  },
+  {
+   "alias": "tien l.",
+   "key": "tien l"
+  },
+  {
+   "alias": "timofeeva m.",
+   "key": "timofeeva m"
+  },
+  {
+   "alias": "timofey skatov",
+   "key": "skatov t"
+  },
+  {
+   "alias": "tirante t. a.",
+   "key": "tirante ta"
+  },
+  {
+   "alias": "tirante t.a.",
+   "key": "tirante ta"
+  },
+  {
+   "alias": "titouan droguet",
+   "key": "droguet t"
+  },
+  {
+   "alias": "tjen j.",
+   "key": "tjen j"
+  },
+  {
+   "alias": "toby samuel",
+   "key": "samuel t"
+  },
+  {
+   "alias": "tom gentzsch",
+   "key": "gentzsch t"
+  },
+  {
+   "alias": "tomas machac",
+   "key": "machac t"
+  },
+  {
+   "alias": "tomljanovic a.",
+   "key": "tomljanovic a"
+  },
+  {
+   "alias": "tommy paul",
+   "key": "paul t"
+  },
+  {
+   "alias": "tomova v.",
+   "key": "tomova v"
+  },
+  {
+   "alias": "tona m.",
+   "key": "tona m"
+  },
+  {
+   "alias": "topo m.",
+   "key": "topo m"
+  },
+  {
+   "alias": "torres murcia m.c.",
+   "key": "torres murcia mc"
+  },
+  {
+   "alias": "townsend t.",
+   "key": "townsend t"
+  },
+  {
+   "alias": "travaglia s.",
+   "key": "travaglia s"
+  },
+  {
+   "alias": "trevisan m.",
+   "key": "trevisan m"
+  },
+  {
+   "alias": "tristan boyer",
+   "key": "boyer t"
+  },
+  {
+   "alias": "trungelliti m.",
+   "key": "trungelliti m"
+  },
+  {
+   "alias": "tsitsipas s.",
+   "key": "tsitsipas s"
+  },
+  {
+   "alias": "tubello a.",
+   "key": "tubello a"
+  },
+  {
+   "alias": "turcanu r.d.",
+   "key": "turcanu rd"
+  },
+  {
+   "alias": "uchijima m.",
+   "key": "uchijima m"
+  },
+  {
+   "alias": "udvardy p.",
+   "key": "udvardy p"
+  },
+  {
+   "alias": "ugo carabelli c.",
+   "key": "ugo carabelli c"
+  },
+  {
+   "alias": "ugo humbert",
+   "key": "humbert u"
+  },
+  {
+   "alias": "urgesi f.",
+   "key": "urgesi f"
+  },
+  {
+   "alias": "urhobo a.",
+   "key": "urhobo a"
+  },
+  {
+   "alias": "vacherot v.",
+   "key": "vacherot v"
+  },
+  {
+   "alias": "valentin royer",
+   "key": "royer v"
+  },
+  {
+   "alias": "valentin vacherot",
+   "key": "vacherot v"
+  },
+  {
+   "alias": "valentova t.",
+   "key": "valentova t"
+  },
+  {
+   "alias": "vallejo d.",
+   "key": "vallejo d"
+  },
+  {
+   "alias": "van assche l.",
+   "key": "van assche l"
+  },
+  {
+   "alias": "van de zandschulp b.",
+   "key": "van de zandschulp b"
+  },
+  {
+   "alias": "vandewinkel h.",
+   "key": "vandewinkel h"
+  },
+  {
+   "alias": "vekic d.",
+   "key": "vekic d"
+  },
+  {
+   "alias": "vidmanova d.",
+   "key": "vidmanova d"
+  },
+  {
+   "alias": "vilius gaubas",
+   "key": "gaubas v"
+  },
+  {
+   "alias": "virtanen o.",
+   "key": "virtanen o"
+  },
+  {
+   "alias": "vit kopriva",
+   "key": "kopriva v"
+  },
+  {
+   "alias": "vitaliy sachko",
+   "key": "sachko v"
+  },
+  {
+   "alias": "volynets k.",
+   "key": "volynets k"
+  },
+  {
+   "alias": "vukic a.",
+   "key": "vukic a"
+  },
+  {
+   "alias": "waltert s.",
+   "key": "waltert s"
+  },
+  {
+   "alias": "walton a.",
+   "key": "walton a"
+  },
+  {
+   "alias": "wang xin.",
+   "key": "xin. w"
+  },
+  {
+   "alias": "wang xiy.",
+   "key": "xiy. w"
+  },
+  {
+   "alias": "wawrinka s.",
+   "key": "wawrinka s"
+  },
+  {
+   "alias": "wendelken h.",
+   "key": "wendelken h"
+  },
+  {
+   "alias": "williams s.",
+   "key": "williams s"
+  },
+  {
+   "alias": "williams v.",
+   "key": "williams v"
+  },
+  {
+   "alias": "wong c.",
+   "key": "wong c"
+  },
+  {
+   "alias": "wu y.",
+   "key": "wu y"
+  },
+  {
+   "alias": "xu m.",
+   "key": "xu m"
+  },
+  {
+   "alias": "yannick hanfmann",
+   "key": "hanfmann y"
+  },
+  {
+   "alias": "yastremska d.",
+   "key": "yastremska d"
+  },
+  {
+   "alias": "yibing wu",
+   "key": "wu y"
+  },
+  {
+   "alias": "ymer e.",
+   "key": "ymer e"
+  },
+  {
+   "alias": "yuan y.",
+   "key": "yuan y"
+  },
+  {
+   "alias": "zaar l.",
+   "key": "zaar l"
+  },
+  {
+   "alias": "zachary svajda",
+   "key": "svajda z"
+  },
+  {
+   "alias": "zakharova a.",
+   "key": "zakharova a"
+  },
+  {
+   "alias": "zarazua r.",
+   "key": "zarazua r"
+  },
+  {
+   "alias": "zdenek kolar",
+   "key": "kolar z"
+  },
+  {
+   "alias": "zhang s.",
+   "key": "zhang s"
+  },
+  {
+   "alias": "zhang zh.",
+   "key": "zhang zh"
+  },
+  {
+   "alias": "zheng m.",
+   "key": "zheng m"
+  },
+  {
+   "alias": "zheng q.",
+   "key": "zheng q"
+  },
+  {
+   "alias": "zidansek t.",
+   "key": "zidansek t"
+  },
+  {
+   "alias": "ziga sesko",
+   "key": "sesko z"
+  },
+  {
+   "alias": "zizou bergs",
+   "key": "bergs z"
+  },
+  {
+   "alias": "zverev a.",
+   "key": "zverev a"
+  },
+  {
+   "alias": "zvonareva v.",
+   "key": "zvonareva v"
+  }
  ]
 }

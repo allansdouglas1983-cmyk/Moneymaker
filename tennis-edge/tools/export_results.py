@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tennis_edge.corpus import Completion, default_vintage_root, load_corpus  # noqa: E402
 from tennis_edge.refresh import latest_vintage  # noqa: E402
+from tennis_edge.sackmann import load_matches  # noqa: E402
 from tennis_edge.scorecard import grade_key  # noqa: E402
 
 RESULTS_KIND = "tennis-edge-results-v1"
@@ -65,14 +66,48 @@ def main() -> int:
             "completion": match.completion.value,
         })
 
+    # The alias table: every name form that reduces to a key in this window, so the
+    # database matches prediction names by EXACT string lookup and no name logic ever
+    # exists in SQL. Both the raw lowercase form and an ASCII-folded form are exported —
+    # a user may type "Muller" or "Müller" and both must land.
+    window_keys = {key for row in rows for key in (row["key_a"], row["key_b"])}
+    aliases: dict[str, str] = {}
+
+    def alias(name: str, key: str | None) -> None:
+        if key is None or key not in window_keys:
+            return
+        import unicodedata
+        raw = name.strip().lower()
+        folded = unicodedata.normalize("NFKD", raw).encode(
+            "ascii", "ignore").decode("ascii")
+        for form in {raw, folded}:
+            if form and aliases.get(form, key) == key:
+                aliases[form] = key
+            elif form in aliases and aliases[form] != key:
+                # An ambiguous alias points at two players; it must match neither.
+                aliases[form] = ""
+
+    for match in matches:
+        if match.match_date >= cutoff:
+            alias(match.player_a, grade_key(match.player_a))
+            alias(match.player_b, grade_key(match.player_b))
+    for row_s in load_matches(families=("main", "qual_chall"),
+                              since=cutoff - dt.timedelta(days=365)):
+        alias(row_s.winner_name, grade_key(row_s.winner_name))
+        alias(row_s.loser_name, grade_key(row_s.loser_name))
+    alias_rows = [{"alias": form, "key": key}
+                  for form, key in sorted(aliases.items()) if key]
+
     target = Path(__file__).resolve().parents[2] / "artifacts" / "results.json"
     target.write_text(json.dumps({
         "kind": RESULTS_KIND,
         "corpus_vintage": vintage.vintage_id,
         "window_days": WINDOW_DAYS,
         "rows": rows,
+        "aliases": alias_rows,
     }, indent=1) + "\n", encoding="utf-8")
-    print(f"{len(rows)} results ({unkeyed} unkeyed, exported none of them) -> {target}")
+    print(f"{len(rows)} results, {len(alias_rows)} aliases "
+          f"({unkeyed} unkeyed results excluded) -> {target}")
     return 0
 
 
