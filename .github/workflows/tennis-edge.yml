@@ -98,6 +98,12 @@ jobs:
           print('players', len(snapshot.players), 'as of', snapshot.as_of)
           "
 
+      - name: Export recent results for the scorecard
+        env:
+          TENNIS_EDGE_DATA: ${{ runner.temp }}/tennis-data
+        working-directory: tennis-edge
+        run: python tools/export_results.py
+
       - name: Regenerate golden vectors
         working-directory: tennis-edge
         run: python tools/emit_golden_vectors.py
@@ -113,7 +119,7 @@ jobs:
           set -euo pipefail
           git config user.name  "tennis-edge refresh"
           git config user.email "noreply@github.com"
-          git add artifacts/live-state.json supabase/functions/tips/golden.json
+          git add artifacts/live-state.json artifacts/results.json supabase/functions/tips/golden.json
           # A week with no new results is an ordinary week, not a failure.
           git diff --cached --quiet && echo "nothing changed" && exit 0
           git commit -m "refresh: walk-forward state as of $(date -u +%F)"
