@@ -73,7 +73,11 @@ jobs:
 
   refresh:
     needs: [verify, tests]
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # A push can also ask for a refresh by saying so in its commit message — the only
+    # trigger available to an integration that cannot call workflow_dispatch.
+    if: >-
+      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, '[refresh]')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
