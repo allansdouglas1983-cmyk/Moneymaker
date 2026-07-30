@@ -39,6 +39,22 @@ export function venueForBet(
   return { venue: name, commission: entry.commission };
 }
 
+/** The registered drawdown cap: d_max = 0.30 (TE-0047, founder-accepted; the B5 bound
+ * the allocator enforces with probability one). ONE constant, so the recording guard
+ * and the staking policy can never disagree about the worst case. A re-pin of the cap
+ * is a governed registration change and lands here and in the registration together. */
+const D_MAX_NUM = 3;
+const D_MAX_DEN = 10;
+
+/** The loss budget, DERIVED from the live bank (founder directive 2026-07-30; ADR 0020
+ * Amendment 5): budget = d_max x current bank, floored to the penny. Never a static
+ * number. No bank means NO budget — a refusal upstream, never a default. Each bank
+ * edit in the app is the deliberate founder act that re-derives it (SPEC-060 spirit). */
+export function derivedBudgetPence(bankPence: number | null): number | null {
+  if (bankPence === null || !Number.isFinite(bankPence) || bankPence <= 0) return null;
+  return Math.floor((bankPence * D_MAX_NUM) / D_MAX_DEN);
+}
+
 export interface PlacedBet {
   stake: number;
   status: string;

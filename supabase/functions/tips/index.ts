@@ -24,7 +24,7 @@ import {
   reasonsFor,
   statusFor,
 } from "./scoring.ts";
-import { budgetState, type PlacedBet, venueForBet } from "./trial.ts";
+import { budgetState, derivedBudgetPence, type PlacedBet, venueForBet } from "./trial.ts";
 import {
   allVenueQuotes,
   entryTiming,
@@ -264,12 +264,20 @@ async function board(): Promise<Response> {
         r.status === "BET_CANDIDATE_DISABLED" ? 0 : r.status === "LEAN" ? 1 : 2;
       return rank(x) - rank(y) || y.bestEdge - x.bestEdge;
     });
+  // The live bank and its high-water mark ride along so the page's stake column and
+  // every device share ONE bank (ADR 0020 Amendment 5) instead of per-phone copies.
+  const [bankRaw, peakRaw] = await Promise.all([
+    getConfig("bank_pence"), getConfig("bank_peak_pence"),
+  ]);
   return json({
     model_digest: ctx.model.digest,
     model_trained_through: ctx.model.trained_through,
     state_as_of: ctx.asOf,
     state_players: ctx.states.size,
     state_stale_days: ctx.staleDays,
+    bank_pence: bankRaw === null ? null : Number(bankRaw),
+    bank_peak_pence: peakRaw === null ? null : Number(peakRaw),
+    derived_budget_pence: derivedBudgetPence(bankRaw === null ? null : Number(bankRaw)),
     rows: rows.map(wire),
   });
 }
@@ -705,16 +713,21 @@ async function recordBet(request: Request): Promise<Response> {
       "(a founder act) before recording bets at it." }, 409);
   }
 
-  const budget = await getConfig("real_loss_budget");
-  if (budget === null) {
-    return json({ error: "No loss budget is set. Set one first — the trial protocol " +
-      "refuses to record bets without a pre-set budget (ADR 0020)." }, 409);
+  // The budget DERIVES from the live bank — 30% of it, the registered cap, so this
+  // guard and the staking policy agree about the worst case by construction (ADR 0020
+  // Amendment 5). Editing the bank in the app is the deliberate act that re-derives it.
+  const bankRaw = await getConfig("bank_pence");
+  const budgetPence = derivedBudgetPence(bankRaw === null ? null : Number(bankRaw));
+  if (budgetPence === null) {
+    return json({ error: "No bank is set. Enter your bank in the app first — the loss " +
+      "budget derives from it (30% of bank, the registered cap; ADR 0020)." }, 409);
   }
   const bets = await select<PlacedBet>("placed_bets?select=stake,status,pnl");
-  const state = budgetState(budget, bets);
+  const state = budgetState(String(budgetPence / 100), bets);
   if (state.exhausted) {
-    return json({ error: "The loss budget is exhausted. Recording is refused; " +
-      "topping up is a deliberate act, not a default (ADR 0020).", ...state }, 409);
+    return json({ error: "The derived loss budget (30% of the bank) is spent by settled " +
+      "losses. Recording is refused; updating the bank in the app is the deliberate act " +
+      "that re-derives it (ADR 0020).", ...state }, 409);
   }
 
   const fixtures = await select<FixtureRow>(
@@ -745,28 +758,38 @@ async function recordBet(request: Request): Promise<Response> {
     }]),
   });
   if (!stored.ok) return json({ error: await stored.text() }, 500);
-  return json({ ok: true, ...budgetState(budget, bets) });
+  return json({ ok: true, ...budgetState(String(budgetPence / 100), bets) });
 }
 
-async function setBudget(request: Request): Promise<Response> {
+/**
+ * Set or edit the live bank (founder directive 2026-07-30; ADR 0020 Amendment 5).
+ * The loss budget is never set directly any more — it DERIVES as 30% of this bank
+ * (the registered cap), so it moves whenever the bank does. The high-water mark
+ * ratchets up with the bank; `reset_peak: true` is the explicit founder act that
+ * re-bases it (a fresh bankroll), never a default.
+ */
+async function setBank(request: Request): Promise<Response> {
   const body = await request.json().catch(() => ({}));
-  const amount = Number(body.amount);
-  if (!Number.isFinite(amount) || !(amount > 0)) {
-    return json({ error: "amount must be a positive number." }, 400);
+  const bank = Number(body.bank);
+  if (!Number.isFinite(bank) || !(bank > 0)) {
+    return json({ error: "bank must be a positive number of pounds." }, 400);
   }
-  const existing = await getConfig("real_loss_budget");
-  // Lowering is always allowed; raising an existing budget is the deliberate top-up
-  // path and must be explicit (SPEC-060 spirit: no code path silently increases it).
-  if (existing !== null && amount > Number(existing) && body.confirm_top_up !== true) {
-    return json({ error: "Raising the budget is a top-up. Pass confirm_top_up: true " +
-      "to do it deliberately." }, 409);
-  }
-  await setConfig("real_loss_budget", String(amount));
-  return json({ ok: true, budget: amount });
+  const pence = Math.round(bank * 100);
+  const prevPeakRaw = await getConfig("bank_peak_pence");
+  const prevPeak = prevPeakRaw === null ? 0 : Number(prevPeakRaw);
+  const peak = body.reset_peak === true ? pence : Math.max(prevPeak, pence);
+  await setConfig("bank_pence", String(pence));
+  await setConfig("bank_peak_pence", String(peak));
+  return json({
+    ok: true,
+    bank_pence: pence,
+    bank_peak_pence: peak,
+    derived_budget_pence: derivedBudgetPence(pence),
+  });
 }
 
 async function ledger(): Promise<Response> {
-  const [predictions, settled, placed, budget] = await Promise.all([
+  const [predictions, settled, placed, bankRaw] = await Promise.all([
     select<Record<string, unknown>>(
       "predictions?select=match_key,match_date,player_a,player_b,status,edge_a,edge_b" +
         "&order=created_at.desc&limit=100"),
@@ -774,14 +797,19 @@ async function ledger(): Promise<Response> {
       "ledger?select=*&order=match_date.desc&limit=200"),
     select<PlacedBet & Record<string, unknown>>(
       "placed_bets?select=*&order=placed_at.desc&limit=200"),
-    getConfig("real_loss_budget"),
+    getConfig("bank_pence"),
   ]);
+  const bankPence = bankRaw === null ? null : Number(bankRaw);
+  const budgetPence = derivedBudgetPence(bankPence);
   return json({
     predictions,
     settled,
     placed_bets: placed,
     real: {
-      ...budgetState(budget, placed),
+      bank: bankPence === null ? null : bankPence / 100,
+      budget_rule: "30% of the current bank — the registered cap (TE-0047); derives " +
+        "automatically whenever the bank changes (ADR 0020 Amendment 5)",
+      ...budgetState(budgetPence === null ? null : String(budgetPence / 100), placed),
       realised_pnl: Math.round(placed.reduce(
         (a, b) => a + (typeof b.pnl === "number" ? b.pnl : 0), 0) * 100) / 100,
     },
@@ -1057,7 +1085,7 @@ Deno.serve(async (request: Request) => {
     if (path === "/clv") return await clv();
     if (request.method === "POST" && path === "/price") return await price(request);
     if (request.method === "POST" && path === "/bet") return await recordBet(request);
-    if (request.method === "POST" && path === "/budget") return await setBudget(request);
+    if (request.method === "POST" && path === "/bank") return await setBank(request);
     return await board();
   } catch (error) {
     // Fail loudly rather than returning something that looks right and is not.

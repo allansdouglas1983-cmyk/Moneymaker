@@ -279,6 +279,11 @@ function cell(k, v, cls) {
    the plan is per UTC match day off the CURRENT bank and high-water mark. Display only.
    The module loads after this classic script, sets window.TE_STAKING, and re-renders. */
 let stakePlanByKey = {};
+// Server-authoritative bank + high-water mark (ADR 0020 Amendment 5): one bank for
+// every device, edited here, loss budget derived from it server-side. localStorage is
+// only the offline cache.
+let serverPeakPence = null;
+let bankPushTimer = null;
 
 function bankPence() {
   const raw = Number((localStorage.getItem("te.bank") || "").replace(",", "."));
@@ -288,9 +293,39 @@ function bankPence() {
 
 function peakPence(bank) {
   const stored = Number(localStorage.getItem("te.peak") || "0");
-  const peak = Math.max(Number.isFinite(stored) ? stored : 0, bank);
+  const peak = Math.max(serverPeakPence ?? 0, Number.isFinite(stored) ? stored : 0, bank);
   localStorage.setItem("te.peak", String(peak));
   return peak;
+}
+
+/* Push the edited bank to the server (debounced). The server ratchets the high-water
+   mark and re-derives the loss budget = 30% of bank — the registered cap, so the
+   recording guard and the stake policy can never disagree. Offline edits still work
+   locally and sync on the next successful push. */
+function pushBank() {
+  clearTimeout(bankPushTimer);
+  bankPushTimer = setTimeout(async () => {
+    const bank = bankPence();
+    if (!bank) return;
+    try {
+      const r = await api("/bank", { method: "POST",
+        body: JSON.stringify({ bank: bank / 100 }) });
+      serverPeakPence = r.bank_peak_pence;
+      renderBoard();
+    } catch (_e) { /* offline: local cache holds until the next sync */ }
+  }, 800);
+}
+
+async function resetPeak() {
+  const bank = bankPence();
+  if (!bank) return;
+  try {
+    const r = await api("/bank", { method: "POST",
+      body: JSON.stringify({ bank: bank / 100, reset_peak: true }) });
+    serverPeakPence = r.bank_peak_pence;
+  } catch (_e) { serverPeakPence = null; }
+  localStorage.setItem("te.peak", "0");
+  renderBoard();
 }
 
 function computeStakePlans() {
@@ -303,8 +338,8 @@ function computeStakePlans() {
   if (note) {
     note.innerHTML = peak > bank
       ? `high-water £${(peak / 100).toFixed(2)} — stakes bound to a 30% fall from it
-         &middot; <a href="#" onclick="localStorage.setItem('te.peak','0');renderBoard();return false">reset to current bank</a>`
-      : "";
+         &middot; <a href="#" onclick="resetPeak();return false">reset to current bank</a>`
+      : `loss budget derives: £${(Math.floor(bank * 3 / 10) / 100).toFixed(2)} (30% of bank)`;
   }
   // Fired rows only, grouped by UTC match day in served order (scheduled-start order).
   const byDay = {};
@@ -410,7 +445,7 @@ function timingNote(row) {
                 style="width:auto;padding:10px 14px">Record</button>
       </div>
       <div class="meta">Records a bet you already placed by hand — this page places
-        nothing. Flat stakes, and it refuses once the loss budget is spent.</div>
+        nothing. It refuses once the derived loss budget (30% of the bank) is spent.</div>
       <div id="betMsg${index}"></div>
     </div>
     ${contribRows ? `<button class="more" onclick="
@@ -467,6 +502,15 @@ async function refresh() {
     ${data.state_players} players as of ${escapeHtml(data.state_as_of)} (${stale}d)` +
     (stale > 14 ? ` &middot; <span class="warnc">STALE</span>` : "");
   boardRows = data.rows;
+  // Server bank wins over the local cache: one bank across every device.
+  if (data.bank_pence != null) {
+    serverPeakPence = data.bank_peak_pence ?? null;
+    const pounds = data.bank_pence / 100;
+    localStorage.setItem("te.bank", String(pounds));
+    if ($("bankIn") && document.activeElement !== $("bankIn")) {
+      $("bankIn").value = String(pounds);
+    }
+  }
   renderBoard();
 }
 
@@ -482,31 +526,38 @@ function realBetsCard(data) {
     <div class="players">Real bets — recorded by hand, placed by hand (ADR 0020)</div>
     <div class="meta" style="margin-top:6px">
       ${real.budget == null
-        ? "No loss budget set. The recording flow refuses bets until one exists."
-        : `Loss budget £${real.budget} &middot; settled losses £${real.settled_losses}
+        ? "No bank set. Enter the bank (here or on the board) — the loss budget derives from it automatically, and recording refuses until it exists."
+        : `Bank £${real.bank} &rarr; loss budget £${real.budget} (30% of bank, derives
+           automatically) &middot; settled losses £${real.settled_losses}
            &middot; remaining £${real.remaining}
            &middot; realised P&amp;L ${real.realised_pnl >= 0 ? "+" : ""}£${real.realised_pnl}
-           ${real.exhausted ? ` &middot; <span class="warnc">EXHAUSTED — recording refused</span>` : ""}`}
+           ${real.exhausted ? ` &middot; <span class="warnc">SPENT — recording refused until the bank is updated</span>` : ""}`}
     </div>
     <div class="row" style="margin-top:10px">
-      <input id="budgetAmount" placeholder="Set loss budget £" inputmode="decimal">
-      <button class="go" style="width:auto;padding:10px 14px" onclick="setBudget()">Set</button>
+      <input id="bankAmount" placeholder="Bank £ (budget derives)" inputmode="decimal">
+      <button class="go" style="width:auto;padding:10px 14px" onclick="setBankFromLedger()">Save</button>
     </div>
     <div id="budgetMsg"></div>
     ${rows ? `<table><thead><tr><th>Date</th><th>Bet</th><th>Stake</th><th>Status</th>
       <th>P&amp;L</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
-    <div class="why" style="margin-top:8px">Flat stakes, hard budget, every bet recorded
-      before results are known. CHECK STATEMENT means a retirement or walkover — settle it
-      from your Betfair statement, which is the truth; this table is the hypothesis.</div>
+    <div class="why" style="margin-top:8px">Stakes follow the registered allocator; the
+      loss budget derives from the live bank; every bet recorded before results are known.
+      CHECK STATEMENT means a retirement or walkover — settle it from your Betfair
+      statement, which is the truth; this table is the hypothesis.</div>
   </div>`;
 }
 
-async function setBudget() {
-  const amount = $("budgetAmount").value;
+async function setBankFromLedger() {
+  const amount = Number($("bankAmount").value);
   try {
-    const r = await api("/budget", { method: "POST",
-      body: JSON.stringify({ amount: Number(amount), confirm_top_up: true }) });
-    $("budgetMsg").innerHTML = `<div class="ok">Budget set: £${r.budget}</div>`;
+    const r = await api("/bank", { method: "POST",
+      body: JSON.stringify({ bank: amount }) });
+    serverPeakPence = r.bank_peak_pence;
+    localStorage.setItem("te.bank", String(r.bank_pence / 100));
+    if ($("bankIn")) $("bankIn").value = String(r.bank_pence / 100);
+    $("budgetMsg").innerHTML = `<div class="ok">Bank £${r.bank_pence / 100} saved —
+      loss budget derives: £${(r.derived_budget_pence / 100).toFixed(2)}</div>`;
+    renderBoard();
   } catch (e) {
     $("budgetMsg").innerHTML = `<div class="err">${escapeHtml(e.message)}</div>`;
   }
@@ -614,6 +665,7 @@ $("bankIn").value = localStorage.getItem("te.bank") || "";
 $("bankIn").oninput = () => {
   localStorage.setItem("te.bank", $("bankIn").value.trim());
   renderBoard();
+  pushBank();
 };
 $("tabBoard").onclick = () => {
   $("tabBoard").setAttribute("aria-selected", "true");

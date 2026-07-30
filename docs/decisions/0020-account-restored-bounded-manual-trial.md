@@ -150,3 +150,22 @@ binding: placement is manual and human ALWAYS; the recording flow refuses withou
 pre-set loss budget and when the budget is exhausted; back-only, pre-off-only, one
 selection per market; honest recording; directive 6. The site places nothing and
 authorises nothing — the founder decides at the point of placement, every time.
+
+## Amendment 5 — 2026-07-30, founder directive: the loss budget derives from the live bank
+
+"It should calculate from the bank at any time not a static number I give you now and
+should be entered and edited on the app." So ordered, so built:
+
+- **The bank is the app-entered value** — editable on the board and the ledger card,
+  stored server-side (`tennis.config: bank_pence`) so every device shares one bank; the
+  high-water mark ratchets with it and an explicit reset re-bases it.
+- **The loss budget is DERIVED, never set**: budget = d_max × current bank (d_max = 0.30,
+  the TE-0047 registered cap), floored to the penny — so the recording guard and the
+  staking policy agree about the worst case by construction, at every bank value, at all
+  times. The static `real_loss_budget` and the `/budget` endpoint are superseded.
+- **SPEC-060 spirit preserved**: settled losses decrement against the derived budget and
+  wins never restore it; no code path changes the budget without a human act — editing
+  the bank in the app IS the deliberate act. No bank set means recording refuses.
+
+Unchanged: placement manual and human always; back-only, pre-off-only, one selection
+per market; honest recording; directive 6. Nothing places, cancels or amends an order.
