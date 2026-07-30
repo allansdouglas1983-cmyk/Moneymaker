@@ -1,0 +1,153 @@
+opportunity set: 1,906 side-prices from exchange_prices_600s_mayjul.jsonl
+                 69 distinct days, 2026-05-12 .. 2026-07-19
+                 flat 100p unit, bank large enough that no floor, minimum or ruin can bind
+
+COMMISSION 5%  |  SOURCE MODEL  |  all fills
+  -- minimum edge, all prices --
+  min_edge 0.00                 612 bets     65 days  ROI  -0.30%  CI95 [ -9.55%, +8.63%]  spans zero
+  min_edge 0.01                 354 bets     59 days  ROI  +7.14%  CI95 [ -6.42%,+21.76%]  spans zero
+  min_edge 0.02                 180 bets     51 days  ROI  +6.76%  CI95 [-14.70%,+27.49%]  spans zero
+  min_edge 0.03                  79 bets — too few to score
+  min_edge 0.04                  34 bets — too few to score
+  min_edge 0.05                  17 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                      180 bets     51 days  ROI  +6.76%  CI95 [-14.70%,+27.49%]  spans zero
+  odds 1.01-1.50                 25 bets — too few to score
+  odds 1.50-2.00                 38 bets — too few to score
+  odds 2.00-3.00                 67 bets — too few to score
+  odds 3.00-6.00                 49 bets — too few to score
+  odds 6.00+                      8 bets — too few to score
+
+COMMISSION 5%  |  SOURCE MODEL  |  supported fills only
+  -- minimum edge, all prices --
+  min_edge 0.00                 398 bets     62 days  ROI  -0.80%  CI95 [-11.31%,+10.00%]  spans zero
+  min_edge 0.01                 240 bets     55 days  ROI  +8.79%  CI95 [ -8.48%,+26.24%]  spans zero
+  min_edge 0.02                 122 bets     48 days  ROI +14.27%  CI95 [ -9.35%,+36.42%]  spans zero
+  min_edge 0.03                  49 bets — too few to score
+  min_edge 0.04                  22 bets — too few to score
+  min_edge 0.05                  10 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                      122 bets     48 days  ROI +14.27%  CI95 [ -9.35%,+36.42%]  spans zero
+  odds 1.01-1.50                 17 bets — too few to score
+  odds 1.50-2.00                 28 bets — too few to score
+  odds 2.00-3.00                 49 bets — too few to score
+  odds 3.00-6.00                 29 bets — too few to score
+  odds 6.00+                      5 bets — too few to score
+
+COMMISSION 5%  |  SOURCE MARKET  |  all fills
+  -- minimum edge, all prices --
+  min_edge 0.00                 453 bets     60 days  ROI  -7.61%  CI95 [-16.70%, +1.76%]  spans zero
+  min_edge 0.01                 187 bets     47 days  ROI  -3.35%  CI95 [-16.06%,+10.20%]  spans zero
+  min_edge 0.02                  65 bets — too few to score
+  min_edge 0.03                  14 bets — too few to score
+  min_edge 0.04                   2 bets — too few to score
+  min_edge 0.05                   2 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                       65 bets — too few to score
+  odds 1.01-1.50                 33 bets — too few to score
+  odds 1.50-2.00                 17 bets — too few to score
+  odds 2.00-3.00                 11 bets — too few to score
+  odds 3.00-6.00                  3 bets — too few to score
+  odds 6.00+                      2 bets — too few to score
+
+COMMISSION 5%  |  SOURCE MARKET  |  supported fills only
+  -- minimum edge, all prices --
+  min_edge 0.00                 306 bets     58 days  ROI  -8.65%  CI95 [-19.70%, +2.15%]  spans zero
+  min_edge 0.01                 131 bets     45 days  ROI  -3.80%  CI95 [-17.77%,+11.03%]  spans zero
+  min_edge 0.02                  46 bets — too few to score
+  min_edge 0.03                   8 bets — too few to score
+  min_edge 0.04                   2 bets — too few to score
+  min_edge 0.05                   2 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                       46 bets — too few to score
+  odds 1.01-1.50                 25 bets — too few to score
+  odds 1.50-2.00                 12 bets — too few to score
+  odds 2.00-3.00                  6 bets — too few to score
+  odds 3.00-6.00                  2 bets — too few to score
+  odds 6.00+                      2 bets — too few to score
+
+COMMISSION 2%  |  SOURCE MODEL  |  all fills
+  -- minimum edge, all prices --
+  min_edge 0.00                 805 bets     68 days  ROI  +1.19%  CI95 [ -8.28%, +9.92%]  spans zero
+  min_edge 0.01                 503 bets     63 days  ROI  +4.96%  CI95 [ -5.71%,+14.74%]  spans zero
+  min_edge 0.02                 270 bets     55 days  ROI  +7.48%  CI95 [ -8.57%,+23.68%]  spans zero
+  min_edge 0.03                 141 bets     45 days  ROI  +6.22%  CI95 [-17.64%,+32.09%]  spans zero
+  min_edge 0.04                  60 bets — too few to score
+  min_edge 0.05                  28 bets — too few to score
+  min_edge 0.075                  3 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                      270 bets     55 days  ROI  +7.48%  CI95 [ -8.57%,+23.68%]  spans zero
+  odds 1.01-1.50                 40 bets — too few to score
+  odds 1.50-2.00                 60 bets — too few to score
+  odds 2.00-3.00                 99 bets — too few to score
+  odds 3.00-6.00                 69 bets — too few to score
+  odds 6.00+                     14 bets — too few to score
+
+COMMISSION 2%  |  SOURCE MODEL  |  supported fills only
+  -- minimum edge, all prices --
+  min_edge 0.00                 528 bets     66 days  ROI  +0.54%  CI95 [-10.02%,+11.78%]  spans zero
+  min_edge 0.01                 329 bets     60 days  ROI  +5.28%  CI95 [ -7.73%,+18.18%]  spans zero
+  min_edge 0.02                 181 bets     51 days  ROI  +9.83%  CI95 [-10.59%,+29.25%]  spans zero
+  min_edge 0.03                  89 bets — too few to score
+  min_edge 0.04                  38 bets — too few to score
+  min_edge 0.05                  18 bets — too few to score
+  min_edge 0.075                  3 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                      181 bets     51 days  ROI  +9.83%  CI95 [-10.59%,+29.25%]  spans zero
+  odds 1.01-1.50                 27 bets — too few to score
+  odds 1.50-2.00                 42 bets — too few to score
+  odds 2.00-3.00                 73 bets — too few to score
+  odds 3.00-6.00                 42 bets — too few to score
+  odds 6.00+                      7 bets — too few to score
+
+COMMISSION 2%  |  SOURCE MARKET  |  all fills
+  -- minimum edge, all prices --
+  min_edge 0.00                 705 bets     64 days  ROI  -6.20%  CI95 [-14.38%, +2.36%]  spans zero
+  min_edge 0.01                 320 bets     56 days  ROI  -7.54%  CI95 [-18.18%, +3.24%]  spans zero
+  min_edge 0.02                 131 bets     42 days  ROI  -0.86%  CI95 [-17.16%,+14.10%]  spans zero
+  min_edge 0.03                  35 bets — too few to score
+  min_edge 0.04                   8 bets — too few to score
+  min_edge 0.05                   2 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                      131 bets     42 days  ROI  -0.86%  CI95 [-17.16%,+14.10%]  spans zero
+  odds 1.01-1.50                 62 bets — too few to score
+  odds 1.50-2.00                 45 bets — too few to score
+  odds 2.00-3.00                 22 bets — too few to score
+  odds 3.00-6.00                  6 bets — too few to score
+  odds 6.00+                      2 bets — too few to score
+
+COMMISSION 2%  |  SOURCE MARKET  |  supported fills only
+  -- minimum edge, all prices --
+  min_edge 0.00                 486 bets     63 days  ROI  -6.35%  CI95 [-15.42%, +2.89%]  spans zero
+  min_edge 0.01                 221 bets     54 days  ROI  -6.62%  CI95 [-19.02%, +6.19%]  spans zero
+  min_edge 0.02                  90 bets — too few to score
+  min_edge 0.03                  22 bets — too few to score
+  min_edge 0.04                   3 bets — too few to score
+  min_edge 0.05                   2 bets — too few to score
+  min_edge 0.075                  2 bets — too few to score
+  min_edge 0.10                   2 bets — too few to score
+  -- odds band, min_edge 0.02 --
+  odds all                       90 bets — too few to score
+  odds 1.01-1.50                 47 bets — too few to score
+  odds 1.50-2.00                 31 bets — too few to score
+  odds 2.00-3.00                 13 bets — too few to score
+  odds 3.00-6.00                  2 bets — too few to score
+  odds 6.00+                      2 bets — too few to score
+
+READING
+  Every cell above is evaluated on the SAME realised path, so the best-looking
+  one is selected on noise as much as on signal. This table reports what the
+  levers do. It does not choose one, and a firing rule picked from it without a
+  multiplicity correction is the backtest-overfitting failure in person.

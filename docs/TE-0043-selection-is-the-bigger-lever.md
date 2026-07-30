@@ -126,3 +126,29 @@ threshold depends on the sizing rule and vice versa.
 ## Ledger
 
 No SPEC-ID changes. No gate evaluated. No spend authorised. No parameter adopted.
+
+## Addendum 2026-07-30 — the untouched May-July 2026 window
+
+The same sweep over the founder-supplied May-July 2026 archive (`bet_sequence__
+exchange_prices_600s_mayjul.jsonl`): 1,906 side-prices, 953 matches, 69 days,
+2026-05-12 to 2026-07-19. This window postdates every design decision in the model, so it
+is the closest thing to a clean holdout the project has — and it is SMALL, which is the
+first thing to know about it. Raw output alongside the main sweep in
+`tennis-edge/docs/evidence/staking/TE-0043-selection-sweep-mayjul-untouched.txt`.
+
+What 69 days can and cannot say:
+
+- **Directionally consistent, decisively underpowered.** Model at 2%, min_edge 0.02:
+  +7.48% on 270 bets, CI95 [-8.57, +23.68]. Every model cell spans zero; the intervals
+  are twenty to forty points wide. Nothing here confirms the main table's magnitudes.
+- **The control stays negative out of period.** Market-source firing is negative at every
+  measurable threshold (-6.20% on 705 bets at the zero threshold, -7.54% on 320 at 0.01).
+  Same sign as the eleven-year finding, same story: the disagreement play loses; whatever
+  edge exists lives in the forecast.
+- **The threshold gradient reappears**: model ROI rises with min_edge in the window
+  (+1.19% -> +4.96% -> +7.48% at 0.00/0.01/0.02, commission 2%), the same shape as the
+  main table, on 1/50th the data.
+
+Nothing in this addendum changes any conclusion; it records that the out-of-period check
+was run, what it showed, and that its power is too low to confirm or refute the main
+result on its own. It becomes decisive only as more untouched weeks accumulate.
