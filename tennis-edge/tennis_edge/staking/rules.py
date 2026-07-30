@@ -31,6 +31,7 @@ __all__ = [
     "tipp",
     "hb_cap",
     "conservative_kelly",
+    "d7_conservative_bound",
 ]
 
 StakingRule = Callable[[Sequence[Candidate], DayState], list[int]]
@@ -160,5 +161,49 @@ def conservative_kelly(*, shrink: Decimal, commission: Decimal) -> StakingRule:
                 out.append(0)
                 continue
             out.append(_pence(Decimal(state.opening_bank_pence) * fraction * shrink))
+        return out
+    return rule
+
+
+def d7_conservative_bound(*, delta_e: Decimal, commission: Decimal,
+                          max_drawdown: Decimal) -> StakingRule:
+    """TE-0047 registered form — matrix D7 K-LCB: Kelly at the conservative bound.
+
+    Per bet: b = (O-1)(1-c); e = p(b+1)-1; e_c = e - delta_e; f = e_c/b if e_c > 0
+    else 0 (the "not yet" refusal — DR-003's warning lives inside the formula). Stake
+    request = floor(W * f / k), k the FULL selected card size (a refused member still
+    counts: it was selected, the perfectly-correlated charge stands, matrix §4 /
+    DR-004 / SPEC-090). Then the multi-bet B5 HB-CAP day budget, pathwise: grants in
+    canonical order against cap = floor(W - (1-d_max)*HWM), so the day's total stakes
+    can never take the bank below (1-d_max) of its high-water mark — probability ONE,
+    no distribution, no edge assumption. Engine reservation and the £1 skip apply
+    downstream, unchanged.
+
+    No parameter has a default: delta_e is the TE-0043 interval displacement (0.0249
+    at the operative threshold), pinned by the caller with its provenance, so a stale
+    or invented displacement cannot hide behind a signature.
+    """
+    def rule(candidates: Sequence[Candidate], state: DayState) -> list[int]:
+        card_size = len(candidates)
+        if card_size == 0:
+            return []
+        bank = Decimal(state.opening_bank_pence)
+        cap = max(_pence(bank - (Decimal(1) - max_drawdown)
+                         * Decimal(state.peak_bank_pence)), 0)
+        out = []
+        remaining = cap
+        for candidate in candidates:
+            net = (candidate.odds - 1) * (Decimal(1) - commission)
+            if net <= 0:
+                out.append(0)
+                continue
+            conservative = candidate.p_model * (net + 1) - 1 - delta_e
+            if conservative <= 0:
+                out.append(0)
+                continue
+            want = _pence(bank * (conservative / net) / card_size)
+            grant = min(want, remaining)
+            remaining -= grant
+            out.append(grant)
         return out
     return rule
