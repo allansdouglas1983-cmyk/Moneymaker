@@ -44,6 +44,7 @@ __all__ = [
     "RunPath",
     "haircut_factor",
     "day_sequence_draws",
+    "reserve_day",
     "replay_run",
 ]
 
@@ -131,6 +132,39 @@ def day_sequence_draws(days: Sequence[dt.date], *, draws: int, seed: int,
 StakingRule = Callable[[Sequence[Candidate], DayState], Sequence[int]]
 
 
+def reserve_day(requested: Sequence[int], *, bank_pence: int,
+                min_stake_pence: int) -> list[tuple[int, str]]:
+    """§1.6 day-level reservation as a pure function: (granted stake, reason) per request.
+
+    Sequential in canonical order, each grant taking ``min(want, remaining)`` against the
+    feasibility bound (the unreserved bank) — never proportional rescaling. A truncated
+    grant is ``CLAMP_RESERVE``; a grant pushed below the exchange minimum is
+    ``SKIP_RESERVE``; a request already below the minimum is ``SKIP_MIN``; zero is
+    ``NO_STAKE``. This is the ONE implementation: :func:`replay_run` consumes it, and the
+    serving-path golden vectors are emitted from it, so the number the site displays and
+    the number the study measured cannot drift apart.
+    """
+    for value in requested:
+        if value < 0:
+            raise ValueError("negative stake: a lay bet, prohibited platform-wide")
+    remaining = bank_pence
+    out: list[tuple[int, str]] = []
+    for want in requested:
+        grant = min(want, remaining)
+        if want <= 0:
+            size, reason = 0, "NO_STAKE"
+        elif grant < min_stake_pence:
+            size, reason = 0, ("SKIP_RESERVE" if want >= min_stake_pence
+                               else "SKIP_MIN")
+        elif grant < want:
+            size, reason = grant, "CLAMP_RESERVE"
+        else:
+            size, reason = grant, "STAKED"
+        remaining -= size
+        out.append((size, reason))
+    return out
+
+
 def _settle(stake_pence: int, odds: Decimal, won: bool, commission: Decimal,
             haircut: Decimal) -> int:
     """Profit in pence. The haircut multiplies credited winnings AFTER commission and
@@ -175,9 +209,6 @@ def replay_run(candidates: Sequence[Candidate], rule: StakingRule,
         requested = list(rule(todays, state))
         if len(requested) != len(todays):
             raise ValueError("staking rule must return one stake per candidate")
-        for value in requested:
-            if value < 0:
-                raise ValueError("negative stake: a lay bet, prohibited platform-wide")
 
         # Sequential reservation in canonical order (§1.6) — never proportional. The
         # budget here is the FEASIBILITY bound (§1.5: the unreserved bank; a back bet's
@@ -186,21 +217,12 @@ def replay_run(candidates: Sequence[Candidate], rule: StakingRule,
         # breach it, and P(DEAD_FLOOR) is precisely the measurement of how often it
         # does. Floor RULES protect the floor through their own day budget; conflating
         # the two here would make every rule a floor rule and erase the comparison.
-        remaining = bank
+        granted = reserve_day(requested, bank_pence=bank,
+                              min_stake_pence=config.min_stake_pence)
         placed_today = 0
         day_rows: list[LedgerRow] = []
-        for candidate, want in zip(todays, requested, strict=True):
-            grant = min(want, remaining)
-            if want <= 0:
-                size, reason = 0, "NO_STAKE"
-            elif grant < config.min_stake_pence:
-                size, reason = 0, ("SKIP_RESERVE" if want >= config.min_stake_pence
-                                   else "SKIP_MIN")
-            elif grant < want:
-                size, reason = grant, "CLAMP_RESERVE"
-            else:
-                size, reason = grant, "STAKED"
-            remaining -= size
+        for candidate, want, (size, reason) in zip(todays, requested, granted,
+                                                   strict=True):
             if size == 0:
                 day_rows.append(LedgerRow(
                     date=day, market_id=candidate.market_id, side=candidate.side,
