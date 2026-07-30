@@ -36,6 +36,21 @@ export function quantiseOdds(odds) {
   return BigInt(Math.round(Number(odds) * 100));
 }
 
+// The operative firing rule, mirrored from tennis_edge.staking.selection: a bet is
+// selected when p - break_even(O, c) is STRICTLY greater than 0.02 (probability
+// scale). Integer form: (pNano - 0.02*1e9) * b1 > 1e13, b1 = (oddsC-100)*98 + 10000.
+// The selected card defines k; a below-bar row is not on the card at all.
+const MIN_EDGE_NANO = 20_000_000n;
+const TEN_13 = 10_000_000_000_000n;
+
+export function isFired(pNano, oddsC) {
+  const p = BigInt(pNano);
+  const o = BigInt(oddsC);
+  if (o <= 100n) return false;
+  const b1 = (o - 100n) * COMMISSION_COMPLEMENT + 10_000n;
+  return (p - MIN_EDGE_NANO) * b1 > TEN_13;
+}
+
 /**
  * The registered plan for one day's selected card.
  * @param {number|bigint} bankPence  morning bank, integer pence
