@@ -123,3 +123,30 @@ Constants (the drawdown tolerance pair (α, β) and the day CVaR budget) are
 founder-declared and frozen in the config commit before any replay output, per
 protocol. Adoption requires the frozen head-to-head, Bonferroni-corrected at the true
 trial count, and founder sign-off. Placement remains manual and human, always.
+
+## Amendment 4 — 2026-07-30, founder directive: trial stakes follow the TE-0047 registered rule
+
+Founder directive ("Accept proposals build it properly no shortcuts"), accepting the
+DR-007 → D7 sequence. The trial's staking clause, UNSET since Amendment 3, is now:
+suggested stakes follow the **TE-0047 registered D7 conservative-bound allocator** —
+Kelly evaluated at the lower bound of the measured day-clustered edge interval
+(Δe = 0.0249, TE-0043 provenance), divided by the day's full selected card size
+(matrix §4 correlation charge), under the multi-bet B5 HB-CAP day budget at
+d_max = 0.30 (founder drawdown tolerance, probability-one bound), with the £1
+skip-never-round-up floor. The rule refuses by construction whenever the conservative
+bound is non-positive, which is DR-003's protection carried inside the formula.
+
+Basis, honestly stated: DR-007 discharged DR-003's spans-zero condition on the
+supported-fills reading at the attested 2%; the realised-fill (after real execution)
+edge remains UNMEASURED and is exactly what this trial exists to measure; superiority
+over flat staking is NOT claimed and was pre-declared unlikely to be establishable
+(TE-0047 registration). The adoption basis is risk-shape evidence plus founder
+directive, not a proven reward ranking.
+
+Serving: the site displays the rule's suggested stakes for the founder-entered bank,
+computed by `docs/staking.js` — an exact-BigInt port held to the registered Python
+rules by 300 golden vectors at exact integer-pence equality. Unchanged and still
+binding: placement is manual and human ALWAYS; the recording flow refuses without a
+pre-set loss budget and when the budget is exhausted; back-only, pre-off-only, one
+selection per market; honest recording; directive 6. The site places nothing and
+authorises nothing — the founder decides at the point of placement, every time.
