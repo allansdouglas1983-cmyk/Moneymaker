@@ -39,8 +39,8 @@ __all__ = [
     "expected_value",
 ]
 
-#: Betfair Rewards flat rate on the net market result.
-COMMISSION = Decimal("0.05")  # TE-0042: Betfair tennis market base rate
+#: The account's Basic-package rate on the net market result (TE-0044).
+COMMISSION = Decimal("0.02")  # TE-0044: Basic package, founder-confirmed 2026-07-30
 
 DEVIG_METHOD = DevigMethod.POWER
 

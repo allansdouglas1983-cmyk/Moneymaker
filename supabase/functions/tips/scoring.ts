@@ -26,18 +26,24 @@ const EPS = 1e-12;
 const DEVIG_TOL = 1e-12;
 const DEVIG_MAX_ITER = 200;
 
-/** Betfair Exchange market base rate for TENNIS on a standard UK account (TE-0042).
+/** The account's Exchange commission rate: 2%, the My Betfair Rewards BASIC package.
  *
- *  Was 0.02, described as the "Betfair Rewards flat rate" — a plan this account is not on.
- *  The 2% reductions are market-specific (major football, UK horse racing) and tennis is
- *  not among them. Correcting it costs 1.970 percentage points of ROI, CI95 [-2.056,
- *  -1.887], measured on a bet set frozen at the old rule — and matching the closed form
- *  dROI/dc = -G exactly at G = 0.6566.
+ *  History, because this constant has now moved twice and each move changed the strategy,
+ *  not just the bookkeeping (the rate sets the firing bar through
+ *  1/(1+(O-1)(1-c)), so a wrong value fires a different bet set):
  *
- *  It also RAISES the firing bar by 0.3-0.8 probability points, which retired over a third
- *  of every bet the old rule fired. Still an ASSUMPTION until an account statement confirms
- *  it (SPEC-081); a published rate is a better assumption, not a verified fact. */
-export const COMMISSION = 0.05;
+ *    0.02  original — right number, wrong reason ("Rewards flat rate", unexamined)
+ *    0.05  TE-0042  — the tennis market base rate, correct for the default package
+ *    0.02  TE-0044  — the founder switched the account to Basic on 2026-07-30 and
+ *                     confirmed the account shows 2%. Package choice sets the rate.
+ *
+ *  On the supported-fills reading this is the difference between an edge interval that
+ *  spans zero (5%) and one that clears it across the threshold range (2%) — TE-0043.
+ *  Betfair Rewards packages switch at most once a month, so this cannot silently drift.
+ *  Still an ASSUMPTION under SPEC-081 until the first settled market's statement shows
+ *  the 2% deduction; founder confirmation of the account UI is the strongest evidence
+ *  short of that statement. */
+export const COMMISSION = 0.02;
 /** Frozen in the policy digest. Roughly the per-match edge the measured +0.000862 nats
  *  corresponds to at typical prices. Never tuned to produce a pleasing number of tips. */
 export const MIN_EDGE = 0.02;

@@ -53,12 +53,11 @@ from tennis_edge.metrics import clustered_bootstrap
 from tennis_edge.residual_features import build_residual_features
 from tennis_edge.upcoming import break_even_probability
 
-#: Betfair TENNIS market base rate, charged on net winnings per market. TE-0042: the 2%
-#: this used to carry is a market-specific reduction (major football, UK horse racing) that
-#: tennis does not get, on a plan this account is not on. The rate moves the firing rule as
-#: well as the returns, through break-even 1/(1+(O-1)(1-c)) — so a stale value here does not
-#: merely restate a number, it measures a different strategy.
-COMMISSION = Decimal("0.05")
+#: The account's rate: 2%, the My Betfair Rewards Basic package the founder switched to
+#: on 2026-07-30 (TE-0044; TE-0042 documented the 5% default this replaced). The rate moves
+#: the firing rule as well as the returns, through break-even 1/(1+(O-1)(1-c)) — a stale
+#: value here does not merely restate a number, it measures a different strategy.
+COMMISSION = Decimal("0.02")  # TE-0044: Basic package
 
 BOOTSTRAP_DRAWS = 2000
 
