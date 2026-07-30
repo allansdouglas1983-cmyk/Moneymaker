@@ -278,7 +278,12 @@ function matchCard(row, index) {
       <div>
         <div class="players">${escapeHtml(f.player_a)} v ${escapeHtml(f.player_b)}</div>
         <div class="meta">${escapeHtml(f.match_date)} &middot; ${escapeHtml(f.tour)}
-          &middot; ${escapeHtml(f.surface)} &middot; best of ${f.best_of}</div>
+          &middot; ${escapeHtml(f.surface)} &middot; best of ${f.best_of}${
+          row.price_age_minutes == null ? "" :
+          ` &middot; <span class="${row.price_age_minutes > 120 ? "warnc" : ""}">price ${
+            row.price_age_minutes < 60
+              ? row.price_age_minutes + "m old"
+              : (row.price_age_minutes / 60).toFixed(1) + "h old"}</span>`}</div>
       </div>
       <span class="chip c-${row.status}">${row.status.replace(/_/g, " ")}</span>
     </div>
@@ -413,8 +418,31 @@ async function setBudget() {
   }
 }
 
+function clvCard(c) {
+  if (!c) return "";
+  const gain = c.mean_clv_probability_points;
+  return `<div class="card">
+    <div class="players">Closing line value — the earliest honest signal</div>
+    <div class="meta" style="margin-top:6px">
+      ${c.matches_with_closing_line} matches with a closing line &middot;
+      ${c.distinct_days} days
+    </div>
+    ${gain != null ? `<div class="grid" style="margin-top:10px">
+      ${cell("Moved our way", (100 * c.positive_clv_share).toFixed(0) + "% of picks")}
+      ${cell("Mean CLV", (gain >= 0 ? "+" : "") + (100 * gain).toFixed(2) + " pts")}
+      ${cell("95% interval", c.interval_95
+        ? "[" + (100 * c.interval_95[0]).toFixed(2) + ", "
+          + (100 * c.interval_95[1]).toFixed(2) + "]"
+        : "n/a")}
+    </div>` : `<div class="empty" style="padding:14px">${
+      escapeHtml(c.coverage_note || "No closing lines yet.")}</div>`}
+    <div class="why" style="margin-top:8px">${escapeHtml(c.note || "")}</div>
+  </div>`;
+}
+
 async function showLedger() {
-  const [data, card] = await Promise.all([api("/ledger"), api("/scorecard")]);
+  const [data, card, clv] = await Promise.all([
+    api("/ledger"), api("/scorecard"), api("/clv").catch(() => null)]);
   const d = card.denominator;
   const gain = card.paired_log_loss_gain;
   const scorecardHtml = `<div class="card">
@@ -457,7 +485,7 @@ async function showLedger() {
      <td>${escapeHtml(r.player_a)} v ${escapeHtml(r.player_b)}</td>
      <td>${escapeHtml(r.status.replace(/_/g, " "))}</td>
      <td>${signed(Math.max(r.edge_a, r.edge_b))}</td></tr>`).join("");
-  $("viewLedger").innerHTML = realBetsCard(data) + scorecardHtml + `<div class="card">
+  $("viewLedger").innerHTML = realBetsCard(data) + clvCard(clv) + scorecardHtml + `<div class="card">
     <div class="players">Recorded predictions</div>
     <div class="meta">Written before the match and never rewritten. A later view of the same
       match is a new row. Results join after settlement, through a separate table.</div>

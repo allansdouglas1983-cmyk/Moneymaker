@@ -112,6 +112,9 @@ interface FixtureRow {
   odds_a: string;
   odds_b: string;
   source: string;
+  /** When this price was captured. TE-0027 measured that acting on a stale price costs
+   *  ~0.2% ROI, so the age is served and shown rather than left implicit. */
+  updated_at?: string;
 }
 
 function matchKey(date: string, tour: string, a: string, b: string): string {
@@ -179,8 +182,12 @@ function assess(
 /** Snake_case for the wire: the page reads it, and the database columns match. */
 function wire(row: ReturnType<typeof assess>) {
   const p = row.prediction;
+  const capturedAt = row.fixture.updated_at;
   return {
     fixture: row.fixture,
+    price_age_minutes: capturedAt
+      ? Math.max(0, Math.round((Date.now() - Date.parse(capturedAt)) / 60000))
+      : null,
     status: row.status,
     reasons: row.reasons,
     best_side: row.bestSide,
@@ -232,7 +239,9 @@ async function board(): Promise<Response> {
   const ctx = await context();
   if (!ctx.model) return json({ error: "no current model row — run the refresh job" }, 503);
   const fixtures = await select<FixtureRow>(
-    "fixtures?match_date=gte." + ctx.today + "&order=match_date.asc",
+    "fixtures?match_date=gte." + ctx.today +
+      "&select=match_key,match_date,tour,player_a,player_b,surface,best_of," +
+      "odds_a,odds_b,source,updated_at&order=match_date.asc",
   );
   const rows = fixtures
     .map((f) => assess(f, ctx.states, ctx.meetings, ctx.model!, ctx.asOf, ctx.staleDays))
