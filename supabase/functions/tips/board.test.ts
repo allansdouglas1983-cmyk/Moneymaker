@@ -106,8 +106,38 @@ Deno.test("every venue's two-sided quote is extracted, one-sided ones dropped", 
   ];
   const quotes = allVenueQuotes(feed, "Home P.", "Away P.");
   assertEquals(quotes.length, 2);
-  assertEquals(quotes[0], { venue: "betfair_ex_uk", home: 1.85, away: 2.05 });
-  assertEquals(quotes[1], { venue: "pinnacle", home: 1.80, away: 2.10 });
+  assertEquals(quotes[0], { venue: "betfair_ex_uk", home: 1.85, away: 2.05, lastUpdate: null });
+  assertEquals(quotes[1], { venue: "pinnacle", home: 1.80, away: 2.10, lastUpdate: null });
+});
+
+Deno.test("each venue's own quote timestamp is captured verbatim (TE-0041 #1)", () => {
+  // Line shopping selects the MAX price across venues; when venues update
+  // asynchronously the max is systematically the STALEST quote — adverse selection
+  // wearing edge's clothes. Without each venue's own timestamp the shopping gain and
+  // the staleness artefact are inseparable, even retrospectively. The field is the
+  // provider's `last_update`, recorded verbatim and labelled a PROVIDER timestamp
+  // (SPEC-020 vocabulary): it may mean "when the crawler last saw this bookmaker",
+  // which only bounds staleness from below — recorded as what it is, never renamed
+  // into a claim it cannot support.
+  const feed = [
+    // Market-level timestamp is the more specific and wins over bookmaker-level.
+    { key: "betfair_ex_uk", last_update: "2026-07-30T10:00:00Z", markets: [
+      { key: "h2h", last_update: "2026-07-30T10:01:30Z", outcomes: [
+        { name: "Home P.", price: 1.85 }, { name: "Away P.", price: 2.05 }] }] },
+    // Bookmaker-level only: used as the fallback.
+    { key: "smarkets", last_update: "2026-07-30T06:00:00Z", markets: [
+      { key: "h2h", outcomes: [
+        { name: "Home P.", price: 1.86 }, { name: "Away P.", price: 2.04 }] }] },
+    // No timestamp anywhere: an explicit null, never a fabricated time.
+    { key: "matchbook", markets: [{ key: "h2h", outcomes: [
+      { name: "Home P.", price: 1.84 }, { name: "Away P.", price: 2.06 }] }] },
+  ];
+  const quotes = allVenueQuotes(feed, "Home P.", "Away P.");
+  assertEquals(quotes.map((q) => q.lastUpdate), [
+    "2026-07-30T10:01:30Z",
+    "2026-07-30T06:00:00Z",
+    null,
+  ]);
 });
 
 Deno.test("the decision ladder holds only venues a UK resident can transact at", () => {
