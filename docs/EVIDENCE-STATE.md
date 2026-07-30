@@ -66,6 +66,18 @@ sign.
   reading resolves, only the risk-shape columns (drawdown, floor-breach, participation)
   are estimable between rules — reward rankings are noise. Protocol and matrix:
   `docs/research/findings/DR-TENNIS-STAKING-006-*`.
+- **DR-003's adopt-nothing condition is discharged on the supported reading**
+  (DR-TENNIS-STAKING-007): the completed deep research's chain, re-derived at the
+  founder-attested 2%, reproduces DR-005's @5% table exactly and then shows (a) the
+  day-clustered CI95 lower bound positive at every threshold 0.00–0.04 (min_edge 0.02:
+  +3.86% [+1.37, +6.29], 9,793 bets), market control significantly negative; (b)
+  DR-004's "no rule expressible below ~£400" reversed — an artefact of the 5% error.
+  NOT discharged: realised fills, SPEC-081 statement verification, design-level
+  selection. Consequence: the matrix's D7 K-LCB (Kelly at the conservative bound) was
+  registered (TE-0047, frozen constants Δe=0.0249, d_max=0.30, ÷k card charge) and
+  adopted for the trial by founder directive (ADR 0020 Amendment 4) — the mis-derived
+  shrink allocator of Amendment 2 stays WITHDRAWN (Amendment 3). The served stakes are
+  golden-vectored (300 vectors, exact pence) against the registered Python rules.
 - **Stationary training stands** (TE-0045, pre-registered): recency-weighted refits never
   beat the equal-weighted fit — pooled null at every half-life, monotone HARM as the
   half-life shortens (h=1y: −0.000230 [−0.000439, −0.000003]), and no help post-2024

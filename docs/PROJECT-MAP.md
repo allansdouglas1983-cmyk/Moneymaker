@@ -86,8 +86,14 @@ The full 58-item capabilities inventory is in the codebase sweep; the headline g
   day-reservation semantics as ONE shared pure function (replay and any future serving
   path consume the same implementation). The rule catalogue (`staking/rules.py`)
   includes `conservative_kelly` as a measured object only — withdrawn as policy by
-  ADR 0020 Amendment 3; the open follow-up is pre-registering E2 CVAR-LP-EV +
-  D19 JOINT-HARA under B5 HB-CAP with founder-declared (α, β).
+  ADR 0020 Amendment 3. The ADOPTED policy (ADR 0020 Amendment 4) is
+  `d7_conservative_bound` — TE-0047's registered matrix-D7 form: Kelly at the
+  conservative bound (Δe = 0.0249, TE-0043 interval displacement), ÷k same-day
+  correlation charge, multi-bet HB-CAP day budget (d_max 0.30), reserve_day + £1 skip.
+  Served by `docs/staking.js` (exact BigInt, no float money), held to the Python rules
+  by 300 golden vectors at exact pence (`staking_port_test.ts`) plus strict firing-
+  boundary tests (`staking_selection_test.ts`); the page card groups fired rows by UTC
+  day off the founder-entered bank and persisted high-water mark.
 - **Coherence mathematics** (synthetic-only): DP scoring engine validated against an
   independent oracle, 2-D root solver with canonical dedup and discretisation-stability
   contracts, holdout projection (`sport_tennis/coherence/*`).
