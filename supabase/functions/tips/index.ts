@@ -25,6 +25,8 @@ import {
 } from "./scoring.ts";
 import {
   allVenueQuotes,
+  entryTiming,
+  minutesToStart,
   venueOf,
   bestOfFor,
   type FeedBookmaker,
@@ -113,6 +115,10 @@ interface FixtureRow {
   odds_a: string;
   odds_b: string;
   source: string;
+  /** Scheduled start. SCHEDULED, never actual — the live model may only know the
+   *  scheduled time (SPEC-022). Absent on manual entries, which is a distinct state
+   *  from actionable and is never defaulted. */
+  commence_time?: string | null;
   /** When this price was captured. TE-0027 measured that acting on a stale price costs
    *  ~0.2% ROI, so the age is served and shown rather than left implicit. */
   updated_at?: string;
@@ -189,6 +195,10 @@ function wire(row: ReturnType<typeof assess>) {
     price_age_minutes: capturedAt
       ? Math.max(0, Math.round((Date.now() - Date.parse(capturedAt)) / 60000))
       : null,
+    // Advisory only. Changes no probability, no edge and no status, and authorises
+    // nothing — every bet stays founder-manual under the ADR 0020 protocol.
+    minutes_to_start: minutesToStart(row.fixture.commence_time),
+    entry_timing: entryTiming(row.fixture.commence_time),
     status: row.status,
     reasons: row.reasons,
     best_side: row.bestSide,
@@ -242,7 +252,7 @@ async function board(): Promise<Response> {
   const fixtures = await select<FixtureRow>(
     "fixtures?match_date=gte." + ctx.today +
       "&select=match_key,match_date,tour,player_a,player_b,surface,best_of," +
-      "odds_a,odds_b,source,updated_at&order=match_date.asc",
+      "odds_a,odds_b,source,commence_time,updated_at&order=match_date.asc",
   );
   const rows = fixtures
     .map((f) => assess(f, ctx.states, ctx.meetings, ctx.model!, ctx.asOf, ctx.staleDays))
@@ -508,6 +518,7 @@ async function boardRefresh(): Promise<Response> {
         odds_a: String(picked.home),
         odds_b: String(picked.away),
         source: "ODDS_API_" + picked.book.toUpperCase(),
+        commence_time: event.commence_time,
       };
       const stored = await db("fixtures?on_conflict=match_key", {
         method: "POST",

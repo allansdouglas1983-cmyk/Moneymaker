@@ -209,3 +209,52 @@ export function venueOf(source: string): string {
       throw new Error("unmapped price source, refusing to guess a venue: " + source);
   }
 }
+
+/** Minutes from `now` until a scheduled start, or null if no start time is recorded.
+ *
+ *  Negative when the scheduled start has passed, and deliberately NOT clamped: a
+ *  negative number is the single most important state to see, because it means the
+ *  match may already be in play. */
+export function minutesToStart(
+  commenceTime: string | null | undefined,
+  now: number = Date.now(),
+): number | null {
+  if (!commenceTime) return null;
+  const start = Date.parse(commenceTime);
+  if (Number.isNaN(start)) return null;
+  return Math.round((start - now) / 60000);
+}
+
+/** Opens the entry window at T-90m. Earlier than this the price is no better as a
+ *  forecast — TE-0006 found log loss flat across horizons — while the relative spread
+ *  is measurably wider (5.75% at T-24h, 3.17% at T-6h against 2.61% at T-1h) and
+ *  top-of-book depth is roughly halved. Acting early pays a real cost for no
+ *  information. */
+const WINDOW_OPENS_MINUTES = 90;
+
+/** Closes the entry window at T-30m. This is a SAFETY bound, not a cost bound: the book
+ *  is flat from here to the off (2.43% at T-30m against 2.47% at T-10m), so the margin
+ *  is almost free. It exists because tennis matches can START EARLY, so a scheduled
+ *  start is not a safe live boundary — SPEC-022 says so explicitly and conceptual audit
+ *  F-01 records it as a defect to key a live rule to. Inside this margin the founder
+ *  could be looking at a market that has already gone in-play. */
+const WINDOW_CLOSES_MINUTES = 30;
+
+export type EntryTiming = "TOO_EARLY" | "ACT" | "TOO_LATE" | "UNKNOWN";
+
+/**
+ * Where a fixture sits relative to the entry window.
+ *
+ * Advisory and display-only. It changes no probability, no edge and no status, and it
+ * authorises nothing — every bet remains founder-manual under the ADR 0020 protocol.
+ */
+export function entryTiming(
+  commenceTime: string | null | undefined,
+  now: number = Date.now(),
+): EntryTiming {
+  const minutes = minutesToStart(commenceTime, now);
+  if (minutes === null) return "UNKNOWN";
+  if (minutes > WINDOW_OPENS_MINUTES) return "TOO_EARLY";
+  if (minutes < WINDOW_CLOSES_MINUTES) return "TOO_LATE";
+  return "ACT";
+}
