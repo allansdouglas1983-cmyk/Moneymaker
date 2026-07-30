@@ -119,3 +119,42 @@ bank as the stop, carries ~7% zero-edge annual exhaustion risk and ~1% annual ri
 ever being £64 down at the measured edge. £2 stakes want a £200 bank for the same
 safety. No number in this addendum is a recommendation; the budget is the founder's to
 set, now with both columns visible.
+
+## Addendum 2 — the six-month frontier, and the allocator that should have been in the study
+
+**The founder's horizon is six months, not five years, and their original request was a
+per-bet allocator** (stake from bank, odds and chance). That family was excluded from
+the frozen study by the "edge unproven" gate — which traced to the TE-0042 commission
+error (see TE-0044's correction: the founder attests 2% predates the session). The
+exclusion was therefore wrong at the root. The allocator is now built and measured.
+
+Six months (~445 bets), £200 bank, 1,000 histories, 2% commission
+(`six-month-frontier.txt`):
+
+| arm | median profit (measured edge) | worst 5% | best 5% | zero-edge: bust / worst dip |
+|---|---|---|---|---|
+| flat £2 | +£36 | £146 | £317 | 0% / £99 |
+| flat £5 | +£91 | £64 | £494 | 10.2% / £200 |
+| flat £10 | +£160 | £0 | £788 | 41.7% / £200 |
+| **per-bet conservative allocator** | **+£79** | **£101** | **£910** | **0.0% / £102** |
+| full Kelly (capped) | −£50 | £84 | £1,106 | 0.0% / £121 |
+
+The allocator: f_i = 0.355 × Kelly(p_model_i, O_i, c) of the current bank per bet,
+HB-capped. The 0.355 is the measured conservative-bound/point ratio from TE-0043's
+day-clustered interval (+1.37/+3.86) — SPEC-034's consume-the-lower-bound rule, not a
+chosen fraction. It compounds by construction (fractions of the live bank).
+
+Reading: **the allocator dominates the flat frontier risk-adjusted** — near flat-£5's
+profit at flat-£2's risk, zero busts in 1,000 zero-edge histories, and the largest
+honest upside tail. Full Kelly's negative median is textbook over-betting at this bank
+size and is the measured justification for the shrink. Brute stake size is the wrong
+road to six-month profit: flat £10's median is highest but it destroys the bank in 42%
+of zero-edge worlds and 5% of measured-edge worlds.
+
+STATUS: these arms ran after the config freeze, so they are EXPLORATORY under the
+original registration. The amendment registering the allocator arm (N 12→13, shrink
+provenance fixed) is committed alongside this addendum; adoption into the served app
+remains gated on founder sign-off. Five-year compounding-shape results are archived in
+`compounding-shapes-200.txt` for the record (sqrt £753 vs flat £549 median; step rule
+lowest dip £69 with the largest tail) — informative, not decision-relevant at the
+founder's declared horizon.

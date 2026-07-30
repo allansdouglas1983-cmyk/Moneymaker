@@ -76,7 +76,7 @@ CONFIG = {
     "draws": 1_000,
     "seed": 20260730,
     "expected_block_length": 10,
-    "N_trials": 12,
+    "N_trials": 13,
     "alpha": 0.05,
     "gates": {
         "G1_dead_floor_at_zero": 0.05,
@@ -107,6 +107,13 @@ ARMS: dict[str, StakingRule] = {
     "TIPP_08": tipp(Decimal("0.05"), 7_000, Decimal("0.8")),     # B4, ratchet 80% of HWM
     "HBCAP_PROP5": hb_cap(proportional(Decimal("0.05")), Decimal("0.30")),  # B5 over B1
     "CONTROL_ALLIN": proportional(Decimal("1")),                 # designed pathology control
+    # AMENDMENT 2026-07-30 (registered after the six-month frontier ran, labelled): the
+    # founder-requested per-bet allocator. f_i = SHRINK * kelly(p_model_i, O_i, c) of the
+    # live bank, HB-capped at 50% drawdown. SHRINK = 1.37/3.86, the measured
+    # conservative-bound/point ratio (TE-0043 supported @2%) — SPEC-034's rule, never a
+    # chosen fraction. Its exclusion from the original freeze traced to the TE-0042
+    # commission error (TE-0044 correction); N_trials moves 12 -> 13.
+    "CONS_KELLY": None,  # constructed in main(): needs commission binding
 }
 
 SCENARIO_FACTORS = {"as_measured": Decimal(0), "half": Decimal("0.5"),

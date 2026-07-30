@@ -1,0 +1,7 @@
+SIX MONTHS (~126 betting days, ~445 bets), GBP200 bank, 1000 histories
+
+  FLAT GBP2         MEASURED: med GBP   236 q05 GBP  146 q95 GBP   317 | ZERO: med GBP   198 q05 GBP  114 dip95 GBP   99 bust 0.0%
+  FLAT GBP5         MEASURED: med GBP   291 q05 GBP   64 q95 GBP   494 | ZERO: med GBP   199 q05 GBP    0 dip95 GBP  200 bust 10.2%
+  FLAT GBP10        MEASURED: med GBP   360 q05 GBP    0 q95 GBP   788 | ZERO: med GBP   139 q05 GBP    0 dip95 GBP  200 bust 41.7%
+  CONS-KELLY 0.355  MEASURED: med GBP   279 q05 GBP  101 q95 GBP   910 | ZERO: med GBP   170 q05 GBP   98 dip95 GBP  102 bust 0.0%
+  KELLY FULL(cap)   MEASURED: med GBP   150 q05 GBP   84 q95 GBP  1106 | ZERO: med GBP   129 q05 GBP   82 dip95 GBP  121 bust 0.0%

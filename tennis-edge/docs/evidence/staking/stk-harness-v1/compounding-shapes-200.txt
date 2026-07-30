@@ -1,0 +1,14 @@
+GBP200 bank, measured edge, winnings retained; ~890 bets/yr
+
+  FLAT GBP2           1yr: median bank GBP    271  q05 GBP   148  q95 GBP    390  | dip-below-start p95 GBP   90
+  FLAT GBP2           2yr: median bank GBP    342  q05 GBP   172  q95 GBP    508  | dip-below-start p95 GBP  105
+  FLAT GBP2           5yr: median bank GBP    549  q05 GBP   283  q95 GBP    820  | dip-below-start p95 GBP  109
+
+  STEP GBP1/100 bank  1yr: median bank GBP    244  q05 GBP   166  q95 GBP    405  | dip-below-start p95 GBP   50
+  STEP GBP1/100 bank  2yr: median bank GBP    300  q05 GBP   171  q95 GBP    640  | dip-below-start p95 GBP   61
+  STEP GBP1/100 bank  5yr: median bank GBP    648  q05 GBP   197  q95 GBP   2387  | dip-below-start p95 GBP   69
+
+  SQRT base GBP2      1yr: median bank GBP    275  q05 GBP   144  q95 GBP    476  | dip-below-start p95 GBP   92
+  SQRT base GBP2      2yr: median bank GBP    372  q05 GBP   164  q95 GBP    696  | dip-below-start p95 GBP  108
+  SQRT base GBP2      5yr: median bank GBP    753  q05 GBP   253  q95 GBP   1445  | dip-below-start p95 GBP  120
+
