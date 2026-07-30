@@ -307,3 +307,39 @@
     and are deliberately NOT recorded as findings'
   returned: '2026-07-30'
   findings: docs/research/findings/DR-TENNIS-STAKING-001-findings.md
+- id: DR-TENNIS-STAKING-002
+  title: Staking and bank-allocation algorithms, named, with measured consequences - supersedes
+    the partial 001
+  classification: ADVISORY
+  status: ASSESSED
+  requested: 2026-07-30
+  blocking_scope: none - nothing implemented; the founder asked for research BEFORE building
+  notes:
+  - 'supersedes DR-TENNIS-STAKING-001, which reported only 19 verified claims because the run
+    had not finished. Same run at 95 agents: 114 claims, 61 verified, 25 refuted (41%)'
+  - 'RECOMMENDED: risk-constrained Kelly (Busseti/Ryu/Boyd), NOT fractional Kelly. Fractional
+    Kelly is Pareto-dominated - 0.035 growth vs 0.047 at matched drawdown risk 0.1. Closed-form
+    survival constraint E(r^T b)^-lambda <= 1 bounds the ENTIRE minimum-wealth CDF with one
+    lambda. Convex, always feasible, refuses non-positive-EV bets by construction'
+  - 'full Kelly and max-Sharpe gave 100% RUIN on 7,200 basketball games and 14,400 football
+    matches under realistic imperfect estimates. A published tennis study had to cap Kelly at
+    1% of bankroll to avoid early bankruptcy'
+  - 'safety is cheap: quarter-Kelly cuts P(drawdown>20%) from 25% to 2% while median terminal
+    bank falls only 122 -> 109 (Buchdahl, 10,000 runs, 250 bets, 4% edge)'
+  - 'stake must FALL as odds lengthen - Kelly fraction is mu/K, so a flat 1% at 20-to-1 is 20x
+    Kelly. Ruin at a constant +1% edge: 13% at evens, 34% at 2-1, 64% at 20-1. At 20-1 a +1%
+    and a -1% edge are nearly indistinguishable in outcome data'
+  - 'size on a Beta-posterior mean, not the plug-in estimate: Bayes-optimal fraction is exactly
+    Kelly at (x+a)/(n+a+b). Worked example gives 3.4-5.6% where plug-in Kelly says 8.9%, and a
+    tighter prior collapses it 13x'
+  - 'REFUTED (25): half-Kelly is NOT universally better - it lost to plug-in Kelly in all four
+    of one paper''s experiments (13.268 vs 18.134). Over-tightening a chance constraint is
+    actively counterproductive. Martingale refuted in every form (53-78% bankruptcy vs ~0% for
+    level staking; EV unchanged by construction)'
+  - 'sample sizes govern everything: ~1,675 bets at odds 1.95 for decisive evidence of a +5%
+    edge, ~10,400 at odds 7.00; distinguishing a 1.0% from a 1.1% edge needs two million trials'
+  - 'PROCESS NOTE: an earlier attempt built an allocator with INVENTED risk parameters (2%
+    single cap, 5% daily, 20% reserve, 80% brake) that came from no source. This document
+    replaces guessed parameters with named, sourced, measured ones'
+  returned: '2026-07-30'
+  findings: docs/research/findings/DR-TENNIS-STAKING-002-findings.md
