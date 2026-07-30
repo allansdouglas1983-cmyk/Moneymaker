@@ -1,4 +1,4 @@
-# TE-0042 — the commission rate is 5%, not 2%, and it costs 1.97 points of ROI
+# TE-0042 — the commission rate is 5%, not 2%, and it costs about 0.9 points of ROI
 
 **Date:** 2026-07-30. **Type:** correction of a labelled assumption to a published fact.
 **Direction:** unfavourable, but modest. Every displayed edge gets worse by roughly one
