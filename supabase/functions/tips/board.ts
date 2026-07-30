@@ -81,11 +81,22 @@ export function corpusCandidates(feedName: string): string[] {
   return wide === narrow ? [wide] : [wide, narrow];
 }
 
-/** Resolve a feed name against the state's player keys for one tour, or null. */
+/**
+ * Resolve a feed name against the state's player keys for one tour, or null.
+ *
+ * Aliases are consulted FIRST and are authoritative: the heuristic below is a guess
+ * about spelling conventions, and a human correction must never be re-guessed. An
+ * unresolved name stays null — the board shows the fixture with no model opinion
+ * rather than pricing the wrong player, which is the only failure here that would
+ * put a fabricated number in the ledger.
+ */
 export function resolvePlayer(
   feedName: string,
   normalizedIndex: Map<string, string>,
+  aliases?: Map<string, string>,
 ): string | null {
+  const alias = aliases?.get(normalizeName(feedName));
+  if (alias !== undefined) return alias;
   for (const candidate of corpusCandidates(feedName)) {
     const hit = normalizedIndex.get(normalizeName(candidate));
     if (hit !== undefined) return hit;

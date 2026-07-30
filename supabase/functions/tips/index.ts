@@ -415,6 +415,14 @@ async function boardRefresh(): Promise<Response> {
     if (!index) indexByTour.set(tour, index = new Map());
     index.set(normalizeName(player), player);
   }
+  // Human corrections beat the spelling heuristic and are never re-guessed.
+  const aliasByTour = new Map<string, Map<string, string>>();
+  for (const row of await select<{ feed_name: string; tour: string; player: string }>(
+    "player_aliases?select=feed_name,tour,player")) {
+    let map = aliasByTour.get(row.tour);
+    if (!map) aliasByTour.set(row.tour, map = new Map());
+    map.set(row.feed_name, row.player);
+  }
 
   let fixtures = 0, minted = 0, unmapped = 0, unpriced = 0;
   let creditsRemaining: string | null = null;
@@ -429,6 +437,7 @@ async function boardRefresh(): Promise<Response> {
     creditsRemaining = response.headers.get("x-requests-remaining") ?? creditsRemaining;
     const tour = tourOf(sport.key)!;
     const index = indexByTour.get(tour) ?? new Map<string, string>();
+    const aliases = aliasByTour.get(tour);
 
     for (const event of await response.json() as FeedEvent[]) {
       const picked = pickPrices(event.bookmakers, event.home_team, event.away_team);
@@ -437,8 +446,8 @@ async function boardRefresh(): Promise<Response> {
         continue;
       }
       books[picked.book] = (books[picked.book] ?? 0) + 1;
-      const mappedHome = resolvePlayer(event.home_team, index);
-      const mappedAway = resolvePlayer(event.away_team, index);
+      const mappedHome = resolvePlayer(event.home_team, index, aliases);
+      const mappedAway = resolvePlayer(event.away_team, index, aliases);
       const playerA = mappedHome ?? event.home_team;
       const playerB = mappedAway ?? event.away_team;
       const date = event.commence_time.slice(0, 10);
@@ -464,6 +473,17 @@ async function boardRefresh(): Promise<Response> {
 
       if (mappedHome === null || mappedAway === null) {
         unmapped += 1;
+        // Record WHICH name failed. An uncounted gap is a gap nobody can close, and
+        // each one is a match the board shows with no opinion — evidence not collected.
+        for (const [feedName, mapped] of
+             [[event.home_team, mappedHome], [event.away_team, mappedAway]] as
+               Array<[string, string | null]>) {
+          if (mapped !== null) continue;
+          await db("rpc/note_unmapped", {
+            method: "POST",
+            body: JSON.stringify({ p_feed_name: normalizeName(feedName), p_tour: tour }),
+          });
+        }
         continue;
       }
       // One auto-minted ledger row per match per UTC day: odds drift within a day
@@ -482,6 +502,8 @@ async function boardRefresh(): Promise<Response> {
     fixtures_upserted: fixtures,
     predictions_minted: minted,
     unmapped_names: unmapped,
+    unmapped_queue: (await select<{ feed_name: string; tour: string; seen_count: number }>(
+      "unmapped_names?select=feed_name,tour,seen_count&order=seen_count.desc&limit=20")),
     unpriced_matches: unpriced,
     books_used: books,
     credits_remaining: creditsRemaining,

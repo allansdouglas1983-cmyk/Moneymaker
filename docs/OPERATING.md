@@ -56,6 +56,27 @@ scorecard record this system is now accumulating. Nothing in this repo may lower
 budgets, stakes and execution live behind gates that are human-controlled specification
 changes. Until then the site is an instrument, and its value is that its record is honest.
 
+## When a match shows no model opinion
+
+The board can only price a player the rating state knows. When a feed name doesn't
+resolve, the fixture still appears with the real exchange price but reads
+INSUFFICIENT_DATA, and the name is logged to `tennis.unmapped_names` with a count. Two
+different causes, two different answers:
+
+- **A genuinely unknown player** — a debutant, a wildcard, a junior. Nothing to fix; the
+  refusal is correct. (First real example: Cruz Hewitt, 2026-07-30. Note the danger the
+  matcher avoided — a surname-only match would have priced him with *Lleyton* Hewitt's
+  ratings.)
+- **A spelling mismatch** — the feed writes a name the corpus spells differently. Fix it
+  once and permanently by adding a row to `tennis.player_aliases`:
+  `feed_name` (lower-case, accents stripped, punctuation as spaces), `tour`, `player`
+  (the exact corpus spelling, e.g. `Zverev A.`), optional `note`. Aliases are consulted
+  *before* the spelling heuristic, so a correction is never re-guessed.
+
+Check the queue with: `select * from tennis.unmapped_names order by seen_count desc;`
+The counts sort the costly gaps to the top — each one is a match the board showed with no
+opinion, which is evidence the ledger never collected.
+
 ## When something looks broken
 
 - `/health` answers with `ok:true`, the model digest, and `state_stale_days`. Stale > 8
