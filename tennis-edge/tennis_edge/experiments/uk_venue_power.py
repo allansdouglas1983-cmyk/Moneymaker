@@ -56,9 +56,10 @@ from tennis_edge.residual_features import build_residual_features
 from tennis_edge.upcoming import break_even_probability
 from tennis_edge.venues import Kind, benchmark_keys, by_key, uk_settlement_keys
 
-#: Betfair Rewards flat rate, charged on net winnings. A bookmaker's margin is already inside
-#: its quote, so its commission is zero and that is not a favour to the strategy.
-EXCHANGE_COMMISSION = 0.02
+#: Betfair TENNIS market base rate (TE-0042), charged on net winnings. A bookmaker's margin
+#: is already inside its quote, so its commission is zero and that is not a favour to the
+#: strategy — it is why the exchange has to clear a bar the bookmaker does not.
+EXCHANGE_COMMISSION = 0.05
 
 #: The effect worth resolving. Not tuned to any result: it is the order of magnitude an
 #: edge would have to be to be worth running this at all, and it is fixed before looking at

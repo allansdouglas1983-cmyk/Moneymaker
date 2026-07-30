@@ -29,7 +29,8 @@ from tennis_edge.xmarket import MINIMUM_LEG_SIZE, Leg, surname_of
 ROOT = ("/tmp/claude-0/-home-user-Moneymaker/"
         "b09554bc-9729-5d86-bb7c-43d4f555802d/scratchpad/pilot-data/extracted")
 HORIZONS = (21_600, 3_600, 600)
-COMMISSION = Decimal("0.02")
+#: Betfair TENNIS market base rate, charged on net winnings per market (TE-0042).
+COMMISSION = Decimal("0.05")
 MARKETS = ("MATCH_ODDS", "SET_BETTING", "NUMBER_OF_SETS")
 MONTHS = {name: n for n, name in enumerate(
     ("Jan", "Feb", "Mar", "Apr", "May", "Jun",

@@ -55,10 +55,10 @@ FIRST_SCORED_YEAR = 2012
 BOOTSTRAP_DRAWS = 2000
 
 #: Commission charged on net winnings. A traditional bookmaker charges none because its
-#: margin is already inside the quote; the exchange charges 2% because its quote has no
-#: margin in it. Derived from the venue registry rather than listed by hand so that adding a
-#: venue cannot leave it silently free to bet at.
-COMMISSIONS = {v.key: (0.02 if v.kind is Kind.EXCHANGE else 0.0) for v in VENUES}
+#: margin is already inside the quote; the exchange charges the tennis market base rate of
+#: 5% (TE-0042) because its quote has no margin in it. Derived from the venue registry
+#: rather than listed by hand so that adding a venue cannot leave it silently free to bet at.
+COMMISSIONS = {v.key: (0.05 if v.kind is Kind.EXCHANGE else 0.0) for v in VENUES}
 
 
 def _sigmoid(z: float) -> float:

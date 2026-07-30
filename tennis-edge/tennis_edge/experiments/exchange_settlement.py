@@ -53,9 +53,12 @@ from tennis_edge.metrics import clustered_bootstrap
 from tennis_edge.residual_features import build_residual_features
 from tennis_edge.upcoming import break_even_probability
 
-#: Betfair Rewards flat rate, charged on net winnings. Confirmation of current UK mechanics
-#: is DR-TENNIS-MICROSTRUCTURE-001 question 6; 2% is what the platform has always modelled.
-COMMISSION = Decimal("0.02")
+#: Betfair TENNIS market base rate, charged on net winnings per market. TE-0042: the 2%
+#: this used to carry is a market-specific reduction (major football, UK horse racing) that
+#: tennis does not get, on a plan this account is not on. The rate moves the firing rule as
+#: well as the returns, through break-even 1/(1+(O-1)(1-c)) — so a stale value here does not
+#: merely restate a number, it measures a different strategy.
+COMMISSION = Decimal("0.05")
 
 BOOTSTRAP_DRAWS = 2000
 
