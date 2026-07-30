@@ -14,7 +14,7 @@
  * Committed RED: trial.ts does not exist yet.
  */
 import { assertEquals } from "jsr:@std/assert@1";
-import { budgetState, venueForBet } from "./trial.ts";
+import { budgetState, derivedBudgetPence, venueForBet } from "./trial.ts";
 
 Deno.test("only registry venues are recordable, with founder-verified commission", () => {
   const betfair = venueForBet("betfair_ex_uk");
@@ -26,6 +26,22 @@ Deno.test("only registry venues are recordable, with founder-verified commission
   assertEquals(venueForBet("smarkets"), null);
   assertEquals(venueForBet("pinnacle"), null);
   assertEquals(venueForBet("made_up_exchange"), null);
+});
+
+Deno.test("the loss budget DERIVES from the live bank — never a static number", () => {
+  // Founder directive 2026-07-30: the budget is computed from the bank at any time,
+  // with the bank entered and edited in the app. It derives as d_max x current bank —
+  // the SAME 30% cap the registered allocator enforces with probability one (TE-0047),
+  // so the recording guard and the staking policy can never disagree about worst case.
+  // Each bank edit is the deliberate founder act that re-derives it (SPEC-060 spirit:
+  // no code path changes the budget without a human act; editing the bank IS the act).
+  assertEquals(derivedBudgetPence(20_000), 6_000);   // GBP 200 bank -> GBP 60
+  assertEquals(derivedBudgetPence(50_000), 15_000);  // GBP 500 -> GBP 150
+  assertEquals(derivedBudgetPence(333), 99);         // floors to the penny, never rounds up
+  // No bank means NO budget — a refusal upstream, never a default.
+  assertEquals(derivedBudgetPence(null), null);
+  assertEquals(derivedBudgetPence(0), null);
+  assertEquals(derivedBudgetPence(-5), null);
 });
 
 Deno.test("the loss budget is venue-blind (SPEC-103: one budget, never per-venue)", () => {
