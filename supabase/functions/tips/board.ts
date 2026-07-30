@@ -4,8 +4,9 @@
  * The feed's job is to deliver what the manual entry box delivered — a real, current,
  * transactable price and two player names — without anyone typing. The price preference
  * is therefore the exchange itself: `betfair_ex_uk` is the venue a bet would actually go
- * to, and its quote is the exact number the manual flow assumed. Pinnacle and the other
- * exchanges are fallbacks; a match with none of them is a typed absence, never a default.
+ * to, and its quote is the exact number the manual flow assumed. Smarkets and Matchbook
+ * are the fallbacks, both UK-open exchanges; a match none of the three quotes is a typed
+ * absence, never a default.
  *
  * Everything here is pure and deno-tested. Nothing in scoring.ts changes: the feed
  * produces fixtures, and fixtures flow through the identical assess/mint path the
@@ -180,4 +181,31 @@ export function pickPrices(
     }
   }
   return null;
+}
+
+/**
+ * The exchange a fixture's price came from, from its governed source label.
+ *
+ * Recorded on every prediction because `fixtures` is UPDATE-in-place: once the next
+ * refresh overwrites a fixture, the prediction row is the only place that still knows
+ * which exchange priced the decision. Any venue-relative measurement needs it — CLV above
+ * all, where a decision price from one exchange measured against another's closing quote
+ * is not closing-line value but the sum of a market move and a fixed cross-venue gap.
+ *
+ * Only the three decision-ladder exchanges can appear. An unrecognised source THROWS:
+ * defaulting it to Betfair would manufacture precisely the mixing this exists to prevent.
+ */
+export function venueOf(source: string): string {
+  switch (source) {
+    case "MANUAL_BETFAIR_UI":
+    case "DELAYED_KEY":
+    case "ODDS_API_BETFAIR_EX_UK":
+      return "betfair_ex_uk";
+    case "ODDS_API_SMARKETS":
+      return "smarkets";
+    case "ODDS_API_MATCHBOOK":
+      return "matchbook";
+    default:
+      throw new Error("unmapped price source, refusing to guess a venue: " + source);
+  }
 }

@@ -25,6 +25,7 @@ import {
 } from "./scoring.ts";
 import {
   allVenueQuotes,
+  venueOf,
   bestOfFor,
   type FeedBookmaker,
   normalizeName,
@@ -359,7 +360,17 @@ async function mintPrediction(
       break_even_b: p.breakEvenB,
       edge_a: p.edgeA,
       edge_b: p.edgeB,
+      // The venue whose quote priced this decision, recorded HERE because `fixtures` is
+      // UPDATE-in-place: after the next refresh overwrites the fixture, the prediction
+      // would otherwise have no way to say which exchange it was priced at. Any
+      // venue-relative measurement — CLV above all — must compare like with like.
+      price_venue: venueOf(fixture.source),
       commission: 0.02,
+      // 2% is an ASSUMPTION, not a rate read off an account statement. SPEC-081 makes the
+      // statement truth; until one is read this label keeps the assumption from being
+      // mistaken downstream for a verified fact. A wrong rate moves break-even by roughly
+      // 0.5-0.9 probability points, which mis-fires every bet whose edge sits in that strip.
+      commission_source: "ASSUMPTION",
       features: p.features,
       contributions: p.contributions,
       reasons: row.reasons,
@@ -897,9 +908,10 @@ async function scorecard(): Promise<Response> {
 async function clv(): Promise<Response> {
   const [predictions, observations] = await Promise.all([
     select<{ match_key: string; match_date: string; odds_a: string; odds_b: string;
-             edge_a: number; edge_b: number; created_at: string }>(
-      "predictions?select=match_key,match_date,odds_a,odds_b,edge_a,edge_b,created_at" +
-        "&order=created_at.desc&limit=2000"),
+             edge_a: number; edge_b: number; created_at: string;
+             price_venue: string | null }>(
+      "predictions?select=match_key,match_date,odds_a,odds_b,edge_a,edge_b,created_at," +
+        "price_venue&order=created_at.desc&limit=2000"),
     select<{ match_key: string; venue: string; odds_a: string; odds_b: string;
              commence_time: string; captured_at: string }>(
       "price_observations?select=match_key,venue,odds_a,odds_b,commence_time,captured_at" +
@@ -929,9 +941,18 @@ async function clv(): Promise<Response> {
     const held = latest.get(p.match_key);
     if (!held || p.created_at > held.created_at) latest.set(p.match_key, p);
   }
+  // The closing line above is Betfair-only. A decision price from a different exchange
+  // measured against a Betfair close is not closing-line value — it is the sum of a
+  // genuine market move and a fixed cross-venue quote difference, and the two cannot be
+  // separated after the fact. The venue gap is of order 0.1-0.9 de-vigged probability
+  // points against a CLV signal of order 0.05, so mixing does not add noise, it swamps
+  // the measurement. Mismatched rows are EXCLUDED and COUNTED, never silently dropped.
+  let venueMismatched = 0, venueUnknown = 0;
   for (const [key, p] of latest) {
     const close = closing.get(key);
     if (!close) continue;
+    if (p.price_venue === null) { venueUnknown += 1; continue; }
+    if (p.price_venue !== "betfair_ex_uk") { venueMismatched += 1; continue; }
     const [openA, openB] = devig(Number(p.odds_a), Number(p.odds_b));
     const [closeA, closeB] = devig(Number(close.odds_a), Number(close.odds_b));
     // The side the rule would have backed is the side with the larger edge.
@@ -953,6 +974,11 @@ async function clv(): Promise<Response> {
     positive_clv_share: scored ? positive / scored : null,
     mean_clv_probability_points: mean,
     interval_95: interval95(days, 20260730),
+    // Both sides of this comparison are betfair_ex_uk, by construction. These two counters
+    // are the denominator's missing pieces and stay visible even at zero.
+    venue: "betfair_ex_uk",
+    excluded_venue_mismatch: venueMismatched,
+    excluded_venue_unrecorded: venueUnknown,
     note: "De-vigged probability points gained on the picked side between the decision " +
       "price and the last exchange quote before the off. Positive means the market " +
       "moved toward the pick. CLV converges far faster than settled P&L, so it is the " +
