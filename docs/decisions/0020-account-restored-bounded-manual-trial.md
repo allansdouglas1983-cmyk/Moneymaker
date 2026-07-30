@@ -68,3 +68,17 @@ The forecast edge is proven; the money edge after real execution costs is undeci
 that is exactly what this trial exists to measure. Nothing in this ADR asserts the
 trial will profit, and no result of the trial may be cherry-picked into a claim it
 does not support.
+
+## Amendment 2 — 2026-07-30, founder directive: the trial staking rule is the per-bet allocator, not flat
+
+The founder has explicitly and repeatedly rejected flat staking for the trial. By
+founder directive the trial's staking clause is superseded: suggested stakes follow the
+registered conservative per-bet allocator (`tennis_edge.staking.rules.conservative_kelly`
+— f_i = 0.355 × Kelly(p_model_i, O_i, c) of the live bank, HB-capped; the 0.355 is the
+TE-0043 measured conservative-bound/point ratio, provenance-pinned, never a default).
+
+Unchanged and still binding: placement is manual and human ALWAYS; the recording flow
+refuses without a pre-set loss budget and when the budget is exhausted; back-only,
+pre-off-only, one selection per market; honest recording; directive 6. The site displays
+a suggested stake; it places nothing and authorises nothing — the founder decides at the
+point of placement, every time.
