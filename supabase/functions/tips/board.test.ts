@@ -66,3 +66,21 @@ Deno.test("corpus candidates cover particles and family-name-last transcription"
   assertEquals(corpusCandidates("Xinyu Wang"), ["Wang X"]);
   assertEquals(corpusCandidates("Mononym"), []);
 });
+
+Deno.test("an explicit alias wins over the heuristic, and only for its own tour", () => {
+  // The heuristic cannot know that the feed's "Alexander Bublik" is the corpus's
+  // "Bublik A." when the corpus spells a player unusually, nor that two tours may
+  // hold the same surname. An alias table is the durable fix, and it must be
+  // consulted BEFORE the guesswork so a correction sticks permanently.
+  const index = new Map([["bublik a", "Bublik A."], ["nadal r", "Nadal R."]]);
+  const aliases = new Map([["sascha zverev", "Zverev A."]]);
+
+  // Alias hit: a name the heuristic would resolve to nothing.
+  assertEquals(resolvePlayer("Sascha Zverev", index, aliases), "Zverev A.");
+  // Heuristic still works where no alias exists.
+  assertEquals(resolvePlayer("Alexander Bublik", index, aliases), "Bublik A.");
+  // No alias, no heuristic match: still an honest null, never a guess.
+  assertEquals(resolvePlayer("Nobody Here", index, aliases), null);
+  // Absent alias map behaves exactly as before (back-compatible).
+  assertEquals(resolvePlayer("Rafael Nadal", index), "Nadal R.");
+});
