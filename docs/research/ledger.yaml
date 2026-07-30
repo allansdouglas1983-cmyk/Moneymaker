@@ -415,3 +415,34 @@
     at 2/day hits the floor with probability 0.46 at exactly zero EV'
   returned: '2026-07-30'
   findings: docs/research/findings/DR-TENNIS-STAKING-004-findings.md
+- id: DR-TENNIS-STAKING-005
+  title: CORRECTION - the Betfair minimum stake is GBP 1, not GBP 2; a fabricated input that
+    propagated into two research runs
+  classification: ADVISORY
+  status: ASSESSED
+  requested: 2026-07-30
+  blocking_scope: none, but it invalidates the decisive argument of DR-TENNIS-STAKING-004
+  notes:
+  - 'I asserted a GBP 2 minimum without checking, then wrote it into the bank-allocation brief
+    as a given. The agents correctly treated it as supplied fact and reasoned from it. The
+    decisive line of 004 - "full Kelly is GBP 1.96, below the GBP 2 chip, so no staking rule is
+    expressible" - dies if the chip is GBP 1'
+  - 'VERIFIED: Betfair reduced the Exchange minimum from GBP 2 to GBP 1 on 7 February 2022,
+    both back and lay, all products (Betfair Developer Program announcement). The competing
+    GBP 2 figure traces to a betting-affiliate page - exactly the source class 003 found
+    dominates this space and which the briefs were told to distrust'
+  - 'CONSEQUENCE: full Kelly IS expressible on a GBP 100 bank at every price, and has been
+    since about GBP 51. Half-Kelly misses the GBP 1 floor by two pence at GBP 100 and arrives
+    at GBP 103; quarter at GBP 204; tenth at GBP 511'
+  - 'UNCHANGED: adopt no Kelly rule while the edge interval spans zero (a sign argument, never
+    a granularity one); plug-in Kelly over-bets; half the measured edge means betting exactly
+    2x Kelly; full Kelly gave 100% ruin on 7,200 basketball and 14,400 football games; GBP 100
+    cannot buy a meaningful P&L t-statistic; P(wipe-out)=0 under the floor guard'
+  - 'the correction makes the position WORSE, not better: at GBP 100 the only expressible Kelly
+    variant is full Kelly, which is the variant the evidence most condemns. The shrunk versions
+    the literature supports need GBP 102 / GBP 204 / GBP 511'
+  - 'PROCESS FAILURE: an unverified number became load-bearing across two workflows and three
+    documents because I stated it once and then cited myself. The research could not catch it -
+    it was handed to the agents as a premise'
+  returned: '2026-07-30'
+  findings: docs/research/findings/DR-TENNIS-STAKING-005-correction.md
