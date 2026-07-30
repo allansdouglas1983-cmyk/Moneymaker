@@ -32,6 +32,12 @@ import {
   surfaceFor,
   tourOf,
 } from "./board.ts";
+import {
+  login,
+  marketBooks,
+  SessionError,
+  tennisMarkets,
+} from "./betfair.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -482,6 +488,91 @@ async function boardRefresh(): Promise<Response> {
   });
 }
 
+const CAPTURE_MIN_MINUTES = 20;
+
+/** A session is hours-lived; cache it and re-login only on auth-shaped failure. */
+async function betfairSession(appKey: string): Promise<string> {
+  const cached = await getConfig("betfair_session_token");
+  const at = await getConfig("betfair_session_at");
+  if (cached && at && Date.now() - Date.parse(at) < 6 * 3600000) return cached;
+  const username = await getConfig("betfair_username");
+  const password = await getConfig("betfair_password");
+  const cert = await getConfig("betfair_client_cert");
+  const key = await getConfig("betfair_client_key");
+  if (!username || !password) throw new Error("betfair credentials not configured");
+  if (!cert || !key) throw new Error("betfair client certificate not configured");
+  const token = await login(username, password, appKey, cert, key);
+  await setConfig("betfair_session_token", token);
+  await setConfig("betfair_session_at", new Date().toISOString());
+  return token;
+}
+
+/**
+ * Order-book capture on the DELAYED key (ADR 0020 / SPEC-112): every pre-off tennis
+ * Match Odds singles market in the next 36 hours, best three levels each side plus
+ * traded volume, stored whole. Public but throttled; responds with counts only.
+ */
+async function bookCapture(): Promise<Response> {
+  const appKey = await getConfig("betfair_delayed_app_key");
+  if (!appKey) return json({ error: "no betfair_delayed_app_key configured" }, 503);
+
+  const last = await getConfig("betfair_last_capture");
+  const ageMinutes = last
+    ? (Date.now() - Date.parse(last)) / 60000
+    : Number.POSITIVE_INFINITY;
+  if (ageMinutes < CAPTURE_MIN_MINUTES) {
+    return json({ skipped: true, next_after_minutes: CAPTURE_MIN_MINUTES - ageMinutes });
+  }
+  await setConfig("betfair_last_capture", new Date().toISOString());
+
+  let token = await betfairSession(appKey);
+  let markets;
+  try {
+    markets = await tennisMarkets(appKey, token);
+  } catch (error) {
+    if (!(error instanceof SessionError)) throw error;
+    // Session died — one fresh login, one retry, never a loop.
+    await setConfig("betfair_session_at", "1970-01-01T00:00:00Z");
+    token = await betfairSession(appKey);
+    markets = await tennisMarkets(appKey, token);
+  }
+  if (markets.length === 0) {
+    return json({ refreshed: true, markets: 0, snapshots: 0 });
+  }
+
+  const byId = new Map(markets.map((m) => [m.marketId, m]));
+  const books = await marketBooks([...byId.keys()], appKey, token);
+  const rows = books.map((book) => {
+    const catalogue = byId.get(book.marketId);
+    return {
+      market_id: book.marketId,
+      event_name: catalogue?.event?.name ?? null,
+      market_start: catalogue?.marketStartTime ?? null,
+      market_status: book.status,
+      inplay: book.inplay,
+      total_matched: book.totalMatched ?? null,
+      book: {
+        runners: (book.runners ?? []).map((r) => ({
+          selection_id: r.selectionId,
+          name: catalogue?.runners?.find((c) => c.selectionId === r.selectionId)
+            ?.runnerName ?? null,
+          status: r.status,
+          last_price_traded: r.lastPriceTraded ?? null,
+          total_matched: r.totalMatched ?? null,
+          available_to_back: r.ex?.availableToBack ?? [],
+          available_to_lay: r.ex?.availableToLay ?? [],
+        })),
+      },
+    };
+  });
+  const stored = await db("book_snapshots", {
+    method: "POST",
+    body: JSON.stringify(rows),
+  });
+  if (!stored.ok) return json({ error: await stored.text() }, 500);
+  return json({ refreshed: true, markets: markets.length, snapshots: rows.length });
+}
+
 interface PlacedBet {
   stake: number;
   status: string;
@@ -756,6 +847,7 @@ Deno.serve(async (request: Request) => {
     // Public but self-throttled: it can spend at most one refresh per six hours no
     // matter who calls it, and answers with counts, never data. The cron poke uses it.
     if (path === "/board-refresh") return await boardRefresh();
+    if (path === "/book-capture") return await bookCapture();
 
     if (!await owner(request)) return json({ error: "not authorised" }, 401);
 
