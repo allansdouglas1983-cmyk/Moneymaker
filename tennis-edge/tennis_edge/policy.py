@@ -56,7 +56,7 @@ DEVIG_METHOD = DevigMethod.POWER
 
 #: Betfair Rewards flat rate. Applied even when the recorded price is a bookmaker's, because
 #: the exchange is where a bet would actually go and pricing it any cheaper flatters the rule.
-COMMISSION = 0.02
+COMMISSION = 0.05  # TE-0042: Betfair tennis market base rate, was a wrong 0.02
 
 #: The model must beat the market by this much, in probability, before a recommendation is
 #: even considered. Set from the measured facts rather than chosen for tip volume: the model

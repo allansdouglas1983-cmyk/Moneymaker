@@ -54,7 +54,7 @@ BOOKS = ("pinnacle", "betfair", "max", "avg", "b365")
 
 #: Betfair "My Betfair Rewards" flat rate on net market winnings. The 5% base rate is the
 #: stress case; a personal account with no points history should model 2%.
-DEFAULT_COMMISSION = 0.02
+DEFAULT_COMMISSION = 0.05  # TE-0042: Betfair tennis market base rate, was a wrong 0.02
 
 #: Betfair UK minimum back stake. A Kelly fraction below this is not a small bet, it is no
 #: bet — rounding it up would breach the risk limit it came from.

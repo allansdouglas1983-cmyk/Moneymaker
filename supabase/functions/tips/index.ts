@@ -15,6 +15,7 @@
 // service-role key stays on this side and is what actually touches the tables.
 import {
   bandSpread,
+  COMMISSION,
   edgeBand,
   liveFeatures,
   type Model,
@@ -376,7 +377,7 @@ async function mintPrediction(
       // would otherwise have no way to say which exchange it was priced at. Any
       // venue-relative measurement — CLV above all — must compare like with like.
       price_venue: venueOf(fixture.source),
-      commission: 0.02,
+      commission: COMMISSION,
       // 2% is an ASSUMPTION, not a rate read off an account statement. SPEC-081 makes the
       // statement truth; until one is read this label keeps the assumption from being
       // mistaken downstream for a verified fact. A wrong rate moves break-even by roughly
@@ -736,7 +737,7 @@ async function recordBet(request: Request): Promise<Response> {
       side,
       stake,
       matched_odds: matchedOdds,
-      commission: 0.02,
+      commission: COMMISSION,
     }]),
   });
   if (!stored.ok) return json({ error: await stored.text() }, 500);

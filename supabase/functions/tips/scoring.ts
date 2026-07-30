@@ -26,9 +26,18 @@ const EPS = 1e-12;
 const DEVIG_TOL = 1e-12;
 const DEVIG_MAX_ITER = 200;
 
-/** Betfair Rewards flat rate. Applied even to a bookmaker quote — the exchange is where a
- *  bet would actually go, and pricing it cheaper flatters the rule. */
-export const COMMISSION = 0.02;
+/** Betfair Exchange market base rate for TENNIS on a standard UK account (TE-0042).
+ *
+ *  Was 0.02, described as the "Betfair Rewards flat rate" — a plan this account is not on.
+ *  The 2% reductions are market-specific (major football, UK horse racing) and tennis is
+ *  not among them. Correcting it costs 1.970 percentage points of ROI, CI95 [-2.056,
+ *  -1.887], measured on a bet set frozen at the old rule — and matching the closed form
+ *  dROI/dc = -G exactly at G = 0.6566.
+ *
+ *  It also RAISES the firing bar by 0.3-0.8 probability points, which retired over a third
+ *  of every bet the old rule fired. Still an ASSUMPTION until an account statement confirms
+ *  it (SPEC-081); a published rate is a better assumption, not a verified fact. */
+export const COMMISSION = 0.05;
 /** Frozen in the policy digest. Roughly the per-match edge the measured +0.000862 nats
  *  corresponds to at typical prices. Never tuned to produce a pleasing number of tips. */
 export const MIN_EDGE = 0.02;

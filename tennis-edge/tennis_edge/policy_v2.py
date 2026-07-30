@@ -52,7 +52,7 @@ POLICY_VERSION = "residual-policy-v2"
 
 #: Betfair Rewards flat rate, applied even when the recorded price is a bookmaker's. The
 #: exchange is where a bet would actually go, and pricing it any cheaper flatters the rule.
-COMMISSION = 0.02
+COMMISSION = 0.05  # TE-0042: Betfair tennis market base rate, was a wrong 0.02
 
 #: Probability the model must clear the commission-aware break-even by before a
 #: recommendation is recorded. Not a tuned threshold: it is roughly the per-match edge the

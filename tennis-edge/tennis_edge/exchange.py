@@ -40,7 +40,7 @@ __all__ = [
 ]
 
 #: Betfair Rewards flat rate on the net market result.
-COMMISSION = Decimal("0.02")
+COMMISSION = Decimal("0.05")  # TE-0042: Betfair tennis market base rate
 
 DEVIG_METHOD = DevigMethod.POWER
 
