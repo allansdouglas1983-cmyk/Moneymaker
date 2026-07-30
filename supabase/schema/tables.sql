@@ -102,3 +102,8 @@ create table tennis.unmapped_names (
   feed_name text not null, tour text not null, seen_count integer not null,
   first_seen timestamptz not null, last_seen timestamptz not null
 );
+create table tennis.unmapped_tournaments (
+  sport_key text not null, tour text not null, served_surface text not null,
+  seen_count integer not null,
+  first_seen timestamptz not null, last_seen timestamptz not null
+);

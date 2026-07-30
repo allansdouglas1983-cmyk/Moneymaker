@@ -163,9 +163,12 @@ One spec slice per session. Write failing tests first, **commit them separately*
 implement without editing them. Durable state lives in files, not in this conversation.
 
 **Before claiming anything about the evidence state, read `docs/EVIDENCE-STATE.md` and
-the TE documents it cites.** A compaction summary or conversation memory is NOT the
-evidence state; sessions have already misstated the edge by trusting one. Any new finding
-that changes the picture updates `docs/EVIDENCE-STATE.md` in the same commit.
+the TE documents it cites. Before building anything, read `docs/PROJECT-MAP.md`** — the
+what-exists companion (58 capabilities, the graveyard of killed ideas, the open-items
+list). A compaction summary or conversation memory is NOT the evidence state; sessions
+have already misstated the edge and nearly rebuilt existing capabilities by trusting one.
+Any new finding updates `EVIDENCE-STATE.md`, any structural change updates
+`PROJECT-MAP.md`, in the same commit.
 
 ## Rules loaded by path
 

@@ -54,6 +54,7 @@ that is the part a schema dump loses and the part a future rebuild actually need
 | `grade_ledger()` | Joins the last pre-match prediction per match to results and writes log-losses. Declared vintage policy: post-match rows never grade. |
 | `grade_placed_bets()` | Settles real bets. COMPLETED only; anything else becomes `CHECK_STATEMENT`. |
 | `note_unmapped()` | Upsert-with-increment for the unmapped-name queue (PostgREST cannot express the increment). |
+| `note_unmapped_tournament()` | Same pattern for tournaments whose surface the derived table cannot establish, so the Hard fallback was served. A row is a known-unknown awaiting a data-derived mapping, never a silent guess. |
 
 ## Scheduled jobs (pg_cron)
 
@@ -63,7 +64,7 @@ that is the part a schema dump loses and the part a future rebuild actually need
 | `30 7 * * 2` | `pull_results` — grades both ledgers |
 | `45 7 * * 2` | `pull_forecasts` |
 | `15 6,12,18 * * *` | `board-refresh` — odds feed; the endpoint's own 6-hour throttle is the real guard |
-| *(unscheduled)* | `book-capture` — order-book depth, pinned to `eu-west-2` because Betfair refuses US-soil logins. Off until a certificate is registered. |
+| `*/30 * * * *` | `tennis-book-capture` (jobid 14) — order-book depth via `extensions.http()` with an explicit `x-region: eu-west-2` header, because Betfair refuses US-soil logins and `http_get()` cannot set headers. ARMED and deliberately left running against the not-yet-registered certificate: a failed attempt writes one timestamp and returns `CERT_AUTH_REQUIRED`, and the capture self-starts the moment the founder registers the certificate (see `docs/OPERATING-betfair-capture.md`). |
 
 ## Invariants worth not breaking
 
