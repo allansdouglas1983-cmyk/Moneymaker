@@ -1,5 +1,6 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
+  allVenueQuotes,
   bestOfFor,
   corpusCandidates,
   normalizeName,
@@ -83,4 +84,27 @@ Deno.test("an explicit alias wins over the heuristic, and only for its own tour"
   assertEquals(resolvePlayer("Nobody Here", index, aliases), null);
   // Absent alias map behaves exactly as before (back-compatible).
   assertEquals(resolvePlayer("Rafael Nadal", index), "Nadal R.");
+});
+
+Deno.test("every venue's two-sided quote is extracted, one-sided ones dropped", () => {
+  // Line shopping and closing-line value both need the SAME thing: a price series per
+  // match per venue. The feed already carries ~35 venues in every response at no extra
+  // credit cost; discarding 34 of them discards the evidence for both. Capture is
+  // assumption-free — which venue is actually better after commission is a separate,
+  // governed decision that needs verified commission rates.
+  const feed = [
+    { key: "betfair_ex_uk", markets: [{ key: "h2h", outcomes: [
+      { name: "Home P.", price: 1.85 }, { name: "Away P.", price: 2.05 }] }] },
+    { key: "pinnacle", markets: [{ key: "h2h", outcomes: [
+      { name: "Home P.", price: 1.80 }, { name: "Away P.", price: 2.10 }] }] },
+    // One-sided: cannot be de-vigged, so it is an absence not a quote.
+    { key: "coral", markets: [{ key: "h2h", outcomes: [{ name: "Home P.", price: 1.9 }] }] },
+    // Wrong market type entirely.
+    { key: "betway", markets: [{ key: "totals", outcomes: [
+      { name: "Over", price: 1.9 }, { name: "Under", price: 1.9 }] }] },
+  ];
+  const quotes = allVenueQuotes(feed, "Home P.", "Away P.");
+  assertEquals(quotes.length, 2);
+  assertEquals(quotes[0], { venue: "betfair_ex_uk", home: 1.85, away: 2.05 });
+  assertEquals(quotes[1], { venue: "pinnacle", home: 1.80, away: 2.10 });
 });
