@@ -49,6 +49,18 @@ would use. **Do not tune anything until this reads.** If CLV is reliably positiv
 edge is live and the remaining question is purely execution. If it is zero, no staking
 scheme, filter or feature will save the system, and that is worth knowing cheaply.
 
+**A caveat on item 2, recorded rather than glossed.** The board refreshes three times a
+day (06:15 / 12:15 / 18:15 UTC), so for a match starting at 17:00 the last pre-off quote
+is from 12:15 — nearly five hours early. That is a *pre-off* line, not a *closing* line,
+and much of the informative drift happens in the final hour. So the CLV monitor as built
+measures a weaker version of the quantity it names, and will understate the signal.
+
+Two honest consequences: the endpoint's numbers should be read as "drift over the last
+several hours before the off", not textbook CLV; and the fix is not more odds-API polling
+(the free tier's 500 credits/month cannot fund hourly refreshes) but the **order-book
+capture at 30-minute intervals**, which is dormant pending the certificate. This is a
+third independent reason item 1 is ranked first.
+
 ### 3. Measure whether the model's edge varies by ROUND and TOURNAMENT TIER
 A genuine gap found today: **all 22 features are differences between the two players.
 None describe the match context.** `round_name` and `tier` are parsed from the corpus and
