@@ -328,3 +328,25 @@ mistaken for a verified rate. Verifying the actual rate needs an account stateme
 **Risks.** The largest risk is treating a met precondition as permission. Admitting dispersion to the feature registry would still require: a governed exception to the odds-in-features ban (TE-0016's third stated reason, unchanged), rights-registry clearance for The Odds API panel under SPEC-044, a fresh measurement on the live panel because the historical number does not transfer, and a multiplicity budget. None of that is justified by a +0.00008-nat prior. The honest output of this candidate is a corrected record and an explicit 'still not worth spending governance on', not a feature.
 
 **Rule conflicts.** NONE for the bookkeeping work. Any actual deployment WOULD conflict with the standing odds-in-features ban and would require the same governed exception S9 had to declare explicitly; that exception is not recommended here. No scraping is involved (The Odds API is a licensed API already in use, not a scrape), so the SPEC-100 quarantine is untouched.
+
+## Addendum 2026-07-30 — items shipped or gated this session
+
+- **#1 SHIPPED.** `price_observations.venue_last_update` captures each venue's own
+  provider timestamp verbatim (migration applied; capture code deployed via the
+  golden-vector-gated workflow). Provider-timestamp semantics stated at every layer.
+- **#6 SHIPPED.** `placed_bets` carries `venue` (founder-verified registry only —
+  unregistered venue → 409, no row), the registry commission, and
+  `quoted_odds_at_decision`; the loss budget is venue-blind by construction and by
+  test (SPEC-103). The registry holds Betfair at 2% only; registering any other venue
+  is a founder act, and nothing here recommends opening an account anywhere.
+- **#7 CLOSED** by TE-0044: the founder switched/confirmed Basic 2%; SPEC-081
+  statement verification remains open (task #89).
+- **#9 INSTRUMENTED, band change GATED — per this item's own risk note.** Both
+  verifications are committed as repeatable queries (`tools/staleness_verifications.sql`)
+  and both are blocked on data that does not exist yet: V1 (price definition) needs
+  `book_snapshots` rows, which begin when the founder registers the Betfair
+  certificate; V2 (staleness cost) needs weeks of `price_observations`, whose capture
+  started 2026-07-30 and only became staleness-measurable with #1. The crossing term
+  stays until V1 returns; nothing about the display band changed today.
+- **#13** shipped earlier this session (corpus-derived surface map, 171 cities);
+  **#18 CLOSED** by TE-0045 (recency weighting null, stationary training stands).
