@@ -110,3 +110,31 @@ def test_sqrt_profit_escalates_only_from_banked_profit() -> None:
     assert rule([bet("2.00")], state(9_000)) == [100], "drawdown never de-escalates below base"
     up = rule([bet("2.00")], state(12_500))[0]
     assert up == 100 + 50, "sqrt(2500 pence-profit) = 50p escalation"
+
+
+def test_conservative_kelly_sizes_per_bet_from_bank_odds_and_probability() -> None:
+    """The founder-requested allocator (registered by amendment): f_i = shrink * kelly of
+    the live bank, per bet. Defining identities: stakes DIFFER across a card by odds and
+    probability; they scale with the bank (compounding); a bet at or below break-even
+    gets zero; and the shrink multiplies the fraction exactly."""
+    from tennis_edge.staking.rules import conservative_kelly
+    rule = conservative_kelly(shrink=D("0.5"), commission=D("0.02"))
+    card = [bet("1.60", "1.1"), bet("2.40", "1.2"), bet("2.00", "1.3")]
+    # p_model is 0.6 for all three. The stake tracks the EDGE, not the odds: at 1.60 the
+    # break-even is 0.6297 > 0.60, so that bet has no edge and gets ZERO; at 2.40 the
+    # edge (+0.178) dwarfs 2.00's (+0.095), so it carries the larger stake.
+    stakes = rule(card, state(20_000))
+    assert len(set(stakes)) == 3, "per-bet sizing: same probability, different odds, different stakes"
+    assert stakes[0] == 0, "below break-even is not a small bet; it is no bet"
+    assert stakes[1] > stakes[2] > 0, "the bigger edge carries the bigger stake"
+    doubled = rule(card, state(40_000))
+    # Exact doubling lives above the pence lattice: floor(2W*f) can exceed
+    # 2*floor(W*f) by a penny. The compounding property is linear scaling to within
+    # ROUND_FLOOR quantisation.
+    for twice, once in zip(doubled, stakes, strict=True):
+        assert abs(twice - 2 * once) <= 1, "stakes scale with the bank: compounding"
+    hopeless = Candidate(date=DAY, market_id="1.9", side="a", odds=D("1.50"),
+                         p_model=D("0.60"), p_market=D("0.5"), won=True,
+                         support="SUPPORTED", stratum="THICK")
+    # break-even at 1.50/2% is 0.6711 > 0.60: no edge, no stake.
+    assert rule([hopeless], state(20_000)) == [0]

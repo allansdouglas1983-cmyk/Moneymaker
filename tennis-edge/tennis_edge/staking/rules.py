@@ -5,11 +5,13 @@ built by factory functions whose parameters are FROZEN in the study config befor
 replay output is observed — nothing here is fitted, tuned, or updated from the replay it
 is scored on (protocol §1.1). All arithmetic is integer pence and exact Decimal.
 
-Every rule here is edge-free: it reads bank state, the odds ladder and declared policy
-only. Group D (Kelly/CRRA — edge-consuming) deliberately has no entry in this module;
-per the matrix's ranking those enter the harness only as counterfactual replay after
-the edge test resolves, and keeping them structurally absent is cheaper than guarding
-them.
+Most rules here are edge-free: they read bank state, the odds ladder and declared
+policy only. ONE edge-consuming rule exists — `conservative_kelly`, the founder-requested
+per-bet allocator, registered by the 2026-07-30 amendment after the original exclusion
+was traced to the TE-0042 commission error (TE-0044 correction). It consumes the archived
+model probability with a provenance-pinned conservative shrink (SPEC-034's
+consume-the-lower-bound rule); the shrink is a required argument precisely so no default
+can quietly un-conservative it.
 """
 from __future__ import annotations
 
@@ -28,6 +30,7 @@ __all__ = [
     "cppi",
     "tipp",
     "hb_cap",
+    "conservative_kelly",
 ]
 
 StakingRule = Callable[[Sequence[Candidate], DayState], list[int]]
@@ -132,4 +135,31 @@ def hb_cap(base: StakingRule, max_drawdown: Decimal) -> StakingRule:
                          - (Decimal(1) - max_drawdown) * Decimal(state.peak_bank_pence)),
                   0)
         return [min(stake, cap) for stake in base(candidates, state)]
+    return rule
+
+
+def conservative_kelly(*, shrink: Decimal, commission: Decimal) -> StakingRule:
+    """The founder-requested per-bet allocator: f_i = shrink * kelly(p_i, O_i, c) of the
+    live bank, computed per bet.
+
+    Stakes differ across a card by each bet's odds and probability; they scale with the
+    current bank, so the rule compounds by construction; a bet at or below the
+    commission-aware break-even gets zero. ``shrink`` has no default: it must be the
+    measured conservative-bound/point ratio of the current evidence (TE-0043:
+    1.37/3.86 at 2%), supplied explicitly so a stale or invented fraction cannot hide
+    behind a signature.
+    """
+    def rule(candidates: Sequence[Candidate], state: DayState) -> list[int]:
+        out = []
+        for candidate in candidates:
+            net = (candidate.odds - 1) * (Decimal(1) - commission)
+            if net <= 0:
+                out.append(0)
+                continue
+            fraction = candidate.p_model - (Decimal(1) - candidate.p_model) / net
+            if fraction <= 0:
+                out.append(0)
+                continue
+            out.append(_pence(Decimal(state.opening_bank_pence) * fraction * shrink))
+        return out
     return rule

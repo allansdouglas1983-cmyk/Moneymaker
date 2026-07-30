@@ -49,6 +49,7 @@ from tennis_edge.staking.harness import (  # noqa: E402
 )
 from tennis_edge.staking.rules import (  # noqa: E402
     StakingRule,
+    conservative_kelly,
     cppi,
     fixed_profit_net,
     flat,
@@ -113,8 +114,12 @@ ARMS: dict[str, StakingRule] = {
     # conservative-bound/point ratio (TE-0043 supported @2%) — SPEC-034's rule, never a
     # chosen fraction. Its exclusion from the original freeze traced to the TE-0042
     # commission error (TE-0044 correction); N_trials moves 12 -> 13.
-    "CONS_KELLY": None,  # constructed in main(): needs commission binding
+    # Placeholder replaced in main() once the run's commission is bound; the shrink is
+    # the TE-0043 measured conservative-bound/point ratio, pinned here.
+    "CONS_KELLY": flat(0),
 }
+
+CONS_KELLY_SHRINK = Decimal("1.37") / Decimal("3.86")
 
 SCENARIO_FACTORS = {"as_measured": Decimal(0), "half": Decimal("0.5"),
                     "zero": Decimal(1), "negative": Decimal(2)}
@@ -195,6 +200,10 @@ def main() -> int:
 
     mu = measured_mean(fired, commission)
     print(f"measured per-unit mean at c={commission}: {mu:+.6f}", flush=True)
+
+    ARMS["CONS_KELLY"] = hb_cap(
+        conservative_kelly(shrink=CONS_KELLY_SHRINK, commission=commission),
+        Decimal("0.50"))
 
     config = HarnessConfig(
         start_bank_pence=CONFIG["start_bank_pence"],  # type: ignore[arg-type]
