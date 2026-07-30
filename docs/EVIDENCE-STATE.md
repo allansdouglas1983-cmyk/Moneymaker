@@ -51,6 +51,12 @@ sign.
   chooses the weights in sum(S_i·ev_i), never the ev_i (TE-0043).
 - The deployment gate: the site serves the Bet365-anchored model; the exchange re-anchor
   FAILED its pre-registered deployment bar and does not ship (TE-0019 verdict 2).
+- **A staking head-to-head cannot outrun the edge test** (DR-TENNIS-STAKING-006): for
+  non-compounding rules on one settled sequence, every pairwise comparison is the edge
+  test rescaled downward (|t_pair| ≤ t_edge, n_eff as low as 27 bets). Until the costed
+  reading resolves, only the risk-shape columns (drawdown, floor-breach, participation)
+  are estimable between rules — reward rankings are noise. Protocol and matrix:
+  `docs/research/findings/DR-TENNIS-STAKING-006-*`.
 - **Stationary training stands** (TE-0045, pre-registered): recency-weighted refits never
   beat the equal-weighted fit — pooled null at every half-life, monotone HARM as the
   half-life shortens (h=1y: −0.000230 [−0.000439, −0.000003]), and no help post-2024
