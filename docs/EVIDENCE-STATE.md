@@ -7,7 +7,7 @@ page is the current position in one place. It is UPDATED in the same commit as a
 finding that changes it. The TE documents remain the authority; this is the index, not
 the source.
 
-**Last updated:** 2026-07-30 (through TE-0044).
+**Last updated:** 2026-07-30 (through TE-0045).
 
 ## The forecast edge: REAL IN THE RECORD, execution is the open question
 
@@ -51,6 +51,12 @@ sign.
   chooses the weights in sum(S_i·ev_i), never the ev_i (TE-0043).
 - The deployment gate: the site serves the Bet365-anchored model; the exchange re-anchor
   FAILED its pre-registered deployment bar and does not ship (TE-0019 verdict 2).
+- **Stationary training stands** (TE-0045, pre-registered): recency-weighted refits never
+  beat the equal-weighted fit — pooled null at every half-life, monotone HARM as the
+  half-life shortens (h=1y: −0.000230 [−0.000439, −0.000003]), and no help post-2024
+  where the regime hypothesis predicted it. The post-2023 anomaly is now localised to
+  the ANCHOR relationship (TE-0033 Q2, directional), resolvable only by live-data
+  accumulation. TE-0041 item 18 CLOSED.
 
 ## Discipline
 

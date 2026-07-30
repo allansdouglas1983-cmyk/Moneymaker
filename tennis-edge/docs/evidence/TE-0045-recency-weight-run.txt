@@ -1,0 +1,118 @@
+corpus: /home/user/tennis_edge_data :: vintage-2026-07-30 (manifest sha256:47544b7f7527…)
+features: 96,366 rows from cache (residual-feature-cache.jsonl)
+rows: 96,366   features: 22
+guard: uniform-weight identity holds (max |dbeta| = 1.73e-16)
+
+stationary (the deployed protocol):
+  2012: trained on 32,586, scored 4,464
+  2013: trained on 37,050, scored 4,541
+  2014: trained on 41,591, scored 4,378
+  2015: trained on 45,969, scored 4,622
+  2016: trained on 50,591, scored 4,569
+  2017: trained on 55,160, scored 4,557
+  2018: trained on 59,717, scored 4,573
+  2019: trained on 64,290, scored 4,549
+  2020: trained on 68,839, scored 2,094
+  2021: trained on 70,933, scored 4,345
+  2022: trained on 75,278, scored 4,356
+  2023: trained on 79,634, scored 4,572
+  2024: trained on 84,206, scored 4,684
+  2025: trained on 88,890, scored 4,458
+  2026: trained on 93,348, scored 3,018
+
+PRIMARY: half-life 3 years
+  h=3y 2012: trained on 32,586, scored 4,464
+  h=3y 2013: trained on 37,050, scored 4,541
+  h=3y 2014: trained on 41,591, scored 4,378
+  h=3y 2015: trained on 45,969, scored 4,622
+  h=3y 2016: trained on 50,591, scored 4,569
+  h=3y 2017: trained on 55,160, scored 4,557
+  h=3y 2018: trained on 59,717, scored 4,573
+  h=3y 2019: trained on 64,290, scored 4,549
+  h=3y 2020: trained on 68,839, scored 2,094
+  h=3y 2021: trained on 70,933, scored 4,345
+  h=3y 2022: trained on 75,278, scored 4,356
+  h=3y 2023: trained on 79,634, scored 4,572
+  h=3y 2024: trained on 84,206, scored 4,684
+  h=3y 2025: trained on 88,890, scored 4,458
+  h=3y 2026: trained on 93,348, scored 3,018
+
+Q1 — pooled paired log-score difference (positive favours weighting):
+  Q1 pooled (PRIMARY)          n=63,780  d=-0.000047 nats  CI95 [-0.000154, +0.000064]  unresolved (spans zero)
+Q2 — 2024-2026 era only (SECONDARY, declared):
+  Q2 post-2024                 n=12,160  d=+0.000010 nats  CI95 [-0.000249, +0.000278]  unresolved (spans zero)
+
+EXPLORATORY grid — descriptive only, no verdicts, may not be quoted:
+  h=1y 2012: trained on 32,586, scored 4,464
+  h=1y 2013: trained on 37,050, scored 4,541
+  h=1y 2014: trained on 41,591, scored 4,378
+  h=1y 2015: trained on 45,969, scored 4,622
+  h=1y 2016: trained on 50,591, scored 4,569
+  h=1y 2017: trained on 55,160, scored 4,557
+  h=1y 2018: trained on 59,717, scored 4,573
+  h=1y 2019: trained on 64,290, scored 4,549
+  h=1y 2020: trained on 68,839, scored 2,094
+  h=1y 2021: trained on 70,933, scored 4,345
+  h=1y 2022: trained on 75,278, scored 4,356
+  h=1y 2023: trained on 79,634, scored 4,572
+  h=1y 2024: trained on 84,206, scored 4,684
+  h=1y 2025: trained on 88,890, scored 4,458
+  h=1y 2026: trained on 93,348, scored 3,018
+  h=1y pooled              n=63,780  d=-0.000230  [-0.000439, -0.000003]
+  h=1y post-2024           n=12,160  d=-0.000096  [-0.000561, +0.000385]
+  h=2y 2012: trained on 32,586, scored 4,464
+  h=2y 2013: trained on 37,050, scored 4,541
+  h=2y 2014: trained on 41,591, scored 4,378
+  h=2y 2015: trained on 45,969, scored 4,622
+  h=2y 2016: trained on 50,591, scored 4,569
+  h=2y 2017: trained on 55,160, scored 4,557
+  h=2y 2018: trained on 59,717, scored 4,573
+  h=2y 2019: trained on 64,290, scored 4,549
+  h=2y 2020: trained on 68,839, scored 2,094
+  h=2y 2021: trained on 70,933, scored 4,345
+  h=2y 2022: trained on 75,278, scored 4,356
+  h=2y 2023: trained on 79,634, scored 4,572
+  h=2y 2024: trained on 84,206, scored 4,684
+  h=2y 2025: trained on 88,890, scored 4,458
+  h=2y 2026: trained on 93,348, scored 3,018
+  h=2y pooled              n=63,780  d=-0.000090  [-0.000233, +0.000062]
+  h=2y post-2024           n=12,160  d=-0.000010  [-0.000341, +0.000340]
+  h=5y 2012: trained on 32,586, scored 4,464
+  h=5y 2013: trained on 37,050, scored 4,541
+  h=5y 2014: trained on 41,591, scored 4,378
+  h=5y 2015: trained on 45,969, scored 4,622
+  h=5y 2016: trained on 50,591, scored 4,569
+  h=5y 2017: trained on 55,160, scored 4,557
+  h=5y 2018: trained on 59,717, scored 4,573
+  h=5y 2019: trained on 64,290, scored 4,549
+  h=5y 2020: trained on 68,839, scored 2,094
+  h=5y 2021: trained on 70,933, scored 4,345
+  h=5y 2022: trained on 75,278, scored 4,356
+  h=5y 2023: trained on 79,634, scored 4,572
+  h=5y 2024: trained on 84,206, scored 4,684
+  h=5y 2025: trained on 88,890, scored 4,458
+  h=5y 2026: trained on 93,348, scored 3,018
+  h=5y pooled              n=63,780  d=-0.000020  [-0.000089, +0.000051]
+  h=5y post-2024           n=12,160  d=+0.000009  [-0.000171, +0.000190]
+  h=8y 2012: trained on 32,586, scored 4,464
+  h=8y 2013: trained on 37,050, scored 4,541
+  h=8y 2014: trained on 41,591, scored 4,378
+  h=8y 2015: trained on 45,969, scored 4,622
+  h=8y 2016: trained on 50,591, scored 4,569
+  h=8y 2017: trained on 55,160, scored 4,557
+  h=8y 2018: trained on 59,717, scored 4,573
+  h=8y 2019: trained on 64,290, scored 4,549
+  h=8y 2020: trained on 68,839, scored 2,094
+  h=8y 2021: trained on 70,933, scored 4,345
+  h=8y 2022: trained on 75,278, scored 4,356
+  h=8y 2023: trained on 79,634, scored 4,572
+  h=8y 2024: trained on 84,206, scored 4,684
+  h=8y 2025: trained on 88,890, scored 4,458
+  h=8y 2026: trained on 93,348, scored 3,018
+  h=8y pooled              n=63,780  d=-0.000010  [-0.000054, +0.000036]
+  h=8y post-2024           n=12,160  d=+0.000001  [-0.000115, +0.000122]
+
+READING
+  One run, as declared. Q1 carries the only verdict; Q2 is secondary and the
+  grid is descriptive. No serving rule changes from this run regardless —
+  adopting a weighted fit would be its own governed slice.

@@ -149,8 +149,9 @@ The full 19-item list with sources is in the findings sweep; the load-bearing on
    stratification (#12).
 8. **CLV accumulation** — 4–8 weeks of live observations before touching anything else
    (TE-0037 #2); the capture cadence upgrade depends on item 1.
-9. **Stationarity** — training weights 2003–2026 equally despite the regime signals
-   (TE-0041 #18).
+9. ~~Stationarity~~ — CLOSED by TE-0045 (pre-registered): recency weighting never beats
+   the equal-weighted fit and aggressive forgetting demonstrably harms; the anomaly is
+   localised to the anchor relationship, which only live-data accumulation resolves.
 10. **Staking study** (this session, tasks #87/#88): research workflow → verified
     candidate set → head-to-head over the real 89,998-row sequence under the
     pre-registered protocol.
