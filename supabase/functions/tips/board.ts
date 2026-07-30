@@ -12,11 +12,20 @@
  * manual box uses.
  */
 
-/** Venue order: the exchange first (where a bet would go), the sharpest book second,
- *  the other exchanges after. FROZEN — never reordered to flatter a number. */
+/** Venue order for the DECISION price: exchanges only, and only ones a UK resident can
+ *  transact at. FROZEN — never reordered to flatter a number.
+ *
+ *  Pinnacle is deliberately absent. It closed to UK customers on 1 November 2014 and
+ *  abandoned its 2016 licence application, so an edge computed against its quote is a
+ *  number about a counterfactual — `venues.py` records exactly that, and TE-0013
+ *  corrected a money table that had been led by it. Bookmakers are excluded for a
+ *  second, independent reason: they restrict consistent winners, so an edge validated
+ *  at one has an expiry date it does not control.
+ *
+ *  Pinnacle is still CAPTURED by `allVenueQuotes` below — as a sharpness benchmark, not
+ *  as a price anyone can take. Capture is not a decision. */
 export const BOOK_PREFERENCE = [
   "betfair_ex_uk",
-  "pinnacle",
   "smarkets",
   "matchbook",
 ] as const;
