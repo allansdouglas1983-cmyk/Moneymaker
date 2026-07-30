@@ -60,3 +60,28 @@ prior is that surprising results are bugs, and a null here is a useful, cheap an
 
 PRE-REGISTERED, not yet run. The result will be recorded as TE-0039 whatever it says,
 including a null.
+
+---
+
+## Amendment 1 — 2026-07-30, before any result was computed
+
+**What changed.** The tier mapping gains the WTA's post-2021 tier names, which the
+original declaration omitted: `WTA1000` → MASTERS, `WTA500` → MID, `WTA250` → BASE,
+plus `Masters`, `Masters Cup` → MASTERS, `Premier 5` → MID and `International Gold`
+→ BASE.
+
+**What was seen before amending.** Only the *frequency table of round and tier labels*
+(`Counter(x.round_name)`, `Counter(x.tier)`) — that is, which strings exist and how often.
+No outcome, no probability, no gain, no result of any kind was computed or inspected.
+
+**Why it is legitimate.** The original mapping already declared the *intent* — SLAM,
+top-tier, mid-tier, base-tier — and WTA1000 is exactly the top non-slam tier after the
+WTA renamed Premier Mandatory in 2021. Leaving it in OTHER would have silently dumped
+3,448 WTA top-tier matches into a residual bucket and made the tier read less meaningful,
+not more honest.
+
+**Why it is recorded rather than quietly fixed.** An amendment made after seeing the data
+is exactly the manoeuvre pre-registration exists to catch. The defence is not that this
+one is harmless — it is that it is *written down*, with what was seen and when, so a
+reader can judge it. The round strata, the metric, the estimator and the single
+inferential contrast are untouched.
