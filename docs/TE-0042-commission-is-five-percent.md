@@ -1,7 +1,8 @@
 # TE-0042 — the commission rate is 5%, not 2%, and it costs 1.97 points of ROI
 
 **Date:** 2026-07-30. **Type:** correction of a labelled assumption to a published fact.
-**Direction:** unfavourable. Every displayed edge gets worse.
+**Direction:** unfavourable, but modest. Every displayed edge gets worse by roughly one
+point of ROI once the firing rule adapts — not by the two points this document first claimed.
 
 ## The finding
 
@@ -30,30 +31,57 @@ on secondary sources that agree with each other and with the base-rate structure
 account statement remains the only true confirmation** (SPEC-081: the statement is truth),
 and this document should be revisited when the first real settled market produces one.
 
-## What it costs, measured
+## What it costs, measured — CORRECTED 2026-07-30
 
-Bet set **frozen at the 2% rule** so the commission effect is isolated from the selection
-effect. 6,546 markets, 1,597 days, exchange prices, MIN_EDGE = 0.02:
+**The first version of this document measured the wrong thing.** It froze the bet set at
+the 2% rule and asked what those same bets return at 5%, giving -1.970 pp. That is a
+retrospective quantity: the cost of having already placed bets under a wrong bar. It is not
+what the platform loses going forward, because the firing rule ADAPTS — at 5% it simply
+stops firing the marginal bets that were never worth taking.
+
+Re-run with selection AND settlement both at the correct rate, which is the question that
+actually matters:
 
 ```
-ROI @ 2% commission   +8.315%
-ROI @ 5% commission   +6.345%
-COST OF THE ERROR     -1.970 percentage points of ROI
-                      day-clustered CI95 [-2.056, -1.887]
+                          bets      ROI       CI95
+ALL fills      @2%       6,546    8.315%   [+4.665, +12.255]
+ALL fills      @5%       4,153    7.022%   [+2.202, +11.442]
+                                  -1.29 pp
+
+SUPPORTED only @2%       4,025    9.553%   [+4.943, +14.383]
+SUPPORTED only @5%       2,540    8.634%   [+3.286, +14.332]
+                                  -0.92 pp
 ```
 
-This lands exactly where theory says it should. With `dROI/dc = -G`, where G is mean gross
-winnings per unit stake, the measured G = 0.6566 predicts `-0.6566 x 0.03 = -1.970` pp. The
-measurement and the closed form agree to three decimals, which is the check that the number
-is real rather than an artefact of the harness.
+**On the supported-fills reading — the one TE-0019 headlines — the correction costs 0.92
+percentage points, not 1.97.** The interval still clears zero. The edge does not collapse.
 
-The ROI levels above are uncosted and in-sample; **only the difference is the finding.**
+The frozen-bet-set figure is retained below because it answers a different, real question
+(what the historical fired bets actually cost), and because the closed form confirms it:
+`dROI/dc = -G` at the measured G = 0.6566 predicts `-0.6566 x 0.03 = -1.970`, matching to
+three decimals. Both numbers are correct; they answer different questions, and the earlier
+draft presented the wrong one as the headline.
+
+```
+frozen bet set (retrospective):  ROI @2% +8.315%  ->  @5% +6.345%   -1.970 pp
+                                 day-clustered CI95 [-2.056, -1.887]
+```
+
+Commission is charged on WINNINGS, not turnover, and losing markets pay nothing. Verified:
+a GBP 10 back at 3.00 winning pays 5% of the GBP 20 profit (GBP 1.00), not 5% of the stake.
+Across the book, gross winnings were 4,298 against 6,546 staked, so the commission base is
+about two-thirds of turnover — which is why a 3-point rate change reads as roughly 2 points
+of turnover and can be mistaken for a charge on everything. Charging turnover would have
+cost 196.4 rather than the 128.9 actually computed.
 
 ## Two separate consequences, and the second is worse
 
-**1. Returns fall by ~1.97 points.** Applied to TE-0019's supported reading of +2.63%, the
-honest figure becomes **≈ +0.66%** — and TE-0020 already showed that reading spans zero once
-declared execution costs are applied. At 5% there is no surviving claim of an edge.
+**1. Returns fall by about 0.9 points on the supported reading.** Applied to TE-0019's
+supported +2.63%, the honest restatement is roughly **+1.7%**, not the +0.66% the first draft
+of this document claimed. That earlier figure applied a frozen-bet-set delta, computed on a
+different bet set's G, to a number whose selection would also have moved. It was wrong twice
+over and is withdrawn. TE-0020 already showed the supported reading spans zero once declared
+execution costs are applied — commission moves that number, it does not decide it.
 
 **2. The FIRING RULE was wrong, which is the more serious error.** Break-even is
 `1/(1+(O-1)(1-c))`, so a wrong `c` moves the bar itself:
