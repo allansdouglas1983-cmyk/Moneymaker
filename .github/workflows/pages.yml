@@ -21,6 +21,7 @@ on:
     paths:
       - 'docs/index.html'
       - 'docs/staking.js'
+      - 'docs/betfair-client.crt'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -48,6 +49,10 @@ jobs:
           mkdir -p _site
           cp docs/index.html _site/index.html
           cp docs/staking.js _site/staking.js
+          # PUBLIC half of the Betfair client certificate only — the private key lives
+          # solely in the service-role config table. Published so the founder can
+          # download it on a phone and upload it to Betfair's ABPA security page.
+          cp docs/betfair-client.crt _site/betfair-client.crt
           touch _site/.nojekyll
           date -u +"%Y-%m-%dT%H:%M:%SZ $GITHUB_SHA" > _site/.build-stamp
       - uses: actions/upload-pages-artifact@v3

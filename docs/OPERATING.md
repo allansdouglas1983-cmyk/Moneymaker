@@ -107,3 +107,13 @@ opinion, which is evidence the ledger never collected.
   message contains `[refresh]` re-runs the full pipeline manually.
 - The scorecard shows its own denominators (pending, unmatched, excluded) precisely so a
   quiet failure is visible as a growing "pending" count rather than a flattering silence.
+
+## Deployment procedure (adopted 2026-07-30)
+
+The `tips` Edge Function deploys through the session's Supabase connector: run the Deno
+test suite locally (golden vectors + all unit tests), deploy all five files in one call,
+then **byte-verify** — fetch the deployed source back and diff every file against the
+repository; any divergence is corrected and redeployed before the version is trusted
+(this check caught two transcription errors on 2026-07-30; v17 verified byte-identical).
+The `deploy-tips` GitHub workflow remains the preferred path IF its two repository
+secrets are ever configured; until then it is not required and nothing waits on it.
