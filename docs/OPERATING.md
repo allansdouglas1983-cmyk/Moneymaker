@@ -56,6 +56,29 @@ scorecard record this system is now accumulating. Nothing in this repo may lower
 budgets, stakes and execution live behind gates that are human-controlled specification
 changes. Until then the site is an instrument, and its value is that its record is honest.
 
+## Reading the two things that actually matter
+
+**Price age (on every board row).** How old the quote is. Amber past two hours. TE-0027
+measured that acting on a stale price costs ~0.2% ROI — a meaningful slice of a ~2% edge —
+so an old price is worth re-checking on screen before acting on it, not just trusting.
+
+**Closing line value (Ledger tab).** The share of picks the market moved *toward* after we
+made them, and by how much in probability points. This is the earliest honest signal that
+a live edge exists, and it is the number to watch — not P&L.
+
+Why not P&L? TE-0036 measured it: at a 50-unit budget, ruin is 29% if the edge is real and
+76% if it is not. Both happen often under both hypotheses, so settled profit and loss
+cannot distinguish them on any timescale a single person will live through. CLV can,
+because it measures every bet continuously instead of waiting for outcomes.
+
+Two honest caveats. The board refreshes three times a day, so the "closing" quote may be
+several hours before the off and the number understates the true signal — read it as
+multi-hour drift. And CLV is evidence about *edge*, never about *profit*; it is not a
+target to optimise and it gates nothing.
+
+**What patience looks like.** Seventeen consecutive losing bets is normal for this rule
+(TE-0036). Any reaction to a shorter run is a reaction to noise.
+
 ## When a match shows no model opinion
 
 The board can only price a player the rating state knows. When a feed name doesn't
