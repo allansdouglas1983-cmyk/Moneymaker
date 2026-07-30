@@ -7,7 +7,7 @@ page is the current position in one place. It is UPDATED in the same commit as a
 finding that changes it. The TE documents remain the authority; this is the index, not
 the source.
 
-**Last updated:** 2026-07-30 (through TE-0045).
+**Last updated:** 2026-07-30 (through TE-0046).
 
 ## The forecast edge: REAL IN THE RECORD, execution is the open question
 
@@ -51,6 +51,15 @@ sign.
   chooses the weights in sum(S_i·ev_i), never the ev_i (TE-0043).
 - The deployment gate: the site serves the Bet365-anchored model; the exchange re-anchor
   FAILED its pre-registered deployment bar and does not ship (TE-0019 verdict 2).
+- **The staking head-to-head ran and returned the pre-declared null** (TE-0046): no arm
+  passed the frozen admissibility gates — every growing rule breaches the £70 floor
+  under the zero-edge scenario over the eleven-year horizon (flat £1: 86.7%), and every
+  floor-protecting rule switches itself off on a £100 bank (TIPP silent in 100% of
+  draws). Flat £1 retained, now on 48,000 replayed histories. The floor-rule
+  almost-sure guarantee was demonstrated exactly (P(breach)=0.000 in all scenarios,
+  including sign-reversed). Registered follow-up: horizon-sliced re-run for the
+  bank-sizing arithmetic. sqrt-profit (escalates only from banked profit) is the
+  leading shape for that re-run — highest median at flat-like floor risk.
 - **A staking head-to-head cannot outrun the edge test** (DR-TENNIS-STAKING-006): for
   non-compounding rules on one settled sequence, every pairwise comparison is the edge
   test rescaled downward (|t_pair| ≤ t_edge, n_eff as low as 27 bets). Until the costed
