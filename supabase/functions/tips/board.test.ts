@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   allVenueQuotes,
+  BOOK_PREFERENCE,
   bestOfFor,
   corpusCandidates,
   normalizeName,
@@ -107,4 +108,43 @@ Deno.test("every venue's two-sided quote is extracted, one-sided ones dropped", 
   assertEquals(quotes.length, 2);
   assertEquals(quotes[0], { venue: "betfair_ex_uk", home: 1.85, away: 2.05 });
   assertEquals(quotes[1], { venue: "pinnacle", home: 1.80, away: 2.10 });
+});
+
+Deno.test("the decision ladder holds only venues a UK resident can transact at", () => {
+  // The Python side settled this in TE-0013: `venues.py` marks Pinnacle
+  // `Access.CLOSED_TO_UK` — "It is NOT a place this account can bet and its return is
+  // not money" — and `test_pinnacle_and_the_panel_maximum_are_never_settlement_venues`
+  // makes a table led by Pinnacle impossible without deleting a test. The serving side
+  // never got that guard, so the board could fall back to Pinnacle, compute an edge and
+  // a break-even against it, and mint that into the append-only prediction ledger: a
+  // number about a counterfactual, on the one path that feeds real decisions.
+  //
+  // Exchanges only, and only ones open to the UK. Bookmakers are excluded for a second,
+  // independent reason: they restrict consistent winners, so an edge validated there has
+  // an expiry date it does not control (TE-0037 rejected bookmaker line shopping on
+  // exactly this ground).
+  const CLOSED_TO_UK = ["pinnacle"];
+  for (const venue of CLOSED_TO_UK) {
+    assertEquals(
+      (BOOK_PREFERENCE as readonly string[]).includes(venue),
+      false,
+      `${venue} is closed to UK customers and must never price a decision`,
+    );
+  }
+
+  // A match only Pinnacle quotes is an ABSENCE, not a fallback. Minting no prediction
+  // is the correct outcome: fewer predictions at takeable prices beats more at
+  // untakeable ones.
+  const pinnacleOnly = [
+    { key: "pinnacle", markets: [{ key: "h2h", outcomes: [
+      { name: "Home P.", price: 1.80 }, { name: "Away P.", price: 2.10 }] }] },
+  ];
+  assertEquals(pickPrices(pinnacleOnly, "Home P.", "Away P."), null);
+
+  // But capture must be untouched. Pinnacle is a genuine sharpness benchmark — TE-0013
+  // measured the model at +1.48% against it versus a -2.08% control — and dropping it
+  // from `allVenueQuotes` would destroy evidence to fix a decision-path defect.
+  const quotes = allVenueQuotes(pinnacleOnly, "Home P.", "Away P.");
+  assertEquals(quotes.length, 1);
+  assertEquals(quotes[0].venue, "pinnacle");
 });
