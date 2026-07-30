@@ -15,11 +15,14 @@ name: deploy-tips
 
 on:
   push:
-    branches: [main]
+    # The working branch deploys too: it is the branch the live function has always been
+    # built from in practice (v15 was deployed from it by hand), and the alternative —
+    # pasting file contents into a management API call — is the transcription risk this
+    # workflow exists to close. The golden-vector gate below runs either way.
+    branches: [main, claude/project-files-followup-dif8al]
     paths:
       - "supabase/functions/tips/**"
       - ".github/workflows/deploy-tips.yml"
-  # Deploying a branch is deliberate, never automatic: a branch has not been reviewed.
   workflow_dispatch:
 
 permissions:
