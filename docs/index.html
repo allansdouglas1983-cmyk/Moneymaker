@@ -144,6 +144,14 @@ button.go:disabled{opacity:.55;cursor:default}
         <button id="fAll" aria-selected="true">All matches</button>
         <button id="fLikely" aria-selected="false">Likely winners the market underrates</button>
       </nav>
+      <!-- TE-0047 registered policy (ADR 0020 Amendment 4): suggested stakes from the
+           D7 conservative-bound allocator, golden-vectored against the Python rules.
+           Display only — this page places nothing; the founder decides at placement. -->
+      <div class="row" style="margin:8px 0 4px;align-items:center">
+        <label for="bankIn">Bank £</label>
+        <input id="bankIn" inputmode="decimal" style="max-width:90px" placeholder="e.g. 200">
+        <span id="peakNote" class="meta"></span>
+      </div>
       <div id="board"></div>
     </div>
 
@@ -265,6 +273,70 @@ function cell(k, v, cls) {
   return `<div class="cell"><div class="k">${k}</div><div class="v ${cls || ""}">${v}</div></div>`;
 }
 
+/* TE-0047 registered staking policy, computed by docs/staking.js (the exact-BigInt port
+   of the registered Python rules, held to them by 300 golden vectors). The card is the
+   set of FIRED rows (the strict SelectionRule mirror); k is the full per-day card size;
+   the plan is per UTC match day off the CURRENT bank and high-water mark. Display only.
+   The module loads after this classic script, sets window.TE_STAKING, and re-renders. */
+let stakePlanByKey = {};
+
+function bankPence() {
+  const raw = Number((localStorage.getItem("te.bank") || "").replace(",", "."));
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.round(raw * 100);
+}
+
+function peakPence(bank) {
+  const stored = Number(localStorage.getItem("te.peak") || "0");
+  const peak = Math.max(Number.isFinite(stored) ? stored : 0, bank);
+  localStorage.setItem("te.peak", String(peak));
+  return peak;
+}
+
+function computeStakePlans() {
+  stakePlanByKey = {};
+  const S = window.TE_STAKING;
+  const bank = bankPence();
+  if (!S || !bank || !boardRows.length) return;
+  const peak = peakPence(bank);
+  const note = $("peakNote");
+  if (note) {
+    note.innerHTML = peak > bank
+      ? `high-water £${(peak / 100).toFixed(2)} — stakes bound to a 30% fall from it
+         &middot; <a href="#" onclick="localStorage.setItem('te.peak','0');renderBoard();return false">reset to current bank</a>`
+      : "";
+  }
+  // Fired rows only, grouped by UTC match day in served order (scheduled-start order).
+  const byDay = {};
+  for (const row of boardRows) {
+    const p = row.best_side === "A" ? row.prediction.probability_a
+                                    : row.prediction.probability_b;
+    const odds = row.best_side === "A" ? row.fixture.odds_a : row.fixture.odds_b;
+    const pNano = S.quantiseProbability(p);
+    const oddsC = S.quantiseOdds(odds);
+    if (!S.isFired(pNano, oddsC)) continue;
+    (byDay[row.fixture.match_date] ||= []).push({ key: row.fixture.match_key, pNano, oddsC });
+  }
+  for (const day of Object.keys(byDay)) {
+    const card = byDay[day];
+    const plan = S.stakePlan(bank, peak, card.map((c) => ({ pNano: c.pNano, oddsC: c.oddsC })));
+    card.forEach((c, i) => { stakePlanByKey[c.key] = plan[i]; });
+  }
+}
+
+function stakeCell(row) {
+  if (!bankPence()) return cell("Stake (policy)", "enter bank ↑", "");
+  const plan = stakePlanByKey[row.fixture.match_key];
+  if (!plan) return cell("Stake (policy)", "—");
+  if (plan.reason === "STAKED" || plan.reason === "CLAMP_RESERVE") {
+    return cell("Stake (policy)", "£" + (plan.stakePence / 100).toFixed(2), "pos");
+  }
+  if (plan.reason === "SKIP_MIN" || plan.reason === "SKIP_RESERVE") {
+    return cell("Stake (policy)", "below £1 — skip", "neg");
+  }
+  return cell("Stake (policy)", "no stake", "neg");
+}
+
 function matchCard(row, index) {
   const f = row.fixture, p = row.prediction;
   const side = row.best_side === "A" ? f.player_a : f.player_b;
@@ -318,6 +390,7 @@ function timingNote(row) {
                : signed(row.best_edge),
              row.best_edge - (row.best_band ?? 0) >= 0.01 ? "pos" : "neg")}
       ${cell("On", escapeHtml(side) + " @ " + odds)}
+      ${stakeCell(row)}
     </div>
     <div class="why">${escapeHtml(row.reasons.join(" · "))}</div>
     <button class="more" onclick="
@@ -370,6 +443,7 @@ function likelyWinner(row) {
 }
 
 function renderBoard() {
+  computeStakePlans();
   const rows = boardFilter === "likely" ? boardRows.filter(likelyWinner) : boardRows;
   for (const id of ["fAll", "fLikely"]) {
     $(id).setAttribute("aria-selected",
@@ -536,6 +610,11 @@ async function recordBet(matchKey, index) {
 
 $("fAll").onclick = () => { boardFilter = "all"; renderBoard(); };
 $("fLikely").onclick = () => { boardFilter = "likely"; renderBoard(); };
+$("bankIn").value = localStorage.getItem("te.bank") || "";
+$("bankIn").oninput = () => {
+  localStorage.setItem("te.bank", $("bankIn").value.trim());
+  renderBoard();
+};
 $("tabBoard").onclick = () => {
   $("tabBoard").setAttribute("aria-selected", "true");
   $("tabLedger").setAttribute("aria-selected", "false");
@@ -588,6 +667,13 @@ async function start() {
 }
 
 if (token) start(); else if (pendingEmail) $("email").value = pendingEmail;
+</script>
+<script type="module">
+// The registered staking policy lives in its own golden-vectored module. It loads after
+// the page script; once available, re-render so stake cells fill in.
+import * as TE_STAKING from "./staking.js";
+window.TE_STAKING = TE_STAKING;
+if (typeof renderBoard === "function") renderBoard();
 </script>
 </body>
 </html>
