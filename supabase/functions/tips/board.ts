@@ -295,7 +295,7 @@ export function surfaceIsKnown(sportKey: string): boolean {
  * "unknown" surface cannot be expressed without changing the served numbers and the
  * Python/TypeScript golden vectors together. That is its own measured slice.
  *
- * What changes here is how often the fallback fires. Four tournaments were mapped; 177
+ * What changes here is how often the fallback fires. Four tournaments were mapped; 171
  * (tour, city) pairs now are, derived from the corpus rather than recalled — including
  * the Stuttgart split that recall gets wrong. Where the fallback still fires,
  * `surfaceIsKnown` says so out loud.
