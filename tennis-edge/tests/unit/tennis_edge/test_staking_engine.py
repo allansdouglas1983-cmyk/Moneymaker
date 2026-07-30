@@ -113,10 +113,11 @@ def test_settlement_rounds_against_the_bettor_in_both_directions() -> None:
     floored and commission is ceilinged, so the engine can never report a penny the
     exchange would not have paid. A rule that looks profitable only because rounding went
     its way is not a finding."""
-    # 333p at 3.05 -> gross 683.65p -> floor 683; commission ceil(683 * 0.05) = ceil(34.15) = 35
+    # 333p at 3.05: gross = 333 * 2.05 = 682.65p, floored to 682 (proves the floor);
+    # commission = 682 * 0.05 = 34.10p, ceilinged to 35 (proves the ceiling).
     path = replay([candidate(odds="3.05", won=True)], flat(333), CONFIG)
     assert path.total_commission_pence == 35
-    assert path.final_bank_pence == 10_000 + 683 - 35
+    assert path.final_bank_pence == 10_000 + 682 - 35
 
 
 def test_money_never_becomes_a_float() -> None:
@@ -208,23 +209,33 @@ def test_the_engine_halts_when_it_cannot_fund_the_minimum_stake() -> None:
     """Ruin in this system is not 'bank reaches zero'. It is 'bank can no longer place
     the smallest legal bet', which happens strictly earlier and is the honest stopping
     condition on a lattice with a GBP 1 floor."""
-    config = EngineConfig(start_bank_pence=150, floor_pence=100,
+    # GBP 1.50 bank, no floor: day one can fund the GBP 1 minimum, loses, and leaves 50p
+    # — solvent, but no longer able to place the smallest legal bet.
+    config = EngineConfig(start_bank_pence=150, floor_pence=0,
                           min_stake_pence=100, commission=D("0.05"))
     day = [candidate(date=TODAY, market="1.1", won=False),
            candidate(date=TOMORROW, market="1.2", won=True)]
     path = replay(day, flat(100), config)
+    assert path.final_bank_pence == 50, "solvent, and still dead"
     assert path.halt is Halt.CANNOT_FUND_MINIMUM
     assert path.halted_on == TOMORROW
     assert len([r for r in path.rows if r.stake_pence > 0]) == 1, "no bet after the halt"
 
 
-def test_a_halted_path_reports_the_day_it_died_not_just_that_it_died() -> None:
-    """Time-to-ruin is one of the objectives being compared, so the date has to survive."""
-    config = EngineConfig(start_bank_pence=150, floor_pence=100,
+def test_nothing_after_the_halt_is_played_even_if_it_would_have_won() -> None:
+    """A dead programme stays dead. An engine that merely skipped an unaffordable day and
+    carried on would resurrect it the moment a cheaper day came along — and would credit
+    a rule with winnings it could never have collected."""
+    config = EngineConfig(start_bank_pence=150, floor_pence=0,
                           min_stake_pence=100, commission=D("0.05"))
-    path = replay([candidate(won=False)], flat(100), config)
-    assert path.halt is Halt.CANNOT_FUND_MINIMUM
-    assert path.halted_on is not None
+    third = TOMORROW + dt.timedelta(days=1)
+    day = [candidate(date=TODAY, market="1.1", won=False),
+           candidate(date=TOMORROW, market="1.2", won=True),
+           candidate(date=third, market="1.3", won=True)]
+    path = replay(day, flat(100), config)
+    assert path.halted_on == TOMORROW
+    assert [r.date for r in path.rows] == [TODAY], "days after the halt are not played"
+    assert path.final_bank_pence == 50
 
 
 # --------------------------------------------------------------------------- integrity
