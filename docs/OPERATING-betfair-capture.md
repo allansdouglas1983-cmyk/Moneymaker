@@ -1,4 +1,4 @@
-# Betfair order-book capture: the two blockers, and which one is left
+# Betfair order-book capture: the three blockers, and which one is left
 
 Written 2026-07-30 after taking the capture path from "fails, unclear why" to one
 outstanding action. Both failures returned generic-looking errors that hid their real
@@ -43,6 +43,23 @@ A different error is progress: the login now reaches Betfair's account check.
 minutes) does, via `extensions.http()` with an explicit `http_header` — `http_get()` cannot
 set headers, which is precisely the trap. A caller that forgets it fails with a location
 error that looks nothing like a missing header.
+
+## Blocker 3 — the cron's own 5-second timeout. SOLVED by http_set_curlopt in the job.
+
+Once the login started reaching Betfair, every 30-minute run began failing with
+`Operation timed out after 5002 milliseconds with 0 bytes received`: the `extensions.http()`
+default timeout is 5 seconds, and a real certlogin round-trip (and later, a real capture of
+catalogue + books) takes longer. The setting is **session-scoped**, so it must be set inside
+the same job command — jobid 14 now runs a DO block:
+
+```sql
+perform extensions.http_set_curlopt('CURLOPT_TIMEOUT_MS', '90000');
+perform extensions.http(('GET', '.../tips/book-capture',
+    ARRAY[extensions.http_header('x-region','eu-west-2')], NULL, NULL)::extensions.http_request);
+```
+
+Verified 2026-07-30: with both the header and the timeout, the run completes and returns
+Betfair's real answer (`CERT_AUTH_REQUIRED`) instead of a client-side timeout.
 
 ## What is left: register the certificate
 
