@@ -6,12 +6,12 @@ replay output is observed — nothing here is fitted, tuned, or updated from the
 is scored on (protocol §1.1). All arithmetic is integer pence and exact Decimal.
 
 Most rules here are edge-free: they read bank state, the odds ladder and declared
-policy only. ONE edge-consuming rule exists — `conservative_kelly`, the founder-requested
-per-bet allocator, registered by the 2026-07-30 amendment after the original exclusion
-was traced to the TE-0042 commission error (TE-0044 correction). It consumes the archived
-model probability with a provenance-pinned conservative shrink (SPEC-034's
-consume-the-lower-bound rule); the shrink is a required argument precisely so no default
-can quietly un-conservative it.
+policy only. ONE edge-consuming rule exists — `conservative_kelly` — and it is a
+MEASURED OBJECT ONLY, withdrawn as policy by ADR 0020 Amendment 3 (2026-07-30): its
+shrink construction ("Kelly × pooled TE-0043 ratio") is not from the research — matrix
+§5.7 forbids folklore multipliers — and per-bet sizing of a same-day card violates
+matrix §4. It stays in the catalogue so its frontier measurements remain reproducible;
+nothing derived from it may be served or size a stake.
 """
 from __future__ import annotations
 
@@ -139,15 +139,14 @@ def hb_cap(base: StakingRule, max_drawdown: Decimal) -> StakingRule:
 
 
 def conservative_kelly(*, shrink: Decimal, commission: Decimal) -> StakingRule:
-    """The founder-requested per-bet allocator: f_i = shrink * kelly(p_i, O_i, c) of the
-    live bank, computed per bet.
+    """WITHDRAWN AS POLICY (ADR 0020 Amendment 3) — measured object only.
 
-    Stakes differ across a card by each bet's odds and probability; they scale with the
-    current bank, so the rule compounds by construction; a bet at or below the
-    commission-aware break-even gets zero. ``shrink`` has no default: it must be the
-    measured conservative-bound/point ratio of the current evidence (TE-0043:
-    1.37/3.86 at 2%), supplied explicitly so a stale or invented fraction cannot hide
-    behind a signature.
+    f_i = shrink * kelly(p_i, O_i, c) of the live bank, per bet. Kept solely so the
+    TE-0046 Addendum 2 frontier measurements remain reproducible. The construction is
+    off-research: DR-TENNIS-STAKING-006 matrix §5.7 requires a fractional rule's
+    fraction to be derived from pre-registered drawdown tolerances (the RCK way) or the
+    per-bet conservative quantile (D7), never a pooled multiplier; and §4 requires
+    joint same-day sizing. MUST NOT be served or used to size a real stake.
     """
     def rule(candidates: Sequence[Candidate], state: DayState) -> list[int]:
         out = []

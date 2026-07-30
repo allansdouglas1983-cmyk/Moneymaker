@@ -158,3 +158,14 @@ remains gated on founder sign-off. Five-year compounding-shape results are archi
 `compounding-shapes-200.txt` for the record (sqrt £753 vs flat £549 median; step rule
 lowest dip £69 with the largest tail) — informative, not decision-relevant at the
 founder's declared horizon.
+
+## Addendum 3 — correction to Addendum 2's registration claim
+
+The allocator described above was WITHDRAWN as policy the same day (ADR 0020
+Amendment 3): the founder rejected it, and the derivation was found to be off-research —
+an invented shrink construction (matrix §5.7 forbids folklore multipliers), the wrong
+per-bet form (D7/D13 are the registered shapes), and no joint same-day sizing (matrix
+§4). The frontier table stays archived as an exploratory measurement of a mis-derived
+arm; nothing in it authorises serving or staking. The registered follow-up is the
+pre-registration of E2 CVAR-LP-EV and D19 JOINT-HARA under B5 HB-CAP, with
+founder-declared (α, β), through the same frozen harness.

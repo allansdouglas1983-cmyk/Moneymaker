@@ -81,7 +81,13 @@ The full 58-item capabilities inventory is in the codebase sweep; the headline g
   day-open sizing and skip-not-round-up (`staking/engine.py`), the parameterised firing
   rule (`staking/selection.py`), the opportunity-set loader (`staking/sequence.py`), the
   exporter and the selection sweep (`tools/export_bet_sequence.py`,
-  `tools/sweep_selection.py`).
+  `tools/sweep_selection.py`). STK-HARNESS-V1 (`staking/harness.py`): stress haircuts,
+  paired stationary-bootstrap draws, absorbing ruin states, and `reserve_day` — the §1.6
+  day-reservation semantics as ONE shared pure function (replay and any future serving
+  path consume the same implementation). The rule catalogue (`staking/rules.py`)
+  includes `conservative_kelly` as a measured object only — withdrawn as policy by
+  ADR 0020 Amendment 3; the open follow-up is pre-registering E2 CVAR-LP-EV +
+  D19 JOINT-HARA under B5 HB-CAP with founder-declared (α, β).
 - **Coherence mathematics** (synthetic-only): DP scoring engine validated against an
   independent oracle, 2-D root solver with canonical dedup and discretisation-stability
   contracts, holdout projection (`sport_tennis/coherence/*`).
