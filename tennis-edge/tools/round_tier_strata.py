@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tennis_edge.corpus import default_vintage_root, load_corpus  # noqa: E402
+from tennis_edge.refresh import latest_vintage  # noqa: E402
 from tennis_edge.exchange_prices import read_prices  # noqa: E402
 from tennis_edge.experiments.exchange_settlement import DEFAULT_PRICES  # noqa: E402
 from tennis_edge.experiments.residual_edge import walk_forward  # noqa: E402
@@ -75,8 +76,9 @@ def main() -> None:
     prices = {(p.date, p.tour, p.player_a, p.player_b): p
               for p in read_prices(Path(DEFAULT_PRICES))}
 
-    vintage = default_vintage_root()
-    matches, _stats = load_corpus(vintage)
+    vintage = latest_vintage(default_vintage_root())
+    assert vintage is not None
+    matches, _stats = load_corpus(vintage.root)
     context = {(m.match_date, m.tour, m.player_a, m.player_b): (m.round_name, m.tier)
                for m in matches}
 
