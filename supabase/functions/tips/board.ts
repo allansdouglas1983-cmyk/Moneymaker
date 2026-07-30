@@ -364,13 +364,18 @@ export interface FeedOutcome {
 
 export interface FeedBookmaker {
   key: string;
-  markets: Array<{ key: string; outcomes: FeedOutcome[] }>;
+  last_update?: string;
+  markets: Array<{ key: string; last_update?: string; outcomes: FeedOutcome[] }>;
 }
 
 export interface VenueQuote {
   venue: string;
   home: number;
   away: number;
+  /** The provider's own `last_update` for this quote, verbatim, or null. PROVIDER
+   * timestamp semantics (SPEC-020): it may mean "when the crawler last saw this
+   * bookmaker", which bounds staleness only from below — recorded as what it is. */
+  lastUpdate: string | null;
 }
 
 /**
@@ -397,7 +402,10 @@ export function allVenueQuotes(
     const a = market.outcomes.find((o) => o.name === away)?.price;
     // A one-sided book cannot be de-vigged into a probability, so it is an absence.
     if (h === undefined || a === undefined || !(h > 1) || !(a > 1)) continue;
-    out.push({ venue: book.key, home: h, away: a });
+    // Market-level timestamp is the more specific; bookmaker-level is the fallback;
+    // absence is an explicit null, never a fabricated time (TE-0041 #1).
+    out.push({ venue: book.key, home: h, away: a,
+               lastUpdate: market.last_update ?? book.last_update ?? null });
   }
   return out;
 }

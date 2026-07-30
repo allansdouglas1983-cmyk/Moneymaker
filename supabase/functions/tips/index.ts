@@ -24,6 +24,7 @@ import {
   reasonsFor,
   statusFor,
 } from "./scoring.ts";
+import { budgetState, type PlacedBet, venueForBet } from "./trial.ts";
 import {
   allVenueQuotes,
   entryTiming,
@@ -502,6 +503,7 @@ async function boardRefresh(): Promise<Response> {
             odds_b: q.away,
             commence_time: event.commence_time,
             captured_at: captured,
+            venue_last_update: q.lastUpdate,
           }))),
         });
         if (written.ok) observations += quotes.length;
@@ -669,25 +671,9 @@ async function bookCapture(): Promise<Response> {
   return json({ refreshed: true, markets: markets.length, snapshots: rows.length });
 }
 
-interface PlacedBet {
-  stake: number;
-  status: string;
-  pnl: number | null;
-}
-
-/** Settled losses against the ADR 0020 budget. Losses decrement; wins do NOT restore
- *  (SPEC-060 semantics) — the budget is a floor on damage, not a rolling balance. */
-function budgetState(budget: string | null, bets: PlacedBet[]) {
-  const lost = bets.filter((b) => b.status === "LOST")
-    .reduce((a, b) => a + b.stake, 0);
-  const total = budget === null ? null : Number(budget);
-  return {
-    budget: total,
-    settled_losses: Math.round(lost * 100) / 100,
-    remaining: total === null ? null : Math.max(0, Math.round((total - lost) * 100) / 100),
-    exhausted: total !== null && lost >= total,
-  };
-}
+// budgetState and the founder-verified venue registry live in trial.ts (TE-0041 #6),
+// where their governance properties are pinned by tests: the budget is venue-blind
+// (SPEC-103) and an unregistered venue is a refusal, never a default commission.
 
 /**
  * Record a bet the founder has ALREADY placed by hand on their own account. This
@@ -708,6 +694,15 @@ async function recordBet(request: Request): Promise<Response> {
   }
   if (!Number.isFinite(matchedOdds) || !(matchedOdds > 1)) {
     return json({ error: "matched_odds must be a decimal above 1." }, 400);
+  }
+  // TE-0041 #6: venue provenance. Only founder-verified venues are recordable — an
+  // unregistered venue has no verified commission, so recording it would fabricate a
+  // cost. Refusal writes no row. This records venues; it never recommends one.
+  const venueEntry = venueForBet(body.venue == null ? undefined : String(body.venue));
+  if (venueEntry === null) {
+    return json({ error: "Venue is not in the founder-verified registry — its " +
+      "commission is unverified, so the bet cannot be costed. Register the venue " +
+      "(a founder act) before recording bets at it." }, 409);
   }
 
   const budget = await getConfig("real_loss_budget");
@@ -738,7 +733,15 @@ async function recordBet(request: Request): Promise<Response> {
       side,
       stake,
       matched_odds: matchedOdds,
-      commission: COMMISSION,
+      // The venue's founder-verified rate — valid per bet only because v1 enforces one
+      // selection per market (SPEC-080: commission is on the net market result).
+      commission: venueEntry.commission,
+      venue: venueEntry.venue,
+      // The board's quoted price for this side at recording time: each real fill's
+      // quoted-vs-matched gap is a direct observation of the execution-cost band
+      // (TE-0020) that no historical archive can provide. Null when absent — never 0.
+      quoted_odds_at_decision:
+        (side === "A" ? fixture.odds_a : fixture.odds_b) ?? null,
     }]),
   });
   if (!stored.ok) return json({ error: await stored.text() }, 500);

@@ -51,7 +51,13 @@ create table tennis.placed_bets (
   tour text not null, player_a text not null, player_b text not null,
   side text not null, stake numeric not null, matched_odds numeric not null,
   commission numeric not null, placed_at timestamptz not null, status text not null,
-  pnl numeric, graded_at timestamptz
+  pnl numeric, graded_at timestamptz,
+  -- TE-0041 #6: venue provenance (founder-verified registry only) + the board's quoted
+  -- price at recording time, so each real fill measures its own quoted-vs-matched gap.
+  -- ONE loss budget over all venues (SPEC-103); commission is per-bet only because v1
+  -- enforces one selection per market (SPEC-080).
+  venue text not null default 'betfair_ex_uk',
+  quoted_odds_at_decision numeric
 );
 create table tennis.player_aliases (
   feed_name text not null, tour text not null, player text not null,
@@ -86,7 +92,10 @@ create table tennis.predictions (
 create table tennis.price_observations (
   match_key text not null, tour text not null, venue text not null,
   odds_a numeric not null, odds_b numeric not null,
-  commence_time timestamptz, captured_at timestamptz not null
+  commence_time timestamptz, captured_at timestamptz not null,
+  -- TE-0041 #1: the provider's own last_update for this venue's quote, verbatim.
+  -- PROVIDER timestamp semantics (SPEC-020) — may bound staleness only from below.
+  venue_last_update timestamptz
 );
 create table tennis.result_aliases (alias text not null, key text not null);
 create table tennis.results (
