@@ -73,3 +73,20 @@ value they pinned is the account's rate once more. No test was edited.
 No SPEC-ID changes. No gate evaluated. No stake authorised. The firing bar moved DOWN with
 the rate, which fires more bets — the reverse of TE-0042 — and the TE-0043 sweep already
 measured both regimes, so no measurement needs re-running to know what this does.
+
+## Correction 2026-07-30 — founder attestation on the rate's history
+
+The founder attests the account's rate was 2% BEFORE this session's package discussion —
+not newly obtained by a switch today. Under that attestation TE-0042's 5% period was not
+"correct for the package the account was then on"; it was **wrong on the day it was
+written**, and every conclusion that leaned on the 5%-era reading inherited the error —
+most consequentially the "edge interval spans zero" framing that entered the staking
+research briefs and justified excluding the per-bet (edge-consuming) allocator family
+from the frozen head-to-head. The exclusion of the founder's requested allocator traces
+directly to this wrong flip.
+
+Status per SPEC-081 is unchanged in form — the statement remains the only final
+authority — but the burden has moved: 2% is the founder-attested standing rate, 5% was a
+session-introduced error, and the first settled market's statement is expected to
+confirm 2%. All serving and measurement paths run at 2%; the per-bet allocator has now
+been built and stress-tested (six-month frontier, 2026-07-30) and enters registration.
