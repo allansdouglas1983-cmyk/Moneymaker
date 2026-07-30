@@ -158,6 +158,43 @@ def main() -> None:
         print(f"    difference {point:+.6f}  CI95=[{lo:+.6f},{hi:+.6f}]  "
               f"{'CLEARS ZERO' if lo > 0 or hi < 0 else 'SPANS ZERO'}  (n={n:,})")
 
+    # SELECTION ADJUSTMENT. The declared test is "highest minus lowest stratum", which
+    # PICKS the extremes and then tests them. A naive interval on a selected contrast is
+    # anti-conservative: with three strata you are effectively taking the largest of
+    # three pairwise gaps and judging it as though it were the only one. The declaration
+    # said max-minus-min, so that is what is reported above — but the honest reading
+    # needs the null distribution of THAT statistic, not of a pre-chosen pair.
+    #
+    # Cluster-respecting null: centre every stratum on its own mean (so all strata truly
+    # have equal expectation), then resample days and recompute max-minus-min. Variance,
+    # stratum sizes and within-day correlation are all preserved; only the signal is
+    # removed.
+    groups = [g for g in ("EARLY", "MIDDLE", "LATE") if by_round[g]]
+    if len(groups) >= 2:
+        centred = {g: {d: [x - means[g] for x in vals]
+                       for d, vals in by_round[g].items()} for g in groups}
+        all_days = sorted({d for g in groups for d in centred[g]})
+        rng = random.Random(SEED)
+        null_spreads = []
+        for _ in range(DRAWS):
+            picked = [all_days[rng.randrange(len(all_days))] for _ in range(len(all_days))]
+            draw_means = {}
+            for g in groups:
+                vals = [x for d in picked for x in centred[g].get(d, ())]
+                if vals:
+                    draw_means[g] = sum(vals) / len(vals)
+            if len(draw_means) >= 2:
+                null_spreads.append(max(draw_means.values()) - min(draw_means.values()))
+        null_spreads.sort()
+        observed = max(means[g] for g in groups) - min(means[g] for g in groups)
+        exceed = sum(1 for s in null_spreads if s >= observed)
+        p = (exceed + 1) / (len(null_spreads) + 1)
+        crit = null_spreads[int(0.95 * len(null_spreads))]
+        print(f"\n  SELECTION-ADJUSTED (null distribution of max-minus-min):")
+        print(f"    observed spread {observed:+.6f}   null 95th pct {crit:+.6f}   "
+              f"p={p:.4f}   "
+              f"{'SURVIVES selection' if p < 0.05 else 'DOES NOT survive selection'}")
+
     print("\nTE-0038 pre-registered. Licenses no rule change, no filter, no threshold.")
 
 
