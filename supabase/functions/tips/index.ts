@@ -34,6 +34,7 @@ import {
   pickPrices,
   resolvePlayer,
   surfaceFor,
+  surfaceIsKnown,
   tourOf,
 } from "./board.ts";
 import {
@@ -506,6 +507,19 @@ async function boardRefresh(): Promise<Response> {
       const mappedAway = mappedAwayEarly;
       const playerA = mappedHome ?? event.home_team;
       const playerB = mappedAway ?? event.away_team;
+      // A tournament the derived table does not establish is served as Hard — a guess.
+      // Record it so the gap closes from data rather than surfacing as a wrong
+      // prediction in the clay swing months from now.
+      if (!surfaceIsKnown(sport.key)) {
+        await db("rpc/note_unmapped_tournament", {
+          method: "POST",
+          body: JSON.stringify({
+            p_sport_key: sport.key,
+            p_tour: tour,
+            p_served_surface: surfaceFor(sport.key),
+          }),
+        });
+      }
       const date = event.commence_time.slice(0, 10);
       const fixture: FixtureRow = {
         match_key: matchKey(date, tour, playerA, playerB),
