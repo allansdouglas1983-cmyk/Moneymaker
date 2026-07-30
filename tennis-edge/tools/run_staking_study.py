@@ -51,6 +51,7 @@ from tennis_edge.staking.rules import (  # noqa: E402
     StakingRule,
     conservative_kelly,
     cppi,
+    d7_conservative_bound,
     fixed_profit_net,
     flat,
     hb_cap,
@@ -77,7 +78,7 @@ CONFIG = {
     "draws": 1_000,
     "seed": 20260730,
     "expected_block_length": 10,
-    "N_trials": 13,
+    "N_trials": 14,
     "alpha": 0.05,
     "gates": {
         "G1_dead_floor_at_zero": 0.05,
@@ -116,8 +117,19 @@ ARMS: dict[str, StakingRule] = {
     # commission error (TE-0044 correction); N_trials moves 12 -> 13.
     # Placeholder replaced in main() once the run's commission is bound; the shrink is
     # the TE-0043 measured conservative-bound/point ratio, pinned here.
+    # WITHDRAWN AS POLICY (ADR 0020 Amendment 3) — stays in the study as a measured
+    # object so its rows remain comparable; nothing derived from it may be served.
     "CONS_KELLY": flat(0),
+    # AMENDMENT 2 2026-07-30 (TE-0047 registration, frozen before this run): matrix D7
+    # K-LCB — Kelly at the conservative bound (delta_e = 0.0249, the TE-0043 interval
+    # displacement at the operative threshold), divide-by-k correlation charge, multi-bet
+    # B5 HB-CAP day budget at d_max 0.30 (founder tolerance). N_trials moves 13 -> 14.
+    # Placeholder replaced in main() once the run's commission is bound.
+    "D7_LCB": flat(0),
 }
+
+D7_DELTA_E = Decimal("0.0249")   # TE-0043 raw sweep: 3.86 - 1.37, min_edge 0.02, 2% supported
+D7_MAX_DRAWDOWN = Decimal("0.30")  # founder tolerance, TE-0047 registration
 
 CONS_KELLY_SHRINK = Decimal("1.37") / Decimal("3.86")
 
@@ -204,6 +216,8 @@ def main() -> int:
     ARMS["CONS_KELLY"] = hb_cap(
         conservative_kelly(shrink=CONS_KELLY_SHRINK, commission=commission),
         Decimal("0.50"))
+    ARMS["D7_LCB"] = d7_conservative_bound(
+        delta_e=D7_DELTA_E, commission=commission, max_drawdown=D7_MAX_DRAWDOWN)
 
     config = HarnessConfig(
         start_bank_pence=CONFIG["start_bank_pence"],  # type: ignore[arg-type]
