@@ -84,8 +84,11 @@ def test_variance_ladder_equalises_per_bet_risk_across_odds() -> None:
     proportion to its per-unit standard deviation, with the corrected closed form."""
     rule = variance_ladder(unit_pence=100)
     stakes = rule([bet("2.00", "1.1"), bet("5.00", "1.2")], state())
-    # sd at 2.00 = sqrt(0.98); at 5.00 = sqrt(3.92) = 2*sqrt(0.98): exactly half the stake.
-    assert stakes[0] == 2 * stakes[1]
+    # sd at 2.00 = sqrt(0.98); at 5.00 = sqrt(3.92) = 2*sqrt(0.98): half the stake,
+    # up to one penny of ROUND_FLOOR quantisation (the sd is irrational, so the exact
+    # 2:1 relation lives above the pence lattice, not on it).
+    assert abs(stakes[0] - 2 * stakes[1]) <= 1
+    assert stakes[0] > stakes[1]
 
 
 def test_fixed_profit_net_targets_net_winnings_and_refuses_short_prices() -> None:
@@ -94,7 +97,9 @@ def test_fixed_profit_net_targets_net_winnings_and_refuses_short_prices() -> Non
     rule = fixed_profit_net(target_pence=100)
     stakes = rule([bet("2.00")], state())
     assert stakes == [int(D(100) / (D("0.98")))]
-    assert rule([bet("1.05")], state()) == [2_000], "short odds need a large stake"
+    # 100 / (0.05 * 0.98) = 2040.8...p — the commission belongs in the denominator;
+    # the naive 2,000 is FP-NAIVE, the control this rule must never collapse into.
+    assert rule([bet("1.05")], state()) == [2_040], "short odds need a large stake"
 
 
 def test_sqrt_profit_escalates_only_from_banked_profit() -> None:
