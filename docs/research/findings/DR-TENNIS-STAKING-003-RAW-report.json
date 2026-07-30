@@ -1,0 +1,326 @@
+{
+ "question": "Staking, bankroll management and portfolio-risk methods for a SMALL, UNCERTAIN sports-betting edge \u2014 what do the best professional bettors and quantitative finance practitioners actually do?\n\nCONTEXT (use this to target the research; the answer must fit this situation):\n- A tennis match-odds model on the Betfair exchange, back-only, pre-off, one selection per market, 2% commission.\n- Measured forecast edge is real but small: +0.0011 nats log-score over the exchange price on 63,676 matches. Hypothetical ROI on flagged bets ~+2.3% (outsiders ~+4.3%, favourites ~+0.8%), but the 95% interval SPANS ZERO after execution costs. So: edge plausible, unproven.\n- Currently uses FLAT minimum stakes with a hard absolute loss budget. Placement is manual by a single person. Small bankroll (hundreds, not tens of thousands).\n- Typical odds 1.2\u20136.0; roughly two-thirds of bets lose (value often sits on underdogs).\n\nRESEARCH ANGLES WANTED:\n1. Kelly criterion and its practical variants \u2014 full vs fractional vs quarter Kelly; why professionals almost universally use fractional; what happens when edge is OVERESTIMATED (the over-betting failure mode); Kelly under parameter uncertainty / Bayesian Kelly; Kelly with commission; drawdown properties.\n2. Risk of ruin mathematics \u2014 formulas for probability of losing a bankroll given edge, odds and stake fraction; expected maximum drawdown; how long a losing run to expect at 2-4% edge; how professionals size to survive the tail rather than maximise growth.\n3. What professional sports bettors and betting syndicates actually do operationally \u2014 bet sizing rules, bankroll fractions, stop-loss and drawdown limits, when they scale up or down, closing line value (CLV) as a leading indicator of edge, line shopping, staking plans that are known SCAMS (martingale, Fibonacci, d'Alembert) and why they fail.\n4. Techniques from quantitative finance that transfer \u2014 position sizing under uncertainty, volatility targeting, risk parity, portfolio-level correlation limits, drawdown-based de-risking, Sharpe/Sortino and their betting analogues, sequential/anytime-valid monitoring to detect edge decay, walk-forward validation and overfitting control, the difference between in-sample and live performance decay.\n5. What actually kills small-edge betting operations in practice \u2014 execution/slippage costs, account restriction and stake limits (Betfair premium charges, bookmaker limiting), model decay, variance-driven abandonment, the psychology of chasing; and evidence on whether small measured edges survive to real profit.\n\nFor each: state clearly what is well-established, what is contested, and what evidence supports it. Prefer primary sources (academic papers, practitioner writing with real track records) over affiliate/marketing content, which dominates this topic and should be treated as untrustworthy. Flag any claim that appears mainly on gambling-affiliate sites.\n\nDeliverable: a prioritised, cited report of what a small, careful, single-person operation with an UNPROVEN edge should actually adopt \u2014 and equally importantly, what it should NOT adopt and why.",
+ "summary": "The verified evidence converges on one answer: a small, single-person operation with a measured-but-unproven edge (95% CI spanning zero after costs) should NOT adopt Kelly or any fractional-Kelly staking, and should retain flat minimum stakes under a hard absolute loss budget. The peer-reviewed literature is unanimous that Kelly consumes the true win probability, that substituting an estimate degrades out-of-sample performance and pushes the stake above the risk-optimal level, that the required shrinkage grows with the variance of the probability estimate, and that the penalty is brutally asymmetric \u2014 betting exactly twice the Kelly fraction reduces excess growth to zero, which is precisely what a 2x edge overestimate produces while the bettor believes they are betting \"full Kelly\". Kelly is also hypersensitive to errors in the mean (roughly 20:2:1 versus variance/covariance errors generally, ~100:3:1 for the near-zero risk aversion of a log/Kelly bettor), and even a large, correctly-estimated, genuinely positive edge can turn $1,000 into $18 over 700 favourable bets, with half-Kelly only moving that to $145. Arithmetic on this operation's own parameters settles it operationally: at +2.3% ROI, full Kelly is 0.47% of bankroll at odds 6.0 and 11.7% at odds 1.2, so on a few-hundred-pound bank the Betfair minimum stake already EXCEEDS full Kelly on exactly the underdog bets where the edge is largest \u2014 Kelly is unimplementable downward, and the existing flat-minimum + budget rule is the correct and already-conservative policy. Critically, the surviving evidence covers only staking, sizing and drawdown mathematics; nothing on professional syndicate practice, CLV, account restriction, model decay or execution costs survived verification, so those research angles remain unanswered.",
+ "findings": [
+  {
+   "claim": "PRIMARY RECOMMENDATION \u2014 retain flat minimum stakes plus the hard absolute loss budget, and adopt NO Kelly-proportional rule (full, half, quarter, or Bayesian-shrunk) while the edge interval spans zero. Every Kelly variant presupposes a positive, correctly-signed edge; when the sign itself is unproven, no shrinkage factor is protective, because a mis-signed f* scaled by 1/2 or 1/4 is still a negative-expectation bet.",
+   "confidence": "high",
+   "vote": "synthesis of 3-0 and 2-1 verified claims across five primary sources",
+   "sources": [
+    "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria",
+    "https://pubsonline.informs.org/doi/pdf/10.1287/deca.2013.0271",
+    "https://www.sfu.ca/~tswartz/papers/kelly.pdf",
+    "https://arxiv.org/pdf/2503.17927",
+    "https://arxiv.org/pdf/2010.12508"
+   ],
+   "evidence": "This is the joint implication of the findings below, not a separate source claim. MacLean/Thorp/Ziemba (Quantitative Finance 10(7):681-687, 2010) prescribe explicitly: 'Given the extreme sensitivity of E log calculations to errors in mean estimates, these estimates must be accurate and to be on the safe side, the size of the wagers should be reduced' \u2014 and note 'Half Kelly does not help much as $1000 can become $145.' Baker & McHale (Decision Analysis 10(3), INFORMS, 2013) derive the shrinkage FROM the estimation variance rather than from risk aversion, and show shrinkage should increase with uncertainty; with a +0.0011 nat log-score edge whose post-cost interval spans zero, Var(p-hat) dominates and the implied shrinkage is severe. The Hakobyan-Lototsky (arXiv:2503.17927) Sharpe result is the limiting case: in the Bernoulli model the risk-adjusted optimum is literally f=0. The existing repository policy (SPEC-060 fixed minimum stake + absolute loss budget; SPEC-061 skip when minimum stake exceeds permitted risk) is already what this literature would prescribe, and the correct action is to leave it alone, not to 'upgrade' it."
+  },
+  {
+   "claim": "OPERATIONAL ARITHMETIC \u2014 on this operation's own numbers, Kelly is not merely unwise but unimplementable: at +2.3% ROI the full-Kelly fraction is 0.47% of bankroll at odds 6.0, 1.17% at odds 3.0, 2.35% at odds 2.0 and 11.7% at odds 1.2. On a bankroll of a few hundred pounds with a \u00a31-\u00a32 exchange minimum, the minimum stake (0.3%-0.7% of bank) already equals or exceeds FULL Kelly for the underdog bets where the measured edge is strongest, so no fractional-Kelly rule can be expressed at all; meanwhile Kelly at short odds demands 4%-12% of bankroll per bet in exactly the segment where the measured edge is weakest (+0.8% on favourites) and least distinguishable from zero.",
+   "confidence": "high",
+   "vote": "derived arithmetic, not a sourced claim \u2014 inputs are the task context plus the standard Kelly formula",
+   "sources": [
+    "https://www.sfu.ca/~tswartz/papers/kelly.pdf",
+    "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria"
+   ],
+   "evidence": "Computed directly: with b=(O-1)(1-c), c=0.02, and p set so EV per unit stake = +0.023, f* = (pb-(1-p))/b gives 0.1173 (O=1.2), 0.0469 (1.5), 0.0235 (2.0), 0.0117 (3.0), 0.0078 (4.0), 0.0047 (6.0). At the segment-specific ROIs given (+0.8% favourites) f* at O=1.2 is still ~4.1%. Two consequences. (1) Granularity floor: half-Kelly at O=6 on a \u00a3300 bank is ~\u00a30.70, below the exchange minimum \u2014 the discreteness that MacLean/Thorp/Ziemba flag ('If capital is discrete, then presumably Kelly bets are rounded') binds first, and rounding UP into a stake above the Kelly/risk limit is exactly what SPEC-061 forbids. (2) The Kelly fraction is inversely proportional to (O-1), so a uniform ROI implies enormous stakes at short odds; a small absolute error in a favourite's probability translates into a large proportional stake error. Both point the same way: flat minimum staking is the only rule that is simultaneously implementable, bounded, and robust to the sign of the edge."
+  },
+  {
+   "claim": "Plug-in Kelly on an ESTIMATED probability systematically stakes above the risk-optimal level, and the gap grows with the variance of the estimate even when that estimate is unbiased. This is the core over-betting failure mode and it is an estimation-theory result, not a risk-aversion preference: it falls out of the concavity of expected log growth in the betting fraction, with an additional genuine winner's-curse effect whenever bets are FILTERED on estimated edge (as they are here \u2014 'flagged bets').",
+   "confidence": "high",
+   "vote": "3-0 unanimous on four independent claims (0, 4, 6, 9), four primary sources",
+   "sources": [
+    "https://pubsonline.informs.org/doi/pdf/10.1287/deca.2013.0271",
+    "https://www.sfu.ca/~tswartz/papers/kelly.pdf",
+    "https://arxiv.org/pdf/1701.02814",
+    "https://arxiv.org/pdf/2503.17927"
+   ],
+   "evidence": "Baker & McHale (Decision Analysis 10(3):189-199, 2013): 'The Kelly betting criterion ignores uncertainty in the probability of winning the bet and uses an estimated probability. In general, such replacement of population parameters by sample estimates gives poorer out-of-sample than in-sample performance' \u2014 and 'to improve out-of-sample performance the size of the bet should be shrunk in the presence of this parameter uncertainty', with optimal shrinkage INCREASING in estimator uncertainty. Their empirical validation is on tennis betting data. Chu, Wu & Swartz (J. Quantitative Analysis in Sports 14(1):1-11, 2018): 'how can it be that gamblers often experience losses when using the Kelly approach? The simple but often overlooked explanation is that the input p used in determining the Kelly fraction is an unknown quantity. Often, gamblers are overly optimistic... and the true p is less than the specified p.' Hakobyan & Lototsky (arXiv:2503.17927) route to Han/Yu/Mathew (Quantitative Finance 19(2):277-287, 2019): under jointly Gaussian log-returns the plug-in Kelly estimator is biased and overestimates true weights, and both the bias-corrected and loss-minimising estimators reduce to fractional Kelly. MECHANISM CORRECTION carried from verification (claim 6 was 3-0 but its stated mechanism was wrong): binary Kelly f*=p(1+1/b)-1/b is LINEAR in p, so an unbiased p-hat yields an unbiased f-hat in the always-bet case \u2014 errors DO average out in the fraction. The real drivers are (a) Jensen/concavity, since over-betting is punished far more steeply than under-betting, and (b) truncation on max(0, edge-hat), which is convex, so selecting only bets that LOOK +EV inflates the expected staked fraction with a gap growing in Var(p-hat). Mechanism (b) is exactly this operation's situation. Do NOT cite the Han/Yu/Mathew portfolio-weight bias as if it transferred mechanically to a single binary back bet."
+  },
+  {
+   "claim": "The over-betting penalty is severe and asymmetric, not merely 'more aggressive': in continuous time, betting exactly TWICE the Kelly fraction reduces the growth rate to the risk-free rate \u2014 zero excess growth \u2014 and any fraction above Kelly simultaneously raises risk AND lowers growth. Because the Kelly fraction is linear in the edge, a bettor whose edge is half what they measured is betting exactly 2x Kelly while believing they are betting full Kelly, i.e. sitting precisely on the zero-growth point with full variance.",
+   "confidence": "high",
+   "vote": "3-0 on both claims (2, 8), corroborated across two sources plus an independent CAPM-based appendix proof",
+   "sources": [
+    "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria",
+    "https://arxiv.org/pdf/2010.12508"
+   ],
+   "evidence": "MacLean/Thorp/Ziemba: 'for processes which are well approximated by continuous time, the growth rate becomes zero plus the risk free rate when one bets exactly twice the Kelly wager. Hence it never pays to bet more than the Kelly strategy because then risk increases (lower security) and growth decreases, so Kelly dominates all these strategies in geometric risk-return or mean-variance space.' Their appendix reproduces Markowitz's proof: g(f)=r0+f(mu-r0)-f^2 sigma^2/2, f*=(mu-r0)/sigma^2, g(2f*)=r0 exactly; the verifier reproduced this algebra independently and confirmed the paper's Table 3 (2% blackjack edge: relative growth 1.00 at 1.0 Kelly, 0.00 at 2.0 Kelly, labelled 'Overkill / Too Risky'). Hubacek & Sir (arXiv:2010.12508) state the same for betting: 'The fraction f* thus dictates an upper-bound on the possible profit... This is commonly known as overbetting. Since the true expected return is unknown, however, such a situation might occur even while betting with a fraction assumed to be optimal', and note fractional Kelly 'generally decreases volatility, which also tends to be considerably high with the plain Kelly criterion.' Discrete-time check at this operation's parameters (EV=+2.3%, odds 1.2-6.0): g(2f*) is -2.1e-4 at O=1.2, -3.7e-7 at O=2.0, +1.2e-6 at O=6.0 versus g(f*) of +1.4e-3, +2.7e-4, +5.3e-5 \u2014 the continuous approximation is excellent at small edges. QUALIFICATION: 'strictly dominated' holds in growth-and-security space, not general expected-utility space; a CRRA agent with risk aversion below 1 optimally bets above Kelly (Samuelson's objection), which the paper itself concedes for positive-power utilities."
+  },
+  {
+   "claim": "Kelly/log-utility sizing is the most estimation-sensitive objective in the entire allocation literature: errors in MEANS dominate errors in variances and covariances by roughly 20:2:1 in cash-equivalent terms, the ratio worsens as risk aversion falls, and for the log (Kelly) investor \u2014 whose Arrow-Pratt risk aversion is 1/w, essentially zero \u2014 it reaches roughly 100:3:1. The edge is precisely the mean, and it is the one quantity this operation has not established.",
+   "confidence": "high",
+   "vote": "3-0, primary peer-reviewed, verbatim-verified against full text",
+   "sources": [
+    "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria"
+   ],
+   "evidence": "MacLean/Thorp/Ziemba, citing Chopra & Ziemba (J. Portfolio Management 19(2):6-11, 1993): 'Errors in means versus errors in variances were about 20:2:1 in importance as measured by the cash equivalent value of final wealth', and 'The lower is the Arrow-Pratt risk aversion... the higher are the relative errors from incorrect means.' Ziemba & MacLean elsewhere: 'for the extreme log investors with essentially zero risk aversion the errors are worth about 100:3:1. So log investors must estimate means well if they are to survive.' The underlying Table 1 (Certainty Equivalent Loss) gives means-vs-covariance ratios of 5.38 / 22.50 / 56.84 at risk tolerances 25 / 50 / 75 \u2014 so quote this as risk-aversion-dependent, NOT as a single universal constant. Qualification found in verification: Palczewski & Palczewski (EJOR 2014) show the exact magnitude is context-dependent (varies with Sharpe ratio, sampling frequency, short-sale constraints); the DIRECTION is undisputed. Note also that the multi-asset covariance limb is largely irrelevant to a single sequential bet, where Kelly is directly proportional to the edge with no covariance term at all \u2014 which makes the mean-sensitivity point MORE binding here, not less."
+  },
+  {
+   "claim": "The 'Kelly bettor never risks ruin' property is a theorem about literal zero under infinite divisibility, NOT an operational guarantee. Over a finite sequence of 700 independent bets each with a genuine, correctly-known 14% edge and a minimum 19% win chance, full Kelly can turn $1,000 into $18; half-Kelly only moves that to $145. The authors state flatly that no such rule is ever a sure way of winning over a finite sequence. A minimum exchange stake breaks infinite divisibility outright, so the no-ruin theorem does not apply to this operation at all.",
+   "confidence": "medium",
+   "vote": "2-1 (the dissent concerned a secondary parenthetical gloss, not the substance; verifier evidence rated high and verbatim)",
+   "sources": [
+    "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria"
+   ],
+   "evidence": "Verbatim: 'making 700 wagers all of which have a 14% advantage, the least of which has a 19% chance of winning can turn $1000 into $18. But with full Kelly 16.6% of the time $1000 turns into at least $100,000... Half Kelly does not help much as $1000 can become $145 and the growth is much lower.' And: 'The Kelly and fractional Kelly rules, like all other rules, are never a sure way of winning for a finite sequence.' The companion paper (Medium Term Simulations of the Full Kelly and Fractional Kelly Investment Strategies) reports 12.4% of full-Kelly runs LOSING money over these 700 favourable bets (7.25% at 3/4 Kelly, 3.5% at half Kelly), and re-running with 2000 scenarios instead of 1000 gives minima of $4 / $56 / $111 for full / 3/4 / half Kelly \u2014 the tail is worse than the headline. Decisive framing: this is the ZERO-estimation-error case (Monte Carlo from known true probabilities, all bets EV 1.14). If a large, perfectly-known edge does this, an unproven +2.3% one is not in a better position. CAVEATS: $18/$145 are sample minima over 1000 Monte Carlo scenarios, not distributional quantiles; the source's stated no-ruin condition is infinite divisibility plus no leverage (the split vote turned on a claim gloss that said 'continuous rebalancing', which is not the operative condition)."
+  },
+  {
+   "claim": "Quantified cost of the estimation-error tax in controlled simulation: (a) betting on estimated rather than true probabilities captured only ~66% of achievable expected log growth (18.134 vs 27.463 across four 2,500-trial experiments); (b) in 1,000 simulated 200-bet seasons where the true p lay between the optimistic plug-in estimate and the shrunken estimate \u2014 the exact analogue of an edge that is real but smaller than measured \u2014 the shrunken fraction finished in profit 65% of the time versus 53% for plug-in Kelly, i.e. full Kelly on an overestimated edge is close to a coin flip on ending the season ahead.",
+   "confidence": "high",
+   "vote": "3-0 on both claims (5, 7), both verified verbatim against source tables",
+   "sources": [
+    "https://arxiv.org/pdf/1701.02814",
+    "https://www.sfu.ca/~tswartz/papers/kelly.pdf"
+   ],
+   "evidence": "Metel (arXiv:1701.02814), Table 2 'Expected total returns': (T, true probabilities) 3.051/16.861/4.385/3.166 = 27.463; (S, standard MLE plug-in) 1.583/12.214/2.383/1.954 = 18.134. Ratio 0.6603. The claim uses the paper's own Sum column, which is the LEAST dramatic aggregate (per-experiment capture is 52%/72%/54%/62%). Chu/Wu/Swartz: 'modified Kelly f0 is safer with 65% of the runs resulting in profits. In contrast, original Kelly is profitable only 53% of the time.' Setup verified: f_orig=0.067, f0=0.005, implied p_orig=0.556 and p_0=0.526, true p set to 0.541 \u2014 genuinely between them, and above the 0.5238 break-even, so the edge is real but smaller than measured; f_orig is 1.86x the true-p Kelly, just under the 2x zero-growth boundary, which mechanically produces the coin-flip result. THREE CAVEATS THAT MUST TRAVEL: (i) that f0 is 7.5% of full Kelly (~1/13 Kelly) under the most sceptical prior tested, NOT half-Kelly \u2014 never recite 65-vs-53 as 'half-Kelly beats full Kelly'; (ii) 'percentage profitable' structurally favours tiny stakes at a 200-bet horizon and is not an EV metric \u2014 the paper's Figure 4 implies full Kelly wins the upside metric; (iii) both are simulations with no commission or track take modelled, fixed identical payout odds, and Metel's 34% gap magnitude is a function of an assumed estimation-error scale, so transfer to Betfair tennis at 1.2-6.0 with 2% commission is analogical, not direct."
+  },
+  {
+   "claim": "Risk-adjusted criteria push the optimal fraction strictly BELOW Kelly, and in the binary win/lose case \u2014 structurally identical to a single back bet \u2014 the asymptotic Sharpe ratio is strictly decreasing over the whole interval (0,1), so pure Sharpe maximisation degenerates to f=0. The growth/variance trade near Kelly is steeply unfavourable: variance rises strictly with stake even after growth has flattened, so a variance-penalised optimum always sits strictly inside [0, f*), and in the small-edge limit relevant here halving the fraction costs exactly 25% of growth while raising Sharpe by exactly 50%.",
+   "confidence": "high",
+   "vote": "3-0 on both claims (10, 11); preprint source, but verifiers reproduced every closed form and number independently",
+   "sources": [
+    "https://arxiv.org/pdf/2503.17927"
+   ],
+   "evidence": "Hakobyan & Lototsky (arXiv:2503.17927, USC Mathematics, Mar 2025). Proposition 2.1: 'the function f -> g_r(f) is concave and the function f -> upsilon_r(f) is increasing, f in (0,1)', with strict inequalities in the proof. Proposition 2.2: the ridge optimum of g_r(f) - gamma*upsilon_r(f) 'achieves its global maximum in [0,1] at a point f_Ri in [0, f*)' for every gamma>0. Example 2.1 (p=0.75, even money): SR'_r(f)<0 on (0,1), 'the optimal strategy according to Sharpe ratio measure is f = 0'; moving from f*=0.5 to 0.25 gives '+60% SR, -30% growth'; the ridge optimum at gamma=1 is f_Ri=0.198 with g falling 0.131->0.080 and variance 0.226->0.030. Verifiers reproduced all of this to 3 s.f. from the paper's own formulae and confirmed strict monotonicity numerically. CRITICAL SCOPE NOTES: the +60%/-30% figures are p=0.75 EVEN-MONEY numbers and must not be transported to tennis; in the small-edge regime here the trade is exactly +50% Sharpe for -25% growth (verified at O=1.5/2.5/6.0). The f=0 degeneracy is distribution-specific (the paper's squared-Cauchy Example 2.2 has an interior Sharpe maximum), and the paper's own remedy for the degeneracy is the ridge/fractional solution, not literal abstention. The framework also assumes the edge is KNOWN, so it does not address parameter uncertainty \u2014 it is an independent argument arriving at the same place."
+  },
+  {
+   "claim": "Full Kelly produces severe drawdowns as a routine outcome rather than a tail event: in 10,000-path, 100-period Monte Carlo on the authors' instances, the Kelly-optimal bet breached a 30% drawdown 39.7% of the time in the finite-outcome case and 56.9% of the time in the lognormal-returns case.",
+   "confidence": "high",
+   "vote": "3-0, exact table values verified against the primary PDF",
+   "sources": [
+    "https://stanford.edu/~boyd/papers/pdf/kelly.pdf"
+   ],
+   "evidence": "Busseti, Ryu & Boyd, 'Risk-Constrained Kelly Gambling' (J. Portfolio Management 42(5), 2016). Table 1 row 'Kelly': drawdown risk 0.397; Table 3 row 'Kelly': 0.569. The alpha=0.7 to 30%-drawdown translation is the paper's own: 'A drawdown risk of 0.1 for alpha = 0.7 means the probability of experiencing more than 30% drawdown is only 10%.' Method verified: 'For each bet vector we carry out 10000 Monte Carlo simulations of wt for t = 1,...,100.' THREE CAVEATS. (1) ATTRIBUTION: the paper says nothing about what professional bettors do \u2014 cite it for the numbers only, not as evidence of practitioner behaviour (the underlying qualitative point belongs to MacLean/Thorp/Ziemba). (2) INSTANCE-SPECIFIC: these are synthetic problems deliberately constructed with fat tails, not universal constants; the authors claim only that 'our numerical explorations show that these results are typical'. (3) TRANSFER: this is a simultaneous multi-asset portfolio-Kelly problem, not the one-selection-per-market sequential structure here, and W_min is measured against initial rather than peak wealth \u2014 which biases the reported figures DOWNWARD relative to true peak-to-trough drawdown, so the claim does not overstate."
+  },
+  {
+   "claim": "For FLAT staking \u2014 an additive random walk, which is exactly this operation's regime \u2014 expected maximum drawdown has exact closed forms. At zero drift E[MDD] = 2*sqrt(pi/8)*sigma*sqrt(T) = 1.2533*sigma*sqrt(T); with positive drift the whole problem collapses to one dimensionless parameter with scale sigma^2/mu and E[MDD] = (2 sigma^2/mu)*Q(alpha^2) where Q_p(x) -> 0.25*log(x) + 0.49088. Two operational consequences: the drawdown scale is proportional to variance-over-edge, and doubling stake size exactly doubles expected drawdown (verified by Monte Carlo to 2.002x). With a NEGATIVE drift \u2014 an edge smaller than execution costs \u2014 drawdown grows LINEARLY in the number of bets, not as its square root.",
+   "confidence": "high",
+   "vote": "3-0 on both claims (12, 13); peer-reviewed, and both verifiers independently reproduced the results by Monte Carlo",
+   "sources": [
+    "https://www.cs.rpi.edu/~magdon/ps/journal/drawdown_journal.pdf"
+   ],
+   "evidence": "Magdon-Ismail, Atiya, Pratap & Abu-Mostafa, 'On the Maximum Drawdown of a Brownian Motion' (J. Applied Probability 41(1), 2004), eq. (16) and eqs. (5)-(7): 'E[D-bar] = 2*gamma*sigma*sqrt(T), where gamma = sqrt(pi/8) ~= 0.6267'; 'defining alpha = mu*sqrt(T/2sigma^2), we find that E[D-bar] = (2sigma^2/mu) Q_D-bar(alpha^2)'; 'Q_p(x) -> 0.25 log x + 0.49088, x -> infinity'; and the regime summary 'logarithmic for mu > 0, linear for mu < 0 and square root for mu = 0'. One verifier's Monte Carlo of the EXACT case in question \u2014 flat 1-unit stakes, win probability set so EV is exactly zero after 2% commission, odds 1.2/2.0/6.0 \u2014 matched 1.2533*sigma*sqrt(n) to within 0.2%-2% at n=63,676, over-estimating slightly at small n (the conservative direction). APPLIED TO THIS OPERATION: per-bet SD = sqrt(p(1-p))*((O-1)(1-c)+1), which is 0.45 at odds 1.2, 0.99 at 2.0 and 2.20 at 6.0 \u2014 so the drawdown scale is dominated by the underdog bets where the value is claimed to sit. On a zero-edge path the expected worst peak-to-trough loss is ~18 units over 200 bets and ~40 units over 1,000 bets at sigma=1.0, rising to ~39 and ~87 units at sigma=2.2. Against a bankroll of hundreds at a \u00a31-\u00a32 minimum stake, a 1,000-bet zero-edge sequence implies an expected worst drawdown of roughly \u00a340-\u00a3175. TWO QUALIFICATIONS: the sqrt(T) case is the BOUNDARY BEST case for a bettor paying 2% commission with no real edge (true zero-net-edge means negative drift, hence linear growth); and E[MDD] is the mean of a strongly right-skewed distribution, so it is a scale reference, not a tail-sizing number \u2014 surviving the tail requires the distribution (given in the paper's eqs. 2/14), not the expectation."
+  },
+  {
+   "claim": "NEGATIVE FINDING \u2014 of the five research angles requested, only angles 1 (Kelly and its variants) and 2 (risk-of-ruin / drawdown mathematics) produced claims that survived adversarial verification. NOTHING survived on angle 3 (what professional syndicates actually do: bankroll fractions, stop-losses, scaling rules, CLV as a leading indicator, line shopping, why martingale/Fibonacci/d'Alembert fail), angle 4 beyond Kelly (volatility targeting, risk parity, correlation limits, anytime-valid monitoring for edge decay, walk-forward validation), or angle 5 (execution slippage, Betfair premium charges, account restriction, model decay, variance-driven abandonment, and whether small measured edges survive to real profit). Treat those areas as UNRESEARCHED, not as areas where nothing is known.",
+   "confidence": "high",
+   "vote": "structural observation over the verified claim set",
+   "sources": [],
+   "evidence": "All 15 surviving claims trace to seven sources, every one of them a Kelly-sizing or drawdown-mathematics paper: Baker & McHale 2013, Chu/Wu/Swartz 2018, MacLean/Thorp/Ziemba 2010, Metel 2017, Hubacek & Sir 2020, Hakobyan & Lototsky 2025, Busseti/Ryu/Boyd 2016, Magdon-Ismail et al. 2004. This is almost certainly because the practitioner-facing angles are exactly where the research question warned that affiliate/marketing content dominates, and verifiers correctly refused to credit it \u2014 several verifiers explicitly note excluding affiliate results (oddsindex, sportbotai, topendsports) from their searches. The absence of surviving claims about CLV, account restriction and model decay is therefore evidence about SOURCE QUALITY in that literature, not evidence that those risks are small. For an operation whose main practical threats are plausibly execution cost, Betfair premium charges and edge decay rather than staking mathematics, this gap is the most important limitation of the report."
+  }
+ ],
+ "caveats": "SOURCE QUALITY IS GOOD BUT NARROW. Seven sources, all academic; four peer-reviewed (Decision Analysis 2013, J. Quantitative Analysis in Sports 2018, Quantitative Finance 2010, J. Applied Probability 2004, J. Portfolio Management 2016) and three unrefereed arXiv preprints (Metel 2017, Hubacek & Sir 2020, Hakobyan & Lototsky 2025). No affiliate or marketing content survived, which is the right outcome \u2014 but it means the report speaks only to sizing and drawdown mathematics.\n\nPREPRINT RELIANCE ON THE SHARPE/RIDGE FINDING. Hakobyan & Lototsky (arXiv:2503.17927) is v1, no journal reference. Verification did not rest on the authors' authority: the closed forms were re-derived and every published number reproduced numerically. Cite it as mathematics you have checked, not as a refereed result.\n\nTRANSFER LIMITS ARE REAL AND REPEATED. Several headline numbers come from settings structurally unlike Betfair tennis: even-money Bernoulli (the +60% Sharpe / -30% growth figures), multi-asset simultaneous portfolio Kelly with injected fat tails (the 39.7% / 56.9% drawdown frequencies), horse races with up to 30 runners at identical fixed payouts and no commission modelled (the 66%-of-growth figure), and a single fixed-odds parameterisation at American -110 (the 65%-vs-53% figure). The DIRECTIONS transfer; the MAGNITUDES do not. Do not quote 65-vs-53 as 'half-Kelly beats full Kelly' \u2014 the shrunken fraction there was ~1/13 Kelly under the most sceptical prior tested.\n\nFOUR SPECIFIC CLAIMS WERE REFUTED AND MUST NOT BE USED. (1) That the +0.0011 nat log-score edge maps to a full-Kelly growth ceiling of ~0.11% of bankroll per match \u2014 the KL-divergence-equals-growth-rate identity was refuted 0-3 and no growth rate should be inferred from the log-score number. (2) That shrunken Kelly was empirically shown to beat raw Kelly on real TENNIS betting data \u2014 the Baker & McHale body is paywalled and the sample size, date range, source and effect size could NOT be verified; only the abstract's general statement survives. (3) That the Bayes-optimal fraction is exactly Kelly evaluated at the Beta posterior mean, and the associated 8.9%/3.4%/1/13-Kelly worked figures \u2014 split or failed verification. (4) That expected max drawdown is nearly bounded under positive drift \u2014 refuted 0-3; the regime claim survives only in the specific form stated in Finding 9.\n\nONE MECHANISM IN THE ORIGINAL CLAIM SET WAS WRONG AND HAS BEEN CORRECTED IN THIS REPORT. Kelly stakes are NOT upward-biased in the always-bet binary case (the fraction is linear in p, so an unbiased p-hat gives an unbiased f-hat). The over-betting result comes from concavity of log-growth plus selection/winner's-curse on filtered bets. Anyone repeating the 'big stakes on overestimated selections don't cancel out' story will be repeating an error the verification caught.\n\nTIME SENSITIVITY IS LOW FOR THE MATHEMATICS, HIGH FOR EVERYTHING ELSE. Kelly and drawdown theory (1956-2025) does not decay. But the untested angles \u2014 Betfair commission and premium-charge structure, market liquidity in tennis, account limitation practice, whether the model's edge persists \u2014 are all time-varying and none of them were researched here.\n\nVERIFICATION PROCESS LIMITATION. Several verifiers exhausted the session WebSearch budget (200/200) before running an external contradicting-evidence sweep, and substituted direct numerical reproduction of the mathematics. That is a stronger test for closed-form results but a weaker one for empirical or practice claims \u2014 reinforcing that the empirical/practice angles are the weak side of this report.\n\nGOVERNANCE NOTE FOR THIS REPOSITORY. Nothing here authorises a change to staking policy. The evidence supports keeping SPEC-060 (fixed minimum stake + absolute loss budget) and SPEC-061 (skip when minimum exceeds permitted risk) unchanged, and explicitly argues AGAINST introducing any Kelly-derived sizing \u2014 consistent with the standing 'No Kelly staking in v1' prohibition. Research informs decisions; it never proves a gate.",
+ "openQuestions": [
+  "What is the actual execution cost of a taker-only FILL_OR_KILL strategy in Betfair tennis match-odds markets, expressed in implied-probability basis points, and does it exceed the +2.3% hypothetical ROI on flagged bets? No surviving evidence addresses slippage, spread or fill availability at size \u2014 yet this is the most likely single reason a small measured edge fails to survive to real profit, and the reported 95% interval already spans zero AFTER assumed costs.",
+  "What monitoring procedure should detect edge DECAY at this sample rate, given that the drawdown mathematics says a zero- or negative-drift path is statistically indistinguishable from a small-positive-drift path for a very long time? The requested angle-4 material on anytime-valid confidence sequences and e-processes produced no verified claims, yet SPEC-096 already specifies exactly this and remains planned.",
+  "Does Betfair's premium charge / commission structure materially change the break-even at this scale, and at what turnover does it bind? Commission was modelled here only as a flat 2%, and no source addressed tiered or premium charging, account restriction, or stake limitation \u2014 all of which alter the effective edge rather than merely the variance.",
+  "What is the correct hard drawdown STOP for the flat-stake regime, given that the closed-form E[MDD] is the mean of a strongly right-skewed distribution and the negative-drift case grows linearly in the number of bets? The paper supplies the full distribution (eqs. 2/14), so a defensible loss budget could be derived from a quantile rather than the mean \u2014 but that derivation has not been done, and the current absolute budget appears to have been set without reference to it."
+ ],
+ "refuted": [
+  {
+   "claim": "The correct response to parameter uncertainty in the win probability is to SHRINK the bet size below raw Kelly \u2014 i.e. fractional Kelly is derived as the statistically optimal correction for estimation error, not merely a heuristic for risk aversion or psychological comfort. The paper compares multiple competing estimators of the shrinkage factor rather than asserting a single fixed fraction.",
+   "vote": "1-2",
+   "source": "https://pubsonline.informs.org/doi/pdf/10.1287/deca.2013.0271"
+  },
+  {
+   "claim": "Shrunken Kelly empirically outperforms raw Kelly in both a simulation study and on real tennis betting data \u2014 the same sport and market class as the operation in question. (Verified from the abstract only; the tennis sample size, date range, data source and effect magnitude are in the paywalled body and could not be checked.)",
+   "vote": "0-3",
+   "source": "https://pubsonline.informs.org/doi/pdf/10.1287/deca.2013.0271"
+  },
+  {
+   "claim": "Distinguishing between two small edges \u2014 or between a strategy with an edge and one without \u2014 requires sample sizes far beyond what a single-person betting operation will ever accumulate. The paper's worked example: telling a 1.0% edge apart from a 1.1% edge takes two million trials for an 84% chance of dominance. It also notes that Kelly's asymptotic superiority over 'essentially different' strategies fails to appear in practice when the growth-rate gap is small, and gives a continuous-time case needing 157 years for a 10-percentage-point mean advantage to show at 95% confidence when variance is doubled.",
+   "vote": "0-3",
+   "source": "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria"
+  },
+  {
+   "claim": "Under a Beta(a,b) prior and the natural expected-log-growth loss, the Bayes-optimal betting fraction is EXACTLY the Kelly formula evaluated at the posterior mean p-hat = (x+a)/(n+a+b) rather than at the raw sample frequency x/n. This gives a principled, computable substitute for ad-hoc fractional Kelly: shrink the probability toward the prior (e.g. the market/efficient price), then apply Kelly unchanged.",
+   "vote": "1-2",
+   "source": "https://www.sfu.ca/~tswartz/papers/kelly.pdf"
+  },
+  {
+   "claim": "With a plausible market-efficiency prior (Beta(50,50), i.e. 95% prior mass on p in (0.4,0.6)) and a 100/180 historical record at odds 1.952, plug-in Kelly recommends 8.9% of bankroll while the uncertainty-adjusted fractions are 3.4%-5.6%; the preferred estimator lands near half-Kelly, which the authors present as the first theoretical justification for the practitioner rule of thumb.",
+   "vote": "0-3",
+   "source": "https://www.sfu.ca/~tswartz/papers/kelly.pdf"
+  },
+  {
+   "claim": "The shrinkage is extremely sensitive to prior scepticism and to transaction costs: tightening the prior from SD 0.05 to SD 0.035 leaves plug-in Kelly at 6.7% but collapses the Bayes fraction from 2.5% to 0.5% (a 13x cut, and ~1/13 Kelly), while raising the bookmaker's vigorish (odds 1.952 -> 1.909) cuts every fraction. A genuinely unproven edge therefore implies a near-zero, not merely halved, Kelly fraction \u2014 and the minimax (fully worst-case) solution is literally f = 0.",
+   "vote": "1-2",
+   "source": "https://www.sfu.ca/~tswartz/papers/kelly.pdf"
+  },
+  {
+   "claim": "A 50% fractional (half) Kelly strategy produced LOWER expected log growth than the naive plug-in Kelly in every one of the four experiments \u2014 total 13.268 versus 18.134, i.e. ~27% below plug-in Kelly and the worst result of any method tested except the most aggressive chance constraint. This falsifies the idea that fractional Kelly is a growth-optimising correction for estimation error: on this growth metric it is a pure risk-control tax, and every uncertainty-aware formulation (Elb 18.206, Emc 18.471, ECCx a=0.4 18.484) dominated it. Note the metric is expected log growth under the true distribution, which does not credit the variance/drawdown reduction half-Kelly buys.",
+   "vote": "0-3",
+   "source": "https://arxiv.org/pdf/1701.02814"
+  },
+  {
+   "claim": "Under full Kelly the long-run growth rate of wealth is EXACTLY the log-score (KL-divergence) improvement of the bettor's model over the market price: W_G = D_KL(R||M) - D_KL(R||T). Positive Kelly growth is therefore achievable if and only if the model's cross-entropy against outcomes is strictly lower than the market's. This makes a measured log-score edge directly interpretable as the maximum achievable per-bet geometric growth rate at full Kelly (e.g. +0.0011 nats/match implies a full-Kelly growth ceiling of ~0.11% of bankroll per match, before commission and execution costs).",
+   "vote": "0-3",
+   "source": "https://arxiv.org/pdf/2010.12508"
+  },
+  {
+   "claim": "Kelly's growth-maximising objective is symmetric between under- and over-investment, but the real-world consequences are not: over-investment leads to definite ruin whereas under-investment only costs sub-optimal growth. This asymmetry is the paper's stated justification for the family of Kelly modifications that deliberately accept lower growth to avoid ruin \u2014 i.e. under an unproven edge, deliberate under-staking is the correct error direction.",
+   "vote": "1-2",
+   "source": "https://arxiv.org/pdf/2010.12508"
+  },
+  {
+   "claim": "Expected maximum drawdown has three qualitatively different long-run regimes determined solely by the sign of the drift: logarithmic growth in T when drift is positive, square-root growth when drift is zero, and linear growth when drift is negative. A genuine positive edge therefore bounds drawdown almost to a constant; a negative (e.g. overestimated, cost-eroded) edge makes drawdown grow without limit in proportion to the number of bets.",
+   "vote": "0-3",
+   "source": "https://www.cs.rpi.edu/~magdon/ps/journal/drawdown_journal.pdf"
+  }
+ ],
+ "unverified": [],
+ "sources": [
+  {
+   "url": "https://pubsonline.informs.org/doi/pdf/10.1287/deca.2013.0271",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.researchgate.net/publication/227623956_Long-term_capital_growth_the_good_and_bad_properties_of_the_Kelly_and_fractional_Kelly_capital_growth_criteria",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.sfu.ca/~tswartz/papers/kelly.pdf",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/pdf/1701.02814",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/pdf/2010.12508",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/pdf/2503.17927",
+   "quality": "primary",
+   "angle": "Academic: Kelly under parameter uncertainty and the over-betting failure mode",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.cs.rpi.edu/~magdon/ps/journal/drawdown_journal.pdf",
+   "quality": "primary",
+   "angle": "Risk of ruin, drawdown distributions and survival-first sizing",
+   "claimCount": 5
+  },
+  {
+   "url": "https://stanford.edu/~boyd/papers/pdf/kelly.pdf",
+   "quality": "primary",
+   "angle": "Risk of ruin, drawdown distributions and survival-first sizing",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/pdf/2107.08827",
+   "quality": "primary",
+   "angle": "Risk of ruin, drawdown distributions and survival-first sizing",
+   "claimCount": 5
+  },
+  {
+   "url": "https://webhomes.maths.ed.ac.uk/mckinnon/blackouts/StochOptFinanceAndEnergySpringer/Chap1_KellyZiemba.pdf",
+   "quality": "primary",
+   "angle": "Risk of ruin, drawdown distributions and survival-first sizing",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.karlwhelan.com/Papers/Ruin.pdf",
+   "quality": "primary",
+   "angle": "Risk of ruin, drawdown distributions and survival-first sizing",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.pinnacle.com/betting-resources/en/author/joseph-buchdahl",
+   "quality": "blog",
+   "angle": "Professional syndicate practice: CLV, bankroll fractions, stop-losses, staking-plan myths",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.pinnacle.com/betting-resources/en/betting-strategy/what-is-the-martingale-staking-system/g3523m233yrnpgzg",
+   "quality": "blog",
+   "angle": "Professional syndicate practice: CLV, bankroll fractions, stop-losses, staking-plan myths",
+   "claimCount": 5
+  },
+  {
+   "url": "https://unabated.com/articles/getting-precise-about-closing-line-value",
+   "quality": "blog",
+   "angle": "Professional syndicate practice: CLV, bankroll fractions, stop-losses, staking-plan myths",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.sportstradingnetwork.com/article/do-pinnacle-closing-prices-in-tennis-tell-the-full-story-can-you-win-in-the-long-run-without-beating-them/",
+   "quality": "blog",
+   "angle": "Professional syndicate practice: CLV, bankroll fractions, stop-losses, staking-plan myths",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.pinnacle.com/en/betting-articles/educational/bayes-factor-betting-skill-part-two/NF52L4MWXXV7785G",
+   "quality": "blog",
+   "angle": "Professional syndicate practice: CLV, bankroll fractions, stop-losses, staking-plan myths",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/abs/2103.08402",
+   "quality": "primary",
+   "angle": "Quant finance transfer: sizing under estimation error, vol targeting, sequential edge-decay monitoring",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/abs/2210.01948",
+   "quality": "primary",
+   "angle": "Quant finance transfer: sizing under estimation error, vol targeting, sequential edge-decay monitoring",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.semanticscholar.org/paper/Optimal-Betting-Under-Parameter-Uncertainty:-the-Baker-McHale/d03cda6e9aec9a6674047b1c093780fdc2bf2d56",
+   "quality": "primary",
+   "angle": "Quant finance transfer: sizing under estimation error, vol targeting, sequential edge-decay monitoring",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf",
+   "quality": "primary",
+   "angle": "Quant finance transfer: sizing under estimation error, vol targeting, sequential edge-decay monitoring",
+   "claimCount": 5
+  },
+  {
+   "url": "https://dx.doi.org/10.3233/JSA-200463",
+   "quality": "primary",
+   "angle": "Skeptical: do small measured betting edges survive to real profit on exchanges?",
+   "claimCount": 5
+  },
+  {
+   "url": "https://arxiv.org/pdf/1710.02824",
+   "quality": "primary",
+   "angle": "Skeptical: do small measured betting edges survive to real profit on exchanges?",
+   "claimCount": 5
+  },
+  {
+   "url": "https://www.tandfonline.com/doi/abs/10.1080/00036846.2017.1394973",
+   "quality": "primary",
+   "angle": "Skeptical: do small measured betting edges survive to real profit on exchanges?",
+   "claimCount": 4
+  }
+ ],
+ "stats": {
+  "angles": 5,
+  "sourcesFetched": 23,
+  "claimsExtracted": 114,
+  "claimsVerified": 25,
+  "confirmed": 15,
+  "killed": 10,
+  "unverified": 0,
+  "afterSynthesis": 11,
+  "urlDupes": 1,
+  "budgetDropped": 6,
+  "agentCalls": 105
+ }
+}

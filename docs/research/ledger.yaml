@@ -343,3 +343,43 @@
     replaces guessed parameters with named, sourced, measured ones'
   returned: '2026-07-30'
   findings: docs/research/findings/DR-TENNIS-STAKING-002-findings.md
+- id: DR-TENNIS-STAKING-003
+  title: Completed deep research on staking and bankroll for a small unproven edge - SUPERSEDES
+    and REVERSES 002
+  classification: ADVISORY
+  status: ASSESSED
+  requested: 2026-07-30
+  blocking_scope: none, but it overturns the recommendation in DR-TENNIS-STAKING-002
+  notes:
+  - 'the founder''s /deep-research run, completed: 105 agents, 8.26M tokens, 1,290 tool calls,
+    2h40m; 11 findings survived three-vote adversarial verification'
+  - 'PRIMARY: retain flat minimum stakes + hard loss budget. Adopt NO Kelly rule (full, half,
+    quarter or Bayesian-shrunk) while the edge interval spans zero. A mis-signed f* scaled by
+    1/4 is still a negative-expectation bet - shrinking changes the SIZE of the mistake, not
+    its SIGN. SPEC-060/061 are already what this literature prescribes'
+  - 'REVERSES 002, which I wrote from a partial harvest of the same run and which recommended
+    risk-constrained Kelly. Not a refinement, a reversal'
+  - 'operational arithmetic: at +2.3% ROI full Kelly is 0.47% of bank at odds 6.0 and 11.7% at
+    odds 1.2. A GBP 1-2 minimum on a few-hundred-pound bank is 0.3-0.7%, so the minimum stake
+    ALREADY EXCEEDS full Kelly on the underdog bets where the edge is strongest - Kelly is
+    unimplementable downward - while demanding 11.7% per bet on favourites where the edge is
+    weakest'
+  - 'over-betting is the specific danger: plug-in Kelly over-bets and the gap grows with
+    estimate variance even when unbiased, plus a winner''s curse because bets are FILTERED on
+    estimated edge. A bettor whose true edge is half the measured one is betting exactly 2x
+    Kelly - the zero-growth point - while believing they are at full Kelly'
+  - 'Kelly is the most estimation-sensitive objective in the allocation literature: mean errors
+    dominate variance errors ~20:2:1 generally and ~100:3:1 for a log/Kelly bettor'
+  - 'USABLE RESULT: for FLAT staking, expected max drawdown has a closed form (Magdon-Ismail et
+    al. 2004) - E[MDD] = 1.2533*sigma*sqrt(T) at zero drift; drawdown scale is variance-over-edge
+    and DOUBLING THE STAKE EXACTLY DOUBLES EXPECTED DRAWDOWN. This sizes a flat stake from a
+    stated drawdown tolerance WITHOUT assuming the edge is positive'
+  - 'NEGATIVE FINDING: only angles 1-2 (Kelly, ruin/drawdown maths) produced anything that
+    survived. NOTHING survived on angle 3 (what syndicates actually do, CLV, line shopping,
+    why martingale fails), angle 4 beyond Kelly (vol targeting, risk parity, anytime-valid
+    monitoring), or angle 5 (execution costs, account restriction, model decay). Reason given:
+    the practitioner-facing material is dominated by gambling-affiliate content, and excluding
+    it leaves very little verifiable evidence. The founder''s central question - what the best
+    systems actually do - CANNOT be answered to this standard from public sources'
+  returned: '2026-07-30'
+  findings: docs/research/findings/DR-TENNIS-STAKING-003-findings.md
