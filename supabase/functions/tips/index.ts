@@ -24,6 +24,7 @@ import {
   statusFor,
 } from "./scoring.ts";
 import {
+  allVenueQuotes,
   bestOfFor,
   type FeedBookmaker,
   normalizeName,
@@ -424,7 +425,7 @@ async function boardRefresh(): Promise<Response> {
     map.set(row.feed_name, row.player);
   }
 
-  let fixtures = 0, minted = 0, unmapped = 0, unpriced = 0;
+  let fixtures = 0, minted = 0, unmapped = 0, unpriced = 0, observations = 0;
   let creditsRemaining: string | null = null;
   const books: Record<string, number> = {};
   const today = new Date().toISOString().slice(0, 10);
@@ -447,7 +448,32 @@ async function boardRefresh(): Promise<Response> {
       }
       books[picked.book] = (books[picked.book] ?? 0) + 1;
       const mappedHome = resolvePlayer(event.home_team, index, aliases);
-      const mappedAway = resolvePlayer(event.away_team, index, aliases);
+      const mappedAwayEarly = resolvePlayer(event.away_team, index, aliases);
+      // Capture EVERY venue's quote, whether or not the players map. An unmappable
+      // match still carries a price series, and the market-side analyses (line
+      // shopping, closing-line value) do not need the model to have an opinion.
+      const observationKey = matchKey(
+        event.commence_time.slice(0, 10), tour,
+        mappedHome ?? event.home_team, mappedAwayEarly ?? event.away_team);
+      const quotes = allVenueQuotes(event.bookmakers, event.home_team, event.away_team);
+      if (quotes.length > 0) {
+        const captured = new Date().toISOString();
+        const written = await db("price_observations?on_conflict=match_key,venue,captured_at", {
+          method: "POST",
+          headers: { Prefer: "resolution=ignore-duplicates" },
+          body: JSON.stringify(quotes.map((q) => ({
+            match_key: observationKey,
+            tour,
+            venue: q.venue,
+            odds_a: q.home,
+            odds_b: q.away,
+            commence_time: event.commence_time,
+            captured_at: captured,
+          }))),
+        });
+        if (written.ok) observations += quotes.length;
+      }
+      const mappedAway = mappedAwayEarly;
       const playerA = mappedHome ?? event.home_team;
       const playerB = mappedAway ?? event.away_team;
       const date = event.commence_time.slice(0, 10);
@@ -502,6 +528,7 @@ async function boardRefresh(): Promise<Response> {
     fixtures_upserted: fixtures,
     predictions_minted: minted,
     unmapped_names: unmapped,
+    price_observations_written: observations,
     unmapped_queue: (await select<{ feed_name: string; tour: string; seen_count: number }>(
       "unmapped_names?select=feed_name,tour,seen_count&order=seen_count.desc&limit=20")),
     unpriced_matches: unpriced,
@@ -842,6 +869,93 @@ async function scorecard(): Promise<Response> {
   });
 }
 
+/**
+ * Closing-line value: did the market move TOWARD the side we picked?
+ *
+ * This is the fastest honest read on whether a live edge exists. Settled P&L on a ~2%
+ * edge needs tens of thousands of bets to clear noise (TE-0012); CLV is a continuous
+ * per-bet measurement of the same underlying claim and converges far sooner. TE-0027
+ * already found the exchange price drifts toward this model's picks on historical data
+ * — this endpoint asks whether that keeps happening LIVE, on predictions minted before
+ * the move.
+ *
+ * Measured in de-vigged probability points on the picked side: decision-time probability
+ * versus the last observation before the off. Positive means the market came to us.
+ *
+ * DIAGNOSTIC. CLV is evidence about edge, not profit, and SPEC-095 forbids it as a
+ * training target. It gates nothing and feeds nothing served.
+ */
+async function clv(): Promise<Response> {
+  const [predictions, observations] = await Promise.all([
+    select<{ match_key: string; match_date: string; odds_a: string; odds_b: string;
+             edge_a: number; edge_b: number; created_at: string }>(
+      "predictions?select=match_key,match_date,odds_a,odds_b,edge_a,edge_b,created_at" +
+        "&order=created_at.desc&limit=2000"),
+    select<{ match_key: string; venue: string; odds_a: string; odds_b: string;
+             commence_time: string; captured_at: string }>(
+      "price_observations?select=match_key,venue,odds_a,odds_b,commence_time,captured_at" +
+        "&venue=eq.betfair_ex_uk&order=captured_at.asc&limit=20000"),
+  ]);
+
+  // Last observation strictly BEFORE the off is the closing line. An observation after
+  // commence is in-play data and must never enter (hard prohibition).
+  const closing = new Map<string, { odds_a: string; odds_b: string }>();
+  for (const o of observations) {
+    if (o.commence_time && o.captured_at >= o.commence_time) continue;
+    closing.set(o.match_key, { odds_a: o.odds_a, odds_b: o.odds_b });
+  }
+
+  const devig = (a: number, b: number): [number, number] => {
+    const ia = 1 / a, ib = 1 / b;
+    return [ia / (ia + ib), ib / (ia + ib)];
+  };
+
+  const byDay = new Map<string, number[]>();
+  let positive = 0, scored = 0;
+  // One row per match: the LAST prediction created on or before the match date, matching
+  // the scorecard's declared vintage policy so the two denominators agree.
+  const latest = new Map<string, typeof predictions[number]>();
+  for (const p of predictions) {
+    if (p.created_at.slice(0, 10) > p.match_date) continue;
+    const held = latest.get(p.match_key);
+    if (!held || p.created_at > held.created_at) latest.set(p.match_key, p);
+  }
+  for (const [key, p] of latest) {
+    const close = closing.get(key);
+    if (!close) continue;
+    const [openA, openB] = devig(Number(p.odds_a), Number(p.odds_b));
+    const [closeA, closeB] = devig(Number(close.odds_a), Number(close.odds_b));
+    // The side the rule would have backed is the side with the larger edge.
+    const pickedA = p.edge_a >= p.edge_b;
+    const move = pickedA ? closeA - openA : closeB - openB;
+    const day = byDay.get(p.match_date) ?? [];
+    day.push(move);
+    byDay.set(p.match_date, day);
+    scored += 1;
+    if (move > 0) positive += 1;
+  }
+
+  const days = [...byDay.values()];
+  const all = days.flat();
+  const mean = all.length ? all.reduce((a, b) => a + b, 0) / all.length : null;
+  return json({
+    matches_with_closing_line: scored,
+    distinct_days: days.length,
+    positive_clv_share: scored ? positive / scored : null,
+    mean_clv_probability_points: mean,
+    interval_95: interval95(days, 20260730),
+    note: "De-vigged probability points gained on the picked side between the decision " +
+      "price and the last exchange quote before the off. Positive means the market " +
+      "moved toward the pick. CLV converges far faster than settled P&L, so it is the " +
+      "earliest honest signal that a live edge exists — but it is evidence about edge, " +
+      "NOT profit, it is never a training target (SPEC-095), and it gates nothing.",
+    coverage_note: scored === 0
+      ? "No closing lines yet. Price observations began 2026-07-30; this fills as " +
+        "matches are captured before their start and then settle."
+      : null,
+  });
+}
+
 async function health(): Promise<Response> {
   const ctx = await context();
   return json({
@@ -875,6 +989,7 @@ Deno.serve(async (request: Request) => {
 
     if (path === "/ledger") return await ledger();
     if (path === "/scorecard") return await scorecard();
+    if (path === "/clv") return await clv();
     if (request.method === "POST" && path === "/price") return await price(request);
     if (request.method === "POST" && path === "/bet") return await recordBet(request);
     if (request.method === "POST" && path === "/budget") return await setBudget(request);

@@ -114,6 +114,41 @@ export interface FeedBookmaker {
   markets: Array<{ key: string; outcomes: FeedOutcome[] }>;
 }
 
+export interface VenueQuote {
+  venue: string;
+  home: number;
+  away: number;
+}
+
+/**
+ * Every venue's two-sided h2h quote, in feed order.
+ *
+ * The feed carries ~35 venues per response at no extra credit cost and the board bets
+ * at one. The other 34 are the raw material for the two most reliable known sources of
+ * realised edge — line shopping (cross-venue at an instant) and closing-line value
+ * (one venue across time, decision to off) — so they are captured rather than dropped.
+ *
+ * Capture only. This function makes NO claim about which price is better: that depends
+ * on each venue's commission, which must be verified before any policy uses it.
+ */
+export function allVenueQuotes(
+  bookmakers: FeedBookmaker[],
+  home: string,
+  away: string,
+): VenueQuote[] {
+  const out: VenueQuote[] = [];
+  for (const book of bookmakers) {
+    const market = book.markets.find((m) => m.key === "h2h");
+    if (!market) continue;
+    const h = market.outcomes.find((o) => o.name === home)?.price;
+    const a = market.outcomes.find((o) => o.name === away)?.price;
+    // A one-sided book cannot be de-vigged into a probability, so it is an absence.
+    if (h === undefined || a === undefined || !(h > 1) || !(a > 1)) continue;
+    out.push({ venue: book.key, home: h, away: a });
+  }
+  return out;
+}
+
 /**
  * The preferred book's two prices for (home, away), or null if no preferred venue
  * quotes both sides above 1. A one-sided or absent book is an absence, not a default.

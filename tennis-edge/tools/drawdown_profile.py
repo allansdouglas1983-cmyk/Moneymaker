@@ -127,6 +127,35 @@ def main() -> None:
         print(f"    budget {budget:>4} units   {100 * hit / DRAWS:5.1f}% of histories "
               f"would have hit the floor")
 
+    # The stress test that matters. Everything above assumes the measured +2.33% is the
+    # TRUE edge. The 95% interval runs [-0.11%, +4.83%], so zero is permitted by our own
+    # data. Shifting every bet by a constant preserves the variance structure exactly
+    # while moving the mean to a hypothesised truth — the honest way to ask "what does
+    # this feel like if the edge is not there?"
+    observed_mean = total / len(profits)
+    print("\n  EDGE-SCENARIO STRESS TEST (same variance, mean shifted to the hypothesis):")
+    for label, target_roi in (("as measured  +2.33%", observed_mean),
+                              ("CI lower     -0.11%", -0.0011),
+                              ("no edge       0.00%", 0.0),
+                              ("cost-eaten   -1.00%", -0.01)):
+        delta = target_roi - observed_mean
+        shifted_days = [[p + delta for p in day] for day in days]
+        rng2 = random.Random(SEED)
+        scen_floors = []
+        scen_dds = []
+        for _ in range(DRAWS):
+            order = [shifted_days[rng2.randrange(len(shifted_days))]
+                     for _ in range(len(shifted_days))]
+            flat = [p for day in order for p in day]
+            dd, floor = max_drawdown(flat)
+            scen_dds.append(dd)
+            scen_floors.append(floor)
+        scen_floors.sort()
+        scen_dds.sort()
+        ruin = {b: 100 * sum(1 for f in scen_floors if f <= -b) / DRAWS for b in BUDGETS}
+        print(f"    {label}:  median max DD {q(scen_dds, 0.5):6.1f}   "
+              + "  ".join(f"P(ruin|{b}u)={ruin[b]:4.1f}%" for b in (50, 100, 200)))
+
     print("\nDIAGNOSTIC ONLY. Hypothetical trade-through returns; drawdowns are")
     print("hypothetical too. Nothing here sizes a stake or changes any threshold.")
 
