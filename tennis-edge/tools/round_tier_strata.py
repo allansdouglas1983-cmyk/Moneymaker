@@ -56,6 +56,35 @@ def clustered_interval(days: list[list[float]], seed: int) -> tuple[float, float
     return draws[int(0.025 * DRAWS)], draws[int(0.975 * DRAWS)]
 
 
+def difference_interval(
+    hi_days: dict[object, list[float]],
+    lo_days: dict[object, list[float]],
+    seed: int,
+) -> tuple[float, float]:
+    """Day-clustered bootstrap of the DIFFERENCE of two stratum means.
+
+    Resample days, then recompute each stratum's mean within the resample and take the
+    difference. Pooling one stratum's gains with the other's negated gains and averaging
+    the pool is NOT this quantity — it is a size-weighted blend, and with strata of very
+    different sizes it lands somewhere else entirely. That error produced an interval
+    that did not contain its own point estimate, which is how it was caught.
+    """
+    days = sorted(set(hi_days) | set(lo_days))
+    rng = random.Random(seed)
+    draws: list[float] = []
+    for _ in range(DRAWS):
+        hi_vals: list[float] = []
+        lo_vals: list[float] = []
+        for _ in range(len(days)):
+            d = days[rng.randrange(len(days))]
+            hi_vals.extend(hi_days.get(d, ()))
+            lo_vals.extend(lo_days.get(d, ()))
+        if hi_vals and lo_vals:
+            draws.append(sum(hi_vals) / len(hi_vals) - sum(lo_vals) / len(lo_vals))
+    draws.sort()
+    return draws[int(0.025 * len(draws))], draws[int(0.975 * len(draws))]
+
+
 def report(label: str, by_day: dict[object, list[float]]) -> float:
     days = list(by_day.values())
     flat = [g for d in days for g in d]
@@ -121,16 +150,13 @@ def main() -> None:
     if len(inferential) >= 2:
         hi_g = max(inferential, key=lambda g: inferential[g])
         lo_g = min(inferential, key=lambda g: inferential[g])
-        pooled_days = sorted(set(by_round[hi_g]) | set(by_round[lo_g]))
-        paired = [[g for g in by_round[hi_g].get(d, [])]
-                  + [-g for g in by_round[lo_g].get(d, [])] for d in pooled_days]
-        paired = [d for d in paired if d]
-        flat = [x for d in paired for x in d]
-        lo, hi = clustered_interval(paired, SEED)
+        lo, hi = difference_interval(by_round[hi_g], by_round[lo_g], SEED)
+        point = inferential[hi_g] - inferential[lo_g]
+        n = sum(len(v) for v in by_round[hi_g].values()) + \
+            sum(len(v) for v in by_round[lo_g].values())
         print(f"\n  PRIMARY CONTRAST ({hi_g} minus {lo_g}), day-clustered:")
-        print(f"    difference {inferential[hi_g] - inferential[lo_g]:+.6f}  "
-              f"paired-pool CI95=[{lo:+.6f},{hi:+.6f}]  "
-              f"{'CLEARS ZERO' if lo > 0 or hi < 0 else 'SPANS ZERO'}  (n={len(flat):,})")
+        print(f"    difference {point:+.6f}  CI95=[{lo:+.6f},{hi:+.6f}]  "
+              f"{'CLEARS ZERO' if lo > 0 or hi < 0 else 'SPANS ZERO'}  (n={n:,})")
 
     print("\nTE-0038 pre-registered. Licenses no rule change, no filter, no threshold.")
 
