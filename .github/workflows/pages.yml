@@ -20,6 +20,7 @@ on:
     branches: [claude/project-files-followup-dif8al]
     paths:
       - 'docs/index.html'
+      - 'docs/staking.js'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -46,6 +47,7 @@ jobs:
         run: |
           mkdir -p _site
           cp docs/index.html _site/index.html
+          cp docs/staking.js _site/staking.js
           touch _site/.nojekyll
           date -u +"%Y-%m-%dT%H:%M:%SZ $GITHUB_SHA" > _site/.build-stamp
       - uses: actions/upload-pages-artifact@v3
