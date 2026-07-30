@@ -378,10 +378,11 @@ async function mintPrediction(
       // venue-relative measurement — CLV above all — must compare like with like.
       price_venue: venueOf(fixture.source),
       commission: COMMISSION,
-      // 2% is an ASSUMPTION, not a rate read off an account statement. SPEC-081 makes the
-      // statement truth; until one is read this label keeps the assumption from being
-      // mistaken downstream for a verified fact. A wrong rate moves break-even by roughly
-      // 0.5-0.9 probability points, which mis-fires every bet whose edge sits in that strip.
+      // 2% is the founder-confirmed Basic-package rate (TE-0044), but still an ASSUMPTION,
+      // not a rate read off an account statement. SPEC-081 makes the statement truth; until
+      // one is read this label keeps the assumption from being mistaken downstream for a
+      // verified fact. A wrong rate moves break-even by roughly 0.5-0.9 probability points,
+      // which mis-fires every bet whose edge sits in that strip.
       commission_source: "ASSUMPTION",
       features: p.features,
       contributions: p.contributions,
