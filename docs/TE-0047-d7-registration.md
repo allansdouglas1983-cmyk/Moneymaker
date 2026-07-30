@@ -103,3 +103,52 @@ until the trial's realised fills and the SPEC-081 statement exist.
 
 No SPEC-ID changes. No gate evaluated by this document. Results append to TE-0047 only
 after the frozen run completes; this registration is immutable once committed.
+
+## RESULTS — the frozen run (appended 2026-07-30, after completion; registration above untouched)
+
+Run: config sha256 `baa4f7b8fd20a94e…`, ledger 9,793 bets / 2,763 days (sha `fd0e1d18c6e0ef54…`),
+1,000 paired draws × 4 scenarios × 14 arms; raw output
+`tennis-edge/docs/evidence/staking/stk-harness-v1/results.json`. D7_LCB rows (pence,
+start 10,000, founder floor 7,000):
+
+| scenario | realised path | median | q05 | P(DEAD_FLOOR) | P(silent flag) |
+|---|---|---|---|---|---|
+| as-measured | **11,041** | 11,693 | 7,071 | **0.000** | 1.000 |
+| half | 10,516 | 10,835 | 7,077 | **0.000** | 1.000 |
+| zero | 9,711 | 10,040 | 7,057 | **0.000** | 1.000 |
+| sign-reversed | 9,267 | 9,048 | 7,006 | **0.000** | 1.000 |
+
+**Gates, against the frozen thresholds:**
+
+- **G1 (floor breach at zero ≤ 0.05): PASS — 0.000.** **G2 (at sign-reversed ≤ 0.10):
+  PASS — 0.000.** The pre-declared probability-one bound held EXACTLY: across all 56,000
+  replayed histories in every scenario, including the sign-reversed world, the bank never
+  touched the founder floor. Even the 5th-percentile final (7,006–7,077) sits above it.
+  No other edge-consuming arm in the study's history has this property; the withdrawn
+  CONS_KELLY breaches in 32.5–72.5% of draws.
+- **G4 (clamp distortion ≤ 0.05): PASS** — the rule's own day budget makes harness-level
+  clamping structurally unreachable.
+- **G3 (silent death ≤ 0.10): FAIL — 1.000, exactly as pre-declared.** On the study's
+  £100 bank, every history contains at least one 30-consecutive-day stretch where every
+  k-divided conservative stake falls below the £1 minimum — matrix §6.9's bank-size
+  infeasibility, which no rule choice removes. This is the honest cost of conservatism at
+  £100: the rule protects the floor partly by not betting. On larger banks the stakes
+  clear £1 far more often (six-month £200 frontier below); the page shows every skip as a
+  skip.
+- **Superiority over flat at α/N: NOT claimed**, per the registration — the adoption
+  basis is the risk-shape result plus the founder directive (ADR 0020 Amendment 4), and
+  that is what this run delivers: the only arm measured with a zero floor-breach
+  probability in every scenario AND the highest realised-path finish in the study
+  (+£10.41; every flat arm's realised path froze at the £70 floor).
+
+**Scenario-semantics caveat, stated where the numbers are:** the §4.3 haircut zeroes the
+EQUAL-WEIGHT per-unit mean. D7 weights stakes by conservative edge, so it retains
+weighted drift under the zero scenario — its positive zero-scenario median is a property
+of the scenario's declared scope, NOT evidence of edge-free profit. The admissibility
+claim is the floor row, never the zero-scenario reward row.
+
+**Standing:** the rule is adopted for display and the manual trial by founder directive
+(Amendment 4); this run adds the risk-shape evidence the registration pre-declared it
+would. The realised-fill edge remains unmeasured until real recorded bets settle
+(SPEC-081, task #89). Six-month £200 frontier (pre-declared secondary, exploratory)
+appended separately as `six-month-frontier-v2.txt`.
