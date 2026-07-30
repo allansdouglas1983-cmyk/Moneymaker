@@ -383,3 +383,35 @@
     systems actually do - CANNOT be answered to this standard from public sources'
   returned: '2026-07-30'
   findings: docs/research/findings/DR-TENNIS-STAKING-003-findings.md
+- id: DR-TENNIS-STAKING-004
+  title: Implementable bank allocation for a GBP 100 bank - full Kelly is GBP 1.96 and the chip
+    is GBP 2
+  classification: ADVISORY
+  status: ASSESSED
+  requested: 2026-07-30
+  blocking_scope: none - confirms SPEC-060/061 and supersedes the DR-TENNIS-STAKING-002 advice
+  notes:
+  - '166 claims extracted, 10 verified, ZERO survived. Every candidate algorithm refuted. Rule
+    derived from brief + repo specs + exact arithmetic, each tagged; ruin by exact absorbing-
+    lattice DP over integer pence, not simulation'
+  - 'DECISIVE: translating +0.001 nats via KL gives delta=2.236pp at q=0.5; net of 5% commission
+    at O=2.00 that is ROI +1.86% and FULL KELLY = GBP 1.96 on a GBP 100 bank - BELOW the GBP 2
+    minimum. Kelly''s own answer is do not bet, you have no small enough stake. Flat GBP 2 is
+    102% of full Kelly at O=2.00 and 162% at O=5.00'
+  - 'a staking plan is arithmetically IDENTICAL to flat staking here: inside [102.17, 153.26)
+    full Kelly and flat GBP 2 are the same rule. 400,000 paths x 730 bets: Kelly and half-Kelly
+    rounded down placed ZERO bets in 100% of runs'
+  - 'refutes Busseti/Ryu/Boyd risk-constrained Kelly, which DR-TENNIS-STAKING-002 recommended:
+    its bisection recipe fails (g(0)=1 exactly, g convex, so f=0 is always a root) and at
+    lambda=6.46 the feasible set on GBP 100 contains no executable stake'
+  - 'Baker & McHale''s own 2016 follow-up tested shrinkage on 31,530 ATP matches: "any shrinkage
+    only decreased expected utility"'
+  - 'you cannot buy a statistically meaningful P&L result with GBP 100 at any staking rule at any
+    price - best reachable t is 0.513; t=1.96 needs a bank of GBP 369 (O=1.30) to GBP 1,089
+    (O=3.00). Median outcome of a 42-bet tranche ASSUMING THE EDGE IS REAL is GBP 99.90'
+  - 'FUFV-1: flat GBP 2 + hard floor + variance budget. P(wipe-out)=0 BY CONSTRUCTION (structural
+    guard, not a probability). V0=134 units^2 derived from one stated tolerance tau, giving 141
+    bets capacity at O=2.00 with floor-hit 6.2% (edge real) / 9.3% (edge zero). Uncapped, a year
+    at 2/day hits the floor with probability 0.46 at exactly zero EV'
+  returned: '2026-07-30'
+  findings: docs/research/findings/DR-TENNIS-STAKING-004-findings.md
