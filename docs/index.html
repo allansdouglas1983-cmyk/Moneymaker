@@ -67,7 +67,7 @@ nav button[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
 .cell{background:var(--bg);border-radius:8px;padding:7px 9px}
 .k{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
 .v{font-size:15px;font-variant-numeric:tabular-nums;margin-top:1px}
-.pos{color:var(--good)}.neg{color:var(--dim)}.warnc{color:var(--warn)}
+.pos{color:var(--good)}.neg{color:var(--dim)}.warnc{color:var(--warn)}.muted{color:var(--dim)}
 .why{margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.6;word-break:break-word}
 .more{
   margin-top:10px;background:none;border:0;color:var(--accent);font:inherit;font-size:12.5px;
@@ -269,6 +269,25 @@ function matchCard(row, index) {
   const f = row.fixture, p = row.prediction;
   const side = row.best_side === "A" ? f.player_a : f.player_b;
   const odds = row.best_side === "A" ? f.odds_a : f.odds_b;
+// When to act, from the served entry_timing. Advisory: it changes no number on the card
+// and authorises nothing. The late bound is the one that matters — tennis matches can
+// start EARLY, so a scheduled start is not a safe live boundary (SPEC-022, conceptual
+// audit F-01), and inside T-30m the market on screen may already have gone in-play.
+function timingNote(row) {
+  const m = row.minutes_to_start;
+  if (row.entry_timing == null || row.entry_timing === "UNKNOWN" || m == null) return "";
+  const when = m < 0
+    ? Math.abs(m) + "m past scheduled start"
+    : m < 90 ? "in " + m + "m" : "in " + (m / 60).toFixed(1) + "h";
+  if (row.entry_timing === "ACT") {
+    return ` &middot; <span class="pos">act now &middot; starts ${when}</span>`;
+  }
+  if (row.entry_timing === "TOO_LATE") {
+    return ` &middot; <span class="warnc">too close &middot; ${when} &middot; may be in play</span>`;
+  }
+  return ` &middot; <span class="muted">too early &middot; starts ${when}</span>`;
+}
+
   const contribRows = Object.keys(p.contributions).sort().map((n) =>
     `<tr><td>${escapeHtml(n)}</td><td>${p.features[n].toFixed(4)}</td>
      <td class="${p.contributions[n] >= 0 ? "pos" : "neg"}">${
@@ -283,7 +302,8 @@ function matchCard(row, index) {
           ` &middot; <span class="${row.price_age_minutes > 120 ? "warnc" : ""}">price ${
             row.price_age_minutes < 60
               ? row.price_age_minutes + "m old"
-              : (row.price_age_minutes / 60).toFixed(1) + "h old"}</span>`}</div>
+              : (row.price_age_minutes / 60).toFixed(1) + "h old"}</span>`}${
+          timingNote(row)}</div>
       </div>
       <span class="chip c-${row.status}">${row.status.replace(/_/g, " ")}</span>
     </div>
