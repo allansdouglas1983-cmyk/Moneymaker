@@ -162,6 +162,11 @@ Research informs decisions; it never proves a gate, and never authorises spend.
 One spec slice per session. Write failing tests first, **commit them separately**, then
 implement without editing them. Durable state lives in files, not in this conversation.
 
+**Before claiming anything about the evidence state, read `docs/EVIDENCE-STATE.md` and
+the TE documents it cites.** A compaction summary or conversation memory is NOT the
+evidence state; sessions have already misstated the edge by trusting one. Any new finding
+that changes the picture updates `docs/EVIDENCE-STATE.md` in the same commit.
+
 ## Rules loaded by path
 
 See `.claude/rules/` — money-critical invariants load automatically when you touch
