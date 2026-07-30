@@ -81,3 +81,41 @@ you need £X" — is the study's practical payoff for funding decisions.
 No SPEC-ID changes. SPEC-060/061 stand, now empirically supported. No staking rule
 adopted or changed; no stake authorised. The §6.3 winner analysis was not reached (no
 admissible arm), exactly as the pre-registration anticipated in §7.
+
+## Addendum 2026-07-30 — the budget arithmetic, corrected twice by founder challenge
+
+Two founder challenges corrected this document's framing, and both were right:
+
+**"Where did the £30 budget come from?"** — from the protocol synthesis's default
+proposal, adopted as a frozen STUDY parameter. The founder never set it. It was labelled
+an input throughout, but a session summary called it "your £30 budget", which it never
+was. The real loss budget is whatever the founder sets in the app, and none is set yet.
+
+**"Earnings stay in the bank — is that considered?"** — it was not, properly. The
+original gate arithmetic used peak-to-trough drawdown, which counts a dip from £150 to
+£80 as a £70 event even though the bank never went below its starting £100. With
+winnings retained, the funding statistic is the DEEPEST DIP BELOW STARTING MONEY.
+Recomputed at the realised cadence (~890 bets/yr, 1,000 resampled histories per cell;
+raw output `tennis-edge/docs/evidence/staking/stk-harness-v1/dip-below-start-by-horizon.txt`):
+
+| flat £1 | zero edge p95/p99 | measured edge p95/p99 | median P&L (measured) |
+|---|---|---|---|
+| 1 year | £72 / £93 | £46 / £64 | +£34 |
+| 2 years | £101 / £133 | £54 / £77 | +£69 |
+| 5 years | £171 / £220 | **£56 / £88** | +£169 |
+
+(£2 stakes: double every figure; median P&L +£71/yr.)
+
+**The finding the correction exposed:** at the measured edge the dip-below-start
+SATURATES — £46 → £54 → £56 across one to five years — because retained winnings absorb
+later drawdowns. The risk of touching one's own starting money is front-loaded in year
+one; if the edge is real, surviving the first year buys nearly all the safety thereafter.
+At zero edge nothing accumulates and the dip grows without bound (√time). The two
+columns together are the funding decision: the zero-edge column is the burn rate of
+finding out; the measured column is what happens if the record is right.
+
+Practical reading at the current firing rule: a £100 bank at £1 flat, with the whole
+bank as the stop, carries ~7% zero-edge annual exhaustion risk and ~1% annual risk of
+ever being £64 down at the measured edge. £2 stakes want a £200 bank for the same
+safety. No number in this addendum is a recommendation; the budget is the founder's to
+set, now with both columns visible.
