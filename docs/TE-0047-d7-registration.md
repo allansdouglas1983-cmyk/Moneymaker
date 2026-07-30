@@ -152,3 +152,25 @@ claim is the floor row, never the zero-scenario reward row.
 would. The realised-fill edge remains unmeasured until real recorded bets settle
 (SPEC-081, task #89). Six-month £200 frontier (pre-declared secondary, exploratory)
 appended separately as `six-month-frontier-v2.txt`.
+
+## Six-month £200 frontier v2 (pre-declared secondary, EXPLORATORY — appended after the run)
+
+Committed deterministic tool `tools/run_sixmonth_frontier.py` (seeded; reproduces the
+Addendum-2 configuration with D7 added). 126 betting days, £200 bank, 1,000 histories:
+
+| arm | measured: med final | q05 | q95 | zero: med | q05 | dip95 | bust |
+|---|---|---|---|---|---|---|---|
+| flat £2 | £239 | £156 | £318 | £201 | £123 | £91 | 0.0% |
+| flat £5 | £300 | £87 | £497 | £205 | £0 | £200 | 8.4% |
+| flat £10 | £388 | £0 | £790 | £187 | £0 | £200 | 37.0% |
+| CONS_KELLY (withdrawn) | £288 | £101 | £893 | £178 | £98 | £103 | 0.0% |
+| full Kelly (capped) | £160 | £85 | £1,165 | £135 | £83 | £121 | 0.0% |
+| **D7_LCB** | **£240** | **£141** | **£682** | **£204** | **£141** | **£59** | **0.0%** |
+
+Reading, honestly: at the founder's horizon and bank, D7 matches flat-£2's median profit
+(+£40) while carrying roughly **3× its upside tail** (£682 vs £318) and the **best
+worst-case shape in the table** — the highest zero-scenario 5th percentile (£141), the
+smallest worst dip (£59), zero busts. Its median sits below flat-£5's and the withdrawn
+shrink arm's: that gap is the measured price of the conservative bound and the
+probability-one 30% drawdown cap — the founder's declared tolerance, bought exactly.
+The zero-scenario medians inherit the equal-weight-haircut caveat recorded above.

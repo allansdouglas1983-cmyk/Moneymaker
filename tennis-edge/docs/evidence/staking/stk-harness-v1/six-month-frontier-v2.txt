@@ -1,0 +1,7 @@
+SIX MONTHS v2 (126 betting days), GBP200 bank, 1000 histories, ledger exchange_prices_600s_v4.jsonl (9,793 fired bets) — TE-0047 secondary, EXPLORATORY
+  FLAT_GBP2                  MEASURED: med GBP   239 q05 GBP  156 q95 GBP   318 | ZERO: med GBP  201 q05 GBP  123 dip95 GBP  91 bust 0.0%
+  FLAT_GBP5                  MEASURED: med GBP   300 q05 GBP   87 q95 GBP   497 | ZERO: med GBP  205 q05 GBP    0 dip95 GBP 200 bust 8.4%
+  FLAT_GBP10                 MEASURED: med GBP   388 q05 GBP    0 q95 GBP   790 | ZERO: med GBP  187 q05 GBP    0 dip95 GBP 200 bust 37.0%
+  CONS_KELLY_0355_WITHDRAWN  MEASURED: med GBP   288 q05 GBP  101 q95 GBP   893 | ZERO: med GBP  178 q05 GBP   98 dip95 GBP 103 bust 0.0%
+  KELLY_FULL_CAP             MEASURED: med GBP   160 q05 GBP   85 q95 GBP  1165 | ZERO: med GBP  135 q05 GBP   83 dip95 GBP 121 bust 0.0%
+  D7_LCB                     MEASURED: med GBP   240 q05 GBP  141 q95 GBP   682 | ZERO: med GBP  204 q05 GBP  141 dip95 GBP  59 bust 0.0%
