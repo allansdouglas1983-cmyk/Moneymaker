@@ -278,3 +278,32 @@
     present by construction'
   returned: '2026-07-28'
   findings: docs/research/findings/DR-TENNIS-COHERENCE-METHOD-001-findings.md
+- id: DR-TENNIS-STAKING-001
+  title: Staking, bankroll and ruin - whether a fraction-of-pot rule should replace the fixed
+    minimum stake, and what the literature actually supports
+  classification: ADVISORY
+  status: ASSESSED
+  requested: 2026-07-30
+  blocking_scope: none — v1 staking rule is UNCHANGED (fixed minimum stake + absolute loss budget)
+  authorisation: founder directive 2026-07-30 (/deep-research), the explicit owner authorisation
+    the routing protocol requires before Claude runs its own large-agent workflow
+  notes:
+  - 'verdict: change nothing. Fractional Kelly is justified by PARAMETER UNCERTAINTY (MacLean,
+    Thorp & Ziemba 2010, verified verbatim); our edge distribution spans zero at declared execution
+    costs (TE-0020), and the honest fraction of Kelly for an edge that may be zero is zero'
+  - 'the actionable finding is not a staking rule: log-score edge converts directly into evidence
+    accumulation rate under Ville''s inequality, so a log-score evidence process answers in
+    measurement what TE-0036 showed a real-money trial cannot afford to answer in money'
+  - Ville's inequality is simultaneously the anytime-valid monitoring bound and the risk-of-ruin
+    bound (P(ever reaching alpha) <= 1/alpha) — SPEC-096 already specifies exactly this and remains
+    planned; the literature confirms the spec, it does not activate it
+  - Baker & McHale (2013) Decision Analysis 10(3):189-199 is genuine, peer-reviewed and applies to
+    TENNIS specifically, but claimed shrinkage magnitudes were REFUTED and the authors' own 2016
+    follow-up contradicts part of the secondary reading
+  - '7 of 19 verified claims refuted, all overreach: sources real and quotes verbatim, inferences
+    drawn from them in secondary writing not supported'
+  - 'PROVENANCE CAVEAT: all 48 workflow agent results recorded null; findings salvaged from agent
+    transcripts, synthesis stage never ran, 95 of 114 extracted claims never reached verification
+    and are deliberately NOT recorded as findings'
+  returned: '2026-07-30'
+  findings: docs/research/findings/DR-TENNIS-STAKING-001-findings.md
