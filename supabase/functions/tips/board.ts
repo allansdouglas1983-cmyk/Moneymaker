@@ -46,7 +46,7 @@ const SLAM_SURFACE: Record<string, string> = {
 };
 
 // Derived by tools/derive_surface_map.py from vintage-2026-07-26:
-// 34,786 matches since 2019-01-01, 177 cities asserted, 10 omitted as ambiguous.
+// 34,786 matches since 2019-01-01, 171 cities asserted, 16 omitted as ambiguous.
 const CITY_SURFACE: Record<string, string> = {
   "ATP|acapulco": "Hard",  // 233 matches
   "ATP|adelaide": "Hard",  // 213 matches
@@ -94,7 +94,6 @@ const CITY_SURFACE: Record<string, string> = {
   "ATP|marbella": "Hard",  // 27 matches
   "ATP|marrakech": "Clay",  // 163 matches
   "ATP|marseille": "Hard",  // 183 matches
-  "ATP|melbourne": "Hard",  // 1109 matches
   "ATP|metz": "Hard",  // 155 matches
   "ATP|miami": "Hard",  // 644 matches
   "ATP|monte_carlo": "Clay",  // 370 matches
@@ -103,7 +102,6 @@ const CITY_SURFACE: Record<string, string> = {
   "ATP|moscow": "Hard",  // 53 matches
   "ATP|munich": "Clay",  // 190 matches
   "ATP|napoli": "Hard",  // 26 matches
-  "ATP|new_york": "Hard",  // 952 matches
   "ATP|newport": "Grass",  // 133 matches
   "ATP|nur_sultan": "Hard",  // 109 matches
   "ATP|parma": "Clay",  // 26 matches
@@ -174,13 +172,11 @@ const CITY_SURFACE: Record<string, string> = {
   "WTA|jurmala": "Clay",  // 29 matches
   "WTA|lausanne": "Clay",  // 120 matches
   "WTA|lexington": "Hard",  // 30 matches
-  "WTA|london": "Grass",  // 872 matches
   "WTA|lugano": "Clay",  // 31 matches
   "WTA|luxembourg": "Hard",  // 57 matches
   "WTA|lyon": "Hard",  // 118 matches
   "WTA|madrid": "Clay",  // 556 matches
   "WTA|mallorca": "Grass",  // 29 matches
-  "WTA|melbourne": "Hard",  // 1237 matches
   "WTA|merida": "Hard",  // 105 matches
   "WTA|miami": "Hard",  // 630 matches
   "WTA|monastir": "Hard",  // 90 matches
@@ -189,13 +185,11 @@ const CITY_SURFACE: Record<string, string> = {
   "WTA|moscow": "Hard",  // 50 matches
   "WTA|n_rnberg": "Clay",  // 29 matches
   "WTA|nanchang": "Hard",  // 57 matches
-  "WTA|new_york": "Hard",  // 955 matches
   "WTA|ningbo": "Hard",  // 79 matches
   "WTA|nottingham": "Grass",  // 226 matches
   "WTA|nur_sultan": "Hard",  // 29 matches
   "WTA|osaka": "Hard",  // 117 matches
   "WTA|palermo": "Clay",  // 180 matches
-  "WTA|paris": "Clay",  // 985 matches
   "WTA|parma": "Clay",  // 60 matches
   "WTA|portoroz": "Hard",  // 58 matches
   "WTA|queens_club": "Grass",  // 53 matches
@@ -230,13 +224,19 @@ const CITY_SURFACE: Record<string, string> = {
 // Omitted — genuinely ambiguous, so served as the Hard default and flagged:
 //   ATP antalya: {'Grass': 26, 'Hard': 27} (purity=0.51 n=53)
 //   ATP belgrade: {'Clay': 79, 'Hard': 27} (purity=0.75 n=106)
-//   ATP london: {'Grass': 860, 'Hard': 30} (purity=0.97 n=890)
-//   ATP paris: {'Clay': 981, 'Hard': 365} (purity=0.73 n=1346)
+//   ATP london: {'Grass': 860, 'Hard': 30} (slam city, resolved by name)
+//   ATP melbourne: {'Hard': 1109} (slam city, resolved by name)
+//   ATP new_york: {'Hard': 952} (slam city, resolved by name)
+//   ATP paris: {'Clay': 981, 'Hard': 365} (slam city, resolved by name)
 //   WTA budapest: {'Hard': 31, 'Clay': 117} (purity=0.79 n=148)
 //   WTA cancun: {'Hard': 15} (purity=1.00 n=15)
 //   WTA fort_worth: {'Hard': 15} (purity=1.00 n=15)
 //   WTA linz: {'Hard': 137, 'Clay': 25} (purity=0.85 n=162)
+//   WTA london: {'Grass': 872} (slam city, resolved by name)
+//   WTA melbourne: {'Hard': 1237} (slam city, resolved by name)
+//   WTA new_york: {'Hard': 955} (slam city, resolved by name)
 //   WTA ostrava: {'Clay': 54, 'Hard': 53} (purity=0.50 n=107)
+//   WTA paris: {'Clay': 985} (slam city, resolved by name)
 //   WTA prague: {'Clay': 88, 'Hard': 118} (purity=0.57 n=206)
 
 export function tourOf(sportKey: string): "ATP" | "WTA" | null {

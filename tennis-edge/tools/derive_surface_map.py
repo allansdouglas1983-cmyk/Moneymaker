@@ -30,6 +30,11 @@ SINCE = "2019-01-01"
 MIN_PURITY = 0.98
 #: And carry this many matches, so one small edition cannot mint a mapping.
 MIN_MATCHES = 20
+#: Slam cities are excluded outright. Their slam is matched by NAME before any city
+#: lookup, so including them buys nothing — while a non-slam event in the same city would
+#: silently inherit the slam's surface. Roland Garros makes WTA Paris 98% clay, so a Paris
+#: indoor-hard event would be served as clay; Wimbledon does the same to London.
+SLAM_CITIES = {"melbourne", "paris", "london", "new_york"}
 
 
 def slug(text: str) -> str:
@@ -54,6 +59,8 @@ def main() -> None:
         purity = top / total
         if not city or surface not in ("Hard", "Clay", "Grass"):
             omitted.append((tour, city, dict(surfaces), "unusable"))
+        elif city in SLAM_CITIES:
+            omitted.append((tour, city, dict(surfaces), "slam city, resolved by name"))
         elif purity < MIN_PURITY or total < MIN_MATCHES:
             omitted.append((tour, city, dict(surfaces), f"purity={purity:.2f} n={total}"))
         else:

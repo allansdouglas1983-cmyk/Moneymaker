@@ -43,3 +43,21 @@ Deno.test("an unresolved tournament is reported as unknown, not quietly called H
   assertEquals(surfaceIsKnown("tennis_atp_london_event"), false);
   assertEquals(surfaceIsKnown("tennis_atp_paris_masters"), false);
 });
+
+Deno.test("a slam city never lends its surface to another event in the same city", () => {
+  // Roland Garros makes WTA Paris 98% clay in the corpus and Wimbledon makes WTA London
+  // 100% grass. If those cities stayed in the city table, an indoor hard event in Paris
+  // would be served as clay and any London event as grass — the slam's surface leaking
+  // onto a different tournament. The slams match by NAME before any city lookup, so
+  // excluding the four slam cities costs nothing and closes that path.
+  assertEquals(surfaceIsKnown("tennis_wta_paris_open"), false);
+  assertEquals(surfaceIsKnown("tennis_wta_london_open"), false);
+  assertEquals(surfaceIsKnown("tennis_atp_melbourne_summer_set"), false);
+  assertEquals(surfaceIsKnown("tennis_wta_new_york_open"), false);
+
+  // The slams themselves are unaffected: they never depended on the city.
+  assertEquals(surfaceFor("tennis_wta_french_open"), "Clay");
+  assertEquals(surfaceFor("tennis_wta_wimbledon"), "Grass");
+  assertEquals(surfaceFor("tennis_atp_australian_open"), "Hard");
+  assertEquals(surfaceFor("tennis_wta_us_open"), "Hard");
+});
