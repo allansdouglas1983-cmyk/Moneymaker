@@ -117,10 +117,16 @@ writes the ADR, reasons about spec fidelity and money-critical invariants, and d
 is correct. It **orchestrates**; it does not personally spend tokens on work a cheaper model
 does just as well.
 
-Delegate to **Sonnet subagents** (via the Agent tool) the high-volume, low-judgement work —
+Delegate to subagents (via the Agent tool) the high-volume, low-judgement work —
 bulk file reads and codebase sweeps, mechanical edits across many files, running the test/lint
 suite and collecting output, drafting boilerplate, searching for usages. Spawn them in parallel
 when the work is independent. The lead keeps the conclusion, not the file dumps.
+
+**Standing rule (founder directive, 2026-10-27): every delegated worker runs on the lowest-tier
+model that can do the job well.** Haiku is the default for fact-gathering, sweeps, mechanical
+edits and test runs; Sonnet only where judgement under hallucination risk matters (model or
+source verification, correctness-critical drafting); never Opus or Fable for worker tasks. The
+lead states the model choice and the reason in each brief.
 
 This division **never lowers the bar**:
 
